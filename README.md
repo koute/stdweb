@@ -25,7 +25,7 @@ let result = js! {
 println!( "2 + 2 * 2 = {:?}", result );
 ```
 
-Even closures are are supported:
+Even closures are supported:
 
 ```rust
 let print_hello = |name: String| {
