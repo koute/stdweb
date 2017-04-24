@@ -18,7 +18,7 @@ You can directly embed JavaScript code into Rust:
 ```rust
 let message = "Hello, 世界!";
 let result = js! {
-    alert!( @{message} );
+    alert( @{message} );
     return 2 + 2 * 2;
 };
 
