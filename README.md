@@ -93,29 +93,16 @@ Things might break. The APIs are in flux. Please do not use it in production.
 
        $ rustup target add asmjs-unknown-emscripten
 
-2. Install emscripten. If you're on Arch Linux then you can just
-   run `sudo pacman -S emscripten`; other distributions might also
-   have recent enough emscripten packages in their repositories.
-
-   Alternatively you can install it like this:
-
-       $ curl -O https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz
-       $ tar -xzf emsdk-portable.tar.gz
-       $ source emsdk_portable/emsdk_env.sh
-       $ emsdk update
-       $ emsdk install sdk-incoming-64bit
-       $ emsdk activate sdk-incoming-64bit
-
-3. Install [cargo-web]; it's not strictly necessary but it makes things
+2. Install [cargo-web]; it's not strictly necessary but it makes things
    more convenient:
 
        $ cargo install cargo-web
 
-4. Go into `examples/todomvc` and type:
+3. Go into `examples/todomvc` and type:
 
        $ cargo web start
 
-5. Visit `http://localhost:8000` with your browser.
+4. Visit `http://localhost:8000` with your browser.
 
 [cargo-web]: https://github.com/koute/cargo-web
 
