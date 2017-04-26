@@ -8,14 +8,14 @@
 //! ```rust
 //! let message = "Hello, 世界!";
 //! let result = js! {
-//!     alert!( @{message} );
+//!     alert( @{message} );
 //!     return 2 + 2 * 2;
 //! };
 //!
 //! println!( "2 + 2 * 2 = {:?}", result );
 //! ```
 //!
-//! Even closures are are supported:
+//! Even closures are supported:
 //!
 //! ```rust
 //! let print_hello = |name: String| {
