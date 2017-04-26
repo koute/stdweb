@@ -13,5 +13,6 @@ matrix:
     - rust: nightly
 
 script:
+  - rustup target add asmjs-unknown-emscripten
   - cargo install cargo-web
   - cargo web test --nodejs
