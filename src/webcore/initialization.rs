@@ -166,14 +166,14 @@ pub fn initialize() {
                 }
                 var ch = (init << 6) | (y & 63);
                 if( x >= 0xE0 ) {
-                    let z = 0;
+                    var z = 0;
                     if( index < end ) {
                         z = HEAPU8[ index++ ];
                     }
-                    let y_z = ((y & 63) << 6) | (z & 63);
+                    var y_z = ((y & 63) << 6) | (z & 63);
                     ch = init << 12 | y_z;
                     if( x >= 0xF0 ) {
-                        let w = 0;
+                        var w = 0;
                         if( index < end ) {
                             w = HEAPU8[ index++ ];
                         }
