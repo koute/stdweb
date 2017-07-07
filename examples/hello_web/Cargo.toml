@@ -1,0 +1,7 @@
+[package]
+name = "hello_web"
+version = "0.1.0"
+authors = ["Sergey \"Shnatsel\" Davidoff <shnatsel@gmail.com>"]
+
+[dependencies]
+stdweb = "*"
