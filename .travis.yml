@@ -16,3 +16,5 @@ script:
   - rustup target add asmjs-unknown-emscripten
   - cargo install cargo-web
   - cargo web test --nodejs
+  - cd examples/todomvc
+  - cargo web build --release
