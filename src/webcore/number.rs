@@ -1,6 +1,6 @@
 // TODO: Handle NaN and Infinity.
 
-use std::{i8, i16, i32, i64, u8, u16, u32, u64, f32, f64};
+use std::{i8, i16, i32, i64, u8, u16, u32, u64, usize, f32, f64};
 use std::error;
 use std::fmt;
 use webcore::try_from::TryFrom;
@@ -134,6 +134,21 @@ impl TryFrom< u64 > for Number {
     }
 }
 
+// Since technically `usize` can be 64-bit we have to do this.
+impl TryFrom< usize > for Number {
+    type Error = ConversionError;
+
+    fn try_from( value: usize ) -> Result< Self, Self::Error > {
+        if value <= i32::MAX as usize {
+            Ok( Number( Storage::I32( value as i32 ) ) )
+        } else if value <= MAX_SAFE_INTEGER_F64 as usize {
+            Ok( Number( Storage::F64( value as f64 ) ) )
+        } else {
+            Err( ConversionError::OutOfRange )
+        }
+    }
+}
+
 impl From< f32 > for Number {
     #[inline]
     fn from( value: f32 ) -> Self {
@@ -238,7 +253,7 @@ impl_conversion_into_rust_types! {
         from i32: direct_cast,
         from f64: f64_to_integer
     },
-    into u32, u64: {
+    into u32, u64, usize: {
         from i32: i32_to_big_unsigned_integer,
         from f64: f64_to_integer
     },
@@ -334,6 +349,22 @@ impl PartialEq< u64 > for Number {
     }
 }
 
+impl PartialEq< usize > for Number {
+    #[inline]
+    fn eq( &self, right: &usize ) -> bool {
+        match self.0 {
+            Storage::I32( left ) => {
+                if *right >= i32::MAX as usize {
+                    // The right side is not convertible to an i32.
+                    return false;
+                }
+                left == *right as i32
+            },
+            Storage::F64( left ) => left == *right as f64
+        }
+    }
+}
+
 impl PartialEq< f32 > for Number {
     #[inline]
     fn eq( &self, right: &f32 ) -> bool {
@@ -369,6 +400,7 @@ macro_rules! impl_symmetric_partial_eq {
 
 impl_symmetric_partial_eq! {
     u8, u16, u32, u64,
+    usize,
     i8, i16, i32, i64,
     f32, f64
 }
@@ -404,6 +436,7 @@ mod tests {
         u16 => [ 0, 1, u16::MAX - 1, u16::MAX ],
         u32 => [ 0, 1, u32::MAX - 1, u32::MAX ],
         u64 => [ 0, 1, u64::MAX - 1, u64::MAX ],
+      usize => [ 0, 1, usize::MAX - 1, usize::MAX ],
          i8 => [  i8::MIN,  i8::MIN + 1, -1, 0, 1,  i8::MAX - 1,  i8::MAX ],
         i16 => [ i16::MIN, i16::MIN + 1, -1, 0, 1, i16::MAX - 1, i16::MAX ],
         i32 => [ i32::MIN, i32::MIN + 1, -1, 0, 1, i32::MAX - 1, i32::MAX ],
@@ -442,6 +475,7 @@ mod tests {
         (u16) => (U);
         (u32) => (U);
         (u64) => (U);
+        (usize) => (U);
         (i8) => (I);
         (i16) => (I);
         (i32) => (I);
@@ -579,6 +613,7 @@ mod tests {
                 (u16, into_u16),
                 (u32, into_u32),
                 (u64, into_u64),
+                (usize, into_usize),
                 (i8, into_i8),
                 (i16, into_i16),
                 (i32, into_i32),
@@ -640,6 +675,12 @@ mod tests {
         use super::*;
         use webcore::try_from::TryInto;
         generate_conversion_tests! { u64 }
+    }
+
+    mod for_usize {
+        use super::*;
+        use webcore::try_from::TryInto;
+        generate_conversion_tests! { usize }
     }
 
     mod for_i64 {

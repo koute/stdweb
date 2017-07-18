@@ -524,7 +524,7 @@ macro_rules! impl_try_from_number {
     };
 }
 
-impl_try_from_number!( i64 u64 );
+impl_try_from_number!( i64 u64 usize );
 
 impl PartialEq< Undefined > for Value {
     #[inline]
@@ -703,7 +703,7 @@ macro_rules! impl_partial_eq_to_number {
     };
 }
 
-impl_partial_eq_to_number!( i8 i16 i32 i64 u8 u16 u32 u64 f32 f64 );
+impl_partial_eq_to_number!( i8 i16 i32 i64 u8 u16 u32 u64 usize f32 f64 );
 
 impl_partial_eq_boilerplate! {
     Undefined,
@@ -833,7 +833,7 @@ macro_rules! impl_try_into_number {
     };
 }
 
-impl_try_into_number!( u8 u16 u32 u64 i8 i16 i32 i64 f64 );
+impl_try_into_number!( u8 u16 u32 u64 usize i8 i16 i32 i64 f64 );
 
 impl< V: TryFrom< Value, Error = ConversionError > > TryFrom< Value > for BTreeMap< String, V > {
     type Error = ConversionError;
@@ -991,6 +991,7 @@ impl_nullable_try_from_value! {
     u16;
     u32;
     u64;
+    usize;
     i8;
     i16;
     i32;
