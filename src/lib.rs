@@ -153,6 +153,7 @@ pub mod web {
             IUiEvent,
             IMouseEvent,
             IFocusEvent,
+            IProgressEvent,
 
             ChangeEvent,
             KeypressEvent,
@@ -160,7 +161,13 @@ pub mod web {
             DoubleClickEvent,
             FocusEvent,
             BlurEvent,
-            HashChangeEvent
+            HashChangeEvent,
+            LoadEvent,
+            ProgressEvent,
+            LoadStartEvent,
+            LoadEndEvent,
+            AbortEvent,
+            ErrorEvent
         };
     }
 }

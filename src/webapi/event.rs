@@ -95,6 +95,27 @@ reference_boilerplate! {
     convertible to Event
 }
 
+/// The `LoadEvent` is fired when a resource and its dependent resources have finished loading.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/load)
+pub struct LoadEvent( Reference );
+
+impl IEvent for LoadEvent {}
+impl IUiEvent for LoadEvent {}
+impl ConcreteEvent for LoadEvent {
+    #[inline]
+    fn static_event_type() -> &'static str {
+        "load"
+    }
+}
+
+reference_boilerplate! {
+    LoadEvent,
+    instanceof UiEvent
+    convertible to Event
+    convertible to UiEvent
+}
+
 /// The `IMouseEvent` interface represents events that occur due to the user
 /// interacting with a pointing device (such as a mouse).
 ///
@@ -303,5 +324,132 @@ impl ConcreteEvent for HashChangeEvent {
 reference_boilerplate! {
     HashChangeEvent,
     instanceof HashChangeEvent
+    convertible to Event
+}
+
+/// The `IProgressEvent` interface represents progress-related
+/// events.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ProgressEvent)
+pub trait IProgressEvent: IEvent {
+}
+
+/// A reference to a JavaScript object which implements the [IProgressEvent](trait.IProgressEvent.html)
+/// interface.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ProgressEvent)
+pub struct ProgressRelatedEvent( Reference );
+
+impl IEvent for ProgressRelatedEvent {}
+impl IProgressEvent for ProgressRelatedEvent {}
+
+reference_boilerplate! {
+    ProgressRelatedEvent,
+    instanceof ProgressEvent
+    convertible to Event
+}
+
+/// The `ProgressEvent` is fired to indicate that an operation is in progress.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/progress)
+pub struct ProgressEvent( Reference );
+
+impl IEvent for ProgressEvent {}
+impl IProgressEvent for ProgressEvent {}
+impl ConcreteEvent for ProgressEvent {
+    #[inline]
+    fn static_event_type() -> &'static str {
+        "progress"
+    }
+}
+
+reference_boilerplate! {
+    ProgressEvent,
+    instanceof ProgressEvent
+    convertible to Event
+    convertible to ProgressRelatedEvent
+}
+
+/// The `LoadStartEvent` is fired when progress has begun on the loading of a resource.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/loadstart)
+pub struct LoadStartEvent( Reference );
+
+impl IEvent for LoadStartEvent {}
+impl IProgressEvent for LoadStartEvent {}
+impl ConcreteEvent for LoadStartEvent {
+    #[inline]
+    fn static_event_type() -> &'static str {
+        "loadstart"
+    }
+}
+
+reference_boilerplate! {
+    LoadStartEvent,
+    instanceof ProgressEvent
+    convertible to Event
+    convertible to ProgressRelatedEvent
+}
+
+/// The `LoadEndEvent` is fired when progress has stopped on the loading of a resource,
+/// e.g. after `ErrorEvent`, `AbortEvent` or `LoadEvent` have been dispatched.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/loadend)
+pub struct LoadEndEvent( Reference );
+
+impl IEvent for LoadEndEvent {}
+impl IProgressEvent for LoadEndEvent {}
+impl ConcreteEvent for LoadEndEvent {
+    #[inline]
+    fn static_event_type() -> &'static str {
+        "loadend"
+    }
+}
+
+reference_boilerplate! {
+    LoadEndEvent,
+    instanceof ProgressEvent
+    convertible to Event
+    convertible to ProgressRelatedEvent
+}
+
+/// The `AbortEvent` is fired when the loading of a resource has been aborted.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/abort)
+pub struct AbortEvent( Reference );
+
+// TODO: This event is sometimes an UiEvent; what to do here?
+impl IEvent for AbortEvent {}
+impl ConcreteEvent for AbortEvent {
+    #[inline]
+    fn static_event_type() -> &'static str {
+        "abort"
+    }
+}
+
+reference_boilerplate! {
+    AbortEvent,
+    instanceof Event
+    convertible to Event
+}
+
+/// The `ErrorEvent` is fired when an error occurred; the exact circumstances vary,
+/// since this event is used from a variety of APIs.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/error)
+pub struct ErrorEvent( Reference );
+
+// TODO: This event is sometimes an UiEvent; what to do here?
+impl IEvent for ErrorEvent {}
+impl ConcreteEvent for ErrorEvent {
+    #[inline]
+    fn static_event_type() -> &'static str {
+        "error"
+    }
+}
+
+reference_boilerplate! {
+    ErrorEvent,
+    instanceof Event
     convertible to Event
 }
