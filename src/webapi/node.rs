@@ -1,5 +1,6 @@
 use std::fmt;
 use std::error;
+use std::mem;
 
 use webcore::value::{Reference, FromReference};
 use webcore::try_from::TryInto;
@@ -36,6 +37,14 @@ pub enum CloneKind {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node)
 pub trait INode: IEventTarget + FromReference {
+    /// Casts a reference to this object into a reference to a [Node](struct.Node.html).
+    fn as_node( &self ) -> &Node {
+        let reference: &Reference = self.as_ref();
+        unsafe {
+            mem::transmute( reference )
+        }
+    }
+
     /// Adds a node to the end of the list of children of a specified parent node.
     ///
     /// If the given child is a reference to an existing node in the document then
