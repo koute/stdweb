@@ -19,3 +19,5 @@ pub mod blob;
 pub mod file;
 pub mod file_list;
 pub mod file_reader;
+pub mod array_buffer;
+pub mod typed_array;

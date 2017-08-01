@@ -134,6 +134,8 @@ pub mod web {
     pub use webapi::string_map::StringMap;
     pub use webapi::storage::Storage;
     pub use webapi::location::Location;
+    pub use webapi::array_buffer::ArrayBuffer;
+    pub use webapi::typed_array::TypedArray;
 
     /// A module containing error types.
     pub mod error {
