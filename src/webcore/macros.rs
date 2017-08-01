@@ -22,6 +22,20 @@ macro_rules! loop_through_identifiers {
     };
 }
 
+macro_rules! call_with_repeated_tail {
+    (($($cb:tt)*), ($($output:tt)*), foreach ($($rest:tt)*) -> $token:tt) => {
+        call_with_repeated_tail!( @loop ($($cb)*), ($($rest)*), ($($output)*), $token );
+    };
+
+    (@loop ($($cb:tt)*), ($input:tt $($rest:tt)*), ($($output:tt)*), $token:tt) => {
+        call_with_repeated_tail!( @loop ($($cb)*), ($($rest)*), ($($output)* $token), $token );
+    };
+
+    (@loop ($($cb:tt)*), (), ($($output:tt)*), $token:tt) => {
+        $($cb)*( $($output),* )
+    };
+}
+
 macro_rules! em_asm_int {
     ($code:expr, $($arg:expr),*) => {
         {
@@ -382,25 +396,25 @@ macro_rules! __js_serializable_boilerplate {
 }
 
 macro_rules! __reference_boilerplate {
-    ($kind:ident, instanceof $js_name:ident $($rest:tt)*) => {
-        impl $crate::private::FromReference for $kind {
+    (($($impl_arg:tt)*) ($($kind_arg:tt)*) ($($bounds:tt)*), instanceof $js_name:ident $($rest:tt)*) => {
+        impl< $($impl_arg)* > $crate::private::FromReference for $($kind_arg)* where $($bounds)* {
             #[inline]
             fn from_reference( reference: Reference ) -> Option< Self > {
                 if instanceof!( reference, $js_name ) {
-                    Some( $kind( reference ) )
+                    Some( $($kind_arg)*( reference ) )
                 } else {
                     None
                 }
             }
         }
 
-        __reference_boilerplate!( $kind, $($rest)* );
+        __reference_boilerplate!( ($($impl_arg)*) ($($kind_arg)*) ($($bounds)*), $($rest)* );
     };
 
-    ($kind:ident, convertible to $base_kind:ident $($rest:tt)*) => {
-        impl From< $kind > for $base_kind {
+    (($($impl_arg:tt)*) ($($kind_arg:tt)*) ($($bounds:tt)*), convertible to $base_kind:ident $($rest:tt)*) => {
+        impl< $($impl_arg)* > From< $($kind_arg)* > for $base_kind where $($bounds)* {
             #[inline]
-            fn from( value: $kind ) -> Self {
+            fn from( value: $($kind_arg)* ) -> Self {
                 use $crate::private::FromReferenceUnchecked;
                 let reference: $crate::Reference = value.into();
                 unsafe {
@@ -409,67 +423,67 @@ macro_rules! __reference_boilerplate {
             }
         }
 
-        __reference_boilerplate!( $kind, $($rest)* );
+        __reference_boilerplate!( ($($impl_arg)*) ($($kind_arg)*) ($($bounds)*), $($rest)* );
     };
 
-    ($kind:ident,) => {
-        impl ::std::fmt::Debug for $kind {
+    (($($impl_arg:tt)*) ($($kind_arg:tt)*) ($($bounds:tt)*),) => {
+        impl< $($impl_arg)* > ::std::fmt::Debug for $($kind_arg)* where $($bounds)* {
             fn fmt( &self, formatter: &mut ::std::fmt::Formatter ) -> ::std::fmt::Result {
-                write!( formatter, concat!( "<", stringify!( $kind ), ":{}>" ), self.0.as_raw() )
+                write!( formatter, concat!( "<", stringify!( $($kind_arg)* ), ":{}>" ), self.0.as_raw() )
             }
         }
 
-        impl Clone for $kind {
+        impl< $($impl_arg)* > Clone for $($kind_arg)* where $($bounds)* {
             #[inline]
             fn clone( &self ) -> Self {
-                $kind( self.0.clone() )
+                call_with_repeated_tail!( ($($kind_arg)*), ((self.0.clone())), foreach ($($impl_arg)*) -> (::std::default::Default::default()) )
             }
         }
 
-        impl AsRef< $crate::Reference > for $kind {
+        impl< $($impl_arg)* > AsRef< $crate::Reference > for $($kind_arg)* where $($bounds)* {
             #[inline]
             fn as_ref( &self ) -> &$crate::Reference {
                 &self.0
             }
         }
 
-        impl $crate::private::FromReferenceUnchecked for $kind {
+        impl< $($impl_arg)* > $crate::private::FromReferenceUnchecked for $($kind_arg)* where $($bounds)* {
             #[inline]
             unsafe fn from_reference_unchecked( reference: $crate::Reference ) -> Self {
-                $kind( reference )
+                call_with_repeated_tail!( ($($kind_arg)*), (reference), foreach ($($impl_arg)*) -> (::std::default::Default::default()) )
             }
         }
 
-        impl From< $kind > for $crate::Reference {
+        impl< $($impl_arg)* > From< $($kind_arg)* > for $crate::Reference where $($bounds)* {
             #[inline]
-            fn from( value: $kind ) -> Self {
+            fn from( value: $($kind_arg)* ) -> Self {
                 value.0
             }
         }
 
-        impl $crate::unstable::TryFrom< $kind > for $crate::Reference {
+        impl< $($impl_arg)* > $crate::unstable::TryFrom< $($kind_arg)* > for $crate::Reference where $($bounds)* {
             type Error = $crate::unstable::Void;
 
             #[inline]
-            fn try_from( value: $kind ) -> Result< Self, Self::Error > {
+            fn try_from( value: $($kind_arg)* ) -> Result< Self, Self::Error > {
                 Ok( value.0 )
             }
         }
 
-        impl< T: $crate::unstable::TryInto< $crate::Reference > > $crate::unstable::TryFrom< T > for $kind
-            where <T as $crate::unstable::TryInto< $crate::Reference >>::Error: Into< Box< ::std::error::Error > >
+        impl< R: $crate::unstable::TryInto< $crate::Reference >, $($impl_arg)* > $crate::unstable::TryFrom< R > for $($kind_arg)*
+            where <R as $crate::unstable::TryInto< $crate::Reference >>::Error: Into< Box< ::std::error::Error > >, $($bounds)*
         {
             type Error = Box< ::std::error::Error >; // TODO
 
             #[inline]
-            fn try_from( value: T ) -> Result< Self, Self::Error > {
+            fn try_from( value: R ) -> Result< Self, Self::Error > {
                 value.try_into()
                     .map_err( |error| error.into() )
                     .and_then( |reference: Reference| reference.downcast().ok_or_else( || "reference is of a different type".into() ) )
             }
         }
 
-        impl $crate::private::JsSerializable for $kind {
+        impl< $($impl_arg)* > $crate::private::JsSerializable for $($kind_arg)* where $($bounds)* {
             #[inline]
             fn into_js< 'a >( &'a self, arena: &'a $crate::private::PreallocatedArena ) -> $crate::private::SerializedValue< 'a > {
                 self.0.into_js( arena )
@@ -481,14 +495,18 @@ macro_rules! __reference_boilerplate {
             }
         }
 
-        __js_serializable_boilerplate!( $kind );
+        __js_serializable_boilerplate!( ($($impl_arg)*) ($($kind_arg)*) ($($bounds)*) );
     };
 }
 
 macro_rules! reference_boilerplate {
     ($kind:ident, $($rest:tt)*) => {
-        __reference_boilerplate!( $kind, $($rest)* );
-    }
+        __reference_boilerplate!( () ($kind) (), $($rest)* );
+    };
+
+    (impl< $($impl_arg:tt),* > for $kind:path where ($($bounds:tt)*) $($rest:tt)*) => {
+        __reference_boilerplate!( ($($impl_arg),*) ($kind) ($($bounds)*), $($rest)* );
+    };
 }
 
 macro_rules! instanceof {
