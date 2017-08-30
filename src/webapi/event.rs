@@ -58,7 +58,7 @@ pub trait IEvent: AsRef< Reference > + TryFrom< Value > {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Event/currentTarget)
     #[inline]
-    fn current_target( &self ) -> Option< Reference > {
+    fn current_target( &self ) -> Option< EventTarget > {
         js!(
             return @{self.as_ref()}.currentTarget;
         ).try_into().ok()
@@ -114,7 +114,7 @@ pub trait IEvent: AsRef< Reference > + TryFrom< Value > {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Event/target)
     #[inline]
-    fn target( &self ) -> Option< Reference > {
+    fn target( &self ) -> Option< EventTarget > {
         js!(
             return @{self.as_ref()}.target;
         ).try_into().ok()
@@ -233,44 +233,14 @@ pub trait IUiEvent: IEvent {
         ).try_into().unwrap()
     }
 
-    /// Returns the X coordinate of the event relative to the current layer.
-    ///
-    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/layerX)
-    #[inline]
-    fn layer_x( &self ) -> f64 {
-        js!(
-            return @{self.as_ref()}.layerX;
-        ).try_into().unwrap()
-    }
-
-    /// Returns the Y coordinate of the event relative to the current layer.
-    ///
-    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/layerY)
-    #[inline]
-    fn layer_y( &self ) -> f64 {
-        js!(
-            return @{self.as_ref()}.layerY;
-        ).try_into().unwrap()
-    }
-
-    /// Returns the X coordinate of the event relative to the whole document.
-    ///
-    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/pageX)
-    #[inline]
-    fn page_y( &self ) -> f64 {
-        js!(
-            return @{self.as_ref()}.pageX;
-        ).try_into().unwrap()
-    }
-
     /// Returns the `WindowProxy` that generated the event.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/view)
     #[inline]
-    fn view( &self ) -> Window {
+    fn view( &self ) -> Option< Window > {
         js!(
             return @{self.as_ref()}.view;
-        ).try_into().unwrap()
+        ).try_into().ok()
     }
 }
 
@@ -285,7 +255,7 @@ impl IUiEvent for UiEvent {}
 
 reference_boilerplate! {
     UiEvent,
-    instanceof UiEvent
+    instanceof UIEvent
     convertible to Event
 }
 
@@ -330,7 +300,7 @@ pub trait IMouseEvent: IUiEvent {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button)
     fn button( &self ) -> MouseButton {
         match js!(
-            return @{self.as_ref()},.button;
+            return @{self.as_ref()}.button;
         ).try_into().unwrap() {
             0 => MouseButton::Left,
             1 => MouseButton::Wheel,
@@ -377,9 +347,9 @@ pub trait IMouseEvent: IUiEvent {
         ).try_into().unwrap()
     }
 
-    /// Returns the X position in the application's client area where this event occured.
+    /// Returns the Y position in the application's client area where this event occured.
     ///
-    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/clientX)
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/clientY)
     #[inline]
     fn client_y( &self ) -> f64 {
         js!(
@@ -434,26 +404,6 @@ pub trait IMouseEvent: IUiEvent {
     fn movement_y( &self ) -> f64 {
         js!(
             return @{self.as_ref()}.movementY;
-        ).try_into().unwrap()
-    }
-
-    /// Returns the X offset of the pointer from the padding edge of the event target.
-    ///
-    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/offsetX)
-    #[inline]
-    fn offset_x( &self ) -> f64 {
-        js!(
-            return @{self.as_ref()}.offsetX;
-        ).try_into().unwrap()
-    }
-
-    /// Returns the Y offset of the pointer from the padding edge of the event target.
-    ///
-    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/offsetY)
-    #[inline]
-    fn offset_y( &self ) -> f64 {
-        js!(
-            return @{self.as_ref()}.offsetY;
         ).try_into().unwrap()
     }
 
@@ -641,16 +591,6 @@ pub trait IKeyboardEvent: IEvent {
     fn is_composing( &self ) -> bool {
         js!(
             return @{self.as_ref()}.isComposing;
-        ).try_into().unwrap()
-    }
-
-    /// Returns the locale of the keyboard.
-    ///
-    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/locale)
-    #[inline]
-    fn locale( &self ) -> String {
-        js!(
-            return @{self.as_ref()}.locale;
         ).try_into().unwrap()
     }
 
@@ -1093,7 +1033,7 @@ impl ErrorEvent {
     #[inline]
     pub fn message( &self ) -> String {
         return js!(
-            @{self.as_ref()}.message;
+            return @{self.as_ref()}.message;
         ).try_into().unwrap()
     }
 
@@ -1103,7 +1043,7 @@ impl ErrorEvent {
     #[inline]
     pub fn filename( &self ) -> String {
         return js!(
-            @{self.as_ref()}.filename;
+            return @{self.as_ref()}.filename;
         ).try_into().unwrap()
     }
 
@@ -1111,9 +1051,9 @@ impl ErrorEvent {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ErrorEvent/lineNo)
     #[inline]
-    pub fn line_no( &self ) -> i32 {
+    pub fn lineno( &self ) -> u32 {
         return js!(
-            @{self.as_ref()}.lineno;
+            return @{self.as_ref()}.lineno;
         ).try_into().unwrap()
     }
 
@@ -1121,19 +1061,9 @@ impl ErrorEvent {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ErrorEvent/colNo)
     #[inline]
-    pub fn col_no( &self ) -> i32 {
+    pub fn colno( &self ) -> u32 {
         return js!(
-            @{self.as_ref()}.colno;
-        ).try_into().unwrap()
-    }
-
-    /// Returns the object that is concerned with the event.
-    ///
-    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ErrorEvent/error)
-    #[inline]
-    pub fn error( &self ) -> Reference {
-        return js!(
-            @{self.as_ref()}.error;
+            return @{self.as_ref()}.colno;
         ).try_into().unwrap()
     }
 }
