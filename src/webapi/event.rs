@@ -314,27 +314,12 @@ pub trait IMouseEvent: IUiEvent {
     /// Indicates which mouse buttons were down when this event was fired.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons)
-    fn buttons( &self ) -> Vec<MouseButton> {
-        let button_flags: u8 = js!(
-            return @{self.as_ref()}.buttons;
-        ).try_into().unwrap();
-        let mut buttons = Vec::with_capacity(5);
-        if button_flags & 0b1 != 0 {
-            buttons.push(MouseButton::Left);
-        }
-        if button_flags & 0b10 != 0 {
-            buttons.push(MouseButton::Right);
-        }
-        if button_flags & 0b100 != 0 {
-            buttons.push(MouseButton::Wheel);
-        }
-        if button_flags & 0b1000 != 0 {
-            buttons.push(MouseButton::Button4);
-        }
-        if button_flags & 0b1_0000 != 0 {
-            buttons.push(MouseButton::Button5);
-        }
-        buttons
+    fn buttons( &self ) -> MouseButtonsState {
+        MouseButtonsState(
+            js!(
+                return @{self.as_ref()}.buttons;
+            ).try_into().unwrap()
+        )
     }
 
     /// Returns the X position in the application's client area where this event occured.
@@ -471,6 +456,22 @@ pub enum MouseButton {
     Button4,
     /// The fifth mouse button (browser forward).
     Button5,
+}
+
+/// Represents the state of mouse buttons in a `MouseEvent`.
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub struct MouseButtonsState(u8);
+
+impl MouseButtonsState {
+    pub fn is_down(&self, button: MouseButton) -> bool {
+        match button {
+            MouseButton::Left => self.0 & 0b1 != 0,
+            MouseButton::Right => self.0 & 0b10 != 0,
+            MouseButton::Wheel => self.0 & 0b100 != 0,
+            MouseButton::Button4 => self.0 & 0b1000 != 0,
+            MouseButton::Button5 => self.0 & 0b1_0000 != 0,
+        }
+    }
 }
 
 /// A reference to a JavaScript object which implements the [IMouseEvent](trait.IMouseEvent.html)
