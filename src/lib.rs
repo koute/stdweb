@@ -157,6 +157,11 @@ pub mod web {
             IFocusEvent,
             IProgressEvent,
 
+            EventPhase,
+            KeyboardLocation,
+            ModifierKey,
+            MouseButton,
+            
             ChangeEvent,
             KeypressEvent,
             ClickEvent,

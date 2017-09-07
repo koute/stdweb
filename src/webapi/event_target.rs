@@ -2,7 +2,7 @@ use std::fmt;
 
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
-use webapi::event::ConcreteEvent;
+use webapi::event::{ConcreteEvent, IEvent};
 
 pub struct EventListenerHandle {
     event_type: &'static str,
@@ -56,6 +56,15 @@ pub trait IEventTarget: AsRef< Reference > {
             reference: reference.clone(),
             listener_reference: listener_reference
         }
+    }
+
+    /// Dispatches an `Event` at this `EventTarget`, invoking the affected event listeners in the
+    /// appropriate order.
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/dispatchEvent)
+    fn dispatch_event< T: IEvent >( &self, event: &T ) -> bool {
+        js! (
+            return @{self.as_ref()}.dispatchEvent( @{event.as_ref()} );
+        ).try_into().unwrap()
     }
 }
 
