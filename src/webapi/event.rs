@@ -1068,3 +1068,252 @@ impl ErrorEvent {
         ).try_into().unwrap()
     }
 }
+
+#[cfg(web_api_tests)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_event() {
+        let event: Event = js!(
+            return new Event("dummy")
+        ).try_into().unwrap();
+
+        assert_eq!( event.event_type(), "dummy" );
+        assert_eq!( event.bubbles(), false );
+        assert!( !event.cancel_bubble() );
+        assert!( !event.cancelable(), false );
+        assert!( event.current_target().is_none() );
+        assert!( !event.default_prevented() );
+        assert_eq!( event.event_phase(), EventPhase::None );
+        assert!( event.target().is_none() );
+        assert!( event.time_stamp().is_some() );
+        assert!( !event.is_trusted() );
+
+        event.stop_immediate_propagation();
+        event.stop_propagation();
+    }
+
+    #[test]
+    fn test_change_event() {
+        let event: ChangeEvent = js!(
+            return new Event( @{ChangeEvent::static_event_type()} );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), ChangeEvent::static_event_type() );
+    }
+
+    #[test]
+    fn test_ui_event() {
+        let event: UiEvent = js!(
+            return new UIEvent(
+                @{ClickEvent::static_event_type()},
+                {
+                    detail: 1,
+                }
+            )
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), ClickEvent::static_event_type() );
+        assert_eq!( event.detail(), 1 );
+        assert!( event.view().is_none() );
+    }
+
+    #[test]
+    fn test_load_event() {
+        let event: UiEvent = js!(
+            return new UIEvent( @{LoadEvent::static_event_type()} );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), LoadEvent::static_event_type() );
+    }
+
+    #[test]
+    fn test_mouse_event() {
+        let event: MouseEvent = js!(
+            return new MouseEvent(
+                @{ClickEvent::static_event_type()},
+                {
+                    altKey: false,
+                    button: 2,
+                    buttons: 6,
+                    clientX: 3.0,
+                    clientY: 4.0,
+                    ctrlKey: true,
+                    metaKey: false,
+                    screenX: 1.0,
+                    screenY: 2.0,
+                    shiftKey: true
+                }
+            );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), ClickEvent::static_event_type() );
+        assert_eq!( event.alt_key(), false );
+        assert_eq!( event.button(), MouseButton::Right );
+        assert!( !event.buttons().is_down( MouseButton::Left ) );
+        assert!( event.buttons().is_down( MouseButton::Right ) );
+        assert!( event.buttons().is_down( MouseButton::Wheel ) );        
+        assert_eq!( event.client_x(), 3.0 );
+        assert_eq!( event.client_y(), 4.0 );
+        assert!( event.ctrl_key() );
+        assert!( !event.get_modifier_state( ModifierKey::Alt ) );
+        assert!( event.get_modifier_state( ModifierKey::Ctrl ) );
+        assert!( event.get_modifier_state( ModifierKey::Shift ) );        
+        assert!( !event.meta_key() );
+        assert_eq!( event.movement_x(), 0.0 );
+        assert_eq!( event.movement_y(), 0.0 );
+        assert!( event.region().is_none() );
+        assert!( event.related_target().is_none() );
+        assert_eq!( event.screen_x(), 1.0 );
+        assert_eq!( event.screen_y(), 2.0 );
+        assert!( event.shift_key() );
+    }
+
+    #[test]
+    fn test_click_event() {
+        let event: ClickEvent = js!(
+            return new MouseEvent( @{ClickEvent::static_event_type()} );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), ClickEvent::static_event_type() );
+    }
+
+    #[test]
+    fn test_double_click_event() {
+        let event: DoubleClickEvent = js!(
+            return new MouseEvent( @{DoubleClickEvent::static_event_type()} );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), DoubleClickEvent::static_event_type() );
+    }
+
+    #[test]
+    fn test_keyboard_event() {
+        let event: KeyboardEvent = js!(
+            return new KeyboardEvent(
+                @{KeypressEvent::static_event_type()},
+                {
+                    key: "A",
+                    code: "KeyA",
+                    location: 0,
+                    ctrlKey: true,
+                    shiftKey: false,
+                    altKey: true,
+                    metaKey: false,
+                    repeat: true,
+                    isComposing: false
+                }
+            );
+        ).try_into().unwrap();
+        assert!( event.alt_key() );
+        assert_eq!( event.code(), "KeyA" );
+        assert!( event.ctrl_key() );
+        assert!( event.get_modifier_state( ModifierKey::Alt ) );        
+        assert!( event.get_modifier_state( ModifierKey::Ctrl ) );
+        assert!( !event.get_modifier_state( ModifierKey::Shift ) );        
+        assert!( !event.is_composing() );
+        assert_eq!( event.location(), KeyboardLocation::Standard );
+        assert_eq!( event.key(), "A" );
+        assert!( !event.meta_key() );
+        assert!( event.repeat() );
+        assert!( !event.shift_key() );
+    }
+
+    #[test]
+    fn test_keypress_event() {
+        let event: KeypressEvent = js!(
+            return new KeyboardEvent( @{KeypressEvent::static_event_type()} );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), KeypressEvent::static_event_type() );
+    }
+
+    #[test]
+    fn test_focus_event() {
+        let event: FocusEvent = js!(
+            return new FocusEvent( "focus" );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), "focus" );        
+        assert!( event.related_target().is_none() );
+    }
+
+    #[test]
+    fn test_blur_event() {
+        let event: BlurEvent = js!(
+            return new FocusEvent( @{BlurEvent::static_event_type()} );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), BlurEvent::static_event_type() );
+    }
+
+    #[test]
+    fn test_hash_change_event() {
+        let event: HashChangeEvent = js!(
+            return new HashChangeEvent(
+                @{HashChangeEvent::static_event_type()},
+                {
+                    oldURL: "http://test.com#foo",
+                    newURL: "http://test.com#bar"
+                }
+            );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), HashChangeEvent::static_event_type() );
+        assert_eq!( event.old_url(), "http://test.com#foo" );
+        assert_eq!( event.new_url(), "http://test.com#bar" );       
+    }
+
+    #[test]
+    fn test_progress_event() {
+        let event: ProgressEvent = js!(
+            return new ProgressEvent(
+                @{ProgressEvent::static_event_type()},
+                {
+                    lengthComputable: true,
+                    loaded: 10,
+                    total: 100,
+                }
+            );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), ProgressEvent::static_event_type() );
+        assert!( event.length_computable() );
+        assert_eq!( event.loaded(), 10 );
+        assert_eq!( event.total(), 100 );
+    }
+
+    #[test]
+    fn test_load_start_event() {
+        let event: LoadStartEvent = js!(
+            return new ProgressEvent( @{LoadStartEvent::static_event_type()} );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), LoadStartEvent::static_event_type() );
+    }
+
+    #[test]
+    fn test_load_end_event() {
+        let event: LoadEndEvent = js!(
+            return new ProgressEvent( @{LoadEndEvent::static_event_type()} );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), LoadEndEvent::static_event_type() );
+    }
+
+    #[test]
+    fn test_abort_event() {
+        let event: AbortEvent = js!(
+            return new Event( @{AbortEvent::static_event_type()} );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), AbortEvent::static_event_type() );
+    }
+
+    #[test]
+    fn test_error_event() {
+        let event: ErrorEvent = js!(
+            return new ErrorEvent(
+                @{ErrorEvent::static_event_type()},
+                {
+                    message: "Dummy error",
+                    filename: "Dummy.js",
+                    lineno: 5,
+                    colno: 10
+                }
+            );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), ErrorEvent::static_event_type() );
+        assert_eq!( event.message(), "Dummy error".to_string() );
+        assert_eq!( event.filename(), "Dummy.js".to_string() );
+        assert_eq!( event.lineno(), 5 );
+        assert_eq!( event.colno(), 10 );
+    }
+}
