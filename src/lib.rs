@@ -123,6 +123,7 @@ pub mod web {
         set_timeout,
         alert
     };
+    pub use webapi::cross_origin_setting::CrossOriginSetting;
     pub use webapi::date::Date;
     pub use webapi::event_target::{IEventTarget, EventTarget};
     pub use webapi::node::{INode, Node, CloneKind};
@@ -144,6 +145,7 @@ pub mod web {
 
     /// A module containing HTML DOM elements.
     pub mod html_element {
+        pub use webapi::html_elements::ImageElement;        
         pub use webapi::html_elements::InputElement;
     }
 

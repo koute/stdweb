@@ -1,4 +1,5 @@
 pub mod global;
+pub mod cross_origin_setting;
 pub mod date;
 pub mod document;
 pub mod window;
