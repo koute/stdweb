@@ -71,7 +71,7 @@ impl PreallocatedArena {
     pub fn reserve< T >( &self, count: usize ) -> &mut [T] {
         let bytes = mem::size_of::< T >() * count;
         let slice = unsafe {
-            let mut buffer = &mut *self.buffer.get();
+            let buffer = &mut *self.buffer.get();
             debug_assert!( self.index.get() + bytes <= buffer.len() );
 
             slice::from_raw_parts_mut(
@@ -88,7 +88,7 @@ impl PreallocatedArena {
     #[inline]
     pub fn save( &self, value: Value ) -> &Value {
         unsafe {
-            let mut saved = &mut *self.saved.get();
+            let saved = &mut *self.saved.get();
             saved.push( value );
             &*(saved.last().unwrap() as *const Value)
         }
