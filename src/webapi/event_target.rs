@@ -47,12 +47,12 @@ pub trait IEventTarget: AsRef< Reference > {
         let reference = self.as_ref();
         let listener_reference = js! {
             var listener = @{listener};
-            @{reference}.addEventListener( @{T::static_event_type()}, listener );
+            @{reference}.addEventListener( @{T::EVENT_TYPE}, listener );
             return listener;
         }.try_into().unwrap();
 
         EventListenerHandle {
-            event_type: T::static_event_type(),
+            event_type: T::EVENT_TYPE,
             reference: reference.clone(),
             listener_reference: listener_reference
         }
