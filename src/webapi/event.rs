@@ -137,7 +137,7 @@ pub trait IEvent: AsRef< Reference > + TryFrom< Value > {
             return @{self.as_ref()}.isTrusted;
         ).try_into().unwrap()
     }
-    
+
     /// Returns a string containing the type of event. It is set when
     /// the event is constructed and is the name commonly used to refer
     /// to the specific event.
@@ -176,12 +176,10 @@ pub enum EventPhase {
 }
 
 pub trait ConcreteEvent: IEvent {
-    // TODO: Switch to an associated constant for `event_type` once they stabilize.
-
-    /// Returns a string representing the event type.
+    /// A string representing the event type.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Event/type)
-    fn static_event_type() -> &'static str;
+    const EVENT_TYPE: &'static str;
 }
 
 /// A reference to a JavaScript object which implements the [IEvent](trait.IEvent.html)
@@ -207,10 +205,7 @@ pub struct ChangeEvent( Reference );
 
 impl IEvent for ChangeEvent {}
 impl ConcreteEvent for ChangeEvent {
-    #[inline]
-    fn static_event_type() -> &'static str {
-        "change"
-    }
+    const EVENT_TYPE: &'static str = "change";
 }
 
 reference_boilerplate! {
@@ -267,10 +262,7 @@ pub struct LoadEvent( Reference );
 impl IEvent for LoadEvent {}
 impl IUiEvent for LoadEvent {}
 impl ConcreteEvent for LoadEvent {
-    #[inline]
-    fn static_event_type() -> &'static str {
-        "load"
-    }
+    const EVENT_TYPE: &'static str = "load";
 }
 
 reference_boilerplate! {
@@ -501,10 +493,7 @@ impl IEvent for ClickEvent {}
 impl IUiEvent for ClickEvent {}
 impl IMouseEvent for ClickEvent {}
 impl ConcreteEvent for ClickEvent {
-    #[inline]
-    fn static_event_type() -> &'static str {
-        "click"
-    }
+    const EVENT_TYPE: &'static str = "click";
 }
 
 reference_boilerplate! {
@@ -526,10 +515,7 @@ impl IEvent for DoubleClickEvent {}
 impl IUiEvent for DoubleClickEvent {}
 impl IMouseEvent for DoubleClickEvent {}
 impl ConcreteEvent for DoubleClickEvent {
-    #[inline]
-    fn static_event_type() -> &'static str {
-        "dblclick"
-    }
+    const EVENT_TYPE: &'static str = "dblclick";
 }
 
 reference_boilerplate! {
@@ -669,7 +655,7 @@ pub enum ModifierKey {
     OS,
     ScrollLock,
     Shift,
-    Super,    
+    Super,
     Symbol,
     SymbolLock,
 }
@@ -740,10 +726,7 @@ pub struct KeypressEvent( Reference );
 impl IEvent for KeypressEvent {}
 impl IKeyboardEvent for KeypressEvent {}
 impl ConcreteEvent for KeypressEvent {
-    #[inline]
-    fn static_event_type() -> &'static str {
-        "keypress"
-    }
+    const EVENT_TYPE: &'static str = "keypress";
 }
 
 reference_boilerplate! {
@@ -793,10 +776,7 @@ pub struct FocusEvent( Reference );
 impl IEvent for FocusEvent {}
 impl IFocusEvent for FocusEvent {}
 impl ConcreteEvent for FocusEvent {
-    #[inline]
-    fn static_event_type() -> &'static str {
-        "focus"
-    }
+    const EVENT_TYPE: &'static str = "focus";
 }
 
 reference_boilerplate! {
@@ -815,10 +795,7 @@ pub struct BlurEvent( Reference );
 impl IEvent for BlurEvent {}
 impl IFocusEvent for BlurEvent {}
 impl ConcreteEvent for BlurEvent {
-    #[inline]
-    fn static_event_type() -> &'static str {
-        "blur"
-    }
+    const EVENT_TYPE: &'static str = "blur";
 }
 
 reference_boilerplate! {
@@ -837,10 +814,7 @@ pub struct HashChangeEvent( Reference );
 
 impl IEvent for HashChangeEvent {}
 impl ConcreteEvent for HashChangeEvent {
-    #[inline]
-    fn static_event_type() -> &'static str {
-        "hashchange"
-    }
+    const EVENT_TYPE: &'static str = "hashchange";
 }
 
 reference_boilerplate! {
@@ -930,10 +904,7 @@ pub struct ProgressEvent( Reference );
 impl IEvent for ProgressEvent {}
 impl IProgressEvent for ProgressEvent {}
 impl ConcreteEvent for ProgressEvent {
-    #[inline]
-    fn static_event_type() -> &'static str {
-        "progress"
-    }
+    const EVENT_TYPE: &'static str = "progress";
 }
 
 reference_boilerplate! {
@@ -951,10 +922,7 @@ pub struct LoadStartEvent( Reference );
 impl IEvent for LoadStartEvent {}
 impl IProgressEvent for LoadStartEvent {}
 impl ConcreteEvent for LoadStartEvent {
-    #[inline]
-    fn static_event_type() -> &'static str {
-        "loadstart"
-    }
+    const EVENT_TYPE: &'static str = "loadstart";
 }
 
 reference_boilerplate! {
@@ -973,10 +941,7 @@ pub struct LoadEndEvent( Reference );
 impl IEvent for LoadEndEvent {}
 impl IProgressEvent for LoadEndEvent {}
 impl ConcreteEvent for LoadEndEvent {
-    #[inline]
-    fn static_event_type() -> &'static str {
-        "loadend"
-    }
+    const EVENT_TYPE: &'static str = "loadend";
 }
 
 reference_boilerplate! {
@@ -994,10 +959,7 @@ pub struct AbortEvent( Reference );
 // TODO: This event is sometimes an UiEvent; what to do here?
 impl IEvent for AbortEvent {}
 impl ConcreteEvent for AbortEvent {
-    #[inline]
-    fn static_event_type() -> &'static str {
-        "abort"
-    }
+    const EVENT_TYPE: &'static str = "abort";
 }
 
 reference_boilerplate! {
@@ -1015,10 +977,7 @@ pub struct ErrorEvent( Reference );
 // TODO: This event is sometimes an UiEvent; what to do here?
 impl IEvent for ErrorEvent {}
 impl ConcreteEvent for ErrorEvent {
-    #[inline]
-    fn static_event_type() -> &'static str {
-        "error"
-    }
+    const EVENT_TYPE: &'static str = "error";
 }
 
 reference_boilerplate! {
@@ -1097,22 +1056,22 @@ mod tests {
     #[test]
     fn test_change_event() {
         let event: ChangeEvent = js!(
-            return new Event( @{ChangeEvent::static_event_type()} );
+            return new Event( @{ChangeEvent::EVENT_TYPE} );
         ).try_into().unwrap();
-        assert_eq!( event.event_type(), ChangeEvent::static_event_type() );
+        assert_eq!( event.event_type(), ChangeEvent::EVENT_TYPE );
     }
 
     #[test]
     fn test_ui_event() {
         let event: UiEvent = js!(
             return new UIEvent(
-                @{ClickEvent::static_event_type()},
+                @{ClickEvent::EVENT_TYPE},
                 {
                     detail: 1,
                 }
             )
         ).try_into().unwrap();
-        assert_eq!( event.event_type(), ClickEvent::static_event_type() );
+        assert_eq!( event.event_type(), ClickEvent::EVENT_TYPE );
         assert_eq!( event.detail(), 1 );
         assert!( event.view().is_none() );
     }
@@ -1120,16 +1079,16 @@ mod tests {
     #[test]
     fn test_load_event() {
         let event: UiEvent = js!(
-            return new UIEvent( @{LoadEvent::static_event_type()} );
+            return new UIEvent( @{LoadEvent::EVENT_TYPE} );
         ).try_into().unwrap();
-        assert_eq!( event.event_type(), LoadEvent::static_event_type() );
+        assert_eq!( event.event_type(), LoadEvent::EVENT_TYPE );
     }
 
     #[test]
     fn test_mouse_event() {
         let event: MouseEvent = js!(
             return new MouseEvent(
-                @{ClickEvent::static_event_type()},
+                @{ClickEvent::EVENT_TYPE},
                 {
                     altKey: false,
                     button: 2,
@@ -1144,18 +1103,18 @@ mod tests {
                 }
             );
         ).try_into().unwrap();
-        assert_eq!( event.event_type(), ClickEvent::static_event_type() );
+        assert_eq!( event.event_type(), ClickEvent::EVENT_TYPE );
         assert_eq!( event.alt_key(), false );
         assert_eq!( event.button(), MouseButton::Right );
         assert!( !event.buttons().is_down( MouseButton::Left ) );
         assert!( event.buttons().is_down( MouseButton::Right ) );
-        assert!( event.buttons().is_down( MouseButton::Wheel ) );        
+        assert!( event.buttons().is_down( MouseButton::Wheel ) );
         assert_eq!( event.client_x(), 3.0 );
         assert_eq!( event.client_y(), 4.0 );
         assert!( event.ctrl_key() );
         assert!( !event.get_modifier_state( ModifierKey::Alt ) );
         assert!( event.get_modifier_state( ModifierKey::Ctrl ) );
-        assert!( event.get_modifier_state( ModifierKey::Shift ) );        
+        assert!( event.get_modifier_state( ModifierKey::Shift ) );
         assert!( !event.meta_key() );
         assert_eq!( event.movement_x(), 0.0 );
         assert_eq!( event.movement_y(), 0.0 );
@@ -1169,24 +1128,24 @@ mod tests {
     #[test]
     fn test_click_event() {
         let event: ClickEvent = js!(
-            return new MouseEvent( @{ClickEvent::static_event_type()} );
+            return new MouseEvent( @{ClickEvent::EVENT_TYPE} );
         ).try_into().unwrap();
-        assert_eq!( event.event_type(), ClickEvent::static_event_type() );
+        assert_eq!( event.event_type(), ClickEvent::EVENT_TYPE );
     }
 
     #[test]
     fn test_double_click_event() {
         let event: DoubleClickEvent = js!(
-            return new MouseEvent( @{DoubleClickEvent::static_event_type()} );
+            return new MouseEvent( @{DoubleClickEvent::EVENT_TYPE} );
         ).try_into().unwrap();
-        assert_eq!( event.event_type(), DoubleClickEvent::static_event_type() );
+        assert_eq!( event.event_type(), DoubleClickEvent::EVENT_TYPE );
     }
 
     #[test]
     fn test_keyboard_event() {
         let event: KeyboardEvent = js!(
             return new KeyboardEvent(
-                @{KeypressEvent::static_event_type()},
+                @{KeypressEvent::EVENT_TYPE},
                 {
                     key: "A",
                     code: "KeyA",
@@ -1203,9 +1162,9 @@ mod tests {
         assert!( event.alt_key() );
         assert_eq!( event.code(), "KeyA" );
         assert!( event.ctrl_key() );
-        assert!( event.get_modifier_state( ModifierKey::Alt ) );        
+        assert!( event.get_modifier_state( ModifierKey::Alt ) );
         assert!( event.get_modifier_state( ModifierKey::Ctrl ) );
-        assert!( !event.get_modifier_state( ModifierKey::Shift ) );        
+        assert!( !event.get_modifier_state( ModifierKey::Shift ) );
         assert!( !event.is_composing() );
         assert_eq!( event.location(), KeyboardLocation::Standard );
         assert_eq!( event.key(), "A" );
@@ -1217,9 +1176,9 @@ mod tests {
     #[test]
     fn test_keypress_event() {
         let event: KeypressEvent = js!(
-            return new KeyboardEvent( @{KeypressEvent::static_event_type()} );
+            return new KeyboardEvent( @{KeypressEvent::EVENT_TYPE} );
         ).try_into().unwrap();
-        assert_eq!( event.event_type(), KeypressEvent::static_event_type() );
+        assert_eq!( event.event_type(), KeypressEvent::EVENT_TYPE );
     }
 
     #[test]
@@ -1227,39 +1186,39 @@ mod tests {
         let event: FocusEvent = js!(
             return new FocusEvent( "focus" );
         ).try_into().unwrap();
-        assert_eq!( event.event_type(), "focus" );        
+        assert_eq!( event.event_type(), "focus" );
         assert!( event.related_target().is_none() );
     }
 
     #[test]
     fn test_blur_event() {
         let event: BlurEvent = js!(
-            return new FocusEvent( @{BlurEvent::static_event_type()} );
+            return new FocusEvent( @{BlurEvent::EVENT_TYPE} );
         ).try_into().unwrap();
-        assert_eq!( event.event_type(), BlurEvent::static_event_type() );
+        assert_eq!( event.event_type(), BlurEvent::EVENT_TYPE );
     }
 
     #[test]
     fn test_hash_change_event() {
         let event: HashChangeEvent = js!(
             return new HashChangeEvent(
-                @{HashChangeEvent::static_event_type()},
+                @{HashChangeEvent::EVENT_TYPE},
                 {
                     oldURL: "http://test.com#foo",
                     newURL: "http://test.com#bar"
                 }
             );
         ).try_into().unwrap();
-        assert_eq!( event.event_type(), HashChangeEvent::static_event_type() );
+        assert_eq!( event.event_type(), HashChangeEvent::EVENT_TYPE );
         assert_eq!( event.old_url(), "http://test.com#foo" );
-        assert_eq!( event.new_url(), "http://test.com#bar" );       
+        assert_eq!( event.new_url(), "http://test.com#bar" );
     }
 
     #[test]
     fn test_progress_event() {
         let event: ProgressEvent = js!(
             return new ProgressEvent(
-                @{ProgressEvent::static_event_type()},
+                @{ProgressEvent::EVENT_TYPE},
                 {
                     lengthComputable: true,
                     loaded: 10,
@@ -1267,7 +1226,7 @@ mod tests {
                 }
             );
         ).try_into().unwrap();
-        assert_eq!( event.event_type(), ProgressEvent::static_event_type() );
+        assert_eq!( event.event_type(), ProgressEvent::EVENT_TYPE );
         assert!( event.length_computable() );
         assert_eq!( event.loaded(), 10 );
         assert_eq!( event.total(), 100 );
@@ -1276,32 +1235,32 @@ mod tests {
     #[test]
     fn test_load_start_event() {
         let event: LoadStartEvent = js!(
-            return new ProgressEvent( @{LoadStartEvent::static_event_type()} );
+            return new ProgressEvent( @{LoadStartEvent::EVENT_TYPE} );
         ).try_into().unwrap();
-        assert_eq!( event.event_type(), LoadStartEvent::static_event_type() );
+        assert_eq!( event.event_type(), LoadStartEvent::EVENT_TYPE );
     }
 
     #[test]
     fn test_load_end_event() {
         let event: LoadEndEvent = js!(
-            return new ProgressEvent( @{LoadEndEvent::static_event_type()} );
+            return new ProgressEvent( @{LoadEndEvent::EVENT_TYPE} );
         ).try_into().unwrap();
-        assert_eq!( event.event_type(), LoadEndEvent::static_event_type() );
+        assert_eq!( event.event_type(), LoadEndEvent::EVENT_TYPE );
     }
 
     #[test]
     fn test_abort_event() {
         let event: AbortEvent = js!(
-            return new Event( @{AbortEvent::static_event_type()} );
+            return new Event( @{AbortEvent::EVENT_TYPE} );
         ).try_into().unwrap();
-        assert_eq!( event.event_type(), AbortEvent::static_event_type() );
+        assert_eq!( event.event_type(), AbortEvent::EVENT_TYPE );
     }
 
     #[test]
     fn test_error_event() {
         let event: ErrorEvent = js!(
             return new ErrorEvent(
-                @{ErrorEvent::static_event_type()},
+                @{ErrorEvent::EVENT_TYPE},
                 {
                     message: "Dummy error",
                     filename: "Dummy.js",
@@ -1310,7 +1269,7 @@ mod tests {
                 }
             );
         ).try_into().unwrap();
-        assert_eq!( event.event_type(), ErrorEvent::static_event_type() );
+        assert_eq!( event.event_type(), ErrorEvent::EVENT_TYPE );
         assert_eq!( event.message(), "Dummy error".to_string() );
         assert_eq!( event.filename(), "Dummy.js".to_string() );
         assert_eq!( event.lineno(), 5 );
