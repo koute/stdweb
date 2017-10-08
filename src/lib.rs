@@ -208,6 +208,7 @@ pub mod private {
     };
 
     pub use webcore::value::{
+        Value,
         FromReference,
         FromReferenceUnchecked
     };
