@@ -191,6 +191,7 @@ pub fn initialize() {
         var id_to_ref_map = {};
         var id_to_refcount_map = {};
         var ref_to_id_map = new WeakMap();
+        var ref_to_id_symbol_map = {};
         var last_refid = 1;
 
         Module.STDWEB.acquire_rust_reference = function( reference ) {
@@ -200,8 +201,16 @@ pub fn initialize() {
 
             var refid = ref_to_id_map.get( reference );
             if( refid === undefined ) {
+                refid = ref_to_id_symbol_map[ reference ];
+            }
+
+            if( refid === undefined ) {
                 refid = last_refid++;
-                ref_to_id_map.set( reference, refid );
+                if( typeof reference === "symbol" ) {
+                    ref_to_id_symbol_map[ reference ] = refid;
+                } else {
+                    ref_to_id_map.set( reference, refid );
+                }
                 id_to_ref_map[ refid ] = reference;
                 id_to_refcount_map[ refid ] = 1;
             } else {
@@ -225,7 +234,11 @@ pub fn initialize() {
                 var reference = id_to_ref_map[ refid ];
                 delete id_to_ref_map[ refid ];
                 delete id_to_refcount_map[ refid ];
-                ref_to_id_map.delete( reference );
+                if( typeof reference === "symbol" ) {
+                    delete ref_to_id_symbol_map[ reference ];
+                } else {
+                    ref_to_id_map.delete( reference );
+                }
             }
         };
     }
