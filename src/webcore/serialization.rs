@@ -682,10 +682,28 @@ impl JsSerializable for Value {
 
 __js_serializable_boilerplate!( Value );
 
+#[derive(Debug)]
+pub struct FunctionTag;
+
+#[derive(Debug)]
+pub struct NonFunctionTag;
+
+impl< T: JsSerializable > JsSerializableOwned for Newtype< (NonFunctionTag, ()), T > {
+    #[inline]
+    fn into_js_owned< 'x >( value: &'x mut Option< Self >, arena: &'x PreallocatedArena ) -> SerializedValue< 'x > {
+        JsSerializable::into_js( value.as_ref().unwrap().as_ref(), arena )
+    }
+
+    #[inline]
+    fn memory_required_owned( &self ) -> usize {
+        JsSerializable::memory_required( &**self )
+    }
+}
+
 macro_rules! impl_for_fn {
     ($next:tt => $($kind:ident),*) => {
 
-        impl< $($kind: TryFrom< Value >,)* F > JsSerializableOwned for Newtype< ($($kind,)*), F >
+        impl< $($kind: TryFrom< Value >,)* F > JsSerializableOwned for Newtype< (FunctionTag, ($($kind,)*)), F >
             where F: CallMut< ($($kind,)*) > + 'static, F::Output: JsSerializableOwned
         {
             #[inline]

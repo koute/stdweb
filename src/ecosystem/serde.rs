@@ -993,7 +993,7 @@ macro_rules! __js_serializable_serde_boilerplate {
             fn memory_required( &self ) -> usize {
                 // TODO: This is very inefficient. The actual conversion into
                 // the Value should be only done once.
-                let value = to_value( self ).unwrap();
+                let value = $crate::private::to_value( self ).unwrap();
                 $crate::private::JsSerializable::memory_required( &value )
             }
         }
