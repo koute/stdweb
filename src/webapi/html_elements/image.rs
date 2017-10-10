@@ -139,24 +139,28 @@ impl ImageElement {
         }
     }
 
-    /// Returns the intrinsic height of the image in CSS pixels, if it is available;
-    /// else, it returns 0.
+    /// Returns the intrinsic height of the image in CSS pixels, if it is available.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/naturalHeight)
-    pub fn natural_height( &self ) -> u32 {
-        js!(
+    pub fn natural_height( &self ) -> Option< u32 > {
+        match js!(
             return @{self}.naturalHeight;
-        ).try_into().unwrap()
+        ).try_into().unwrap() {
+            0 => None,
+            value => Some( value )
+        }
     }
 
-    /// Returns the intrinsic width of the image in CSS pixels, if it is available;
-    /// else, it returns 0.
+    /// Returns the intrinsic width of the image in CSS pixels, if it is available.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/naturalWidth)
-    pub fn natural_width( &self ) -> u32 {
-        js!(
+    pub fn natural_width( &self ) -> Option< u32 > {
+        match js!(
             return @{self}.naturalWidth;
-        ).try_into().unwrap()
+        ).try_into().unwrap() {
+            0 => None,
+            value => Some( value )
+        }
     }
 
     /// Returns the full URL of the image, including the base URI.
@@ -275,8 +279,8 @@ mod tests {
     #[test]
     fn test_natural_width_height() {
         let image = ImageElement::new();
-        assert_eq!(image.natural_width(), 0);
-        assert_eq!(image.natural_height(), 0);
+        assert_eq!(image.natural_width(), None);
+        assert_eq!(image.natural_height(), None);
     }
 
     #[test]
