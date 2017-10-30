@@ -700,73 +700,104 @@ impl< T: JsSerializable > JsSerializableOwned for Newtype< (NonFunctionTag, ()),
     }
 }
 
+trait FuncallAdapter< F > {
+    extern fn funcall_adapter( callback: *mut F, raw_arguments: *mut SerializedUntaggedArray );
+    extern fn deallocator( callback: *mut F );
+}
+
 macro_rules! impl_for_fn {
     ($next:tt => $($kind:ident),*) => {
+        impl< $($kind: TryFrom< Value >,)* F > FuncallAdapter< F > for Newtype< (FunctionTag, ($($kind,)*)), F >
+            where F: CallMut< ($($kind,)*) > + 'static, F::Output: JsSerializableOwned
+        {
+            #[allow(unused_mut, unused_variables, non_snake_case)]
+            extern fn funcall_adapter(
+                    callback: *mut F,
+                    raw_arguments: *mut SerializedUntaggedArray
+                )
+            {
+                let callback = unsafe { &mut *callback };
+                let mut arguments = unsafe { &*raw_arguments }.deserialize();
+
+                unsafe {
+                    ffi::free( raw_arguments as *const u8 );
+                }
+
+                if arguments.len() != F::expected_argument_count() {
+                    // TODO: Should probably throw an exception into the JS world or something like that.
+                    panic!( "Expected {} arguments, got {}", F::expected_argument_count(), arguments.len() );
+                }
+
+                let mut arguments = arguments.drain( .. );
+                let mut nth_argument = 0;
+                $(
+                    let $kind = match arguments.next().unwrap().try_into() {
+                        Ok( value ) => value,
+                        Err( _ ) => {
+                            panic!( "Argument #{} is not convertible", nth_argument + 1 );
+                        }
+                    };
+
+                    nth_argument += 1;
+                )*
+
+                $crate::private::noop( &mut nth_argument );
+
+                let result = callback.call_mut( ($($kind,)*) );
+                let mut arena = PreallocatedArena::new( result.memory_required_owned() );
+
+                let mut result = Some( result );
+                let result = JsSerializableOwned::into_js_owned( &mut result, &mut arena );
+                let result = &result as *const _;
+
+                // This is kinda hacky but I'm not sure how else to do it at the moment.
+                em_asm_int!( "Module.STDWEB.tmp = Module.STDWEB.to_js( $0 );", result );
+            }
+
+            extern fn deallocator( callback: *mut F ) {
+                let callback = unsafe {
+                    Box::from_raw( callback )
+                };
+
+                drop( callback );
+            }
+        }
 
         impl< $($kind: TryFrom< Value >,)* F > JsSerializableOwned for Newtype< (FunctionTag, ($($kind,)*)), F >
             where F: CallMut< ($($kind,)*) > + 'static, F::Output: JsSerializableOwned
         {
             #[inline]
-            #[allow(unused_mut, unused_variables, non_snake_case)]
             fn into_js_owned< 'a >( value: &'a mut Option< Self >, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
                 let callback: *mut F = Box::into_raw( Box::new( value.take().unwrap().unwrap_newtype() ) );
 
-                extern fn funcall_adapter< $($kind: TryFrom< Value >,)* F: CallMut< ($($kind,)*) > >(
-                        callback: *mut F,
-                        raw_arguments: *mut SerializedUntaggedArray
-                    ) where F::Output: JsSerializableOwned
-                {
-                    let callback = unsafe { &mut *callback };
-                    let mut arguments = unsafe { &*raw_arguments }.deserialize();
-
-                    unsafe {
-                        ffi::free( raw_arguments as *const u8 );
-                    }
-
-                    if arguments.len() != F::expected_argument_count() {
-                        // TODO: Should probably throw an exception into the JS world or something like that.
-                        panic!( "Expected {} arguments, got {}", F::expected_argument_count(), arguments.len() );
-                    }
-
-                    let mut arguments = arguments.drain( .. );
-                    let mut nth_argument = 0;
-                    $(
-                        let $kind = match arguments.next().unwrap().try_into() {
-                            Ok( value ) => value,
-                            Err( _ ) => {
-                                panic!( "Argument #{} is not convertible", nth_argument + 1 );
-                            }
-                        };
-
-                        nth_argument += 1;
-                    )*
-
-                    $crate::private::noop( &mut nth_argument );
-
-                    let result = callback.call_mut( ($($kind,)*) );
-                    let mut arena = PreallocatedArena::new( result.memory_required_owned() );
-
-                    let mut result = Some( result );
-                    let result = JsSerializableOwned::into_js_owned( &mut result, &mut arena );
-                    let result = &result as *const _;
-
-                    // This is kinda hacky but I'm not sure how else to do it at the moment.
-                    em_asm_int!( "Module.STDWEB.tmp = Module.STDWEB.to_js( $0 );", result );
-                }
-
-                extern fn deallocator< $($kind: TryFrom< Value >,)* F: CallMut< ($($kind,)*) > >( callback: *mut F ) {
-                    let callback = unsafe {
-                        Box::from_raw( callback )
-                    };
-
-                    drop( callback );
-                }
-
                 SerializedUntaggedFunction {
-                    adapter_pointer: funcall_adapter::< $($kind,)* F > as u32,
+                    adapter_pointer: <Self as FuncallAdapter< F > >::funcall_adapter as u32,
                     pointer: callback as u32,
-                    deallocator_pointer: deallocator::< $($kind,)* F > as u32
+                    deallocator_pointer: <Self as FuncallAdapter< F > >::deallocator as u32
                 }.into()
+            }
+
+            #[inline]
+            fn memory_required_owned( &self ) -> usize {
+                0
+            }
+        }
+
+        impl< $($kind: TryFrom< Value >,)* F > JsSerializableOwned for Newtype< (FunctionTag, ($($kind,)*)), Option< F > >
+            where F: CallMut< ($($kind,)*) > + 'static, F::Output: JsSerializableOwned
+        {
+            #[inline]
+            fn into_js_owned< 'a >( value: &'a mut Option< Self >, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+                if let Some( value ) = value.take().unwrap().unwrap_newtype() {
+                    let callback: *mut F = Box::into_raw( Box::new( value ) );
+                    SerializedUntaggedFunction {
+                        adapter_pointer: <Newtype< (FunctionTag, ($($kind,)*)), F > as FuncallAdapter< F > >::funcall_adapter as u32,
+                        pointer: callback as u32,
+                        deallocator_pointer: <Newtype< (FunctionTag, ($($kind,)*)), F > as FuncallAdapter< F > >::deallocator as u32
+                    }.into()
+                } else {
+                    SerializedUntaggedNull.into()
+                }
             }
 
             #[inline]
@@ -899,6 +930,34 @@ mod test_deserialization {
         };
 
         assert_eq!( value.get(), true );
+    }
+
+    #[test]
+    fn function_inside_an_option() {
+        let value = Rc::new( Cell::new( 0 ) );
+        let fn_value = value.clone();
+
+        js! {
+            var callback = @{Some( move || { fn_value.set( 1 ); } )};
+            callback();
+            callback.drop();
+        };
+
+        assert_eq!( value.get(), 1 );
+    }
+
+    #[test]
+    #[allow(unused_assignments)]
+    fn function_inside_an_empty_option() {
+        let mut callback = Some( move || () );
+        callback = None;
+
+        let result = js! {
+            var callback = @{callback};
+            return callback === null;
+        };
+
+        assert_eq!( result, Value::Bool( true ) );
     }
 }
 
