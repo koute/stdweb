@@ -16,7 +16,7 @@ pub trait IWindowOrWorker: AsRef< Reference > {
     /// Sets a timer which executes a function once after the timer expires.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout)
-    fn set_timeout< F: FnOnce() >( &self, callback: F, timeout: u32 ) {
+    fn set_timeout< F: FnOnce() + 'static >( &self, callback: F, timeout: u32 ) {
         let callback = Box::into_raw( Box::new( callback ) );
         em_asm_int!( "\
             Module.STDWEB.acquire_js_reference( $0 ).setTimeout( function() {\
