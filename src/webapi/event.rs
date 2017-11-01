@@ -267,7 +267,7 @@ impl ConcreteEvent for LoadEvent {
 
 reference_boilerplate! {
     LoadEvent,
-    instanceof UiEvent
+    instanceof UIEvent
     convertible to Event
     convertible to UiEvent
 }
@@ -1078,7 +1078,7 @@ mod tests {
 
     #[test]
     fn test_load_event() {
-        let event: UiEvent = js!(
+        let event: LoadEvent = js!(
             return new UIEvent( @{LoadEvent::EVENT_TYPE} );
         ).try_into().unwrap();
         assert_eq!( event.event_type(), LoadEvent::EVENT_TYPE );
