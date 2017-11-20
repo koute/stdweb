@@ -105,6 +105,20 @@ Things might break. The APIs are in flux. Please do not use it in production.
 
 4. Visit `http://localhost:8000` with your browser.
 
+You can also try compiling the example to WebAssembly:
+
+    $ rustup target add wasm32-unknown-emscripten
+    $ cargo web start --target-webasm-emscripten
+
+This will **not** generate a pure `.wasm` file which you
+can just load; it requires quite a bit of runtime which
+you can find in the `.js` file which is generated alongside
+the wasm bytecode.
+
+Support for pure WebAssembly is planned to be added when
+Rust's native `wasm32-unknown-unknown` backend becomes
+somewhat usable.
+
 [cargo-web]: https://github.com/koute/cargo-web
 
 ## License
