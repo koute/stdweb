@@ -68,51 +68,6 @@ impl< 'a > From< &'a mut Object > for HashMap< String, Value > {
         deserialize_object( &object.0, |iter| iter.collect() )
     }
 }
-/*
-impl< K, V > From< BTreeMap< K, V > > for Object where K: AsRef< str >, V: Into< Value > {
-    #[inline]
-    fn from( map: BTreeMap< K, V > ) -> Self {
-        unimplemented!();
-    }
-}
-
-impl< 'a, K, V > From< &'a BTreeMap< K, V > > for Object where K: AsRef< str >, &'a V: Into< Value > {
-    #[inline]
-    fn from( map: &'a BTreeMap< K, V > ) -> Self {
-        unimplemented!();
-    }
-}
-
-impl< 'a, K, V > From< &'a mut BTreeMap< K, V > > for Object where K: AsRef< str >, &'a V: Into< Value > {
-    #[inline]
-    fn from( map: &'a mut BTreeMap< K, V > ) -> Self {
-        let map: &BTreeMap< _, _ > = map;
-        map.into()
-    }
-}
-
-impl< K, V > From< HashMap< K, V > > for Object where K: AsRef< str > + Eq + Hash, V: Into< Value > {
-    #[inline]
-    fn from( map: HashMap< K, V > ) -> Self {
-        unimplemented!();
-    }
-}
-
-impl< 'a, K, V > From< &'a HashMap< K, V > > for Object where K: AsRef< str > + Eq + Hash, &'a V: Into< Value > {
-    #[inline]
-    fn from( map: &'a HashMap< K, V > ) -> Self {
-        unimplemented!();
-    }
-}
-
-impl< 'a, K, V > From< &'a mut HashMap< K, V > > for Object where K: AsRef< str > + Eq + Hash, &'a V: Into< Value > {
-    #[inline]
-    fn from( map: &'a mut HashMap< K, V > ) -> Self {
-        let map: &HashMap< _, _ > = map;
-        map.into()
-    }
-}
-*/
 
 // TODO: It would be nice to specialize this for values which are already of type Value.
 impl< K: AsRef< str >, V: JsSerializable > From< BTreeMap< K, V > > for Object {
