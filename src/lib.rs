@@ -99,6 +99,7 @@ pub use webcore::value::{
     Reference
 };
 pub use webcore::number::Number;
+pub use webcore::object::Object;
 
 #[cfg(feature = "serde")]
 /// A module with serde-related APIs.

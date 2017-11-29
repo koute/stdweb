@@ -9,3 +9,4 @@ pub mod callfn;
 pub mod newtype;
 pub mod try_from;
 pub mod void;
+pub mod object;

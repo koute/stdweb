@@ -1,21 +1,24 @@
 use std::mem;
 use std::slice;
 use std::i32;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::marker::PhantomData;
 use std::cell::{Cell, UnsafeCell};
+use std::hash::Hash;
 
 use webcore::ffi;
 use webcore::callfn::CallMut;
 use webcore::newtype::Newtype;
 use webcore::try_from::{TryFrom, TryInto};
 use webcore::number::Number;
+use webcore::object::Object;
 
 use webcore::value::{
     Null,
     Undefined,
     Reference,
-    Value
+    Value,
+    FromReferenceUnchecked
 };
 
 #[repr(u8)]
@@ -31,7 +34,8 @@ pub enum Tag {
     Array = 7,
     Object = 8,
     Reference = 9,
-    Function = 10
+    Function = 10,
+    ObjectReference = 11
 }
 
 impl Default for Tag {
@@ -193,6 +197,12 @@ struct SerializedUntaggedFunction {
     deallocator_pointer: u32
 }
 
+#[repr(C)]
+#[derive(Debug)]
+struct SerializedUntaggedObjectReference {
+    refid: i32
+}
+
 impl SerializedUntaggedString {
     #[inline]
     fn deserialize( &self ) -> String {
@@ -224,35 +234,84 @@ impl SerializedUntaggedArray {
     }
 }
 
-impl SerializedUntaggedObject {
-    #[inline]
-    fn deserialize( &self ) -> BTreeMap< String, Value > {
-        let length = self.length as usize;
-        let key_pointer = self.key_pointer as *const SerializedUntaggedString;
-        let value_pointer = self.value_pointer as *const SerializedValue;
+pub struct ObjectDeserializer< 'a > {
+    key_slice: &'a [SerializedUntaggedString],
+    value_slice: &'a [SerializedValue< 'a >],
+    index: usize
+}
 
-        let key_slice = unsafe { slice::from_raw_parts( key_pointer, length ) };
-        let value_slice = unsafe { slice::from_raw_parts( value_pointer, length ) };
-
-        let map = key_slice.iter().zip( value_slice.iter() ).map( |(key, value)| {
-            let key = key.deserialize();
-            let value = value.deserialize();
-            (key, value)
-        }).collect();
-
-        unsafe {
-            ffi::free( key_pointer as *const u8 );
-            ffi::free( value_pointer as *const u8 );
+impl< 'a > Iterator for ObjectDeserializer< 'a > {
+    type Item = (String, Value);
+    fn next( &mut self ) -> Option< Self::Item > {
+        if self.index >= self.key_slice.len() {
+            None
+        } else {
+            let key = self.key_slice[ self.index ].deserialize();
+            let value = self.value_slice[ self.index ].deserialize();
+            self.index += 1;
+            Some( (key, value) )
         }
-
-        map
     }
+
+    #[inline]
+    fn size_hint( &self ) -> (usize, Option< usize >) {
+        let remaining = self.key_slice.len() - self.index;
+        (remaining, Some( remaining ))
+    }
+}
+
+impl< 'a > ExactSizeIterator for ObjectDeserializer< 'a > {}
+
+pub fn deserialize_object< R, F: FnOnce( &mut ObjectDeserializer ) -> R >( reference: &Reference, callback: F ) -> R {
+    let mut result: SerializedValue = Default::default();
+    em_asm_int!( "\
+        var object = Module.STDWEB.acquire_js_reference( $0 );\
+        Module.STDWEB.serialize_object( $1, object );",
+        reference.as_raw(),
+        (&mut result as *mut _)
+    );
+
+    assert_eq!( result.tag, Tag::Object );
+    let result = result.as_object();
+
+    let length = result.length as usize;
+    let key_pointer = result.key_pointer as *const SerializedUntaggedString;
+    let value_pointer = result.value_pointer as *const SerializedValue;
+
+    let key_slice = unsafe { slice::from_raw_parts( key_pointer, length ) };
+    let value_slice = unsafe { slice::from_raw_parts( value_pointer, length ) };
+
+    let mut iter = ObjectDeserializer {
+        key_slice,
+        value_slice,
+        index: 0
+    };
+
+    let output = callback( &mut iter );
+
+    // TODO: Panic-safety.
+    unsafe {
+        ffi::free( key_pointer as *const u8 );
+        ffi::free( value_pointer as *const u8 );
+    }
+
+    output
 }
 
 impl SerializedUntaggedReference {
     #[inline]
     fn deserialize( &self ) -> Reference {
         unsafe { Reference::from_raw_unchecked( self.refid ) }
+    }
+}
+
+impl SerializedUntaggedObjectReference {
+    #[inline]
+    fn deserialize( &self ) -> Object {
+        unsafe {
+            let reference = Reference::from_raw_unchecked( self.refid );
+            Object::from_reference_unchecked( reference )
+        }
     }
 }
 
@@ -306,6 +365,7 @@ untagged_boilerplate!( test_string, as_string, Tag::Str, SerializedUntaggedStrin
 untagged_boilerplate!( test_array, as_array, Tag::Array, SerializedUntaggedArray );
 untagged_boilerplate!( test_reference, as_reference, Tag::Reference, SerializedUntaggedReference );
 untagged_boilerplate!( test_function, as_function, Tag::Function, SerializedUntaggedFunction );
+untagged_boilerplate!( test_object_reference, as_object_reference, Tag::ObjectReference, SerializedUntaggedObjectReference );
 
 impl< 'a > SerializedValue< 'a > {
     #[doc(hidden)]
@@ -320,9 +380,9 @@ impl< 'a > SerializedValue< 'a > {
             Tag::False => Value::Bool( false ),
             Tag::True => Value::Bool( true ),
             Tag::Array => Value::Array( self.as_array().deserialize() ),
-            Tag::Object => Value::Object( self.as_object().deserialize() ),
+            Tag::ObjectReference => Value::Object( self.as_object_reference().deserialize() ),
             Tag::Reference => self.as_reference().deserialize().into(),
-            Tag::Function => unreachable!()
+            Tag::Function | Tag::Object => unreachable!()
         }
     }
 }
@@ -384,6 +444,22 @@ impl JsSerializable for Reference {
 }
 
 __js_serializable_boilerplate!( Reference );
+
+impl JsSerializable for Object {
+    #[inline]
+    fn into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+        SerializedUntaggedObjectReference {
+            refid: self.as_reference().as_raw()
+        }.into()
+    }
+
+    #[inline]
+    fn memory_required( &self ) -> usize {
+        0
+    }
+}
+
+__js_serializable_boilerplate!( Object );
 
 impl JsSerializable for bool {
     #[inline]
@@ -625,32 +701,54 @@ impl< T: JsSerializable > JsSerializable for [T] {
 
 __js_serializable_boilerplate!( impl< 'a, T > for &'a [T] where T: JsSerializable );
 
-impl< T: JsSerializable > JsSerializable for BTreeMap< String, T > {
+fn object_into_js< 'a, K: AsRef< str >, V: 'a + JsSerializable, I: Iterator< Item = (K, &'a V) > + ExactSizeIterator >( iter: I, arena: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+    let keys = arena.reserve( iter.len() );
+    let values = arena.reserve( iter.len() );
+    for (((key, value), output_key), output_value) in iter.zip( keys.iter_mut() ).zip( values.iter_mut() ) {
+        *output_key = key.as_ref().into_js( arena ).as_string().clone();
+        *output_value = value.into_js( arena );
+    }
+
+    SerializedUntaggedObject {
+        key_pointer: keys.as_ptr() as u32,
+        value_pointer: values.as_ptr() as u32,
+        length: keys.len() as u32
+    }.into()
+}
+
+fn object_memory_required< K: AsRef< str >, V: JsSerializable, I: Iterator< Item = (K, V) > + ExactSizeIterator >( iter: I ) -> usize {
+    mem::size_of::< SerializedValue >() * iter.len() +
+    mem::size_of::< SerializedUntaggedString >() * iter.len() +
+    iter.fold( 0, |sum, (key, value)| sum + key.as_ref().memory_required() + value.memory_required() )
+}
+
+impl< K: AsRef< str >, V: JsSerializable > JsSerializable for BTreeMap< K, V > {
     #[inline]
     fn into_js< 'a >( &'a self, arena: &'a PreallocatedArena ) -> SerializedValue< 'a > {
-        let keys = arena.reserve( self.len() );
-        let values = arena.reserve( self.len() );
-        for (((key, value), output_key), output_value) in self.iter().zip( keys.iter_mut() ).zip( values.iter_mut() ) {
-            *output_key = key.into_js( arena ).as_string().clone();
-            *output_value = value.into_js( arena );
-        }
-
-        SerializedUntaggedObject {
-            key_pointer: keys.as_ptr() as u32,
-            value_pointer: values.as_ptr() as u32,
-            length: keys.len() as u32
-        }.into()
+        object_into_js( self.iter(), arena )
     }
 
     #[inline]
     fn memory_required( &self ) -> usize {
-        mem::size_of::< SerializedValue >() * self.len() +
-        mem::size_of::< SerializedUntaggedString >() * self.len() +
-        self.iter().fold( 0, |sum, (key, value)| sum + key.memory_required() + value.memory_required() )
+        object_memory_required( self.iter() )
     }
 }
 
-__js_serializable_boilerplate!( impl< T > for BTreeMap< String, T > where T: JsSerializable );
+__js_serializable_boilerplate!( impl< K, V > for BTreeMap< K, V > where K: AsRef< str >, V: JsSerializable );
+
+impl< K: AsRef< str > + Eq + Hash, V: JsSerializable > JsSerializable for HashMap< K, V > {
+    #[inline]
+    fn into_js< 'a >( &'a self, arena: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+        object_into_js( self.iter(), arena )
+    }
+
+    #[inline]
+    fn memory_required( &self ) -> usize {
+        object_memory_required( self.iter() )
+    }
+}
+
+__js_serializable_boilerplate!( impl< K, V > for HashMap< K, V > where K: AsRef< str > + Eq + Hash, V: JsSerializable );
 
 impl JsSerializable for Value {
     fn into_js< 'a >( &'a self, arena: &'a PreallocatedArena ) -> SerializedValue< 'a > {
@@ -872,7 +970,27 @@ mod test_deserialization {
 
     #[test]
     fn object() {
-        assert_eq!( js! { return {"one": 1, "two": 2}; }, Value::Object( [("one".to_string(), Value::Number(1.into())), ("two".to_string(), Value::Number(2.into()))].iter().cloned().collect() ) );
+        assert_eq!( js! { return {"one": 1, "two": 2}; }.is_object(), true );
+    }
+
+    #[test]
+    fn object_into_btreemap() {
+        let object = js! { return {"one": 1, "two": 2}; }.into_object().unwrap();
+        let object: BTreeMap< String, Value > = object.into();
+        assert_eq!( object, [
+            ("one".to_string(), Value::Number(1.into())),
+            ("two".to_string(), Value::Number(2.into()))
+        ].iter().cloned().collect() );
+    }
+
+    #[test]
+    fn object_into_hashmap() {
+        let object = js! { return {"one": 1, "two": 2}; }.into_object().unwrap();
+        let object: HashMap< String, Value > = object.into();
+        assert_eq!( object, [
+            ("one".to_string(), Value::Number(1.into())),
+            ("two".to_string(), Value::Number(2.into()))
+        ].iter().cloned().collect() );
     }
 
     #[test]
@@ -964,9 +1082,10 @@ mod test_deserialization {
 #[cfg(test)]
 mod test_serialization {
     use super::*;
+    use std::borrow::Cow;
 
     #[test]
-    fn object() {
+    fn object_from_btreemap() {
         let object: BTreeMap< _, _ > = [
             ("number".to_string(), Value::Number( 123.into() )),
             ("string".to_string(), Value::String( "Hello!".into() ))
@@ -978,6 +1097,48 @@ mod test_serialization {
         };
         assert_eq!( result, Value::Bool( true ) );
     }
+
+    #[test]
+    fn object_from_borrowed_btreemap() {
+        let object: BTreeMap< _, _ > = [
+            ("number".to_string(), Value::Number( 123.into() ))
+        ].iter().cloned().collect();
+
+        let result = js! {
+            var object = @{&object};
+            return object.number === 123 && Object.keys( object ).length == 1;
+        };
+        assert_eq!( result, Value::Bool( true ) );
+    }
+
+    #[test]
+    fn object_from_btreemap_with_convertible_key_and_value() {
+        let key: Cow< str > = "number".into();
+        let object: BTreeMap< _, _ > = [
+            (key, 123)
+        ].iter().cloned().collect();
+
+        let result = js! {
+            var object = @{object};
+            return object.number === 123 && Object.keys( object ).length == 1;
+        };
+        assert_eq!( result, Value::Bool( true ) );
+    }
+
+    #[test]
+    fn object_from_hashmap() {
+        let object: HashMap< _, _ > = [
+            ("number".to_string(), Value::Number( 123.into() )),
+            ("string".to_string(), Value::String( "Hello!".into() ))
+        ].iter().cloned().collect();
+
+        let result = js! {
+            var object = @{object};
+            return object.number === 123 && object.string === "Hello!" && Object.keys( object ).length == 2;
+        };
+        assert_eq!( result, Value::Bool( true ) );
+    }
+
 
     #[test]
     fn multiple() {
@@ -1044,8 +1205,13 @@ mod test_reserialization {
 
     #[test]
     fn object() {
-        let object = [("one".to_string(), Value::Number(1.into())), ("two".to_string(), Value::Number(2.into()))].iter().cloned().collect();
-        assert_eq!( js! { return @{&object}; }, Value::Object( object ) );
+        let object: BTreeMap< _, _ > = [
+            ("one".to_string(), Value::Number( 1.into() )),
+            ("two".to_string(), Value::Number( 2.into() ))
+        ].iter().cloned().collect();
+
+        let object: Value = object.into();
+        assert_eq!( js! { return @{&object} }, object );
     }
 
     #[test]

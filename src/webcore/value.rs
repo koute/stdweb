@@ -4,6 +4,8 @@ use std::fmt;
 use std::error;
 use webcore::try_from::{TryFrom, TryInto};
 use webcore::number::{self, Number};
+use webcore::object::Object;
+use webcore::serialization::JsSerializable;
 
 /// A unit type representing JavaScript's `undefined`.
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Debug)]
@@ -151,7 +153,7 @@ pub enum Value {
     Number( Number ),
     String( String ),
     Array( Vec< Value > ),
-    Object( BTreeMap< String, Value > ), // TODO: Use our own type instead of using BTreeMap directly.
+    Object( Object ),
     Reference( Reference )
 }
 
@@ -160,6 +162,16 @@ impl Value {
     #[inline]
     pub fn is_reference( &self ) -> bool {
         if let Value::Reference( _ ) = *self {
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Checks whenever the Value is of the Object variant.
+    #[inline]
+    pub fn is_object( &self ) -> bool {
+        if let Value::Object( _ ) = *self {
             true
         } else {
             false
@@ -175,11 +187,29 @@ impl Value {
         }
     }
 
+    /// Gets a reference to the [Object](struct.Object.html) inside this `Value`.
+    #[inline]
+    pub fn as_object( &self ) -> Option< &Object > {
+        match *self {
+            Value::Object( ref object ) => Some( object ),
+            _ => None
+        }
+    }
+
     /// Returns the [Reference](struct.Reference.html) inside this `Value`.
     #[inline]
     pub fn into_reference( self ) -> Option< Reference > {
         match self {
             Value::Reference( reference ) => Some( reference ),
+            _ => None
+        }
+    }
+
+    /// Returns the [Object](struct.Object.html) inside this `Value`.
+    #[inline]
+    pub fn into_object( self ) -> Option< Object > {
+        match self {
+            Value::Object( object ) => Some( object ),
             _ => None
         }
     }
@@ -377,52 +407,51 @@ impl< 'a, T > From< &'a mut [T] > for Value where &'a T: Into< Value > {
     }
 }
 
-// TODO: It would be nice to specialize this for values which are already of type Value.
-impl< K: Into< String >, V: Into< Value > > From< BTreeMap< K, V > > for Value {
+impl< K, V > From< BTreeMap< K, V > > for Value where K: AsRef< str >, V: JsSerializable {
     #[inline]
     fn from( value: BTreeMap< K, V > ) -> Self {
-        let value = value.into_iter().map( |(key, value)| (key.into(), value.into()) ).collect();
-        Value::Object( value )
+        let object: Object = value.into();
+        Value::Object( object )
     }
 }
 
-impl< 'a, K, V > From< &'a BTreeMap< K, V > > for Value where &'a K: Into< String >, &'a V: Into< Value > {
+impl< 'a, K, V > From< &'a BTreeMap< K, V > > for Value where K: AsRef< str >, V: JsSerializable {
     #[inline]
     fn from( value: &'a BTreeMap< K, V > ) -> Self {
-        let value = value.iter().map( |(key, value)| (key.into(), value.into()) ).collect();
-        Value::Object( value )
+        let object: Object = value.into();
+        Value::Object( object )
     }
 }
 
-impl< 'a, K, V > From< &'a mut BTreeMap< K, V > > for Value where &'a K: Into< String >, &'a V: Into< Value > {
+impl< 'a, K, V > From< &'a mut BTreeMap< K, V > > for Value where K: AsRef< str >, V: JsSerializable {
     #[inline]
     fn from( value: &'a mut BTreeMap< K, V > ) -> Self {
-        let value: &BTreeMap< K, V > = value;
-        value.into()
+        let object: Object = value.into();
+        Value::Object( object )
     }
 }
 
-impl< K: Into< String > + Hash + Eq, V: Into< Value > > From< HashMap< K, V > > for Value {
+impl< K, V > From< HashMap< K, V > > for Value where K: AsRef< str > + Eq + Hash, V: JsSerializable {
     #[inline]
     fn from( value: HashMap< K, V > ) -> Self {
-        let value = value.into_iter().map( |(key, value)| (key.into(), value.into()) ).collect();
-        Value::Object( value )
+        let object: Object = value.into();
+        Value::Object( object )
     }
 }
 
-impl< 'a, K: Hash + Eq, V > From< &'a HashMap< K, V > > for Value where &'a K: Into< String >, &'a V: Into< Value > {
+impl< 'a, K, V > From< &'a HashMap< K, V > > for Value where K: AsRef< str > + Eq + Hash, V: JsSerializable {
     #[inline]
     fn from( value: &'a HashMap< K, V > ) -> Self {
-        let value = value.iter().map( |(key, value)| (key.into(), value.into()) ).collect();
-        Value::Object( value )
+        let object: Object = value.into();
+        Value::Object( object )
     }
 }
 
-impl< 'a, K: Hash + Eq, V > From< &'a mut HashMap< K, V > > for Value where &'a K: Into< String >, &'a V: Into< Value > {
+impl< 'a, K, V > From< &'a mut HashMap< K, V > > for Value where K: AsRef< str > + Eq + Hash, V: JsSerializable {
     #[inline]
     fn from( value: &'a mut HashMap< K, V > ) -> Self {
-        let value: &HashMap< K, V > = value;
-        value.into()
+        let object: Object = value.into();
+        Value::Object( object )
     }
 }
 
@@ -500,13 +529,23 @@ impl_infallible_try_from! {
     impl< 'a, T > for &'a mut Vec< T > => Value where (&'a T: Into< Value >);
     impl< 'a, T > for &'a [T] => Value where (&'a T: Into< Value >);
     impl< 'a, T > for &'a mut [T] => Value where (&'a T: Into< Value >);
-    impl< K, V > for BTreeMap< K, V > => Value where (K: Into< String >, V: Into< Value >);
-    impl< 'a, K, V > for &'a BTreeMap< K, V > => Value where (&'a K: Into< String >, &'a V: Into< Value >);
-    impl< 'a, K, V > for &'a mut BTreeMap< K, V > => Value where (&'a K: Into< String >, &'a V: Into< Value >);
-    impl< K, V > for HashMap< K, V > => Value where (K: Into< String > + Hash + Eq, V: Into< Value >);
-    impl< 'a, K, V > for &'a HashMap< K, V > => Value where (K: Hash + Eq, &'a K: Into< String >, &'a V: Into< Value >);
-    impl< 'a, K, V > for &'a mut HashMap< K, V > => Value where (K: Hash + Eq, &'a K: Into< String >, &'a V: Into< Value >);
+
+    impl< K, V > for BTreeMap< K, V > => Value where (K: AsRef< str >, V: JsSerializable);
+    impl< 'a, K, V > for &'a BTreeMap< K, V > => Value where (K: AsRef< str >, V: JsSerializable);
+    impl< 'a, K, V > for &'a mut BTreeMap< K, V > => Value where (K: AsRef< str >, V: JsSerializable);
+    impl< K, V > for HashMap< K, V > => Value where (K: AsRef< str > + Eq + Hash, V: JsSerializable);
+    impl< 'a, K, V > for &'a HashMap< K, V > => Value where (K: AsRef< str > + Eq + Hash, V: JsSerializable);
+    impl< 'a, K, V > for &'a mut HashMap< K, V > => Value where (K: AsRef< str > + Eq + Hash, V: JsSerializable);
+
     Reference => Value;
+
+    // TODO: Move these to object.rs
+    impl< K, V > for BTreeMap< K, V > => Object where (K: AsRef< str >, V: JsSerializable);
+    impl< 'a, K, V > for &'a BTreeMap< K, V > => Object where (K: AsRef< str >, V: JsSerializable);
+    impl< 'a, K, V > for &'a mut BTreeMap< K, V > => Object where (K: AsRef< str >, V: JsSerializable);
+    impl< K, V > for HashMap< K, V > => Object where (K: AsRef< str > + Eq + Hash, V: JsSerializable);
+    impl< 'a, K, V > for &'a HashMap< K, V > => Object where (K: AsRef< str > + Eq + Hash, V: JsSerializable);
+    impl< 'a, K, V > for &'a mut HashMap< K, V > => Object where (K: AsRef< str > + Eq + Hash, V: JsSerializable);
 }
 
 macro_rules! impl_try_from_number {
@@ -840,45 +879,25 @@ macro_rules! impl_try_into_number {
 
 impl_try_into_number!( u8 u16 u32 u64 usize i8 i16 i32 i64 f64 );
 
-impl< V: TryFrom< Value, Error = ConversionError > > TryFrom< Value > for BTreeMap< String, V > {
+impl< E: Into< ConversionError >, V: TryFrom< Value, Error = E > > TryFrom< Value > for BTreeMap< String, V > {
     type Error = ConversionError;
 
     #[inline]
     fn try_from( value: Value ) -> Result< Self, Self::Error > {
         match value {
-            Value::Object( object ) => {
-                let mut output = BTreeMap::new();
-                for (key, value) in object {
-                    let value = match value.try_into() {
-                        Ok( value ) => value,
-                        Err( error ) => return Err( ConversionError::value_conversion_error( error ) )
-                    };
-                    output.insert( key, value );
-                }
-                Ok( output )
-            },
+            Value::Object( object ) => object.try_into(),
             _ => Err( ConversionError::type_mismatch( &value ) )
         }
     }
 }
 
-impl< V: TryFrom< Value, Error = ConversionError > > TryFrom< Value > for HashMap< String, V > {
+impl< E: Into< ConversionError >, V: TryFrom< Value, Error = E > > TryFrom< Value > for HashMap< String, V > {
     type Error = ConversionError;
 
     #[inline]
     fn try_from( value: Value ) -> Result< Self, Self::Error > {
         match value {
-            Value::Object( object ) => {
-                let mut output = HashMap::with_capacity( object.len() );
-                for (key, value) in object {
-                    let value = match value.try_into() {
-                        Ok( value ) => value,
-                        Err( error ) => return Err( ConversionError::value_conversion_error( error ) )
-                    };
-                    output.insert( key, value );
-                }
-                Ok( output )
-            },
+            Value::Object( object ) => object.try_into(),
             _ => Err( ConversionError::type_mismatch( &value ) )
         }
     }

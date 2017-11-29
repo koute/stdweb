@@ -55,7 +55,7 @@ pub fn initialize() {
                     output[ key ] = value;
                 }
                 return output;
-            } else if( kind === 9 ) {
+            } else if( kind === 9 || kind == 11 ) {
                 return Module.STDWEB.acquire_js_reference( HEAP32[ address / 4 ] );
             } else if( kind === 10 ) {
                 var adapter_pointer = HEAPU32[ address / 4 ];
@@ -82,6 +82,29 @@ pub fn initialize() {
     };
 
     js! { @(no_return)
+        Module.STDWEB.serialize_object = function serialize_object( address, value ) {
+            var keys = Object.keys( value );
+            var length = keys.length;
+            var key_array_pointer = _malloc( length * 8 );
+            var value_array_pointer = _malloc( length * 16 );
+            HEAPU8[ address + 12 ] = 8;
+            HEAPU32[ address / 4 ] = value_array_pointer;
+            HEAPU32[ (address + 4) / 4 ] = length;
+            HEAPU32[ (address + 8) / 4 ] = key_array_pointer;
+            for( var i = 0; i < length; ++i ) {
+                var key = keys[ i ];
+                var key_length = lengthBytesUTF8( key );
+                var key_pointer = _malloc( key_length + 1 );
+                stringToUTF8( key, key_pointer, key_length + 1 );
+
+                var key_address = key_array_pointer + i * 8;
+                HEAPU32[ key_address / 4 ] = key_pointer;
+                HEAPU32[ (key_address + 4) / 4 ] = key_length;
+
+                Module.STDWEB.from_js( value_array_pointer + i * 16, value[ key ] );
+            }
+        };
+
         Module.STDWEB.from_js = function from_js( address, value ) {
             var kind = Object.prototype.toString.call( value );
             if( kind === "[object String]" ) {
@@ -116,30 +139,14 @@ pub fn initialize() {
                 for( var i = 0; i < length; ++i ) {
                     Module.STDWEB.from_js( pointer + i * 16, value[ i ] );
                 }
-            } else if( kind === "[object Object]" ) {
-                var keys = Object.keys( value );
-                var length = keys.length;
-                var key_array_pointer = _malloc( length * 8 );
-                var value_array_pointer = _malloc( length * 16 );
-                HEAPU8[ address + 12 ] = 8;
-                HEAPU32[ address / 4 ] = value_array_pointer;
-                HEAPU32[ (address + 4) / 4 ] = length;
-                HEAPU32[ (address + 8) / 4 ] = key_array_pointer;
-                for( var i = 0; i < length; ++i ) {
-                    var key = keys[ i ];
-                    var key_length = lengthBytesUTF8( key );
-                    var key_pointer = _malloc( key_length + 1 );
-                    stringToUTF8( key, key_pointer, key_length + 1 );
-
-                    var key_address = key_array_pointer + i * 8;
-                    HEAPU32[ key_address / 4 ] = key_pointer;
-                    HEAPU32[ (key_address + 4) / 4 ] = key_length;
-
-                    Module.STDWEB.from_js( value_array_pointer + i * 16, value[ key ] );
-                }
             } else {
                 var refid = Module.STDWEB.acquire_rust_reference( value );
-                HEAPU8[ address + 12 ] = 9;
+                var id = 9;
+                if( kind === "[object Object]" ) {
+                    id = 11;
+                }
+
+                HEAPU8[ address + 12 ] = id;
                 HEAP32[ address / 4 ] = refid;
             }
         };

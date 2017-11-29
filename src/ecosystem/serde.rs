@@ -11,6 +11,7 @@ use serde_crate::de::{self, Deserialize, Visitor};
 use serde_crate::de::IntoDeserializer;
 
 use webcore::value::{
+    self,
     Undefined,
     Null,
     Value
@@ -157,10 +158,11 @@ impl Serialize for Value {
             Value::String( ref value ) => serializer.serialize_str( value ),
             Value::Array( ref value ) => value.serialize( serializer ),
             Value::Object( ref value ) => {
+                let value: BTreeMap< String, Value > = value.into();
                 let mut map = try!( serializer.serialize_map( Some( value.len() ) ) );
                 for (key, value) in value {
-                    try!( map.serialize_key( key ) );
-                    try!( map.serialize_value( value ) );
+                    try!( map.serialize_key( &key ) );
+                    try!( map.serialize_value( &value ) );
                 }
 
                 map.end()
@@ -356,6 +358,16 @@ impl From< number::ConversionError > for ConversionError {
     }
 }
 
+impl From< ConversionError > for value::ConversionError {
+    fn from( error: ConversionError ) -> Self {
+        match error.kind {
+            ConversionErrorKind::InvalidKey => value::ConversionError::Custom( "key must be either a string or an integer".to_owned() ),
+            ConversionErrorKind::NumberConversionError( error ) => error.into(),
+            ConversionErrorKind::Custom( message ) => value::ConversionError::Custom( message )
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct Serializer {
 }
@@ -460,7 +472,7 @@ impl< 'a > ser::Serializer for &'a mut Serializer {
     fn serialize_newtype_variant< T: ?Sized + Serialize >( self, _name: &'static str, _variant_index: u32, variant: &'static str, value: &T ) -> Result< Self::Ok, Self::Error > {
         let mut object = BTreeMap::new();
         object.insert( String::from( variant ), to_value( &value )? );
-        Ok( Value::Object( object ) )
+        Ok( Value::Object( object.into() ) )
     }
 
     fn serialize_seq( self, length: Option< usize > ) -> Result< Self::SerializeSeq, Self::Error > {
@@ -600,7 +612,7 @@ impl ser::SerializeTupleVariant for SerializeTupleVariant {
     fn end( self ) -> Result< Self::Ok, Self::Error > {
         let mut object: BTreeMap< String, Value > = BTreeMap::new();
         object.insert( self.name, Value::Array( self.elements ) );
-        Ok( Value::Object( object ) )
+        Ok( Value::Object( object.into() ) )
     }
 }
 
@@ -638,7 +650,7 @@ impl ser::SerializeMap for SerializeMap {
     }
 
     fn end( self ) -> Result< Self::Ok, Self::Error > {
-        Ok( Value::Object( self.map ) )
+        Ok( Value::Object( self.map.into() ) )
     }
 }
 
@@ -667,8 +679,8 @@ impl ser::SerializeStructVariant for SerializeStructVariant {
 
     fn end( self ) -> Result< Self::Ok, Self::Error > {
         let mut object = BTreeMap::new();
-        object.insert( self.name, Value::Object( self.map ) );
-        Ok( Value::Object( object ) )
+        object.insert( self.name, Value::Object( self.map.into() ) );
+        Ok( Value::Object( object.into() ) )
     }
 }
 
@@ -736,6 +748,7 @@ impl< 'de > de::Deserializer< 'de > for Value {
                 }
             },
             Value::Object( value ) => {
+                let value: BTreeMap< _, _ > = value.into();
                 let length = value.len();
                 let mut deserializer = MapDeserializer::new( value );
                 let map = visitor.visit_map( &mut deserializer )?;
@@ -765,6 +778,7 @@ impl< 'de > de::Deserializer< 'de > for Value {
     fn deserialize_enum< V: Visitor< 'de > >( self, _name: &str, _variants: &'static [&'static str], visitor: V ) -> Result< V::Value, Self::Error > {
         let (variant, value) = match self {
             Value::Object( value ) => {
+                let value: BTreeMap< _, _ > = value.into();
                 let mut iter = value.into_iter();
                 let (variant, value) = match iter.next() {
                     Some( value ) => value,
@@ -854,7 +868,7 @@ impl< 'de > de::VariantAccess< 'de > for VariantDeserializer {
     fn struct_variant< V: Visitor< 'de > >( self, _fields: &'static [&'static str], visitor: V ) -> Result< V::Value, Self::Error > {
         match self.value {
             Some( Value::Object( value ) ) => {
-                de::Deserializer::deserialize_any( MapDeserializer::new( value ), visitor )
+                de::Deserializer::deserialize_any( MapDeserializer::new( value.into() ), visitor )
             },
             Some( other ) => Err( de::Error::invalid_type( other.unexpected(), &"struct variant" ) ),
             _ => Err( de::Error::invalid_type( de::Unexpected::UnitVariant, &"struct variant" ) )
@@ -1356,7 +1370,9 @@ mod tests {
         let mut map: BTreeMap< String, Value > = BTreeMap::new();
         map.insert( "1".to_owned(), Value::String( "one".to_owned() ) );
         map.insert( "2".to_owned(), Value::String( "two".to_owned() ) );
-        assert_eq!( value, Value::Object( map ) );
+
+        let value: BTreeMap< _, _ > = value.into_object().unwrap().into();
+        assert_eq!( value, map );
     }
 
     #[derive(Serialize, Deserialize, Debug)]
@@ -1365,7 +1381,7 @@ mod tests {
         string: String
     }
 
-    #[derive(Serialize, Deserialize, Debug)]
+    #[derive(PartialEq, Serialize, Deserialize, Debug)]
     struct StructureSerializable {
         number: i32,
         string: String
@@ -1385,7 +1401,9 @@ mod tests {
         let mut map = BTreeMap::new();
         map.insert( "number".to_owned(), Value::Number( 123.into() ) );
         map.insert( "string".to_owned(), Value::String( "Hello!".to_owned() ) );
-        assert_eq!( value, Value::Object( map ) );
+
+        let value: BTreeMap< _, _ > = value.into_object().unwrap().into();
+        assert_eq!( value, map );
     }
 
     #[test]
@@ -1414,7 +1432,9 @@ mod tests {
         let mut map = BTreeMap::new();
         map.insert( "number".to_owned(), Value::Number( 123.into() ) );
         map.insert( "string".to_owned(), Value::String( "Hello!".to_owned() ) );
-        assert_eq!( value, Value::Object( map ) );
+
+        let value: BTreeMap< _, _ > = value.into_object().unwrap().into();
+        assert_eq!( value, map );
     }
 
     #[test]
@@ -1458,5 +1478,20 @@ mod tests {
         let structure: Serde< Structure > = value.try_into().unwrap();
         assert_eq!( structure.0.number, 123 );
         assert_eq!( structure.0.string, "Hello!" );
+    }
+
+    #[test]
+    fn serialization_and_deserialization_of_btreemap_with_serializable_values() {
+        let mut original = BTreeMap::new();
+        original.insert( "key", StructureSerializable {
+            number: 123,
+            string: "Hello!".to_owned()
+        });
+
+        let value: Value = (&original).into();
+        let deserialized: BTreeMap< String, StructureSerializable > = value.try_into().unwrap();
+
+        assert_eq!( original.len(), deserialized.len() );
+        assert_eq!( original.get( "key" ).unwrap(), deserialized.get( "key" ).unwrap() );
     }
 }
