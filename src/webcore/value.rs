@@ -714,13 +714,16 @@ impl_partial_eq_boilerplate! {
     Number
 }
 
+/// A structure denoting a conversion error encountered when
+/// converting to or from a `Value`.
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum ConversionError {
     TypeMismatch {
         actual_type: &'static str
     },
     NumericConversionError( number::ConversionError ),
-    ValueConversionError( Box< ConversionError > )
+    ValueConversionError( Box< ConversionError > ),
+    Custom( String )
 }
 
 fn value_type_name( value: &Value ) -> &'static str {
@@ -741,7 +744,8 @@ impl fmt::Display for ConversionError {
         match *self {
             ConversionError::TypeMismatch { actual_type } => write!( formatter, "type mismatch; actual type is {}", actual_type ),
             ConversionError::NumericConversionError( ref inner ) => write!( formatter, "{}", inner ),
-            ConversionError::ValueConversionError( ref inner ) => write!( formatter, "value conversion error: {}", inner )
+            ConversionError::ValueConversionError( ref inner ) => write!( formatter, "value conversion error: {}", inner ),
+            ConversionError::Custom( ref message ) => write!( formatter, "{}", message )
         }
     }
 }
@@ -751,7 +755,8 @@ impl error::Error for ConversionError {
         match *self {
             ConversionError::TypeMismatch { .. } => "type mismatch",
             ConversionError::NumericConversionError( ref inner ) => inner.description(),
-            ConversionError::ValueConversionError( _ ) => "value conversion error"
+            ConversionError::ValueConversionError( _ ) => "value conversion error",
+            ConversionError::Custom( ref message ) => message
         }
     }
 }
