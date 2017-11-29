@@ -153,6 +153,8 @@ pub mod web {
     /// A module containing JavaScript DOM events.
     pub mod event {
         pub use webapi::event::{
+            ConcreteEvent,
+
             IEvent,
             IKeyboardEvent,
             IUiEvent,

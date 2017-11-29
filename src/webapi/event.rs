@@ -175,6 +175,7 @@ pub enum EventPhase {
     Bubbling,
 }
 
+/// A trait representing a concrete event type.
 pub trait ConcreteEvent: IEvent {
     /// A string representing the event type.
     ///
