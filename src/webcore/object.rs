@@ -70,7 +70,6 @@ impl< 'a > From< &'a mut Object > for HashMap< String, Value > {
     }
 }
 
-// TODO: It would be nice to specialize this for values which are already of type Value.
 impl< K: AsRef< str >, V: JsSerializable > From< BTreeMap< K, V > > for Object {
     #[inline]
     fn from( value: BTreeMap< K, V > ) -> Self {
