@@ -146,7 +146,7 @@ pub mod web {
 
     /// A module containing HTML DOM elements.
     pub mod html_element {
-        pub use webapi::html_elements::ImageElement;        
+        pub use webapi::html_elements::ImageElement;
         pub use webapi::html_elements::InputElement;
     }
 
@@ -166,7 +166,7 @@ pub mod web {
             KeyboardLocation,
             ModifierKey,
             MouseButton,
-            
+
             ChangeEvent,
             KeypressEvent,
             ClickEvent,

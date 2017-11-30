@@ -42,7 +42,7 @@ impl ImageElement {
     pub fn with_size(width: u32, height: u32) -> ImageElement {
         js! (
             return new Image(@{width}, @{height});
-        ).try_into().unwrap()   
+        ).try_into().unwrap()
     }
 
     /// Returns the HTML `alt` attribute, representing the fallback context for the image.
@@ -197,7 +197,7 @@ impl ImageElement {
         js! { @(no_return)
              @{self}.useMap = @{value};
         }
-    }    
+    }
 
     /// Returns the rendered width of the image in CSS pixels.
     ///
@@ -255,9 +255,9 @@ mod tests {
         assert_eq!(image.width(), 0);
         assert_eq!(image.height(), 0);
         image.set_width(4);
-        image.set_height(5);        
+        image.set_height(5);
         assert_eq!(image.width(), 4);
-        assert_eq!(image.height(), 5);        
+        assert_eq!(image.height(), 5);
     }
 
     #[test]
@@ -292,6 +292,6 @@ mod tests {
         image.set_cross_origin(CrossOriginSetting::UseCredentials);
         assert_eq!(image.cross_origin(), CrossOriginSetting::UseCredentials);
         image.set_cross_origin(CrossOriginSetting::None);
-        assert_eq!(image.cross_origin(), CrossOriginSetting::None);        
+        assert_eq!(image.cross_origin(), CrossOriginSetting::None);
     }
 }

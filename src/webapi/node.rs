@@ -172,7 +172,7 @@ pub trait INode: IEventTarget + FromReference {
             return @{self.as_ref()}.nodeName;
         ).try_into().unwrap()
     }
-    
+
     /// Returns the type of the node.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeType)
@@ -227,7 +227,7 @@ pub trait INode: IEventTarget + FromReference {
             return @{self.as_ref()}.parentElement;
         ).try_into().ok()
     }
-    
+
     /// Returns the node's previous sibling in the tree, or `None` if there isn't such a node.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en/docs/Web/API/Node/previousSibling)
@@ -236,7 +236,7 @@ pub trait INode: IEventTarget + FromReference {
             return @{self.as_ref()}.previousSibling;
         ).try_into().ok()
     }
-    
+
     /// A property which represents the "rendered" text content of a node and its descendants.
     /// It approximates the text the user would get if they highlighted the contents of the element
     /// with the cursor and then copied to the clipboard.
@@ -509,7 +509,7 @@ mod tests {
         assert!(clone.first_child().is_none());
 
         let clone = node.clone_node(CloneKind::Deep);
-        assert_ne!(node.as_ref(), clone.as_ref());        
+        assert_ne!(node.as_ref(), clone.as_ref());
         assert_eq!(clone.node_name(), "DIV");
         let clone_child = clone.first_child().unwrap();
         assert_ne!(clone_child.as_ref(), child.as_ref());
@@ -572,7 +572,7 @@ mod tests {
     fn test_first_child() {
         let node = div();
         assert!(node.first_child().is_none());
-        
+
         let child = div();
         node.append_child(&child);
         assert_eq!(node.first_child().unwrap().as_ref(), child.as_ref());
@@ -582,7 +582,7 @@ mod tests {
     fn test_last_child() {
         let node = div();
         assert!(node.last_child().is_none());
-        
+
         let child1 = div();
         node.append_child(&child1);
         assert_eq!(node.last_child().unwrap().as_ref(), child1.as_ref());
@@ -609,7 +609,7 @@ mod tests {
         let node = div();
         let child1 = div();
         let child2 = div();
-        
+
         node.append_child(&child1);
         assert!(child1.previous_sibling().is_none());
         node.append_child(&child2);
@@ -710,7 +710,7 @@ mod tests {
     #[test]
     fn test_child_nodes() {
         let node = div();
-        let node_list = node.child_nodes();        
+        let node_list = node.child_nodes();
         assert_eq!(node_list.len(), 0);
         assert!(node_list.iter().next().is_none());
 
@@ -723,7 +723,7 @@ mod tests {
         assert_eq!(node_list.len(), 2);
         let mut iter = node_list.iter();
         assert_eq!(iter.next().unwrap().as_ref(), child1.as_ref());
-        assert_eq!(iter.next().unwrap().as_ref(), child2.as_ref());        
+        assert_eq!(iter.next().unwrap().as_ref(), child2.as_ref());
     }
 
     #[test]
