@@ -508,6 +508,7 @@ macro_rules! impl_from_number {
 
 impl_from_number!( i8 i16 i32 u8 u16 u32 f32 f64 );
 impl_infallible_try_from! {
+    Value => Value;
     Undefined => Value;
     impl< 'a > for &'a Undefined => Value;
     impl< 'a > for &'a mut Undefined => Value;
