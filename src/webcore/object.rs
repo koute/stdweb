@@ -26,6 +26,7 @@ impl Object {
         &self.0
     }
 
+    /// Returns the number of elements in this particular object.
     pub fn len( &self ) -> usize {
         js!(
             return Object.keys( @{self} ).length;
