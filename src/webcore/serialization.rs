@@ -12,6 +12,7 @@ use webcore::newtype::Newtype;
 use webcore::try_from::{TryFrom, TryInto};
 use webcore::number::Number;
 use webcore::object::Object;
+use webcore::array::Array;
 
 use webcore::value::{
     Null,
@@ -35,7 +36,8 @@ pub enum Tag {
     Object = 8,
     Reference = 9,
     Function = 10,
-    ObjectReference = 11
+    ObjectReference = 11,
+    ArrayReference = 12
 }
 
 impl Default for Tag {
@@ -203,6 +205,12 @@ struct SerializedUntaggedObjectReference {
     refid: i32
 }
 
+#[repr(C)]
+#[derive(Debug)]
+struct SerializedUntaggedArrayReference {
+    refid: i32
+}
+
 impl SerializedUntaggedString {
     #[inline]
     fn deserialize( &self ) -> String {
@@ -298,6 +306,63 @@ pub fn deserialize_object< R, F: FnOnce( &mut ObjectDeserializer ) -> R >( refer
     output
 }
 
+pub struct ArrayDeserializer< 'a > {
+    slice: &'a [SerializedValue< 'a >],
+    index: usize
+}
+
+impl< 'a > Iterator for ArrayDeserializer< 'a > {
+    type Item = Value;
+    fn next( &mut self ) -> Option< Self::Item > {
+        if self.index >= self.slice.len() {
+            None
+        } else {
+            let value = self.slice[ self.index ].deserialize();
+            self.index += 1;
+            Some( value )
+        }
+    }
+
+    #[inline]
+    fn size_hint( &self ) -> (usize, Option< usize >) {
+        let remaining = self.slice.len() - self.index;
+        (remaining, Some( remaining ))
+    }
+}
+
+impl< 'a > ExactSizeIterator for ArrayDeserializer< 'a > {}
+
+pub fn deserialize_array< R, F: FnOnce( &mut ArrayDeserializer ) -> R >( reference: &Reference, callback: F ) -> R {
+    let mut result: SerializedValue = Default::default();
+    em_asm_int!( "\
+        var array = Module.STDWEB.acquire_js_reference( $0 );\
+        Module.STDWEB.serialize_array( $1, array );",
+        reference.as_raw(),
+        (&mut result as *mut _)
+    );
+
+    assert_eq!( result.tag, Tag::Array );
+    let result = result.as_array();
+
+    let length = result.length as usize;
+    let pointer = result.pointer as *const SerializedValue;
+
+    let slice = unsafe { slice::from_raw_parts( pointer, length ) };
+    let mut iter = ArrayDeserializer {
+        slice,
+        index: 0
+    };
+
+    let output = callback( &mut iter );
+
+    // TODO: Panic-safety.
+    unsafe {
+        ffi::free( pointer as *const u8 );
+    }
+
+    output
+}
+
 impl SerializedUntaggedReference {
     #[inline]
     fn deserialize( &self ) -> Reference {
@@ -311,6 +376,16 @@ impl SerializedUntaggedObjectReference {
         unsafe {
             let reference = Reference::from_raw_unchecked( self.refid );
             Object::from_reference_unchecked( reference )
+        }
+    }
+}
+
+impl SerializedUntaggedArrayReference {
+    #[inline]
+    fn deserialize( &self ) -> Array {
+        unsafe {
+            let reference = Reference::from_raw_unchecked( self.refid );
+            Array::from_reference_unchecked( reference )
         }
     }
 }
@@ -366,6 +441,7 @@ untagged_boilerplate!( test_array, as_array, Tag::Array, SerializedUntaggedArray
 untagged_boilerplate!( test_reference, as_reference, Tag::Reference, SerializedUntaggedReference );
 untagged_boilerplate!( test_function, as_function, Tag::Function, SerializedUntaggedFunction );
 untagged_boilerplate!( test_object_reference, as_object_reference, Tag::ObjectReference, SerializedUntaggedObjectReference );
+untagged_boilerplate!( test_array_reference, as_array_reference, Tag::ArrayReference, SerializedUntaggedArrayReference );
 
 impl< 'a > SerializedValue< 'a > {
     #[doc(hidden)]
@@ -379,10 +455,10 @@ impl< 'a > SerializedValue< 'a > {
             Tag::Str => Value::String( self.as_string().deserialize() ),
             Tag::False => Value::Bool( false ),
             Tag::True => Value::Bool( true ),
-            Tag::Array => Value::Array( self.as_array().deserialize() ),
             Tag::ObjectReference => Value::Object( self.as_object_reference().deserialize() ),
+            Tag::ArrayReference => Value::Array( self.as_array_reference().deserialize() ),
             Tag::Reference => self.as_reference().deserialize().into(),
-            Tag::Function | Tag::Object => unreachable!()
+            Tag::Function | Tag::Object | Tag::Array => unreachable!()
         }
     }
 }
@@ -460,6 +536,22 @@ impl JsSerializable for Object {
 }
 
 __js_serializable_boilerplate!( Object );
+
+impl JsSerializable for Array {
+    #[inline]
+    fn into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+        SerializedUntaggedArrayReference {
+            refid: self.as_reference().as_raw()
+        }.into()
+    }
+
+    #[inline]
+    fn memory_required( &self ) -> usize {
+        0
+    }
+}
+
+__js_serializable_boilerplate!( Array );
 
 impl JsSerializable for bool {
     #[inline]
@@ -758,7 +850,7 @@ impl JsSerializable for Value {
             Value::Bool( ref value ) => value.into_js( arena ),
             Value::Number( ref value ) => value.into_js( arena ),
             Value::String( ref value ) => value.into_js( arena ),
-            Value::Array( ref value ) => value.as_slice().into_js( arena ),
+            Value::Array( ref value ) => value.into_js( arena ),
             Value::Object( ref value ) => value.into_js( arena ),
             Value::Reference( ref value ) => value.into_js( arena )
         }
@@ -771,7 +863,7 @@ impl JsSerializable for Value {
             Value::Bool( value ) => value.memory_required(),
             Value::Number( value ) => value.memory_required(),
             Value::String( ref value ) => value.memory_required(),
-            Value::Array( ref value ) => value.as_slice().memory_required(),
+            Value::Array( ref value ) => value.memory_required(),
             Value::Object( ref value ) => value.memory_required(),
             Value::Reference( ref value ) => value.memory_required()
         }
@@ -965,7 +1057,7 @@ mod test_deserialization {
 
     #[test]
     fn array() {
-        assert_eq!( js! { return [1, 2]; }, Value::Array( vec![ Value::Number( 1.into() ), Value::Number( 2.into() ) ] ) );
+        assert_eq!( js! { return [1, 2]; }.is_array(), true );
     }
 
     #[test]
@@ -994,6 +1086,16 @@ mod test_deserialization {
     }
 
     #[test]
+    fn array_into_vector() {
+        let array = js! { return ["one", 1]; }.into_array().unwrap();
+        let array: Vec< Value > = array.into();
+        assert_eq!( array, &[
+            Value::String( "one".to_string() ),
+            Value::Number( 1.into() )
+        ]);
+    }
+
+    #[test]
     fn reference() {
         assert_eq!( js! { return new Date(); }.is_reference(), true );
     }
@@ -1006,7 +1108,10 @@ mod test_deserialization {
             })( 1, 2 );
         };
 
-        assert_eq!( value, Value::Array( vec![ Value::Number( 1.into() ), Value::Number( 2.into() ) ] ) );
+        assert_eq!( value.is_array(), true );
+
+        let value: Vec< Value > = value.try_into().unwrap();
+        assert_eq!( value, vec![ Value::Number( 1.into() ), Value::Number( 2.into() ) ] );
     }
 
     #[test]
@@ -1199,8 +1304,14 @@ mod test_reserialization {
 
     #[test]
     fn array() {
-        let array = vec![ Value::Number( 1.into() ), Value::Number( 2.into() ) ];
-        assert_eq!( js! { return @{&[1, 2][..]}; }, Value::Array( array ) );
+        let array: Array = vec![ Value::Number( 1.into() ), Value::Number( 2.into() ) ].into();
+        assert_eq!( js! { return @{&array}; }, Value::Array( array ) );
+    }
+
+    #[test]
+    fn array_values_are_not_compared_by_value() {
+        let array: Array = vec![ Value::Number( 1.into() ), Value::Number( 2.into() ) ].into();
+        assert_ne!( js! { return @{&[1, 2][..]}; }, Value::Array( array ) );
     }
 
     #[test]

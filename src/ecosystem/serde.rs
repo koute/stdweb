@@ -156,7 +156,10 @@ impl Serialize for Value {
             Value::Bool( value ) => serializer.serialize_bool( value ),
             Value::Number( ref value ) => value.serialize( serializer ),
             Value::String( ref value ) => serializer.serialize_str( value ),
-            Value::Array( ref value ) => value.serialize( serializer ),
+            Value::Array( ref value ) => {
+                let value: Vec< Value > = value.into();
+                value.serialize( serializer )
+            },
             Value::Object( ref value ) => {
                 let value: BTreeMap< String, Value > = value.into();
                 let mut map = try!( serializer.serialize_map( Some( value.len() ) ) );
@@ -611,7 +614,7 @@ impl ser::SerializeTupleVariant for SerializeTupleVariant {
 
     fn end( self ) -> Result< Self::Ok, Self::Error > {
         let mut object: BTreeMap< String, Value > = BTreeMap::new();
-        object.insert( self.name, Value::Array( self.elements ) );
+        object.insert( self.name, Value::Array( self.elements.into() ) );
         Ok( Value::Object( object.into() ) )
     }
 }
@@ -737,6 +740,7 @@ impl< 'de > de::Deserializer< 'de > for Value {
             Value::Number( value ) => de::Deserializer::deserialize_any( value, visitor ),
             Value::String( value ) => visitor.visit_string( value ),
             Value::Array( value ) => {
+                let value: Vec< _ > = value.into();
                 let length = value.len();
                 let mut deserializer = SeqDeserializer::new( value );
                 let seq = visitor.visit_seq( &mut deserializer )?;
@@ -858,7 +862,7 @@ impl< 'de > de::VariantAccess< 'de > for VariantDeserializer {
     fn tuple_variant< V: Visitor< 'de > >( self, _length: usize, visitor: V ) -> Result< V::Value, Self::Error > {
         match self.value {
             Some( Value::Array( value ) ) => {
-                de::Deserializer::deserialize_any( SeqDeserializer::new( value ), visitor )
+                de::Deserializer::deserialize_any( SeqDeserializer::new( value.into() ), visitor )
             },
             Some( other ) => Err( de::Error::invalid_type( other.unexpected(), &"tuple variant" ) ),
             None => Err( de::Error::invalid_type( de::Unexpected::UnitVariant, &"tuple variant" ) )
@@ -1361,7 +1365,10 @@ mod tests {
     #[test]
     fn deserialize_value_array() {
         let value: Value = serde_json::from_str( "[true, false]" ).unwrap();
-        assert_eq!( value, Value::Array( vec![ Value::Bool( true ), Value::Bool( false ) ] ) );
+        assert_eq!( value.is_array(), true );
+
+        let value: Vec< Value > = value.try_into().unwrap();
+        assert_eq!( value, vec![ Value::Bool( true ), Value::Bool( false ) ] );
     }
 
     #[test]
@@ -1493,5 +1500,19 @@ mod tests {
 
         assert_eq!( original.len(), deserialized.len() );
         assert_eq!( original.get( "key" ).unwrap(), deserialized.get( "key" ).unwrap() );
+    }
+
+    #[test]
+    fn serialization_and_deserialization_of_array_with_serializable_elements() {
+        let original = vec![ StructureSerializable {
+            number: 123,
+            string: "Hello!".to_owned()
+        }];
+
+        let value: Value = (&original).into();
+        let deserialized: Vec< StructureSerializable > = value.try_into().unwrap();
+
+        assert_eq!( original.len(), deserialized.len() );
+        assert_eq!( original[ 0 ], deserialized[ 0 ] );
     }
 }

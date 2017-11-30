@@ -55,7 +55,7 @@ pub fn initialize() {
                     output[ key ] = value;
                 }
                 return output;
-            } else if( kind === 9 || kind == 11 ) {
+            } else if( kind === 9 || kind == 11 || kind == 12 ) {
                 return Module.STDWEB.acquire_js_reference( HEAP32[ address / 4 ] );
             } else if( kind === 10 ) {
                 var adapter_pointer = HEAPU32[ address / 4 ];
@@ -63,7 +63,7 @@ pub fn initialize() {
                 var deallocator_pointer = HEAPU32[ (address + 8) / 4 ];
                 var output = function() {
                     var args = _malloc( 16 );
-                    Module.STDWEB.from_js( args, arguments );
+                    Module.STDWEB.serialize_array( args, arguments );
                     Runtime.dynCall( "vii", adapter_pointer, [pointer, args] );
                     var result = Module.STDWEB.tmp;
                     Module.STDWEB.tmp = null;
@@ -105,6 +105,17 @@ pub fn initialize() {
             }
         };
 
+        Module.STDWEB.serialize_array = function serialize_array( address, value ) {
+            var length = value.length;
+            var pointer = _malloc( length * 16 );
+            HEAPU8[ address + 12 ] = 7;
+            HEAPU32[ address / 4 ] = pointer;
+            HEAPU32[ (address + 4) / 4 ] = length;
+            for( var i = 0; i < length; ++i ) {
+                Module.STDWEB.from_js( pointer + i * 16, value[ i ] );
+            }
+        };
+
         Module.STDWEB.from_js = function from_js( address, value ) {
             var kind = Object.prototype.toString.call( value );
             if( kind === "[object String]" ) {
@@ -130,20 +141,13 @@ pub fn initialize() {
                 HEAPU8[ address + 12 ] = 5;
             } else if( value === true ) {
                 HEAPU8[ address + 12 ] = 6;
-            } else if( kind === "[object Array]" || kind === "[object Arguments]" ) {
-                var length = value.length;
-                var pointer = _malloc( length * 16 );
-                HEAPU8[ address + 12 ] = 7;
-                HEAPU32[ address / 4 ] = pointer;
-                HEAPU32[ (address + 4) / 4 ] = length;
-                for( var i = 0; i < length; ++i ) {
-                    Module.STDWEB.from_js( pointer + i * 16, value[ i ] );
-                }
             } else {
                 var refid = Module.STDWEB.acquire_rust_reference( value );
                 var id = 9;
                 if( kind === "[object Object]" ) {
                     id = 11;
+                } else if( kind === "[object Array]" || kind === "[object Arguments]" ) {
+                    id = 12;
                 }
 
                 HEAPU8[ address + 12 ] = id;

@@ -23,14 +23,14 @@ impl TryFrom< JsonValue > for Value {
             },
             JsonValue::String( value ) => Value::String( value ),
             JsonValue::Array( value ) => {
-                let mut vector = Vec::new();
+                let mut vector: Vec< Value > = Vec::new();
 
                 vector.reserve( value.len() );
                 for element in value.into_iter() {
                     vector.push( element.try_into()? );
                 }
 
-                Value::Array( vector )
+                Value::Array( vector.into() )
             },
             JsonValue::Object( value ) => {
                 let mut map: BTreeMap< String, Value > = BTreeMap::new();

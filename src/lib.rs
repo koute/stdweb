@@ -100,6 +100,7 @@ pub use webcore::value::{
 };
 pub use webcore::number::Number;
 pub use webcore::object::Object;
+pub use webcore::array::Array;
 
 #[cfg(feature = "serde")]
 /// A module with serde-related APIs.

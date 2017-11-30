@@ -10,3 +10,4 @@ pub mod newtype;
 pub mod try_from;
 pub mod void;
 pub mod object;
+pub mod array;

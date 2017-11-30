@@ -6,6 +6,7 @@ use webcore::void::Void;
 use webcore::try_from::{TryFrom, TryInto};
 use webcore::number::{self, Number};
 use webcore::object::Object;
+use webcore::array::Array;
 use webcore::serialization::JsSerializable;
 
 /// A unit type representing JavaScript's `undefined`.
@@ -153,7 +154,7 @@ pub enum Value {
     Bool( bool ),
     Number( Number ),
     String( String ),
-    Array( Vec< Value > ),
+    Array( Array ),
     Object( Object ),
     Reference( Reference )
 }
@@ -179,6 +180,16 @@ impl Value {
         }
     }
 
+    /// Checks whenever the Value is of the Array variant.
+    #[inline]
+    pub fn is_array( &self ) -> bool {
+        if let Value::Array( _ ) = *self {
+            true
+        } else {
+            false
+        }
+    }
+
     /// Gets a reference to the [Reference](struct.Reference.html) inside this `Value`.
     #[inline]
     pub fn as_reference( &self ) -> Option< &Reference > {
@@ -197,6 +208,15 @@ impl Value {
         }
     }
 
+    /// Gets a reference to the [Array](struct.Array.html) inside this `Value`.
+    #[inline]
+    pub fn as_array( &self ) -> Option< &Array > {
+        match *self {
+            Value::Array( ref array ) => Some( array ),
+            _ => None
+        }
+    }
+
     /// Returns the [Reference](struct.Reference.html) inside this `Value`.
     #[inline]
     pub fn into_reference( self ) -> Option< Reference > {
@@ -211,6 +231,15 @@ impl Value {
     pub fn into_object( self ) -> Option< Object > {
         match self {
             Value::Object( object ) => Some( object ),
+            _ => None
+        }
+    }
+
+    /// Returns the [Array](struct.Array.html) inside this `Value`.
+    #[inline]
+    pub fn into_array( self ) -> Option< Array > {
+        match self {
+            Value::Array( array ) => Some( array ),
             _ => None
         }
     }
@@ -371,37 +400,36 @@ impl< 'a > From< &'a mut char > for Value {
     }
 }
 
-impl< T: Into< Value > > From< Vec< T > > for Value {
+impl< T > From< Vec< T > > for Value where T: JsSerializable {
     #[inline]
     fn from( value: Vec< T > ) -> Self {
-        Value::Array( value.into_iter().map( |element| element.into() ).collect() )
+        value[..].into()
     }
 }
 
-impl< 'a, T > From< &'a Vec< T > > for Value where &'a T: Into< Value > {
+impl< 'a, T > From< &'a Vec< T > > for Value where T: JsSerializable {
     #[inline]
     fn from( value: &'a Vec< T > ) -> Self {
         value[..].into()
     }
 }
 
-impl< 'a, T > From< &'a mut Vec< T > > for Value where &'a T: Into< Value > {
+impl< 'a, T > From< &'a mut Vec< T > > for Value where T: JsSerializable {
     #[inline]
     fn from( value: &'a mut Vec< T > ) -> Self {
         value[..].into()
     }
 }
 
-impl< 'a, T > From< &'a [T] > for Value where &'a T: Into< Value > {
+impl< 'a, T > From< &'a [T] > for Value where T: JsSerializable {
     #[inline]
     fn from( value: &'a [T] ) -> Self {
-        Value::Array( value.iter().map( |element| {
-            element.into()
-        }).collect() )
+        let array: Array = value.into();
+        Value::Array( array )
     }
 }
 
-impl< 'a, T > From< &'a mut [T] > for Value where &'a T: Into< Value > {
+impl< 'a, T > From< &'a mut [T] > for Value where T: JsSerializable {
     #[inline]
     fn from( value: &'a mut [T] ) -> Self {
         (value as &[T]).into()
@@ -526,11 +554,11 @@ impl_infallible_try_from! {
     char => Value;
     impl< 'a > for &'a char => Value;
     impl< 'a > for &'a mut char => Value;
-    impl< T > for Vec< T > => Value where (T: Into< Value >);
-    impl< 'a, T > for &'a Vec< T > => Value where (&'a T: Into< Value >);
-    impl< 'a, T > for &'a mut Vec< T > => Value where (&'a T: Into< Value >);
-    impl< 'a, T > for &'a [T] => Value where (&'a T: Into< Value >);
-    impl< 'a, T > for &'a mut [T] => Value where (&'a T: Into< Value >);
+    impl< T > for Vec< T > => Value where (T: JsSerializable);
+    impl< 'a, T > for &'a Vec< T > => Value where (T: JsSerializable);
+    impl< 'a, T > for &'a mut Vec< T > => Value where (T: JsSerializable);
+    impl< 'a, T > for &'a [T] => Value where (T: JsSerializable);
+    impl< 'a, T > for &'a mut [T] => Value where (T: JsSerializable);
 
     impl< K, V > for BTreeMap< K, V > => Value where (K: AsRef< str >, V: JsSerializable);
     impl< 'a, K, V > for &'a BTreeMap< K, V > => Value where (K: AsRef< str >, V: JsSerializable);
@@ -548,6 +576,13 @@ impl_infallible_try_from! {
     impl< K, V > for HashMap< K, V > => Object where (K: AsRef< str > + Eq + Hash, V: JsSerializable);
     impl< 'a, K, V > for &'a HashMap< K, V > => Object where (K: AsRef< str > + Eq + Hash, V: JsSerializable);
     impl< 'a, K, V > for &'a mut HashMap< K, V > => Object where (K: AsRef< str > + Eq + Hash, V: JsSerializable);
+
+    // TODO: Move these to array.rs
+    impl< T > for Vec< T > => Array where (T: JsSerializable);
+    impl< 'a, T > for &'a Vec< T > => Array where (T: JsSerializable);
+    impl< 'a, T > for &'a mut Vec< T > => Array where (T: JsSerializable);
+    impl< 'a, T > for &'a [T] => Array where (T: JsSerializable);
+    impl< 'a, T > for &'a mut [T] => Array where (T: JsSerializable);
 }
 
 macro_rules! impl_try_from_number {
@@ -614,23 +649,6 @@ impl PartialEq< String > for Value {
             Value::String( ref left ) => left == right,
             _ => false
         }
-    }
-}
-
-impl< T > PartialEq< [T] > for Value where Value: PartialEq< T > {
-    #[inline]
-    fn eq( &self, right: &[T] ) -> bool {
-        match *self {
-            Value::Array( ref left ) => left.iter().zip( right.iter() ).all( |(left, right)| left == right ),
-            _ => false
-        }
-    }
-}
-
-impl< 'a, T > PartialEq< &'a [T] > for Value where Value: PartialEq< T > {
-    #[inline]
-    fn eq( &self, right: &&'a [T] ) -> bool {
-        <Self as PartialEq< [T] >>::eq( self, right )
     }
 }
 
@@ -823,7 +841,7 @@ impl ConversionError {
     }
 
     #[inline]
-    fn value_conversion_error( inner: ConversionError ) -> Self {
+    pub(crate) fn value_conversion_error( inner: ConversionError ) -> Self {
         ConversionError::ValueConversionError( Box::new( inner ) )
     }
 }
@@ -911,23 +929,13 @@ impl< E: Into< ConversionError >, V: TryFrom< Value, Error = E > > TryFrom< Valu
     }
 }
 
-impl< T: TryFrom< Value, Error = ConversionError > > TryFrom< Value > for Vec< T > {
+impl< E: Into< ConversionError >, T: TryFrom< Value, Error = E > > TryFrom< Value > for Vec< T > {
     type Error = ConversionError;
 
     #[inline]
     fn try_from( value: Value ) -> Result< Self, Self::Error > {
         match value {
-            Value::Array( array ) => {
-                let mut output = Vec::with_capacity( array.len() );
-                for value in array {
-                    let value = match value.try_into() {
-                        Ok( value ) => value,
-                        Err( error ) => return Err( ConversionError::value_conversion_error( error ) )
-                    };
-                    output.push( value );
-                }
-                Ok( output )
-            },
+            Value::Array( array ) => array.try_into(),
             _ => Err( ConversionError::type_mismatch( &value ) )
         }
     }
@@ -1082,14 +1090,6 @@ mod tests {
         assert!( &"Hello!".to_owned() == &value );
 
         assert!( value != "Bob" );
-    }
-
-    #[test]
-    fn array_equality() {
-        let value = Value::Array( vec![ Value::Bool( true ), Value::Bool( false ) ] );
-        assert!( value == &[true, false][..] );
-        assert!( value != &[true, true][..] );
-        // Looks like it's not possible to define a symmetric PartialEq for arrays. );
     }
 
     #[test]
