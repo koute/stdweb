@@ -2,6 +2,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::hash::Hash;
 use std::fmt;
 use std::error;
+use webcore::void::Void;
 use webcore::try_from::{TryFrom, TryInto};
 use webcore::number::{self, Number};
 use webcore::object::Object;
@@ -803,6 +804,12 @@ impl error::Error for ConversionError {
 impl From< number::ConversionError > for ConversionError {
     fn from( inner: number::ConversionError ) -> Self {
         ConversionError::NumericConversionError( inner )
+    }
+}
+
+impl From< Void > for ConversionError {
+    fn from( _: Void ) -> Self {
+        unreachable!();
     }
 }
 
