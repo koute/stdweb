@@ -1,4 +1,4 @@
 target
 Cargo.lock
-examples/todomvc/target
-examples/todomvc/Cargo.lock
+examples/*/target
+examples/*/Cargo.lock
