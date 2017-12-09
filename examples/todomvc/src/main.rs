@@ -5,15 +5,18 @@ extern crate stdweb;
 extern crate serde_derive;
 extern crate serde_json;
 
+use std::collections::HashMap;
 use std::cell::RefCell;
 use std::rc::Rc;
 
 use stdweb::unstable::TryInto;
 use stdweb::web::{
+    IDate,
     IEventTarget,
     IElement,
     IHtmlElement,
     INode,
+    Date,
     HtmlElement,
     Element,
     document,
@@ -235,6 +238,23 @@ fn main() {
     window().add_event_listener( enclose!( (state) move |_: HashChangeEvent| {
         update_dom( &state );
     }));
+
+    let d: Date = js!( return new Date(); ).try_into().unwrap();
+    let todays_date: HtmlElement = document().query_selector( "header h2" ).unwrap().try_into().unwrap();
+
+    let options: HashMap< String, String > = [
+        ("weekday".to_string(), "long".to_string()),
+        ("year".to_string(),    "numeric".to_string()),
+        ("month".to_string(),   "long".to_string()),
+        ("day".to_string(),     "numeric".to_string()),
+    ].iter().cloned().collect();
+
+    let date_string = format!(
+        "{}",
+        d.to_locale_date_string(Some( &"en-US" ), Some( &options ))
+    );
+
+    todays_date.set_text_content( &date_string );
 
     update_dom( &state );
     stdweb::event_loop();
