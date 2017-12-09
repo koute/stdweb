@@ -126,7 +126,7 @@ pub mod web {
         alert
     };
     pub use webapi::cross_origin_setting::CrossOriginSetting;
-    pub use webapi::date::Date;
+    pub use webapi::date::{IDate, Date};
     pub use webapi::event_target::{IEventTarget, EventTarget, EventListenerHandle};
     pub use webapi::node::{INode, Node, CloneKind};
     pub use webapi::element::{IElement, Element};
@@ -227,3 +227,4 @@ pub mod private {
     #[inline(always)]
     pub fn noop< T >( _: &mut T ) {}
 }
+
