@@ -330,7 +330,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
                     ("hours".to_string(),   Value::Number( args[0].into())),
                     ("minutes".to_string(), Value::Number( args[1].into())),
                     ("seconds".to_string(), Value::Number( args[2].into())),
-                    ("ms".to_string(),      Value::Number( args[2].into()))
+                    ("ms".to_string(),      Value::Number( args[3].into()))
                 ].iter().cloned().collect();
 
                 js!(
@@ -447,7 +447,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
                     ("hours".to_string(),   Value::Number( args[0].into())),
                     ("minutes".to_string(), Value::Number( args[1].into())),
                     ("seconds".to_string(), Value::Number( args[2].into())),
-                    ("ms".to_string(),      Value::Number( args[2].into()))
+                    ("ms".to_string(),      Value::Number( args[3].into()))
                 ].iter().cloned().collect();
 
                 js!(
