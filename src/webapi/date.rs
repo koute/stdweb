@@ -899,15 +899,5 @@ mod tests {
     fn test_value_of() {
 
     }
-
-    #[test]
-    fn test_() {
-
-    }
-
-    #[test]
-    fn test_() {
-
-    }
 }
 
