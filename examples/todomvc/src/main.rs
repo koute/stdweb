@@ -242,11 +242,11 @@ fn main() {
     let d: Date = js!( return new Date(); ).try_into().unwrap();
     let todays_date: HtmlElement = document().query_selector( "header h2" ).unwrap().try_into().unwrap();
 
-    let options: HashMap< String, String > = [
-        ("weekday".to_string(), "long".to_string()),
-        ("year".to_string(),    "numeric".to_string()),
-        ("month".to_string(),   "long".to_string()),
-        ("day".to_string(),     "numeric".to_string()),
+    let options: HashMap< &str, &str > = [
+        ("weekday", "long"),
+        ("year",    "numeric"),
+        ("month",   "long"),
+        ("day",     "numeric"),
     ].iter().cloned().collect();
 
     let date_string = format!(
