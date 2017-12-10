@@ -808,7 +808,7 @@ mod tests {
 
     #[test]
     fn test_parse() {
-
+        assert!(Date::parse("Wed, 09 Aug 1995 00:00:00 GMT") == 807926400000);
     }
 
     #[test]
