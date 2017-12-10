@@ -82,7 +82,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse)
     #[inline]
     fn parse( date_string: &str ) -> i64 {
-        js!( return Date.parse( @{date_string} ) ).try_into().unwrap()
+        js!( return Date.parse( @{date_string} ); ).try_into().unwrap()
     }
 
     /// The get_date() method returns the day of the month for the specified date according to local
@@ -91,7 +91,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getDate)
     #[inline]
     fn get_date( &self ) -> i32 {
-        js!( return @{self.as_ref()}.getDate() ).try_into().unwrap()
+        js!( return @{self.as_ref()}.getDate(); ).try_into().unwrap()
     }
 
     /// The get_day() method returns the day of the week for the specified date according to local
