@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>stdweb • Hasher</title>
+    </head>
+    <body>
+        <div class="form">
+            <input type="text" name="input" id="input" value="Type here">
+        </div>
+        <h3>Digest:</h3>
+        <span id="output">Digest will be shown here</span>
+        <script src="js/app.js"></script>
+        <script>
+            Rust.hasher.then( function( hasher ) {
+                var input = document.getElementById( "input" );
+                var output = document.getElementById( "output" );
+                output.innerText = hasher.sha1( input.value );
+
+                input.addEventListener( "keyup", function( event ) {
+                    output.innerText = hasher.sha1( input.value );
+                });
+            });
+        </script>
+    </body>
+</html>
