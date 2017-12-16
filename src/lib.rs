@@ -70,7 +70,7 @@
 #![cfg_attr(feature = "dev", allow(unstable_features))]
 #![cfg_attr(feature = "dev", feature(plugin))]
 #![cfg_attr(feature = "dev", plugin(clippy))]
-#![recursion_limit="750"]
+#![recursion_limit="1500"]
 
 #[cfg(feature = "serde")]
 #[macro_use]
