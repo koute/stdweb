@@ -17,7 +17,7 @@ impl ArrayKind for u8 {
     }
 
     fn into_typed_array( slice: &[Self] ) -> TypedArray< Self > {
-        let raw = em_asm_int!(
+        let raw = __js_raw_asm!(
             "return Module.STDWEB.acquire_rust_reference( HEAPU8.slice( $0, $1 ) );",
             slice.as_ptr() as i32,
             (slice.as_ptr() as i32 + slice.len() as i32)
@@ -32,7 +32,7 @@ impl ArrayKind for u8 {
 
     // This is unsafe due to the erasure of the slice's lifetime.
     unsafe fn into_typed_array_no_copy( slice: &[Self] ) -> TypedArray< Self > {
-        let raw = em_asm_int!(
+        let raw = __js_raw_asm!(
             "return Module.STDWEB.acquire_rust_reference( new Uint8Array( HEAPU8.buffer, $0, $1 ) );",
             slice.as_ptr() as i32,
             slice.len() as i32

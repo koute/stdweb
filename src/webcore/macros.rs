@@ -36,60 +36,86 @@ macro_rules! call_with_repeated_tail {
     };
 }
 
-macro_rules! em_asm_int {
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __js_raw_asm {
     ($code:expr, $($arg:expr),*) => {
         {
-            const CODE: &'static str = concat!( $code, "\0" );
-
             #[allow(unused_unsafe)]
             unsafe {
-                use webcore::ffi;
-                ffi::emscripten_asm_const_int(
+                const CODE: &'static str = concat!( $code, "\0" );
+                $crate::private::emscripten_asm_const_int(
                     CODE as *const _ as *const u8,
                     $($arg),*
                 )
             }
         }
     };
-    ($code:expr) => {
-        {
-            const CODE: &'static str = concat!( $code, "\0" );
-            unsafe {
-                use webcore::ffi;
-                ffi::emscripten_asm_const_int(
-                    CODE as *const _ as *const u8
-                )
-            }
-        }
-    };
+
+    ($code:expr) => { __js_raw_asm!( $code, ) };
 }
 
-macro_rules! em_asm_double {
-    ($code:expr, $($arg:expr),*) => {
-        {
-            const CODE: &'static str = concat!( $code, "\0" );
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __js_raw_asm {
+    ($code:expr, ) => {{
+        #[allow(unused_unsafe)]
+        unsafe {
+            $crate::private::__js_0( $code as *const _ as *const u8 )
+        }
+    }};
 
-            #[allow(unused_unsafe)]
-            unsafe {
-                use webcore::ffi;
-                ffi::emscripten_asm_const_double(
-                    CODE as *const _ as *const u8,
-                    $($arg),*
-                )
-            }
+    ($code:expr, $a0:expr) => {{
+        #[allow(unused_unsafe)]
+        unsafe {
+            #[allow(trivial_numeric_casts)]
+            $crate::private::__js_1( $a0 as i32, $code as *const _ as *const u8 )
         }
-    };
-    ($code:expr) => {
-        {
-            const CODE: &'static str = concat!( $code, "\0" );
-            unsafe {
-                use webcore::ffi;
-                ffi::emscripten_asm_const_double(
-                    CODE as *const _ as *const u8
-                )
-            }
+    }};
+
+    ($code:expr, $a0:expr, $a1:expr) => {{
+        #[allow(unused_unsafe)]
+        unsafe {
+            #[allow(trivial_numeric_casts)]
+            $crate::private::__js_2( $a0 as i32, $a1 as i32, $code as *const _ as *const u8 )
         }
-    };
+    }};
+
+    ($code:expr, $a0:expr, $a1:expr, $a2:expr) => {{
+        #[allow(unused_unsafe)]
+        unsafe {
+            #[allow(trivial_numeric_casts)]
+            $crate::private::__js_3( $a0 as i32, $a1 as i32, $a2 as i32, $code as *const _ as *const u8 )
+        }
+    }};
+
+    ($code:expr, $a0:expr, $a1:expr, $a2:expr, $a3:expr) => {{
+        #[allow(unused_unsafe)]
+        unsafe {
+            #[allow(trivial_numeric_casts)]
+            $crate::private::__js_4( $a0 as i32, $a1 as i32, $a2 as i32, $a3 as i32, $code as *const _ as *const u8 )
+        }
+    }};
+
+    ($code:expr, $a0:expr, $a1:expr, $a2:expr, $a3:expr, $a4:expr) => {{
+        #[allow(unused_unsafe)]
+        unsafe {
+            #[allow(trivial_numeric_casts)]
+            $crate::private::__js_5( $a0 as i32, $a1 as i32, $a2 as i32, $a3 as i32, $a4 as i32, $code as *const _ as *const u8 )
+        }
+    }};
+
+    ($code:expr, $a0:expr, $a1:expr, $a2:expr, $a3:expr, $a4:expr, $a5:expr) => {{
+        #[allow(unused_unsafe)]
+        unsafe {
+            #[allow(trivial_numeric_casts)]
+            $crate::private::__js_6( $a0 as i32, $a1 as i32, $a2 as i32, $a3 as i32, $a4 as i32, $a5 as i32, $code as *const _ as *const u8 )
+        }
+    }};
+
+    ($code:expr) => { __js_raw_asm!( $code, ) };
 }
 
 // Abandon all hope, ye who enter here!
@@ -200,28 +226,28 @@ macro_rules! _js_impl {
         _js_impl!( @serialize $arena [$($rest_args)*] [$($rest_names)*] );
     };
 
-    (@call_emscripten [$a0:tt] [$a0_name:tt $($arg_names:tt)*]) => {
-        $crate::private::emscripten_asm_const_int( $a0_name );
+    (@call_emscripten [$code:expr] [] [$($arg_names:tt)*]) => {
+        __js_raw_asm!( $code );
     };
 
-    (@call_emscripten [$a0:tt $a1:tt] [$a0_name:tt $a1_name:tt $($arg_names:tt)*]) => {
-        $crate::private::emscripten_asm_const_int( $a0_name, $a1_name );
+    (@call_emscripten [$code:expr] [$a1:tt] [$a1_name:tt $($arg_names:tt)*]) => {
+        __js_raw_asm!( $code, $a1_name );
     };
 
-    (@call_emscripten [$a0:tt $a1:tt $a2:tt] [$a0_name:tt $a1_name:tt $a2_name:tt $($arg_names:tt)*]) => {
-        $crate::private::emscripten_asm_const_int( $a0_name, $a1_name, $a2_name );
+    (@call_emscripten [$code:expr] [$a1:tt $a2:tt] [$a1_name:tt $a2_name:tt $($arg_names:tt)*]) => {
+        __js_raw_asm!( $code, $a1_name, $a2_name );
     };
 
-    (@call_emscripten [$a0:tt $a1:tt $a2:tt $a3:tt] [$a0_name:tt $a1_name:tt $a2_name:tt $a3_name:tt $($arg_names:tt)*]) => {
-        $crate::private::emscripten_asm_const_int( $a0_name, $a1_name, $a2_name, $a3_name );
+    (@call_emscripten [$code:expr] [$a1:tt $a2:tt $a3:tt] [$a1_name:tt $a2_name:tt $a3_name:tt $($arg_names:tt)*]) => {
+        __js_raw_asm!( $code, $a1_name, $a2_name, $a3_name );
     };
 
-    (@call_emscripten [$a0:tt $a1:tt $a2:tt $a3:tt $a4:tt] [$a0_name:tt $a1_name:tt $a2_name:tt $a3_name:tt $a4_name:tt $($arg_names:tt)*]) => {
-        $crate::private::emscripten_asm_const_int( $a0_name, $a1_name, $a2_name, $a3_name, $a4_name );
+    (@call_emscripten [$code:expr] [$a1:tt $a2:tt $a3:tt $a4:tt] [$a1_name:tt $a2_name:tt $a3_name:tt $a4_name:tt $($arg_names:tt)*]) => {
+        __js_raw_asm!( $code, $a1_name, $a2_name, $a3_name, $a4_name );
     };
 
-    (@call_emscripten [$a0:tt $a1:tt $a2:tt $a3:tt $a4:tt $a5:tt] [$a0_name:tt $a1_name:tt $a2_name:tt $a3_name:tt $a4_name:tt $a5_name:tt $($arg_names:tt)*]) => {
-        $crate::private::emscripten_asm_const_int( $a0_name, $a1_name, $a2_name, $a3_name, $a4_name, $a5_name );
+    (@call_emscripten [$code:expr] [$a1:tt $a2:tt $a3:tt $a4:tt $a5:tt] [$a1_name:tt $a2_name:tt $a3_name:tt $a4_name:tt $a5_name:tt $($arg_names:tt)*]) => {
+        __js_raw_asm!( $code, $a1_name, $a2_name, $a3_name, $a4_name, $a5_name );
     };
 
     (@call [$code:expr, [$($flags:tt)*]] [$($args:tt)*] ->) => {
@@ -233,17 +259,6 @@ macro_rules! _js_impl {
             if cfg!( test ) {
                 $crate::initialize();
             }
-
-            const CODE_STR: &'static str = _js_impl!(
-                @if no_return in [$($flags)*] {
-                    concat!( $code, "\0" )
-                } else {
-                    concat!( "Module.STDWEB.from_js($0, (function(){", $code, "})());\0" )
-                }
-            );
-
-            #[allow(dead_code)]
-            const CODE: *const u8 = CODE_STR as *const _ as *const u8;
 
             let mut memory_required = 0;
             _js_impl!( @prepare memory_required [$($args)*] [a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10] );
@@ -260,10 +275,20 @@ macro_rules! _js_impl {
             unsafe {
                 _js_impl!(
                     @if no_return in [$($flags)*] {
-                        _js_impl!( @call_emscripten [CODE $($args)*] [CODE a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10] );
+                        _js_impl!(
+                            @call_emscripten
+                            [$code]
+                            [$($args)*]
+                            [a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10]
+                        );
                     } else {{
                         let mut result: $crate::private::SerializedValue = Default::default();
-                        _js_impl!( @call_emscripten [CODE RESULT $($args)*] [CODE (&mut result as *mut _) a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10] );
+                        _js_impl!(
+                            @call_emscripten
+                            [concat!( "Module.STDWEB.from_js($0, (function(){", $code, "})());\0" )]
+                            [RESULT $($args)*]
+                            [(&mut result as *mut _) a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10]
+                        );
                         result.deserialize()
                     }}
                 )
@@ -490,7 +515,7 @@ macro_rules! instanceof {
         use $crate::unstable::TryInto;
         let reference: Option< &$crate::Reference > = (&$value).try_into().ok();
         reference.map( |reference| {
-            em_asm_int!(
+            __js_raw_asm!(
                 concat!( "return (Module.STDWEB.acquire_js_reference( $0 ) instanceof ", stringify!( $kind ), ") | 0;" ),
                 reference.as_raw()
             ) == 1

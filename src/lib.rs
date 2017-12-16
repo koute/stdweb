@@ -198,7 +198,7 @@ pub mod unstable {
 
 #[doc(hidden)]
 pub mod private {
-    pub use webcore::ffi::emscripten_asm_const_int;
+    pub use webcore::ffi::exports::*;
     pub use webcore::serialization::{
         JsSerializable,
         JsSerializableOwned,

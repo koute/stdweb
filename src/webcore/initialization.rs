@@ -16,6 +16,95 @@ pub fn initialize() {
 
     js! { @(no_return)
         Module.STDWEB = {};
+    };
+
+    #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+    js! { @(no_return)
+        Module.STDWEB.alloc = _malloc;
+        Module.STDWEB.dyncall = Runtime.dynCall;
+        Module.STDWEB.utf8_len = lengthBytesUTF8;
+    };
+
+    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+    js! { @(no_return)
+        Module.STDWEB.alloc = Module.web_malloc;
+        Module.STDWEB.dyncall = function( signature, ptr, args ) {
+            return Module.web_table.get( ptr ).apply( null, args );
+        };
+        // This is based on code from Emscripten's preamble.js.
+        Module.STDWEB.utf8_len = function utf8_len( str ) {
+            let len = 0;
+            for( let i = 0; i < str.length; ++i ) {
+                // Gotcha: charCodeAt returns a 16-bit word that is a UTF-16 encoded code unit, not a Unicode code point of the character! So decode UTF16->UTF32->UTF8.
+                // See http://unicode.org/faq/utf_bom.html#utf16-3
+                let u = str.charCodeAt( i ); // possibly a lead surrogate
+                if( u >= 0xD800 && u <= 0xDFFF ) {
+                    u = 0x10000 + ((u & 0x3FF) << 10) | (str.charCodeAt( ++i ) & 0x3FF);
+                }
+
+                if( u <= 0x7F ) {
+                    ++len;
+                } else if( u <= 0x7FF ) {
+                    len += 2;
+                } else if( u <= 0xFFFF ) {
+                    len += 3;
+                } else if( u <= 0x1FFFFF ) {
+                    len += 4;
+                } else if( u <= 0x3FFFFFF ) {
+                    len += 5;
+                } else {
+                    len += 6;
+                }
+            }
+            return len;
+        };
+    };
+
+    js! { @(no_return)
+        // This is based on code from Emscripten's preamble.js.
+        Module.STDWEB.to_utf8 = function to_utf8( str, addr ) {
+            for( var i = 0; i < str.length; ++i ) {
+                // Gotcha: charCodeAt returns a 16-bit word that is a UTF-16 encoded code unit, not a Unicode code point of the character! So decode UTF16->UTF32->UTF8.
+                // See http://unicode.org/faq/utf_bom.html#utf16-3
+                // For UTF8 byte structure, see http://en.wikipedia.org/wiki/UTF-8#Description and https://www.ietf.org/rfc/rfc2279.txt and https://tools.ietf.org/html/rfc3629
+                var u = str.charCodeAt( i ); // possibly a lead surrogate
+                if( u >= 0xD800 && u <= 0xDFFF ) {
+                    u = 0x10000 + ((u & 0x3FF) << 10) | (str.charCodeAt( ++i ) & 0x3FF);
+                }
+
+                if( u <= 0x7F ) {
+                    HEAPU8[ addr++ ] = u;
+                } else if( u <= 0x7FF ) {
+                    HEAPU8[ addr++ ] = 0xC0 | (u >> 6);
+                    HEAPU8[ addr++ ] = 0x80 | (u & 63);
+                } else if( u <= 0xFFFF ) {
+                    HEAPU8[ addr++ ] = 0xE0 | (u >> 12);
+                    HEAPU8[ addr++ ] = 0x80 | ((u >> 6) & 63);
+                    HEAPU8[ addr++ ] = 0x80 | (u & 63);
+                } else if( u <= 0x1FFFFF ) {
+                    HEAPU8[ addr++ ] = 0xF0 | (u >> 18);
+                    HEAPU8[ addr++ ] = 0x80 | ((u >> 12) & 63);
+                    HEAPU8[ addr++ ] = 0x80 | ((u >> 6) & 63);
+                    HEAPU8[ addr++ ] = 0x80 | (u & 63);
+                } else if( u <= 0x3FFFFFF ) {
+                    HEAPU8[ addr++ ] = 0xF8 | (u >> 24);
+                    HEAPU8[ addr++ ] = 0x80 | ((u >> 18) & 63);
+                    HEAPU8[ addr++ ] = 0x80 | ((u >> 12) & 63);
+                    HEAPU8[ addr++ ] = 0x80 | ((u >> 6) & 63);
+                    HEAPU8[ addr++ ] = 0x80 | (u & 63);
+                } else {
+                    HEAPU8[ addr++ ] = 0xFC | (u >> 30);
+                    HEAPU8[ addr++ ] = 0x80 | ((u >> 24) & 63);
+                    HEAPU8[ addr++ ] = 0x80 | ((u >> 18) & 63);
+                    HEAPU8[ addr++ ] = 0x80 | ((u >> 12) & 63);
+                    HEAPU8[ addr++ ] = 0x80 | ((u >> 6) & 63);
+                    HEAPU8[ addr++ ] = 0x80 | (u & 63);
+                }
+            }
+        };
+    };
+
+    js! { @(no_return)
         Module.STDWEB.to_js = function to_js( address ) {
             var kind = HEAPU8[ address + 12 ];
             if( kind === 0 ) {
@@ -62,9 +151,9 @@ pub fn initialize() {
                 var pointer = HEAPU32[ (address + 4) / 4 ];
                 var deallocator_pointer = HEAPU32[ (address + 8) / 4 ];
                 var output = function() {
-                    var args = _malloc( 16 );
+                    var args = Module.STDWEB.alloc( 16 );
                     Module.STDWEB.serialize_array( args, arguments );
-                    Runtime.dynCall( "vii", adapter_pointer, [pointer, args] );
+                    Module.STDWEB.dyncall( "vii", adapter_pointer, [pointer, args] );
                     var result = Module.STDWEB.tmp;
                     Module.STDWEB.tmp = null;
 
@@ -73,7 +162,7 @@ pub fn initialize() {
 
                 output.drop = function() {
                     output.drop = null;
-                    Runtime.dynCall( "vi", deallocator_pointer, [pointer] );
+                    Module.STDWEB.dyncall( "vi", deallocator_pointer, [pointer] );
                 };
 
                 return output;
@@ -85,17 +174,17 @@ pub fn initialize() {
         Module.STDWEB.serialize_object = function serialize_object( address, value ) {
             var keys = Object.keys( value );
             var length = keys.length;
-            var key_array_pointer = _malloc( length * 8 );
-            var value_array_pointer = _malloc( length * 16 );
+            var key_array_pointer = Module.STDWEB.alloc( length * 8 );
+            var value_array_pointer = Module.STDWEB.alloc( length * 16 );
             HEAPU8[ address + 12 ] = 8;
             HEAPU32[ address / 4 ] = value_array_pointer;
             HEAPU32[ (address + 4) / 4 ] = length;
             HEAPU32[ (address + 8) / 4 ] = key_array_pointer;
             for( var i = 0; i < length; ++i ) {
                 var key = keys[ i ];
-                var key_length = lengthBytesUTF8( key );
-                var key_pointer = _malloc( key_length + 1 );
-                stringToUTF8( key, key_pointer, key_length + 1 );
+                var key_length = Module.STDWEB.utf8_len( key );
+                var key_pointer = Module.STDWEB.alloc( key_length );
+                Module.STDWEB.to_utf8( key, key_pointer );
 
                 var key_address = key_array_pointer + i * 8;
                 HEAPU32[ key_address / 4 ] = key_pointer;
@@ -107,7 +196,7 @@ pub fn initialize() {
 
         Module.STDWEB.serialize_array = function serialize_array( address, value ) {
             var length = value.length;
-            var pointer = _malloc( length * 16 );
+            var pointer = Module.STDWEB.alloc( length * 16 );
             HEAPU8[ address + 12 ] = 7;
             HEAPU32[ address / 4 ] = pointer;
             HEAPU32[ (address + 4) / 4 ] = length;
@@ -119,9 +208,9 @@ pub fn initialize() {
         Module.STDWEB.from_js = function from_js( address, value ) {
             var kind = Object.prototype.toString.call( value );
             if( kind === "[object String]" ) {
-                var length = lengthBytesUTF8( value );
-                var pointer = _malloc( length + 1 );
-                stringToUTF8( value, pointer, length + 1 );
+                var length = Module.STDWEB.utf8_len( value );
+                var pointer = Module.STDWEB.alloc( length );
+                Module.STDWEB.to_utf8( value, pointer );
                 HEAPU8[ address + 12 ] = 4;
                 HEAPU32[ address / 4 ] = pointer;
                 HEAPU32[ (address + 4) / 4 ] = length;
@@ -256,15 +345,15 @@ pub fn initialize() {
 
     if cfg!( test ) == false {
         panic::set_hook( Box::new( |info| {
-            em_asm_int!( "console.error( 'Encountered a panic!' );" );
+            __js_raw_asm!( "console.error( 'Encountered a panic!' );" );
             if let Some( value ) = info.payload().downcast_ref::< String >() {
-                em_asm_int!( "\
+                __js_raw_asm!( "\
                     console.error( 'Panic error message:', Module.STDWEB.to_js_string( $0, $1 ) );\
                 ", value.as_ptr(), value.len() );
             }
             if let Some( location ) = info.location() {
                 let file = location.file();
-                em_asm_int!( "\
+                __js_raw_asm!( "\
                     console.error( 'Panic location:', Module.STDWEB.to_js_string( $0, $1 ) + ':' + $2 );\
                 ", file.as_ptr(), file.len(), location.line() );
             }
@@ -276,10 +365,13 @@ pub fn initialize() {
 ///
 /// You should call this before returning from `main()`,
 /// otherwise bad things will happen.
-pub fn event_loop() -> ! {
-    unsafe {
-        ffi::emscripten_set_main_loop( Some( ffi::emscripten_pause_main_loop ), 0, 1 );
-    }
-
-    unreachable!();
+///
+/// On Emscripten-based targets (`asmjs-unknown-emscripten`,
+/// `wasm32-unknown-emscripten`) calling this is **mandatory**
+/// and will **not** return. (It is, effectively, an infinite loop.)
+///
+/// On Rust's native wasm target (`wasm32-unknown-unknown`)
+/// calling this is not necessary and doesn't do anything.
+pub fn event_loop() {
+    ffi::event_loop();
 }

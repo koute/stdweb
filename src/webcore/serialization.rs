@@ -235,7 +235,7 @@ impl SerializedUntaggedArray {
 
         let vector = slice.iter().map( |value| value.deserialize() ).collect();
         unsafe {
-            ffi::free( pointer as *const u8 );
+            ffi::dealloc( pointer as *mut u8, length * mem::size_of::< SerializedValue >() );
         }
 
         vector
@@ -272,7 +272,7 @@ impl< 'a > ExactSizeIterator for ObjectDeserializer< 'a > {}
 
 pub fn deserialize_object< R, F: FnOnce( &mut ObjectDeserializer ) -> R >( reference: &Reference, callback: F ) -> R {
     let mut result: SerializedValue = Default::default();
-    em_asm_int!( "\
+    __js_raw_asm!( "\
         var object = Module.STDWEB.acquire_js_reference( $0 );\
         Module.STDWEB.serialize_object( $1, object );",
         reference.as_raw(),
@@ -299,8 +299,8 @@ pub fn deserialize_object< R, F: FnOnce( &mut ObjectDeserializer ) -> R >( refer
 
     // TODO: Panic-safety.
     unsafe {
-        ffi::free( key_pointer as *const u8 );
-        ffi::free( value_pointer as *const u8 );
+        ffi::dealloc( key_pointer as *mut u8, length * mem::size_of::< SerializedUntaggedString >() );
+        ffi::dealloc( value_pointer as *mut u8, length * mem::size_of::< SerializedValue >() );
     }
 
     output
@@ -334,7 +334,7 @@ impl< 'a > ExactSizeIterator for ArrayDeserializer< 'a > {}
 
 pub fn deserialize_array< R, F: FnOnce( &mut ArrayDeserializer ) -> R >( reference: &Reference, callback: F ) -> R {
     let mut result: SerializedValue = Default::default();
-    em_asm_int!( "\
+    __js_raw_asm!( "\
         var array = Module.STDWEB.acquire_js_reference( $0 );\
         Module.STDWEB.serialize_array( $1, array );",
         reference.as_raw(),
@@ -357,7 +357,7 @@ pub fn deserialize_array< R, F: FnOnce( &mut ArrayDeserializer ) -> R >( referen
 
     // TODO: Panic-safety.
     unsafe {
-        ffi::free( pointer as *const u8 );
+        ffi::dealloc( pointer as *mut u8, length * mem::size_of::< SerializedValue >() );
     }
 
     output
@@ -910,7 +910,7 @@ macro_rules! impl_for_fn {
                 let mut arguments = unsafe { &*raw_arguments }.deserialize();
 
                 unsafe {
-                    ffi::free( raw_arguments as *const u8 );
+                    ffi::dealloc( raw_arguments as *mut u8, mem::size_of::< SerializedValue >() );
                 }
 
                 if arguments.len() != F::expected_argument_count() {
@@ -941,7 +941,7 @@ macro_rules! impl_for_fn {
                 let result = &result as *const _;
 
                 // This is kinda hacky but I'm not sure how else to do it at the moment.
-                em_asm_int!( "Module.STDWEB.tmp = Module.STDWEB.to_js( $0 );", result );
+                __js_raw_asm!( "Module.STDWEB.tmp = Module.STDWEB.to_js( $0 );", result );
             }
 
             extern fn deallocator( callback: *mut F ) {

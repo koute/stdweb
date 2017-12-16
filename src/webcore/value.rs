@@ -26,7 +26,7 @@ impl Reference {
     #[doc(hidden)]
     #[inline]
     pub unsafe fn from_raw_unchecked( refid: i32 ) -> Reference {
-        em_asm_int!( "Module.STDWEB.increment_refcount( $0 );", refid );
+        __js_raw_asm!( "Module.STDWEB.increment_refcount( $0 );", refid );
         Reference( refid )
     }
 
@@ -56,7 +56,7 @@ impl Clone for Reference {
 impl Drop for Reference {
     #[inline]
     fn drop( &mut self ) {
-        em_asm_int!( "Module.STDWEB.decrement_refcount( $0 );", self.0 );
+        __js_raw_asm!( "Module.STDWEB.decrement_refcount( $0 );", self.0 );
     }
 }
 

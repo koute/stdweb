@@ -1,4 +1,5 @@
 use std::marker::PhantomData;
+use webcore::try_from::TryInto;
 
 /// [(JavaScript docs)](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Date)
 #[derive(Debug)]
@@ -11,7 +12,9 @@ impl Date {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/now)
     pub fn now() -> f64 {
-        em_asm_double!( "return Date.now();" )
+        js!(
+            return Date.now();
+        ).try_into().unwrap()
     }
 }
 
