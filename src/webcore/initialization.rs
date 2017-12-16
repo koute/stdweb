@@ -209,8 +209,11 @@ pub fn initialize() {
             var kind = Object.prototype.toString.call( value );
             if( kind === "[object String]" ) {
                 var length = Module.STDWEB.utf8_len( value );
-                var pointer = Module.STDWEB.alloc( length );
-                Module.STDWEB.to_utf8( value, pointer );
+                var pointer = 0;
+                if( length > 0 ) {
+                    pointer = Module.STDWEB.alloc( length );
+                    Module.STDWEB.to_utf8( value, pointer );
+                }
                 HEAPU8[ address + 12 ] = 4;
                 HEAPU32[ address / 4 ] = pointer;
                 HEAPU32[ (address + 4) / 4 ] = length;

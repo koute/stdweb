@@ -217,6 +217,10 @@ impl SerializedUntaggedString {
         let pointer = self.pointer as *mut u8;
         let length = self.length as usize;
 
+        if length == 0 {
+            return String::new();
+        }
+
         unsafe {
             let vector = Vec::from_raw_parts( pointer, length, length + 1 );
             String::from_utf8_unchecked( vector )
@@ -1056,6 +1060,11 @@ mod test_deserialization {
     }
 
     #[test]
+    fn empty_string() {
+        assert_eq!( js! { return ""; }, Value::String( "".to_string() ) );
+    }
+
+    #[test]
     fn array() {
         assert_eq!( js! { return [1, 2]; }.is_array(), true );
     }
@@ -1303,6 +1312,11 @@ mod test_reserialization {
     }
 
     #[test]
+    fn empty_string() {
+        assert_eq!( js! { return @{""}; }, Value::String( "".to_string() ) );
+    }
+
+    #[test]
     fn array() {
         let array: Array = vec![ Value::Number( 1.into() ), Value::Number( 2.into() ) ].into();
         assert_eq!( js! { return @{&array}; }, Value::Array( array ) );
@@ -1366,5 +1380,26 @@ mod test_reserialization {
         };
 
         assert_eq!( value, Value::Number( 0x12345678_i32.into() ) );
+    }
+
+    #[test]
+    fn string_identity_function() {
+        fn identity( string: String ) -> String {
+            string
+        }
+
+        let empty = js! {
+            var identity = @{identity};
+            return identity( "" );
+        };
+
+        assert_eq!( empty, Value::String( "".to_string() ) );
+
+        let non_empty = js! {
+            var identity = @{identity};
+            return identity( "死神はりんごしか食べない!" );
+        };
+
+        assert_eq!( non_empty, Value::String( "死神はりんごしか食べない!".to_string() ) );
     }
 }
