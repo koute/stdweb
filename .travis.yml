@@ -12,9 +12,11 @@ matrix:
   allow_failures:
     - rust: nightly
 
+env:
+  - TARGET=asmjs-unknown-emscripten
+  - TARGET=wasm32-unknown-emscripten
+  - TARGET=wasm32-unknown-unknown
+
 script:
-  - rustup target add asmjs-unknown-emscripten
-  - cargo install cargo-web
-  - cargo web test --nodejs
-  - cd examples/todomvc
-  - cargo web build --release
+  - nvm install 9
+  - ./ci.sh
