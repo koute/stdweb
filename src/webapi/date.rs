@@ -4,7 +4,7 @@ use webcore::value::{Value, Reference};
 
 /// A date object
 ///
-/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Date)
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date)
 pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
     /// The Date::now() method returns the number of milliseconds elapsed since 1 January 1970 00:00:00 UTC.
     ///
@@ -268,37 +268,10 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/setFullYear)
     #[inline]
-    fn set_full_year( &self, year: i32, _month: Option< i32 >, _date: Option< i32 > ) {
-        // here, we're *not* setting defaults based on existence of arguments. Why? Whenever there
-        // is a missing argument in these "setter" methods, the default value comes from the actual
-        // object that is being changed. Since we don't have an easy handle on this data, better
-        // let the js! macro help
-        match _month {
-            Some(_month) => match _date {
-                Some(_date) => {
-                    let args_obj: HashMap< &str, Value > = [
-                        ("year",  Value::Number( year.into())),
-                        ("month", Value::Number( _month.into())),
-                        ("date",  Value::Number( _date.into()))
-                    ].iter().cloned().collect();
-
-                    js! { @(no_return)
-                        var args = @{args_obj};
-                        @{self.as_ref()}.setFullYear(args.year, args.month, args.date);
-                    };
-                },
-                None => {
-                    js! { @(no_return)
-                        @{self.as_ref()}.setFullYear( @{year}, @{_month} );
-                    };
-                }
-            },
-            None => {
-                js! { @(no_return)
-                    @{self.as_ref()}.setFullYear( @{year} );
-                };
-            }
-        }
+    fn set_full_year( &self, year: i32 ) {
+        js! { @(no_return)
+            @{self.as_ref()}.setFullYear(@{year});
+        };
     }
 
     /// The set_hours() method sets the hours for a specified date according to local time, and
@@ -307,47 +280,9 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/setHours)
     #[inline]
-    fn set_hours( &self, hour: i32, _minutes: Option< i32 >, _seconds: Option< i32 >, _milliseconds: Option< i32 > ) {
-        match _minutes {
-            Some(_minutes) => match _seconds {
-                Some(_seconds) => match _milliseconds {
-                    Some(_milliseconds) => {
-                        let args_obj: HashMap< &str, Value > = [
-                            ("hour",    Value::Number( hour.into())),
-                            ("minutes", Value::Number( _minutes.into())),
-                            ("seconds", Value::Number( _seconds.into())),
-                            ("ms",      Value::Number( _milliseconds.into()))
-                        ].iter().cloned().collect();
-
-                        js! { @(no_return)
-                            var args = @{args_obj};
-                            @{self.as_ref()}.setHours(args.hours, args.minutes, args.seconds, args.ms);
-                        };
-                    },
-                    None => {
-                        let args_obj: HashMap< &str, Value > = [
-                            ("hour",    Value::Number( hour.into())),
-                            ("minutes", Value::Number( _minutes.into())),
-                            ("seconds", Value::Number( _seconds.into()))
-                        ].iter().cloned().collect();
-
-                        js! { @(no_return)
-                            var args = @{args_obj};
-                            @{self.as_ref()}.setHours(args.hours, args.minutes, args.seconds);
-                        };
-                    }
-                },
-                None => {
-                    js! { @(no_return)
-                        @{self.as_ref()}.setHours( @{hour}, @{_minutes} );
-                    };
-                }
-            },
-            None => {
-                js! { @(no_return)
-                    @{self.as_ref()}.setHours( @{hour} );
-                };
-            }
+    fn set_hours( &self, hour: i32 ) {
+        js! { @(no_return)
+            @{self.as_ref()}.setHours( @{hour} );
         }
     }
 
@@ -366,32 +301,9 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/setMinutes)
     #[inline]
-    fn set_minutes( &self, minutes: i32, _seconds: Option< i32 >, _milliseconds: Option< i32 > ) {
-        match _seconds {
-            Some(_seconds) => match _milliseconds {
-                Some(_milliseconds) => {
-                    let args_obj: HashMap< &str, Value > = [
-                        ("minutes", Value::Number( minutes.into())),
-                        ("seconds", Value::Number( _seconds.into())),
-                        ("ms",      Value::Number( _milliseconds.into()))
-                    ].iter().cloned().collect();
-
-                    js! { @(no_return)
-                        var args = @{args_obj};
-                        @{self.as_ref()}.setMinutes(args.minutes, args.seconds, args.ms);
-                    };
-                },
-                None => {
-                    js! { @(no_return)
-                        @{self.as_ref()}.setMinutes(@{minutes}, @{_seconds});
-                    };
-                },
-            },
-            None => {
-                js! { @(no_return)
-                    @{self.as_ref()}.setMinutes( @{minutes} );
-                };
-            }
+    fn set_minutes( &self, minutes: i32 ) {
+        js! { @(no_return)
+            @{self.as_ref()}.setMinutes( @{minutes} );
         }
     }
 
@@ -400,18 +312,9 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/setMonth)
     #[inline]
-    fn set_month( &self, month: i32, _day: Option< i32 > ) {
-        match _day {
-            Some(_day) => {
-                js! { @(no_return)
-                    @{self.as_ref()}.setMonth(@{month}, @{_day});
-                };
-            },
-            None => {
-                js! { @(no_return)
-                    @{self.as_ref()}.setMonth(@{month});
-                };
-            }
+    fn set_month( &self, month: i32 ) {
+        js! { @(no_return)
+            @{self.as_ref()}.setMonth(@{month});
         }
     }
 
@@ -419,18 +322,9 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/setSeconds)
     #[inline]
-    fn set_seconds( &self, seconds: i32, _ms: Option< i32 > ) {
-        match _ms {
-            Some(_ms) => {
-                js! { @(no_return)
-                    @{self.as_ref()}.setSeconds(@{seconds}, @{_ms});
-                };
-            },
-            None => {
-                js! { @(no_return)
-                    @{self.as_ref()}.setSeconds(@{seconds});
-                };
-            }
+    fn set_seconds( &self, seconds: i32 ) {
+        js! { @(no_return)
+            @{self.as_ref()}.setSeconds(@{seconds});
         }
     }
 
@@ -461,32 +355,9 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/setUTCFullYear)
     #[inline]
-    fn set_utc_full_year( &self, year: i32, _month: Option< i32 >, _day: Option< i32 > ) {
-        match _month {
-            Some(_month) => match _day {
-                Some(_day) => {
-                    let args_obj: HashMap< &str, Value > = [
-                        ("year",  Value::Number( year.into())),
-                        ("month", Value::Number( _month.into())),
-                        ("day",   Value::Number( _day.into()))
-                    ].iter().cloned().collect();
-
-                    js! { @(no_return)
-                        var args = @{args_obj};
-                        @{self.as_ref()}.setUTCFullYear(args.year, args.month, args.day);
-                    };
-                },
-                None => {
-                    js! { @(no_return)
-                        @{self.as_ref()}.setUTCFullYear(@{year}, @{_month});
-                    };
-                }
-            },
-            None => {
-                js! { @(no_return)
-                    @{self.as_ref()}.setUTCFullYear(@{year});
-                };
-            }
+    fn set_utc_full_year( &self, year: i32 ) {
+        js! { @(no_return)
+            @{self.as_ref()}.setUTCFullYear(@{year});
         }
     }
 
@@ -496,47 +367,9 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/setUTCHours)
     #[inline]
-    fn set_utc_hours( &self, hours: i32, _minutes: Option< i32 >, _seconds: Option< i32 >, _ms: Option< i32 > ) {
-        match _minutes {
-            Some(_minutes) => match _seconds {
-                Some(_seconds) => match _ms {
-                    Some(_ms) => {
-                        let args_obj: HashMap< &str, Value > = [
-                            ("hours",   Value::Number( hours.into())),
-                            ("minutes", Value::Number( _minutes.into())),
-                            ("seconds", Value::Number( _seconds.into())),
-                            ("ms",      Value::Number( _ms.into()))
-                        ].iter().cloned().collect();
-
-                        js! { @(no_return)
-                            var args = @{args_obj};
-                            @{self.as_ref()}.setUTCHours(args.hours, args.minutes, args.seconds, args.ms);
-                        };
-                    },
-                    None => {
-                        let args_obj: HashMap< &str, Value > = [
-                            ("hours",   Value::Number( hours.into())),
-                            ("minutes", Value::Number( _minutes.into())),
-                            ("seconds", Value::Number( _seconds.into()))
-                        ].iter().cloned().collect();
-
-                        js! { @(no_return)
-                            var args = @{args_obj};
-                            @{self.as_ref()}.setUTCHours(args.hours, args.minutes, args.seconds);
-                        };
-                    }
-                },
-                None => {
-                   js! { @(no_return)
-                       @{self.as_ref()}.setUTCHours(@{hours}, @{_minutes});
-                   };
-                }
-            },
-            None => {
-                js! { @(no_return)
-                    @{self.as_ref()}.setUTCHours(@{hours});
-                };
-            }
+    fn set_utc_hours( &self, hours: i32 ) {
+        js! { @(no_return)
+            @{self.as_ref()}.setUTCHours(@{hours});
         }
     }
 
@@ -556,25 +389,9 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/setUTCMinutes)
     #[inline]
-    fn set_utc_minutes( &self, minutes: i32, _seconds: Option< i32 >, _ms: Option< i32 > ) {
-        match _seconds {
-            Some(_seconds) => match _ms {
-                Some(_ms) => {
-                    js! { @(no_return)
-                        @{self.as_ref()}.setUTCMinutes(@{minutes}, @{_seconds}, @{_ms});
-                    };
-                },
-                None => {
-                    js! { @(no_return)
-                        @{self.as_ref()}.setUTCMinutes(@{minutes}, @{_seconds});
-                    };
-                }
-            },
-            None => {
-                js! { @(no_return)
-                    @{self.as_ref()}.setUTCMinutes(@{minutes});
-                };
-            }
+    fn set_utc_minutes( &self, minutes: i32 ) {
+        js! { @(no_return)
+            @{self.as_ref()}.setUTCMinutes(@{minutes});
         }
     }
 
@@ -582,18 +399,9 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/setUTCMonth)
     #[inline]
-    fn set_utc_month( &self, month: i32, _day: Option< i32 > ) {
-        match _day {
-            Some(_day) => {
-                js! { @(no_return)
-                    @{self.as_ref()}.setUTCMonth(@{month}, @{_day});
-                };
-            },
-            None => {
-                js! { @(no_return)
-                    @{self.as_ref()}.setUTCMonth(@{month});
-                };
-            }
+    fn set_utc_month( &self, month: i32 ) {
+        js! { @(no_return)
+            @{self.as_ref()}.setUTCMonth(@{month});
         }
     }
 
@@ -602,18 +410,9 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/setUTCSeconds)
     #[inline]
-    fn set_utc_seconds( &self, seconds: i32, _ms: Option< i32 > ) {
-        match _ms {
-            Some(_ms) => {
-                js! { @(no_return)
-                    @{self.as_ref()}.setUTCSeconds(@{seconds}, @{_ms});
-                };
-            },
-            None => {
-                js! { @(no_return)
-                    @{self.as_ref()}.setUTCSeconds(@{seconds});
-                };
-            }
+    fn set_utc_seconds( &self, seconds: i32 ) {
+        js! { @(no_return)
+            @{self.as_ref()}.setUTCSeconds(@{seconds});
         }
     }
 
@@ -955,7 +754,7 @@ mod tests {
         // 10th
         let d: Date = js!( return new Date(2000, 0, 1, 12, 5, 7, 10); ).try_into().unwrap();
 
-        d.set_full_year( 2002, None, None );
+        d.set_full_year( 2002 );
         assert!( d.get_full_year() == 2002 );
     }
 
@@ -965,7 +764,7 @@ mod tests {
         // 10th
         let d: Date = js!( return new Date(2000, 0, 1, 12, 5, 7, 10); ).try_into().unwrap();
 
-        d.set_hours( 3, None, None, None );
+        d.set_hours( 3 );
         assert!( d.get_hours() == 3 );
     }
 
@@ -985,7 +784,7 @@ mod tests {
         // 10th
         let d: Date = js!( return new Date(2000, 0, 1, 12, 5, 7, 10); ).try_into().unwrap();
 
-        d.set_minutes( 20, None, None );
+        d.set_minutes( 20 );
         assert!( d.get_minutes() == 20 );
     }
 
@@ -995,7 +794,7 @@ mod tests {
         // 10th
         let d: Date = js!( return new Date(2000, 0, 1, 12, 5, 7, 10); ).try_into().unwrap();
 
-        d.set_month( 3, None);
+        d.set_month( 3 );
         assert!( d.get_month() == 3 );
     }
 
@@ -1005,7 +804,7 @@ mod tests {
         // 10th
         let d: Date = js!( return new Date(2000, 0, 1, 12, 5, 7, 10); ).try_into().unwrap();
 
-        d.set_seconds( 42, None );
+        d.set_seconds( 42 );
         assert!( d.get_seconds() == 42 );
     }
 
@@ -1034,7 +833,7 @@ mod tests {
         // year: 2000, month: January, day: 1st, hour: 12th, minute: 5th, second: 7th, millisecond:
         // 10th
         let d: Date = js!( return new Date(2000, 0, 1, 12, 5, 7, 10); ).try_into().unwrap();
-        d.set_utc_full_year( 2222, None, None );
+        d.set_utc_full_year( 2222 );
         assert!( d.get_utc_full_year() == 2222 );
     }
 
@@ -1043,7 +842,7 @@ mod tests {
         // year: 2000, month: January, day: 1st, hour: 12th, minute: 5th, second: 7th, millisecond:
         // 10th
         let d: Date = js!( return new Date(2000, 0, 1, 12, 5, 7, 10); ).try_into().unwrap();
-        d.set_utc_hours( 9, None, None, None );
+        d.set_utc_hours( 9 );
         assert!( d.get_utc_hours() == 9 );
     }
 
@@ -1061,7 +860,7 @@ mod tests {
         // year: 2000, month: January, day: 1st, hour: 12th, minute: 5th, second: 7th, millisecond:
         // 10th
         let d: Date = js!( return new Date(2000, 0, 1, 12, 5, 7, 10); ).try_into().unwrap();
-        d.set_utc_minutes( 33, None, None );
+        d.set_utc_minutes( 33 );
         assert!( d.get_utc_minutes() == 33 );
     }
 
@@ -1070,7 +869,7 @@ mod tests {
         // year: 2000, month: January, day: 1st, hour: 12th, minute: 5th, second: 7th, millisecond:
         // 10th
         let d: Date = js!( return new Date(2000, 0, 1, 12, 5, 7, 10); ).try_into().unwrap();
-        d.set_utc_month( 4, None );
+        d.set_utc_month( 4 );
         assert!( d.get_utc_month() == 4 );
     }
 
@@ -1079,7 +878,7 @@ mod tests {
         // year: 2000, month: January, day: 1st, hour: 12th, minute: 5th, second: 7th, millisecond:
         // 10th
         let d: Date = js!( return new Date(2000, 0, 1, 12, 5, 7, 10); ).try_into().unwrap();
-        d.set_utc_seconds( 59, None );
+        d.set_utc_seconds( 59 );
         assert!( d.get_utc_seconds() == 59 );
     }
 
