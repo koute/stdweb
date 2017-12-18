@@ -215,6 +215,28 @@ reference_boilerplate! {
     convertible to Event
 }
 
+/// The `InputEvent` is fired synchronously when the value of an
+/// input, select, or textarea element is changed. For input elements
+/// with type=checkbox or type=radio, the input event should fire when
+/// a user toggles the control (via touch, mouse or keyboard) per the
+/// HTML5 specification, but historically, this has not been the case.
+/// Check compatibility, or attach to the change event instead for
+/// elements of these types.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/input)
+pub struct InputEvent( Reference );
+
+impl IEvent for InputEvent {}
+impl ConcreteEvent for InputEvent {
+    const EVENT_TYPE: &'static str = "input";
+}
+
+reference_boilerplate! {
+    InputEvent,
+    instanceof Event
+    convertible to Event
+}
+
 /// The `IUiEvent` interface represents simple user interface events.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/UIEvent)
