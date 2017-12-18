@@ -84,42 +84,135 @@ button.add_event_listener( move |_: ClickEvent| {
   * Put Rust in the driver's seat where a non-trivial Web application can be
     written without touching JavaScript at all.
   * Allow Rust to take part in the upcoming WebAssembly (re)volution.
+  * Make it possible to trivially create standalone libraries which are
+    easily callable from JavaScript.
 
 ## Getting started
 
-WARNING: This crate is still a work-in-progress. Things might not work.
-Things might break. The APIs are in flux. Please do not use it in production.
+Take a look at some of the examples:
 
-1. Add an asmjs target with rustup:
+  * `examples/minimal` - a totally minimal example which calls [alert]
+  * `examples/todomvc` - a naively implemented [TodoMVC] application; shows how to call into the DOM
+  * `examples/hasher` - shows how to export Rust functions to JavaScript and how to call them from
+                        the browser or Nodejs
 
-       $ rustup target add asmjs-unknown-emscripten
+[alert]: https://developer.mozilla.org/en-US/docs/Web/API/Window/alert
+[TodoMVC]: http://todomvc.com/
 
-2. Install [cargo-web]; it's not strictly necessary but it makes things
-   more convenient:
+## Running the examples
 
-       $ cargo install cargo-web
+1. Add one of Rust's Web targets with rustup.
 
-3. Go into `examples/todomvc` and type:
+    * For compiling to asmjs through Emscripten:
 
-       $ cargo web start
+          $ rustup target add asmjs-unknown-emscripten
+
+    * For compiling to WebAssembly through Emscripten:
+
+          $ rustup target add wasm32-unknown-emscripten
+
+    * For compiling to WebAssembly through Rust's native backend:
+
+          $ rustup target add wasm32-unknown-unknown
+
+2. Install [cargo-web]:
+
+       $ cargo install -f cargo-web
+
+3. Go into `examples/todomvc` and start the example.
+
+    * For the `asmjs-unknown-emscripten` backend:
+
+          $ cargo web start --target-asmjm-emscripten
+
+    * For the `wasm32-unknown-emscripten`:
+
+          $ cargo web start --target-webasm-emscripten
+
+    * For the `wasm32-unknown-unknown`:
+
+          $ cargo web start --target-webasm
 
 4. Visit `http://localhost:8000` with your browser.
 
-You can also try compiling the example to WebAssembly:
-
-    $ rustup target add wasm32-unknown-emscripten
-    $ cargo web start --target-webasm-emscripten
-
-This will **not** generate a pure `.wasm` file which you
-can just load; it requires quite a bit of runtime which
-you can find in the `.js` file which is generated alongside
-the wasm bytecode.
-
-Support for pure WebAssembly is planned to be added when
-Rust's native `wasm32-unknown-unknown` backend becomes
-somewhat usable.
+For the `*-emscripten` targets `cargo-web` is not neccessary, however
+the native `wasm32-unknown-unknown` which doesn't need Emscripten
+**requires** `cargo-web` to work!
 
 [cargo-web]: https://github.com/koute/cargo-web
+
+## Exposing Rust functions to JavaScript
+
+***WARNING***: This is only supported for Rust's native `wasm32-unknown-unknown` target!
+
+(Note: this is based on the `examples/hasher` example)
+
+With the `stdweb` crate you can easily expose a Rust function
+to JavaScript like this:
+
+```rust
+#[macro_use]
+extern crate stdweb;
+extern crate sha1;
+
+use sha1::Sha1;
+
+fn hash( string: String ) -> String {
+    let mut hasher = Sha1::new();
+    hasher.update( string.as_bytes() );
+    hasher.digest().to_string()
+}
+
+fn main() {
+    stdweb::initialize();
+
+    js! {
+        Module.exports.sha1 = @{hash};
+    }
+}
+```
+
+If you compile this code with `cargo-web build --target-webasm` you'll get two files:
+
+   * `target/wasm32-unknown-unknown/release/hasher.js`
+   * `target/wasm32-unknown-unknown/release/hasher.wasm`
+
+You can copy them into your JavaScript project and load like any other JavaScript file:
+
+```html
+<script src="hasher.js"></script>
+```
+
+After it's loaded you can access `Rust.hasher`, which is a [Promise] which
+will resolve once the WebAssembly module is loaded. Inside that promise
+you'll find the contents of `Module.exports` which we've set from our
+Rust code, which includes our exported function which you can now call:
+
+```html
+<script>
+    Rust.hasher.then( function( hasher ) {
+        const string = "fiddlesticks";
+        const hash = hasher.sha1( string );
+
+        console.log( "Hash of " + string + " is '" + hash + "'" );
+    });
+</script>
+```
+
+You can also use the very same `hasher.js` from Nodejs:
+
+```js
+const hasher = require( "hasher.js" );
+
+const string = "fiddlesticks";
+const hash = hasher.sha1( string );
+
+console.log( "Hash of " + string + " is '" + hash + "'" );
+```
+
+For the Nodejs environment the WebAssembly is compiled synchronously.
+
+[Promise]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
 
 ## License
 

@@ -11,7 +11,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/now)
     #[inline]
     fn now() -> f64 {
-        em_asm_double!( "return Date.now();" )
+        js!( return Date.now(); ).try_into().unwrap()
     }
 
     /// The Date::utc() method accepts the same parameters as the longest form of the constructor,

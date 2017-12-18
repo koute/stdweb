@@ -217,6 +217,10 @@ impl SerializedUntaggedString {
         let pointer = self.pointer as *mut u8;
         let length = self.length as usize;
 
+        if length == 0 {
+            return String::new();
+        }
+
         unsafe {
             let vector = Vec::from_raw_parts( pointer, length, length + 1 );
             String::from_utf8_unchecked( vector )
@@ -235,7 +239,7 @@ impl SerializedUntaggedArray {
 
         let vector = slice.iter().map( |value| value.deserialize() ).collect();
         unsafe {
-            ffi::free( pointer as *const u8 );
+            ffi::dealloc( pointer as *mut u8, length * mem::size_of::< SerializedValue >() );
         }
 
         vector
@@ -272,7 +276,7 @@ impl< 'a > ExactSizeIterator for ObjectDeserializer< 'a > {}
 
 pub fn deserialize_object< R, F: FnOnce( &mut ObjectDeserializer ) -> R >( reference: &Reference, callback: F ) -> R {
     let mut result: SerializedValue = Default::default();
-    em_asm_int!( "\
+    __js_raw_asm!( "\
         var object = Module.STDWEB.acquire_js_reference( $0 );\
         Module.STDWEB.serialize_object( $1, object );",
         reference.as_raw(),
@@ -299,8 +303,8 @@ pub fn deserialize_object< R, F: FnOnce( &mut ObjectDeserializer ) -> R >( refer
 
     // TODO: Panic-safety.
     unsafe {
-        ffi::free( key_pointer as *const u8 );
-        ffi::free( value_pointer as *const u8 );
+        ffi::dealloc( key_pointer as *mut u8, length * mem::size_of::< SerializedUntaggedString >() );
+        ffi::dealloc( value_pointer as *mut u8, length * mem::size_of::< SerializedValue >() );
     }
 
     output
@@ -334,7 +338,7 @@ impl< 'a > ExactSizeIterator for ArrayDeserializer< 'a > {}
 
 pub fn deserialize_array< R, F: FnOnce( &mut ArrayDeserializer ) -> R >( reference: &Reference, callback: F ) -> R {
     let mut result: SerializedValue = Default::default();
-    em_asm_int!( "\
+    __js_raw_asm!( "\
         var array = Module.STDWEB.acquire_js_reference( $0 );\
         Module.STDWEB.serialize_array( $1, array );",
         reference.as_raw(),
@@ -357,7 +361,7 @@ pub fn deserialize_array< R, F: FnOnce( &mut ArrayDeserializer ) -> R >( referen
 
     // TODO: Panic-safety.
     unsafe {
-        ffi::free( pointer as *const u8 );
+        ffi::dealloc( pointer as *mut u8, length * mem::size_of::< SerializedValue >() );
     }
 
     output
@@ -910,7 +914,7 @@ macro_rules! impl_for_fn {
                 let mut arguments = unsafe { &*raw_arguments }.deserialize();
 
                 unsafe {
-                    ffi::free( raw_arguments as *const u8 );
+                    ffi::dealloc( raw_arguments as *mut u8, mem::size_of::< SerializedValue >() );
                 }
 
                 if arguments.len() != F::expected_argument_count() {
@@ -941,7 +945,7 @@ macro_rules! impl_for_fn {
                 let result = &result as *const _;
 
                 // This is kinda hacky but I'm not sure how else to do it at the moment.
-                em_asm_int!( "Module.STDWEB.tmp = Module.STDWEB.to_js( $0 );", result );
+                __js_raw_asm!( "Module.STDWEB.tmp = Module.STDWEB.to_js( $0 );", result );
             }
 
             extern fn deallocator( callback: *mut F ) {
@@ -1053,6 +1057,11 @@ mod test_deserialization {
     #[test]
     fn string() {
         assert_eq!( js! { return "Dog"; }, Value::String( "Dog".to_string() ) );
+    }
+
+    #[test]
+    fn empty_string() {
+        assert_eq!( js! { return ""; }, Value::String( "".to_string() ) );
     }
 
     #[test]
@@ -1261,6 +1270,142 @@ mod test_serialization {
         };
         assert_eq!( result, Value::Bool( true ) );
     }
+
+    #[test]
+    fn serialize_0() {
+        assert_eq!(
+            js! { return 0; },
+            0
+        );
+    }
+
+    #[test]
+    fn serialize_1() {
+        assert_eq!(
+            js! { return @{1}; },
+            1
+        );
+    }
+
+    #[test]
+    fn serialize_2() {
+        assert_eq!(
+            js! { return @{1} + @{2}; },
+            1 + 2
+        );
+    }
+
+    #[test]
+    fn serialize_3() {
+        assert_eq!(
+            js! { return @{1} + @{2} + @{3}; },
+            1 + 2 + 3
+        );
+    }
+
+    #[test]
+    fn serialize_4() {
+        assert_eq!(
+            js! { return @{1} + @{2} + @{3} + @{4}; },
+            1 + 2 + 3 + 4
+        );
+    }
+
+    #[test]
+    fn serialize_5() {
+        assert_eq!(
+            js! { return @{1} + @{2} + @{3} + @{4} + @{5}; },
+            1 + 2 + 3 + 4 + 5
+        );
+    }
+
+    #[test]
+    fn serialize_6() {
+        assert_eq!(
+            js! { return @{1} + @{2} + @{3} + @{4} + @{5} + @{6}; },
+            1 + 2 + 3 + 4 + 5 + 6
+        );
+    }
+
+    #[test]
+    fn serialize_7() {
+        assert_eq!(
+            js! { return @{1} + @{2} + @{3} + @{4} + @{5} + @{6} + @{7}; },
+            1 + 2 + 3 + 4 + 5 + 6 + 7
+        );
+    }
+
+    #[test]
+    fn serialize_8() {
+        assert_eq!(
+            js! { return @{1} + @{2} + @{3} + @{4} + @{5} + @{6} + @{7} + @{8}; },
+            1 + 2 + 3 + 4 + 5 + 6 + 7 + 8
+        );
+    }
+
+    #[test]
+    fn serialize_9() {
+        assert_eq!(
+            js! { return @{1} + @{2} + @{3} + @{4} + @{5} + @{6} + @{7} + @{8} + @{9}; },
+            1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9
+        );
+    }
+
+    #[test]
+    fn serialize_10() {
+        assert_eq!(
+            js! { return @{1} + @{2} + @{3} + @{4} + @{5} + @{6} + @{7} + @{8} + @{9} + @{10}; },
+            1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10
+        );
+    }
+
+    #[test]
+    fn serialize_11() {
+        assert_eq!(
+            js! { return @{1} + @{2} + @{3} + @{4} + @{5} + @{6} + @{7} + @{8} + @{9} + @{10} + @{11}; },
+            1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 + 11
+        );
+    }
+
+    #[test]
+    fn serialize_12() {
+        assert_eq!(
+            js! { return @{1} + @{2} + @{3} + @{4} + @{5} + @{6} + @{7} + @{8} + @{9} + @{10} + @{11} + @{12}; },
+            1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 + 11 + 12
+        );
+    }
+
+    #[test]
+    fn serialize_13() {
+        assert_eq!(
+            js! { return @{1} + @{2} + @{3} + @{4} + @{5} + @{6} + @{7} + @{8} + @{9} + @{10} + @{11} + @{12} + @{13}; },
+            1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 + 11 + 12 + 13
+        );
+    }
+
+    #[test]
+    fn serialize_14() {
+        assert_eq!(
+            js! { return @{1} + @{2} + @{3} + @{4} + @{5} + @{6} + @{7} + @{8} + @{9} + @{10} + @{11} + @{12} + @{13} + @{14}; },
+            1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 + 11 + 12 + 13 + 14
+        );
+    }
+
+    #[test]
+    fn serialize_15() {
+        assert_eq!(
+            js! { return @{1} + @{2} + @{3} + @{4} + @{5} + @{6} + @{7} + @{8} + @{9} + @{10} + @{11} + @{12} + @{13} + @{14} + @{15}; },
+            1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 + 11 + 12 + 13 + 14 + 15
+        );
+    }
+
+    #[test]
+    fn serialize_16() {
+        assert_eq!(
+            js! { return @{1} + @{2} + @{3} + @{4} + @{5} + @{6} + @{7} + @{8} + @{9} + @{10} + @{11} + @{12} + @{13} + @{14} + @{15} + @{16}; },
+            1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 + 11 + 12 + 13 + 14 + 15 + 16
+        );
+    }
 }
 
 #[cfg(test)]
@@ -1300,6 +1445,11 @@ mod test_reserialization {
     #[test]
     fn string() {
         assert_eq!( js! { return @{"Dog"}; }, Value::String( "Dog".to_string() ) );
+    }
+
+    #[test]
+    fn empty_string() {
+        assert_eq!( js! { return @{""}; }, Value::String( "".to_string() ) );
     }
 
     #[test]
@@ -1366,5 +1516,26 @@ mod test_reserialization {
         };
 
         assert_eq!( value, Value::Number( 0x12345678_i32.into() ) );
+    }
+
+    #[test]
+    fn string_identity_function() {
+        fn identity( string: String ) -> String {
+            string
+        }
+
+        let empty = js! {
+            var identity = @{identity};
+            return identity( "" );
+        };
+
+        assert_eq!( empty, Value::String( "".to_string() ) );
+
+        let non_empty = js! {
+            var identity = @{identity};
+            return identity( "死神はりんごしか食べない!" );
+        };
+
+        assert_eq!( non_empty, Value::String( "死神はりんごしか食べない!".to_string() ) );
     }
 }
