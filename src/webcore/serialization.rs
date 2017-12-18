@@ -876,6 +876,16 @@ impl JsSerializable for Value {
 
 __js_serializable_boilerplate!( Value );
 
+// A wrapper for passing FnOnce callbacks into the `js!` macro.
+pub struct Once< T >( pub T );
+
+impl< T > fmt::Debug for Once< T > {
+    #[inline]
+    fn fmt( &self, formatter: &mut fmt::Formatter ) -> Result< (), fmt::Error > {
+        write!( formatter, "Once" )
+    }
+}
+
 #[derive(Debug)]
 pub struct FunctionTag;
 
