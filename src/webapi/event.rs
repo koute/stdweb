@@ -1085,6 +1085,14 @@ mod tests {
     }
 
     #[test]
+    fn test_input_event() {
+        let event: InputEvent = js!(
+            return new Event( @{InputEvent::EVENT_TYPE} );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), InputEvent::EVENT_TYPE );
+    }
+
+    #[test]
     fn test_ui_event() {
         let event: UiEvent = js!(
             return new UIEvent(
