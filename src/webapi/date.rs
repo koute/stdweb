@@ -6,7 +6,7 @@ use webcore::value::{Value, Reference};
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date)
 pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
-    /// The Date::now() method returns the number of milliseconds elapsed since 1 January 1970 00:00:00 UTC.
+    /// Returns the number of milliseconds elapsed since 1 January 1970 00:00:00 UTC.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/now)
     #[inline]
@@ -14,51 +14,13 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         js!( return Date.now(); ).try_into().unwrap()
     }
 
-    /// The Date::utc() method accepts the same parameters as the longest form of the constructor,
+    /// Accepts the same parameters as the longest form of the constructor,
     /// and returns the number of milliseconds in a Date object since January 1, 1970, 00:00:00,
     /// universal time
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/utc)
     #[inline]
-    fn utc( year: i32, _month: Option< i32 >, _day: Option< i32 >, _hour: Option< i32 >, _minutes: Option< i32 >, _seconds: Option< i32 >, _milliseconds: Option< i32 >) -> i64 {
-        // setting defaults in case of optional args
-        let month: i32;
-        let day: i32;
-        let hour: i32;
-        let minutes: i32;
-        let seconds: i32;
-        let milliseconds: i32;
-
-        match _month {
-            Some(_month) => (month = _month),
-            None => (month = 0)
-        }
-
-        match _day {
-            Some(_day) => (day = _day),
-            None => (day = 1)
-        }
-
-        match _hour {
-            Some(_hour) => (hour = _hour),
-            None => (hour = 0)
-        }
-
-        match _minutes {
-            Some(_minutes) => (minutes = _minutes),
-            None => (minutes = 0)
-        }
-
-        match _seconds {
-            Some(_seconds) => (seconds = _seconds),
-            None => (seconds = 0)
-        }
-
-        match _milliseconds {
-            Some(_milliseconds) => (milliseconds = _milliseconds),
-            None => (milliseconds = 0)
-        }
-
+    fn utc( year: i32, month: u8, day: u8, hour: u8, minutes: u16, seconds: u16, milliseconds: u32) -> i64 {
         let args_obj: HashMap< &str, Value > = [
             ("year",         Value::Number( year.into() )),
             ("month",        Value::Number( month.into() )),
@@ -75,7 +37,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         ).try_into().unwrap()
     }
 
-    /// The Date::parse method parses a string representation of a date, and returns the number of
+    /// Parses a string representation of a date, and returns the number of
     /// milliseconds since 1 January 1970 00:00:00 UTC, or NaN if the string is unrecognize or, in
     /// some cases, contains illegal data values (e.g. 2015-02-31)
     ///
@@ -85,7 +47,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         js!( return Date.parse( @{date_string} ); ).try_into().unwrap()
     }
 
-    /// The get_date() method returns the day of the month for the specified date according to local
+    /// Returns the day of the month for the specified date according to local
     /// time.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getDate)
@@ -94,7 +56,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         js!( return @{self.as_ref()}.getDate(); ).try_into().unwrap()
     }
 
-    /// The get_day() method returns the day of the week for the specified date according to local
+    /// Returns the day of the week for the specified date according to local
     /// time, where 0 represents Sunday. For the day of the month see getDate().
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getDay)
@@ -103,7 +65,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         js!( return @{self.as_ref()}.getDay(); ).try_into().unwrap()
     }
 
-    /// The get_full_year() method returns the year of the specified date according to local time.
+    /// Returns the year of the specified date according to local time.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getFullYear)
     #[inline]
@@ -111,7 +73,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         js!( return @{self.as_ref()}.getFullYear(); ).try_into().unwrap()
     }
 
-    /// The get_hours() method returns the hour for the specified date, according to local time.
+    /// Returns the hour for the specified date, according to local time.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getHours)
     #[inline]
@@ -119,8 +81,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         js!( return @{self.as_ref()}.getHours(); ).try_into().unwrap()
     }
 
-    /// The get_milliseconds() method returns the milliseconds in the specified date according to
-    /// local time.
+    /// Returns the milliseconds in the specified date according to local time.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getMilliseconds)
     #[inline]
@@ -128,7 +89,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         js!( return @{self.as_ref()}.getMilliseconds(); ).try_into().unwrap()
     }
 
-    /// The get_minutes() method returns the minutes in the specified date according to local time.
+    /// Returns the minutes in the specified date according to local time.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getMinutes)
     #[inline]
@@ -136,7 +97,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         js!( return @{self.as_ref()}.getMinutes(); ).try_into().unwrap()
     }
 
-    /// The get_month() method returns the month in the specified date according to local time, as a
+    /// Returns the month in the specified date according to local time, as a
     /// zero-based value (where zero indicates the first month of the year).
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getMonth)
@@ -145,7 +106,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         js!( return @{self.as_ref()}.getMonth(); ).try_into().unwrap()
     }
 
-    /// The get_seconds() method returns the seconds in the specified date according to local time.
+    /// Returns the seconds in the specified date according to local time.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getSeconds)
     #[inline]
@@ -153,7 +114,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         js!( return @{self.as_ref()}.getSeconds(); ).try_into().unwrap()
     }
 
-    /// The get_time() method returns the numeric value corresponding to the time for the specified
+    /// Returns the numeric value corresponding to the time for the specified
     /// date according to universal time.
     ///
     /// getTime() always uses UTC for time representation. For example, a client browser in one
@@ -168,7 +129,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         js!( return @{self.as_ref()}.getTime(); ).try_into().unwrap()
     }
 
-    /// The get_timezone_offset() method returns the time zone difference, in minutes, from UTC to
+    /// Returns the time zone difference, in minutes, from UTC to
     /// current locale (host system settings).
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getTimezoneOffset)
@@ -177,7 +138,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         js!( return @{self.as_ref()}.getTimezoneOffset(); ).try_into().unwrap()
     }
 
-    /// The get_utc_date() method returns the day (date) of the month in the specified date according
+    /// Returns the day (date) of the month in the specified date according
     /// to universal time.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getUTCDate)
@@ -186,7 +147,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         js!( return @{self.as_ref()}.getUTCDate(); ).try_into().unwrap()
     }
 
-    /// The get_utc_day() method returns the day of the week in the specified date according to
+    /// Returns the day of the week in the specified date according to
     /// universal time, where 0 represents Sunday.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getUTCDay)
@@ -195,7 +156,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         js!( return @{self.as_ref()}.getUTCDay(); ).try_into().unwrap()
     }
 
-    /// The get_utc_full_year() method returns the year in the specified date according to universal
+    /// Returns the year in the specified date according to universal
     /// time.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getUTCFullYear)
@@ -204,7 +165,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         js!( return @{self.as_ref()}.getUTCFullYear(); ).try_into().unwrap()
     }
 
-    /// The get_utc_hours() method returns the hours in the specified date according to universal
+    /// Returns the hours in the specified date according to universal
     /// time.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getUTCHours)
@@ -213,7 +174,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         js!( return @{self.as_ref()}.getUTCHours(); ).try_into().unwrap()
     }
 
-    /// The get_utc_milliseconds() method returns the milliseconds in the specified date according to
+    /// Returns the milliseconds in the specified date according to
     /// universal time.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getUTCMilliseconds)
@@ -222,8 +183,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         js!( return @{self.as_ref()}.getUTCMilliseconds(); ).try_into().unwrap()
     }
 
-    /// The get_utc_minutes() method returns the minutes in the specified date according to universal
-    /// time.
+    /// Returns the minutes in the specified date according to universal time.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getUTCMinutes)
     #[inline]
@@ -231,7 +191,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         js!( return @{self.as_ref()}.getUTCMinutes(); ).try_into().unwrap()
     }
 
-    /// The get_utc_month() returns the month of the specified date according to universal time, as a
+    /// Returns the month of the specified date according to universal time, as a
     /// zero-based value (where zero indicates the first month of the year).
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getUTCMonth)
@@ -240,7 +200,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         js!( return @{self.as_ref()}.getUTCMonth(); ).try_into().unwrap()
     }
 
-    /// The get_utc_seconds() method returns the seconds in the specified date according to universal
+    /// Returns the seconds in the specified date according to universal
     /// time.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getUTCSeconds)
@@ -252,7 +212,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
     // DEPRECATED
     // fn get_year( &self ) -> i32 { }
 
-    /// The set_date() method sets the day of the Date object relative to the beginning of the
+    /// Sets the day of the Date object relative to the beginning of the
     /// currently set month.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/setDate)
@@ -263,8 +223,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         };
     }
 
-    /// The set_full_year() method sets the full year for a specified date according to local time.
-    /// Returns new timestamp.
+    /// Sets the full year for a specified date according to local time.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/setFullYear)
     #[inline]
@@ -274,7 +233,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         };
     }
 
-    /// The set_hours() method sets the hours for a specified date according to local time, and
+    /// Sets the hours for a specified date according to local time, and
     /// returns the number of milliseconds since 1 January 1970 00:00:00 UTC until the time
     /// represented by the updated Date instance.
     ///
@@ -286,7 +245,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         }
     }
 
-    /// The set_milliseconds() method sets the milliseconds for a specified date according to local
+    /// Sets the milliseconds for a specified date according to local
     /// time.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/setMilliseconds)
@@ -297,7 +256,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         };
     }
 
-    /// The set_minutes() method sets the minutes for a specified date according to local time.
+    /// Sets the minutes for a specified date according to local time.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/setMinutes)
     #[inline]
@@ -307,7 +266,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         }
     }
 
-    /// The set_month() method sets the month for a specified date according to the currently set
+    /// Sets the month for a specified date according to the currently set
     /// year.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/setMonth)
@@ -318,7 +277,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         }
     }
 
-    /// The set_seconds() method sets the seconds for a specified date according to local time.
+    /// Sets the seconds for a specified date according to local time.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/setSeconds)
     #[inline]
@@ -328,7 +287,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         }
     }
 
-    /// The set_time() method sets the Date object to the time represented by a number of
+    /// Sets the Date object to the time represented by a number of
     /// milliseconds since January 1, 1970, 00:00:00 UTC.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/setTime)
@@ -339,7 +298,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         };
     }
 
-    /// The set_utc_date() method sets the day of the month for a specified date according to
+    /// Sets the day of the month for a specified date according to
     /// universal time.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/setUTCDate)
@@ -350,7 +309,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         };
     }
 
-    /// The set_utc_full_year() method sets the full year for a specified date according to universal
+    /// Sets the full year for a specified date according to universal
     /// time.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/setUTCFullYear)
@@ -361,9 +320,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         }
     }
 
-    /// The set_utc_hours() method sets the hour for a specified date according to universal time,
-    /// and returns the number of milliseconds since 1 January 1970 00:00:00 UTC until the time
-    /// represented by the updated Date instance.
+    /// Sets the hour for a specified date according to universal time
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/setUTCHours)
     #[inline]
@@ -373,8 +330,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         }
     }
 
-    /// The set_utc_milliseconds() method sets the milliseconds for a specified date according to
-    /// universal time.
+    /// Sets the milliseconds for a specified date according to universal time.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/setUTCMilliseconds)
     #[inline]
@@ -384,7 +340,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         };
     }
 
-    /// The set_utc_minutes() method sets the minutes for a specified date according to universal
+    /// Sets the minutes for a specified date according to universal
     /// time.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/setUTCMinutes)
@@ -395,7 +351,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         }
     }
 
-    /// The set_utc_month() method sets the month for a specified date according to universal time.
+    /// Sets the month for a specified date according to universal time.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/setUTCMonth)
     #[inline]
@@ -405,7 +361,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         }
     }
 
-    /// The set_utc_seconds() method sets the seconds for a specified date according to universal
+    /// Sets the seconds for a specified date according to universal
     /// time.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/setUTCSeconds)
@@ -419,8 +375,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
     // DEPRECATED
     // fn set_year() -> i32 { }
 
-    /// The to_date_string() method returns the date portion of a Date object in human readable form
-    /// in American English.
+    /// Returns the date portion of a Date object in human readable form in American English.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toDateString)
     #[inline]
@@ -431,7 +386,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
     // DEPRECATED
     // fn to_gmt_string( &self ) -> i32 { }
 
-    /// The to_iso_string() method returns a string in simplified extended ISO format (ISO 8601),
+    /// Returns a string in simplified extended ISO format (ISO 8601),
     /// which is always 24 or 27 characters long (YYYY-MM-DDTHH:mm:ss.sssZ or
     /// ±YYYYYY-MM-DDTHH:mm:ss.sssZ, respectively). The timezone is always zero UTC offset, as
     /// denoted by the suffix "Z".
@@ -442,7 +397,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         js! ( return @{self.as_ref()}.toISOString(); ).try_into().unwrap()
     }
 
-    /// The to_json() method returns a string representation of the Date object.
+    /// Returns a string representation of the Date object.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toJSON)
     #[inline]
@@ -450,7 +405,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         js! ( return @{self.as_ref()}.toJSON(); ).try_into().unwrap()
     }
 
-    /// The to_locale_date_string() method returns a string with a language sensitive representation
+    /// Returns a string with a language sensitive representation
     /// of the date portion of this date. The new locales and options arguments let applications
     /// specify the language whose formatting conventions should be used and allow to customize the
     /// behavior of the function. In older implementations, which ignore the locales and options
@@ -481,7 +436,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
     // NON-STANDARD
     // fn to_locale_format( &self ) -> i32 { }
 
-    /// The to_locale_string() method returns a string with a language sensitive representation of
+    /// Returns a string with a language sensitive representation of
     /// this date. The new locales and options arguments let applications specify the language
     /// whose formatting conventions should be used and customize the behavior of the function. In
     /// older implementations, which ignore the locales and options arguments, the locale used and
@@ -507,7 +462,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         }
     }
 
-    /// The to_locale_time_string() method returns a string with a language sensitive representation
+    /// Returns a string with a language sensitive representation
     /// of the time portion of this date. The new locales and options arguments let applications
     /// specify the language whose formatting conventions should be used and customize the behavior
     /// of the function. In older implementations, which ignore the locales and options arguments,
@@ -536,17 +491,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
     // NON-STANDARD
     // fn to_source( &self ) -> i32 { }
 
-    /// The to_s() method returns a string representing the specified Date object.
-    ///
-    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toString)
-    #[inline]
-    // naming this to to_s 1. to avoid collision with standard to_string(), and 2. to avoid linting
-    // error on toString()...
-    fn to_s( &self ) -> String {
-        js! ( return @{self.as_ref()}.toString(); ).try_into().unwrap()
-    }
-
-    /// The to_time_string() method returns the time portion of a Date object in human readable form
+    /// Returns the time portion of a Date object in human readable form
     /// in American English.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toTimeString)
@@ -555,7 +500,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         js! ( return @{self.as_ref()}.toTimeString(); ).try_into().unwrap()
     }
 
-    /// The to_utc_string() method converts a date to a string, using the UTC time zone.
+    /// Converts a date to a string, using the UTC time zone.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toUTCString)
     #[inline]
@@ -563,7 +508,7 @@ pub trait IDate: AsRef< Reference > + TryFrom< Value >  {
         js! ( return @{self.as_ref()}.toUTCString(); ).try_into().unwrap()
     }
 
-    /// The value_of() method returns the primitive value of a Date object.
+    /// Returns the primitive value of a Date object.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/valueOf)
     #[inline]
@@ -601,7 +546,8 @@ mod tests {
 
     #[test]
     fn test_utc() {
-        let d_utc = Date::utc( 2000, Some(0), Some(1), None, None, None, None ); // y2k ftw
+        // mostly default values...
+        let d_utc = Date::utc( 2000, 0, 1, 0, 0, 0, 0 ); // y2k ftw
         assert!( d_utc == 946684800000 );
     }
 
@@ -928,14 +874,6 @@ mod tests {
         // 10th
         let d: Date = js!( return new Date(2000, 0, 1, 12, 5, 7, 10); ).try_into().unwrap();
         assert!( d.to_locale_time_string( None, None ) == "12:05:07 PM".to_string() );
-    }
-
-    #[test]
-    fn test_to_string() {
-        // year: 2000, month: January, day: 1st, hour: 12th, minute: 5th, second: 7th, millisecond:
-        // 10th
-        let d: Date = js!( return new Date(2000, 0, 1, 12, 5, 7, 10); ).try_into().unwrap();
-        assert!( d.to_s() == "Sat Jan 01 2000 12:05:07 GMT-0500 (EST)".to_string() );
     }
 
     #[test]
