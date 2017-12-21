@@ -21,7 +21,10 @@ if [ "$IS_NIGHTLY" = "0" ]; then
     fi
 fi
 
-cargo install cargo-web -f
+cargo_web_dest="cargo-web-install"
+rm -rf "${cargo_web_dest}"
+git clone https://github.com/koute/cargo-web.git -b 0.4.0 --depth 1 "${cargo_web_dest}"
+CARGO_TARGET_DIR="${HOME}/.cargo/target" cargo install --path "${cargo_web_dest}" -f
 
 if [ "$TARGET" = "asmjs-unknown-emscripten" ]; then
     rustup target add asmjs-unknown-emscripten
@@ -40,4 +43,4 @@ fi
 
 cargo web test --nodejs $CARGO_WEB_ARGS
 cd examples/todomvc
-cargo web build --release $CARGO_WEB_ARGS
+cargo web build $CARGO_WEB_ARGS
