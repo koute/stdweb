@@ -130,6 +130,7 @@ pub mod web {
     pub use webapi::event_target::{IEventTarget, EventTarget, EventListenerHandle};
     pub use webapi::node::{INode, Node, CloneKind};
     pub use webapi::element::{IElement, Element};
+    pub use webapi::text_node::TextNode;
     pub use webapi::html_element::{IHtmlElement, HtmlElement};
     pub use webapi::window_or_worker::IWindowOrWorker;
     pub use webapi::token_list::TokenList;
