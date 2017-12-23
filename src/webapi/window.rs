@@ -3,6 +3,7 @@ use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::window_or_worker::IWindowOrWorker;
 use webapi::storage::Storage;
 use webapi::location::Location;
+use webapi::history::History;
 
 /// The `Window` object represents a window containing a DOM document.
 ///
@@ -84,6 +85,15 @@ impl Window {
             js!(
                 return @{self}.location;
             ).into_reference_unchecked()
+        }
+    }
+
+    /// TODO: document this
+    pub fn history(&self) -> History {
+        unsafe {
+            js!(
+                return @{self}.history;
+            ).into_reference_unchecked().unwrap()
         }
     }
 }
