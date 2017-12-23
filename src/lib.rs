@@ -139,6 +139,7 @@ pub mod web {
     pub use webapi::location::Location;
     pub use webapi::array_buffer::ArrayBuffer;
     pub use webapi::typed_array::TypedArray;
+    pub use webapi::history::History;
 
     /// A module containing error types.
     pub mod error {
