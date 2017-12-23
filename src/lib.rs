@@ -146,6 +146,7 @@ pub mod web {
     pub use webapi::array_buffer::ArrayBuffer;
     pub use webapi::typed_array::TypedArray;
     pub use webapi::file_reader::{FileReader, FileReaderResult};
+    pub use webapi::history::History;
 
 
     /// A module containing XMLHttpRequest and its ReadyState
@@ -201,6 +202,7 @@ pub mod web {
             ProgressErrorEvent,
             InputEvent,
             ReadyStateChange,
+            PopStateEvent,
         };
     }
 }

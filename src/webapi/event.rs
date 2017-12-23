@@ -1121,6 +1121,43 @@ impl ConcreteEvent for ReadyStateChange {
     const EVENT_TYPE: &'static str = "readystatechange";
 }
 
+/// An event handler for the popstate event on the window.
+
+/// A popstate event is dispatched to the window every time the active history entry changes
+/// between two history entries for the same document. If the history entry being activated was
+/// created by a call to history.push_state() or was affected by a call to history.replace_state(),
+/// the popstate event's state property contains a copy of the history entry's state object.
+///
+/// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/PopStateEvent)
+pub struct PopStateEvent(Reference);
+
+reference_boilerplate! {
+    PopStateEvent,
+    instanceof Event
+    convertible to Event
+}
+
+impl PopStateEvent {
+    /// The state object associated to the new history entry, if that entry was created with
+    /// push_state or affected by replace_state.
+    ///
+    /// Example usage:
+    ///
+    /// ```rust,ignore
+    /// let state: Option<MyStruct> = event.state().try_into().ok();
+    /// ```
+    #[inline]
+    pub fn state(&self) -> Value {
+        js!(return @{self}.state;)
+    }
+}
+
+impl IEvent for PopStateEvent {}
+
+impl ConcreteEvent for PopStateEvent {
+    const EVENT_TYPE: &'static str = "popstate";
+}
+
 #[cfg(all(test, feature = "web_test"))]
 mod tests {
     use super::*;
@@ -1363,5 +1400,31 @@ mod tests {
             return new Event( @{ReadyStateChange::EVENT_TYPE} );
         ).try_into().unwrap();
         assert_eq!( event.event_type(), ReadyStateChange::EVENT_TYPE);
+    }
+
+    #[test]
+    fn test_pop_state_event() {
+        let event: PopStateEvent = js!(
+            return new PopStateEvent(
+                @{PopStateEvent::EVENT_TYPE},
+                {
+                    state: {
+                        color: "tomato"
+                    }
+                }
+            );
+        ).try_into().unwrap();
+
+        assert_eq!(event.event_type(), PopStateEvent::EVENT_TYPE);
+
+        let state_value: Value = event.state();
+        let state: ::std::collections::BTreeMap<String, Value> = state_value
+            .as_object()
+            .unwrap()
+            .into();
+        let mut expected = ::std::collections::BTreeMap::new();
+        expected.insert("color".to_string(), "tomato".into());
+
+        assert_eq!(state, expected);
     }
 }

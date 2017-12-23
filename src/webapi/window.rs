@@ -3,6 +3,7 @@ use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::window_or_worker::IWindowOrWorker;
 use webapi::storage::Storage;
 use webapi::location::Location;
+use webapi::history::History;
 use webcore::once::Once;
 use webcore::value::Value;
 
@@ -125,5 +126,17 @@ impl Window {
             return { request: request, callback: callback, window: @{self} };
         };
         RequestAnimationFrameHandle(values)
+    }
+
+    /// Returns the global [History](struct.History.html) object, which provides methods to
+    /// manipulate the browser history.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Window/history)
+    pub fn history(&self) -> History {
+        unsafe {
+            js!(
+                return @{self}.history;
+            ).into_reference_unchecked().unwrap()
+        }
     }
 }
