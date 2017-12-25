@@ -144,7 +144,7 @@ pub fn initialize() {
                     output[ key ] = value;
                 }
                 return output;
-            } else if( kind === 9 || kind == 11 || kind == 12 ) {
+            } else if( kind === 9 || kind === 11 || kind === 12 ) {
                 return Module.STDWEB.acquire_js_reference( HEAP32[ address / 4 ] );
             } else if( kind === 10 ) {
                 var adapter_pointer = HEAPU32[ address / 4 ];
