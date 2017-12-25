@@ -1104,6 +1104,23 @@ reference_boilerplate! {
     convertible to ProgressRelatedEvent
 }
 
+/// The readystatechange event is fired when the readyState attribute of a document has changed.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/readystatechange)
+pub struct ReadyStateChange( Reference );
+
+reference_boilerplate! {
+    ReadyStateChange,
+    instanceof Event
+    convertible to Event
+}
+
+impl IEvent for ReadyStateChange {}
+
+impl ConcreteEvent for ReadyStateChange {
+    const EVENT_TYPE: &'static str = "readystatechange";
+}
+
 #[cfg(all(test, feature = "web_test"))]
 mod tests {
     use super::*;
@@ -1338,5 +1355,13 @@ mod tests {
             return new ProgressEvent( @{LoadEndEvent::EVENT_TYPE} );
         ).try_into().unwrap();
         assert_eq!( event.event_type(), LoadEndEvent::EVENT_TYPE );
+    }
+
+    #[test]
+    fn test_ready_state_change_event() {
+        let event: ReadyStateChange = js!(
+            return new Event( @{ReadyStateChange::EVENT_TYPE} );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), ReadyStateChange::EVENT_TYPE);
     }
 }
