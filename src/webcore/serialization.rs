@@ -1,5 +1,6 @@
 use std::mem;
 use std::slice;
+use std::fmt;
 use std::i32;
 use std::collections::{BTreeMap, HashMap};
 use std::marker::PhantomData;
@@ -7,7 +8,7 @@ use std::cell::{Cell, UnsafeCell};
 use std::hash::Hash;
 
 use webcore::ffi;
-use webcore::callfn::CallMut;
+use webcore::callfn::{CallOnce, CallMut};
 use webcore::newtype::Newtype;
 use webcore::try_from::{TryFrom, TryInto};
 use webcore::number::Number;
@@ -37,7 +38,8 @@ pub enum Tag {
     Reference = 9,
     Function = 10,
     ObjectReference = 11,
-    ArrayReference = 12
+    ArrayReference = 12,
+    FunctionOnce = 13
 }
 
 impl Default for Tag {
@@ -194,6 +196,14 @@ struct SerializedUntaggedReference {
 #[repr(C)]
 #[derive(Debug)]
 struct SerializedUntaggedFunction {
+    adapter_pointer: u32,
+    pointer: u32,
+    deallocator_pointer: u32
+}
+
+#[repr(C)]
+#[derive(Debug)]
+struct SerializedUntaggedFunctionOnce {
     adapter_pointer: u32,
     pointer: u32,
     deallocator_pointer: u32
@@ -444,6 +454,7 @@ untagged_boilerplate!( test_string, as_string, Tag::Str, SerializedUntaggedStrin
 untagged_boilerplate!( test_array, as_array, Tag::Array, SerializedUntaggedArray );
 untagged_boilerplate!( test_reference, as_reference, Tag::Reference, SerializedUntaggedReference );
 untagged_boilerplate!( test_function, as_function, Tag::Function, SerializedUntaggedFunction );
+untagged_boilerplate!( test_function_once, as_function_once, Tag::FunctionOnce, SerializedUntaggedFunctionOnce );
 untagged_boilerplate!( test_object_reference, as_object_reference, Tag::ObjectReference, SerializedUntaggedObjectReference );
 untagged_boilerplate!( test_array_reference, as_array_reference, Tag::ArrayReference, SerializedUntaggedArrayReference );
 
@@ -462,7 +473,10 @@ impl< 'a > SerializedValue< 'a > {
             Tag::ObjectReference => Value::Object( self.as_object_reference().deserialize() ),
             Tag::ArrayReference => Value::Array( self.as_array_reference().deserialize() ),
             Tag::Reference => self.as_reference().deserialize().into(),
-            Tag::Function | Tag::Object | Tag::Array => unreachable!()
+            Tag::Function |
+            Tag::FunctionOnce |
+            Tag::Object |
+            Tag::Array => unreachable!()
         }
     }
 }
@@ -876,6 +890,16 @@ impl JsSerializable for Value {
 
 __js_serializable_boilerplate!( Value );
 
+// A wrapper for passing FnOnce callbacks into the `js!` macro.
+pub struct Once< T >( T );
+
+impl< T > fmt::Debug for Once< T > {
+    #[inline]
+    fn fmt( &self, formatter: &mut fmt::Formatter ) -> Result< (), fmt::Error > {
+        write!( formatter, "Once" )
+    }
+}
+
 #[derive(Debug)]
 pub struct FunctionTag;
 
@@ -954,6 +978,86 @@ macro_rules! impl_for_fn {
                 };
 
                 drop( callback );
+            }
+        }
+
+        impl< $($kind: TryFrom< Value >,)* F > FuncallAdapter< F > for Newtype< (FunctionTag, ($($kind,)*)), Once< F > >
+            where F: CallOnce< ($($kind,)*) > + 'static, F::Output: JsSerializableOwned
+        {
+            #[allow(unused_mut, unused_variables, non_snake_case)]
+            extern fn funcall_adapter(
+                    callback: *mut F,
+                    raw_arguments: *mut SerializedUntaggedArray
+                )
+            {
+                debug_assert_ne!( callback, 0 as *mut F );
+
+                let callback = unsafe {
+                    Box::from_raw( callback )
+                };
+
+                let mut arguments = unsafe { &*raw_arguments }.deserialize();
+                unsafe {
+                    ffi::dealloc( raw_arguments as *mut u8, mem::size_of::< SerializedValue >() );
+                }
+
+                if arguments.len() != F::expected_argument_count() {
+                    // TODO: Should probably throw an exception into the JS world or something like that.
+                    panic!( "Expected {} arguments, got {}", F::expected_argument_count(), arguments.len() );
+                }
+
+                let mut arguments = arguments.drain( .. );
+                let mut nth_argument = 0;
+                $(
+                    let $kind = match arguments.next().unwrap().try_into() {
+                        Ok( value ) => value,
+                        Err( _ ) => {
+                            panic!( "Argument #{} is not convertible", nth_argument + 1 );
+                        }
+                    };
+
+                    nth_argument += 1;
+                )*
+
+                $crate::private::noop( &mut nth_argument );
+
+                let result = callback.call_once( ($($kind,)*) );
+                let mut arena = PreallocatedArena::new( result.memory_required_owned() );
+
+                let mut result = Some( result );
+                let result = JsSerializableOwned::into_js_owned( &mut result, &mut arena );
+                let result = &result as *const _;
+
+                // This is kinda hacky but I'm not sure how else to do it at the moment.
+                __js_raw_asm!( "Module.STDWEB.tmp = Module.STDWEB.to_js( $0 );", result );
+            }
+
+            extern fn deallocator( callback: *mut F ) {
+                let callback = unsafe {
+                    Box::from_raw( callback )
+                };
+
+                drop( callback );
+            }
+        }
+
+        impl< $($kind: TryFrom< Value >,)* F > JsSerializableOwned for Newtype< (FunctionTag, ($($kind,)*)), Once< F > >
+            where F: CallOnce< ($($kind,)*) > + 'static, F::Output: JsSerializableOwned
+        {
+            #[inline]
+            fn into_js_owned< 'a >( value: &'a mut Option< Self >, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+                let callback: *mut F = Box::into_raw( Box::new( value.take().unwrap().unwrap_newtype().0 ) );
+
+                SerializedUntaggedFunctionOnce {
+                    adapter_pointer: <Self as FuncallAdapter< F > >::funcall_adapter as u32,
+                    pointer: callback as u32,
+                    deallocator_pointer: <Self as FuncallAdapter< F > >::deallocator as u32
+                }.into()
+            }
+
+            #[inline]
+            fn memory_required_owned( &self ) -> usize {
+                0
             }
         }
 
@@ -1189,6 +1293,66 @@ mod test_deserialization {
             return callback === null;
         };
 
+        assert_eq!( result, Value::Bool( true ) );
+    }
+
+    #[test]
+    fn function_once() {
+        fn call< F: FnOnce( String ) -> String + 'static >( callback: F ) -> Value {
+            js!(
+                var callback = @{Once( callback )};
+                return callback( "Dog" );
+            )
+        }
+
+        let suffix = "!".to_owned();
+        let result = call( move |value| { return value + suffix.as_str() } );
+        assert_eq!( result, Value::String( "Dog!".to_owned() ) );
+    }
+
+    #[test]
+    fn function_once_cannot_be_called_twice() {
+        fn call< F: FnOnce() + 'static >( callback: F ) -> Value {
+            js!(
+                var callback = @{Once( callback )};
+                callback();
+
+                try {
+                    callback();
+                } catch( error ) {
+                    if( error instanceof ReferenceError ) {
+                        return true;
+                    }
+                }
+
+                return false;
+            )
+        }
+
+        let result = call( move || {} );
+        assert_eq!( result, Value::Bool( true ) );
+    }
+
+    #[test]
+    fn function_once_cannot_be_called_after_being_dropped() {
+        fn call< F: FnOnce() + 'static >( callback: F ) -> Value {
+            js!(
+                var callback = @{Once( callback )};
+                callback.drop();
+
+                try {
+                    callback();
+                } catch( error ) {
+                    if( error instanceof ReferenceError ) {
+                        return true;
+                    }
+                }
+
+                return false;
+            )
+        }
+
+        let result = call( move || {} );
         assert_eq!( result, Value::Bool( true ) );
     }
 }

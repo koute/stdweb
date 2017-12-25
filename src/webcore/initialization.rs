@@ -166,6 +166,37 @@ pub fn initialize() {
                 };
 
                 return output;
+            } else if( kind === 13 ) {
+                var adapter_pointer = HEAPU32[ address / 4 ];
+                var pointer = HEAPU32[ (address + 4) / 4 ];
+                var deallocator_pointer = HEAPU32[ (address + 8) / 4 ];
+                var output = function() {
+                    if( pointer === 0 ) {
+                        throw new ReferenceError( "Already called or dropped FnOnce function called!" );
+                    }
+
+                    output.drop = null;
+                    var function_pointer = pointer;
+                    pointer = 0;
+
+                    var args = Module.STDWEB.alloc( 16 );
+                    Module.STDWEB.serialize_array( args, arguments );
+                    Module.STDWEB.dyncall( "vii", adapter_pointer, [function_pointer, args] );
+                    var result = Module.STDWEB.tmp;
+                    Module.STDWEB.tmp = null;
+
+                    return result;
+                };
+
+                output.drop = function() {
+                    output.drop = null;
+                    var function_pointer = pointer;
+                    pointer = 0;
+
+                    Module.STDWEB.dyncall( "vi", deallocator_pointer, [function_pointer] );
+                };
+
+                return output;
             }
         };
     };
