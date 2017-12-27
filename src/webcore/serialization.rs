@@ -1355,6 +1355,38 @@ mod test_deserialization {
         let result = call( move || {} );
         assert_eq!( result, Value::Bool( true ) );
     }
+
+    #[test]
+    fn function_once_calling_drop_after_being_called_does_not_do_anything() {
+        fn call< F: FnOnce() + 'static >( callback: F ) -> Value {
+            js!(
+                var callback = @{Once( callback )};
+                callback();
+                callback.drop();
+
+                return true;
+            )
+        }
+
+        let result = call( move || {} );
+        assert_eq!( result, Value::Bool( true ) );
+    }
+
+    #[test]
+    fn function_once_calling_drop_twice_does_not_do_anything() {
+        fn call< F: FnOnce() + 'static >( callback: F ) -> Value {
+            js!(
+                var callback = @{Once( callback )};
+                callback.drop();
+                callback.drop();
+
+                return true;
+            )
+        }
+
+        let result = call( move || {} );
+        assert_eq!( result, Value::Bool( true ) );
+    }
 }
 
 #[cfg(test)]

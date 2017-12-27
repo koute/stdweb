@@ -105,6 +105,7 @@ pub fn initialize() {
     };
 
     js! { @(no_return)
+        Module.STDWEB.noop = function() {};
         Module.STDWEB.to_js = function to_js( address ) {
             var kind = HEAPU8[ address + 12 ];
             if( kind === 0 ) {
@@ -161,7 +162,7 @@ pub fn initialize() {
                 };
 
                 output.drop = function() {
-                    output.drop = null;
+                    output.drop = Module.STDWEB.noop;
                     Module.STDWEB.dyncall( "vi", deallocator_pointer, [pointer] );
                 };
 
@@ -175,7 +176,7 @@ pub fn initialize() {
                         throw new ReferenceError( "Already called or dropped FnOnce function called!" );
                     }
 
-                    output.drop = null;
+                    output.drop = Module.STDWEB.noop;
                     var function_pointer = pointer;
                     pointer = 0;
 
@@ -189,7 +190,7 @@ pub fn initialize() {
                 };
 
                 output.drop = function() {
-                    output.drop = null;
+                    output.drop = Module.STDWEB.noop;
                     var function_pointer = pointer;
                     pointer = 0;
 
