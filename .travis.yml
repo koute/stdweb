@@ -4,9 +4,9 @@ dist: trusty
 sudo: false
 
 rust:
+  - nightly
   - stable
   - beta
-  - nightly
 
 env:
   - TARGET=wasm32-unknown-unknown
