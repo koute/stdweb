@@ -108,9 +108,9 @@ impl Window {
 
     /// You should call this method whenever you're ready to update your animation onscreen.
     /// This will request that your animation function be called before the browser performs the next repaint.
-    /// The number of callbacks is usually 60 times per second, but will generally match the display refresh 
+    /// The number of callbacks is usually 60 times per second, but will generally match the display refresh
     /// rate in most web browsers as per W3C recommendation. request_animation_frame() calls are paused in most browsers
-    /// when running in background tabs or hidden <iframe>s in order to improve performance and battery life.
+    /// when running in background tabs or hidden iframes in order to improve performance and battery life.
     ///
     /// The callback method is passed a single argument, a f64, which indicates the current time when
     /// callbacks queued by requestAnimationFrame() begin to fire. Multiple callbacks in a single frame, therefore,
