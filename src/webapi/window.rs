@@ -3,6 +3,25 @@ use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::window_or_worker::IWindowOrWorker;
 use webapi::storage::Storage;
 use webapi::location::Location;
+use webcore::serialization::Once;
+use webcore::value::Value;
+
+/// A handle to a pending animation frame request.
+#[derive(Debug)]
+pub struct RequestAnimationFrameHandle(Value);
+
+impl RequestAnimationFrameHandle {
+    /// Cancels an animation frame request.
+    ///
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Window/cancelAnimationFrame)
+    pub fn cancel(self) {
+        js!{
+            var val = @{self.0};
+            val.window.cancelAnimationFrame(val.request);
+            val.callback.drop();
+        };
+    }
+}
 
 /// The `Window` object represents a window containing a DOM document.
 ///
@@ -85,5 +104,26 @@ impl Window {
                 return @{self}.location;
             ).into_reference_unchecked()
         }
+    }
+
+    /// You should call this method whenever you're ready to update your animation onscreen.
+    /// This will request that your animation function be called before the browser performs the next repaint.
+    /// The number of callbacks is usually 60 times per second, but will generally match the display refresh 
+    /// rate in most web browsers as per W3C recommendation. request_animation_frame() calls are paused in most browsers
+    /// when running in background tabs or hidden <iframe>s in order to improve performance and battery life.
+    ///
+    /// The callback method is passed a single argument, a f64, which indicates the current time when
+    /// callbacks queued by requestAnimationFrame() begin to fire. Multiple callbacks in a single frame, therefore,
+    /// each receive the same timestamp even though time has passed during the computation of every previous callback's workload.
+    /// This timestamp is a decimal number, in milliseconds, but with a minimal precision of 1ms (1000 µs).
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame)
+    pub fn request_animation_frame< F: FnOnce(f64) + 'static>( &self, callback: F) -> RequestAnimationFrameHandle {
+        let values: Value = js!{
+            var callback = @{Once(callback)};
+            var request = @{self}.requestAnimationFrame(callback);
+            return { request: request, callback: callback, window: @{self} };
+        };
+        RequestAnimationFrameHandle(values)
     }
 }
