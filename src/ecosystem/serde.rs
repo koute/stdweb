@@ -1059,7 +1059,7 @@ macro_rules! __js_deserializable_serde_boilerplate {
 /// A macro which makes it possible to pass an instance of a given type
 /// implementing Serde's `Serialize` into the [js!](macro.js.html) macro.
 ///
-/// For types defined outside of your crate you can also use the [Serde](struct.Serde.html)
+/// For types defined outside of your crate you can also use the [Serde](serde/struct.Serde.html)
 /// newtype to make them serializable indirectly.
 ///
 /// # Examples
