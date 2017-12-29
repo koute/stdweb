@@ -1,6 +1,7 @@
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
 use webcore::value::Value;
+use webapi::typed_array::TypedArray;
 
 /// The `ArrayBuffer` object is used to represent a generic, fixed-length raw binary data buffer.
 /// You cannot directly manipulate the contents of an ArrayBuffer; instead, you create an [TypedArray](struct.TypedArray.html)
@@ -27,4 +28,20 @@ impl ArrayBuffer {
 reference_boilerplate! {
     ArrayBuffer,
     instanceof ArrayBuffer
+}
+
+// TODO: Implement for other types.
+// TODO: Implement slightly more efficiently than going through the TypedArray.
+impl From< ArrayBuffer > for Vec< u8 > {
+    fn from( buffer: ArrayBuffer ) -> Self {
+        let typed_array: TypedArray< u8 > = buffer.into();
+        typed_array.into()
+    }
+}
+
+impl< 'a > From< &'a ArrayBuffer > for Vec< u8 > {
+    fn from( buffer: &'a ArrayBuffer ) -> Self {
+        let typed_array: TypedArray< u8 > = buffer.into();
+        typed_array.into()
+    }
 }
