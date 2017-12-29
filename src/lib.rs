@@ -177,12 +177,15 @@ pub mod web {
             FocusEvent,
             BlurEvent,
             HashChangeEvent,
-            LoadEvent,
+            ResourceLoadEvent,
+            ResourceAbortEvent,
+            ResourceErrorEvent,
             ProgressEvent,
             LoadStartEvent,
             LoadEndEvent,
-            AbortEvent,
-            ErrorEvent,
+            ProgressLoadEvent,
+            ProgressAbortEvent,
+            ProgressErrorEvent,
             InputEvent
         };
     }

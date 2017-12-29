@@ -277,19 +277,56 @@ reference_boilerplate! {
     convertible to Event
 }
 
-/// The `LoadEvent` is fired when a resource and its dependent resources have finished loading.
+/// The `ResourceLoadEvent` is fired when a resource and its dependent resources have finished loading.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/load)
-pub struct LoadEvent( Reference );
+pub struct ResourceLoadEvent( Reference );
 
-impl IEvent for LoadEvent {}
-impl IUiEvent for LoadEvent {}
-impl ConcreteEvent for LoadEvent {
+impl IEvent for ResourceLoadEvent {}
+impl IUiEvent for ResourceLoadEvent {}
+impl ConcreteEvent for ResourceLoadEvent {
     const EVENT_TYPE: &'static str = "load";
 }
 
 reference_boilerplate! {
-    LoadEvent,
+    ResourceLoadEvent,
+    instanceof UIEvent
+    convertible to Event
+    convertible to UiEvent
+}
+
+/// The `ResourceAbortEvent` is fired when the loading of a resource has been aborted.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/abort)
+pub struct ResourceAbortEvent( Reference );
+
+impl IEvent for ResourceAbortEvent {}
+impl IUiEvent for ResourceAbortEvent {}
+impl ConcreteEvent for ResourceAbortEvent {
+    const EVENT_TYPE: &'static str = "abort";
+}
+
+reference_boilerplate! {
+    ResourceAbortEvent,
+    instanceof UIEvent
+    convertible to Event
+    convertible to UiEvent
+}
+
+/// The `ResourceErrorEvent` is fired when an error occurred; the exact circumstances vary,
+/// since this event is used from a variety of APIs.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/error)
+pub struct ResourceErrorEvent( Reference );
+
+impl IEvent for ResourceErrorEvent {}
+impl IUiEvent for ResourceErrorEvent {}
+impl ConcreteEvent for ResourceErrorEvent {
+    const EVENT_TYPE: &'static str = "error";
+}
+
+reference_boilerplate! {
+    ResourceErrorEvent,
     instanceof UIEvent
     convertible to Event
     convertible to UiEvent
@@ -937,7 +974,25 @@ reference_boilerplate! {
     convertible to ProgressRelatedEvent
 }
 
-/// The `LoadStartEvent` is fired when progress has begun on the loading of a resource.
+/// The `ProgressLoadEvent` is fired when progress has successful finished.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/load_(ProgressEvent))
+pub struct ProgressLoadEvent( Reference );
+
+impl IEvent for ProgressLoadEvent {}
+impl IProgressEvent for ProgressLoadEvent {}
+impl ConcreteEvent for ProgressLoadEvent {
+    const EVENT_TYPE: &'static str = "load";
+}
+
+reference_boilerplate! {
+    ProgressLoadEvent,
+    instanceof ProgressEvent
+    convertible to Event
+    convertible to ProgressRelatedEvent
+}
+
+/// The `LoadStartEvent` is fired when progress has begun.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/loadstart)
 pub struct LoadStartEvent( Reference );
@@ -955,8 +1010,9 @@ reference_boilerplate! {
     convertible to ProgressRelatedEvent
 }
 
-/// The `LoadEndEvent` is fired when progress has stopped on the loading of a resource,
-/// e.g. after `ErrorEvent`, `AbortEvent` or `LoadEvent` have been dispatched.
+/// The `LoadEndEvent` is fired when progress has stopped,
+/// e.g. after `ProgressErrorEvent`, `ProgressAbortEvent`
+/// or `ProgressLoadEvent` have been dispatched.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/loadend)
 pub struct LoadEndEvent( Reference );
@@ -974,81 +1030,40 @@ reference_boilerplate! {
     convertible to ProgressRelatedEvent
 }
 
-/// The `AbortEvent` is fired when the loading of a resource has been aborted.
+/// The `ProgressAbortEvent` is fired when the progress has been aborted.
 ///
-/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/abort)
-pub struct AbortEvent( Reference );
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/abort_(ProgressEvent))
+pub struct ProgressAbortEvent( Reference );
 
-// TODO: This event is sometimes an UiEvent; what to do here?
-impl IEvent for AbortEvent {}
-impl ConcreteEvent for AbortEvent {
+impl IEvent for ProgressAbortEvent {}
+impl IProgressEvent for ProgressAbortEvent {}
+impl ConcreteEvent for ProgressAbortEvent {
     const EVENT_TYPE: &'static str = "abort";
 }
 
 reference_boilerplate! {
-    AbortEvent,
-    instanceof Event
+    ProgressAbortEvent,
+    instanceof ProgressEvent
     convertible to Event
+    convertible to ProgressRelatedEvent
 }
 
-/// The `ErrorEvent` is fired when an error occurred; the exact circumstances vary,
-/// since this event is used from a variety of APIs.
+/// The `ProgressErrorEvent` is fired when the progress has failed.
 ///
-/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/error)
-pub struct ErrorEvent( Reference );
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/error_(ProgressEvent))
+pub struct ProgressErrorEvent( Reference );
 
-// TODO: This event is sometimes an UiEvent; what to do here?
-impl IEvent for ErrorEvent {}
-impl ConcreteEvent for ErrorEvent {
+impl IEvent for ProgressErrorEvent {}
+impl IProgressEvent for ProgressErrorEvent {}
+impl ConcreteEvent for ProgressErrorEvent {
     const EVENT_TYPE: &'static str = "error";
 }
 
 reference_boilerplate! {
-    ErrorEvent,
-    instanceof Event
+    ProgressErrorEvent,
+    instanceof ProgressEvent
     convertible to Event
-}
-
-impl ErrorEvent {
-    /// Returns a human-readable error message describing the problem.
-    ///
-    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ErrorEvent/message)
-    #[inline]
-    pub fn message( &self ) -> String {
-        return js!(
-            return @{self.as_ref()}.message;
-        ).try_into().unwrap()
-    }
-
-    /// Returns the name of the script where the error occurred.
-    ///
-    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ErrorEvent/filename)
-    #[inline]
-    pub fn filename( &self ) -> String {
-        return js!(
-            return @{self.as_ref()}.filename;
-        ).try_into().unwrap()
-    }
-
-    /// Returns the line number of the script file where the error occurred.
-    ///
-    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ErrorEvent/lineNo)
-    #[inline]
-    pub fn lineno( &self ) -> u32 {
-        return js!(
-            return @{self.as_ref()}.lineno;
-        ).try_into().unwrap()
-    }
-
-    /// Returns the column number of the script file where the error occurred.
-    ///
-    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ErrorEvent/colNo)
-    #[inline]
-    pub fn colno( &self ) -> u32 {
-        return js!(
-            return @{self.as_ref()}.colno;
-        ).try_into().unwrap()
-    }
+    convertible to ProgressRelatedEvent
 }
 
 #[cfg(web_api_tests)]
@@ -1108,11 +1123,19 @@ mod tests {
     }
 
     #[test]
-    fn test_load_event() {
-        let event: LoadEvent = js!(
-            return new UIEvent( @{LoadEvent::EVENT_TYPE} );
+    fn test_resource_load_event() {
+        let event: ResourceLoadEvent = js!(
+            return new UIEvent( @{ResourceLoadEvent::EVENT_TYPE} );
         ).try_into().unwrap();
-        assert_eq!( event.event_type(), LoadEvent::EVENT_TYPE );
+        assert_eq!( event.event_type(), ResourceLoadEvent::EVENT_TYPE );
+    }
+
+    #[test]
+    fn test_resource_abort_event() {
+        let event: ResourceAbortEvent = js!(
+            return new UIEvent( @{ResourceAbortEvent::EVENT_TYPE} );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), ResourceAbortEvent::EVENT_TYPE );
     }
 
     #[test]
@@ -1277,33 +1300,5 @@ mod tests {
             return new ProgressEvent( @{LoadEndEvent::EVENT_TYPE} );
         ).try_into().unwrap();
         assert_eq!( event.event_type(), LoadEndEvent::EVENT_TYPE );
-    }
-
-    #[test]
-    fn test_abort_event() {
-        let event: AbortEvent = js!(
-            return new Event( @{AbortEvent::EVENT_TYPE} );
-        ).try_into().unwrap();
-        assert_eq!( event.event_type(), AbortEvent::EVENT_TYPE );
-    }
-
-    #[test]
-    fn test_error_event() {
-        let event: ErrorEvent = js!(
-            return new ErrorEvent(
-                @{ErrorEvent::EVENT_TYPE},
-                {
-                    message: "Dummy error",
-                    filename: "Dummy.js",
-                    lineno: 5,
-                    colno: 10
-                }
-            );
-        ).try_into().unwrap();
-        assert_eq!( event.event_type(), ErrorEvent::EVENT_TYPE );
-        assert_eq!( event.message(), "Dummy error".to_string() );
-        assert_eq!( event.filename(), "Dummy.js".to_string() );
-        assert_eq!( event.lineno(), 5 );
-        assert_eq!( event.colno(), 10 );
     }
 }
