@@ -7,6 +7,7 @@ use webapi::array_buffer::ArrayBuffer;
 pub trait ArrayKind: Sized {
     fn is_typed_array( reference: &Reference ) -> bool;
     fn into_typed_array( slice: &[Self] ) -> TypedArray< Self >;
+    fn into_typed_array_from_array_buffer( buffer: &ArrayBuffer ) -> TypedArray< Self >;
     fn from_typed_array( array: &TypedArray< Self > ) -> Vec< Self >;
 }
 
@@ -33,6 +34,21 @@ macro_rules! arraykind {
                     Reference::from_raw_unchecked( raw )
                 };
 
+                TypedArray::from_reference( reference ).unwrap()
+            }
+
+            fn into_typed_array_from_array_buffer( buffer: &ArrayBuffer ) -> TypedArray< Self > {
+                let raw = __js_raw_asm!(
+                    concat!(
+                        "return Module.STDWEB.acquire_rust_reference( new ",
+                        stringify!( $js_array_type ),
+                        "( Module.STDWEB.acquire_js_reference( $0 ) )",
+                        " );"
+                    ),
+                    buffer.as_ref().as_raw()
+                );
+
+                let reference = unsafe { Reference::from_raw_unchecked( raw ) };
                 TypedArray::from_reference( reference ).unwrap()
             }
 
@@ -127,6 +143,18 @@ impl< 'a, T: ArrayKind > From< &'a [T] > for TypedArray< T > {
     }
 }
 
+impl< T: ArrayKind > From< ArrayBuffer > for TypedArray< T > {
+    fn from( buffer: ArrayBuffer ) -> Self {
+        T::into_typed_array_from_array_buffer( &buffer )
+    }
+}
+
+impl< 'a, T: ArrayKind > From< &'a ArrayBuffer > for TypedArray< T > {
+    fn from( buffer: &'a ArrayBuffer ) -> Self {
+        T::into_typed_array_from_array_buffer( buffer )
+    }
+}
+
 #[cfg(test)]
 mod tests {
     macro_rules! arraykind_test {
@@ -136,6 +164,8 @@ mod tests {
                 use std;
                 use webcore::try_from::TryInto;
                 use webcore::value::Value;
+                use webapi::array_buffer::ArrayBuffer;
+
                 const ARRAY: &[$element_type] = &[
                     std::$element_type::MIN,
                     std::$element_type::MAX
@@ -169,6 +199,16 @@ mod tests {
                     let vec: Vec< $element_type > = typed_array.into();
                     assert_eq!( vec.len(), ARRAY.len() );
                     assert_eq!( vec, ARRAY);
+                }
+
+                #[test]
+                fn from_array_buffer() {
+                    let value = js!( return new $js_array_type( [@{ARRAY[0]}, @{ARRAY[1]}] ).buffer; );
+                    let array_buffer: ArrayBuffer = value.try_into().unwrap();
+                    let typed_array: TypedArray< $element_type > = array_buffer.into();
+                    let vec: Vec< $element_type > = typed_array.into();
+                    assert_eq!( vec.len(), ARRAY.len() );
+                    assert_eq!( vec, ARRAY );
                 }
             }
         }
