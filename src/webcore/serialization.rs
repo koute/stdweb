@@ -15,6 +15,7 @@ use webcore::number::Number;
 use webcore::object::Object;
 use webcore::array::Array;
 use webcore::type_name::type_name;
+use webcore::unsafe_typed_array::UnsafeTypedArray;
 
 use webcore::value::{
     Null,
@@ -40,7 +41,8 @@ pub enum Tag {
     Function = 10,
     ObjectReference = 11,
     ArrayReference = 12,
-    FunctionOnce = 13
+    FunctionOnce = 13,
+    UnsafeTypedArray = 14
 }
 
 impl Default for Tag {
@@ -220,6 +222,14 @@ struct SerializedUntaggedObjectReference {
 #[derive(Debug)]
 struct SerializedUntaggedArrayReference {
     refid: i32
+}
+
+#[repr(C)]
+#[derive(Debug)]
+struct SerializedUntaggedUnsafeTypedArray {
+    pointer: u32,
+    length: u32,
+    kind: u32
 }
 
 impl SerializedUntaggedString {
@@ -458,6 +468,7 @@ untagged_boilerplate!( test_function, as_function, Tag::Function, SerializedUnta
 untagged_boilerplate!( test_function_once, as_function_once, Tag::FunctionOnce, SerializedUntaggedFunctionOnce );
 untagged_boilerplate!( test_object_reference, as_object_reference, Tag::ObjectReference, SerializedUntaggedObjectReference );
 untagged_boilerplate!( test_array_reference, as_array_reference, Tag::ArrayReference, SerializedUntaggedArrayReference );
+untagged_boilerplate!( test_unsafe_typed_array, as_unsafe_typed_array, Tag::UnsafeTypedArray, SerializedUntaggedUnsafeTypedArray );
 
 impl< 'a > SerializedValue< 'a > {
     #[doc(hidden)]
@@ -477,7 +488,8 @@ impl< 'a > SerializedValue< 'a > {
             Tag::Function |
             Tag::FunctionOnce |
             Tag::Object |
-            Tag::Array => unreachable!()
+            Tag::Array |
+            Tag::UnsafeTypedArray => unreachable!()
         }
     }
 }
@@ -890,6 +902,37 @@ impl JsSerializable for Value {
 }
 
 __js_serializable_boilerplate!( Value );
+
+macro_rules! impl_for_unsafe_typed_array {
+    ($ty:ty, $kind:expr) => {
+        impl< 'r > JsSerializable for UnsafeTypedArray< 'r, $ty > {
+            #[inline]
+            fn into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+                SerializedUntaggedUnsafeTypedArray {
+                    pointer: self.0.as_ptr() as u32 / mem::size_of::< $ty >() as u32,
+                    length: self.0.len() as u32,
+                    kind: $kind
+                }.into()
+            }
+
+            #[inline]
+            fn memory_required( &self ) -> usize {
+                0
+            }
+        }
+
+        __js_serializable_boilerplate!( impl< 'a > for UnsafeTypedArray< 'a, $ty > );
+    }
+}
+
+impl_for_unsafe_typed_array!( u8, 0 );
+impl_for_unsafe_typed_array!( i8, 1 );
+impl_for_unsafe_typed_array!( u16, 2 );
+impl_for_unsafe_typed_array!( i16, 3 );
+impl_for_unsafe_typed_array!( u32, 4 );
+impl_for_unsafe_typed_array!( i32, 5 );
+impl_for_unsafe_typed_array!( f32, 6 );
+impl_for_unsafe_typed_array!( f64, 7 );
 
 // A wrapper for passing FnOnce callbacks into the `js!` macro.
 pub struct Once< T >( pub T );
@@ -1631,6 +1674,42 @@ mod test_serialization {
 
         assert_eq!( result, "1" );
     }
+
+    macro_rules! test_unsafe_typed_array {
+        ($test_name:ident, $ty:ty, $js_type_name:ident) => {
+            #[allow(trivial_numeric_casts)]
+            #[test]
+            fn $test_name() {
+                let slice: &[$ty] = &[1 as $ty, 2 as $ty, 3 as $ty];
+                let slice = unsafe { UnsafeTypedArray::new( slice ) };
+                let result: Vec< Value > = js!(
+                    var slice = @{slice};
+                    var sum = slice[0] + slice[1] + slice[2];
+                    var name = slice.constructor.name;
+                    var length = slice.length;
+                    return [name, sum, length]
+                ).try_into().unwrap();
+
+                let mut result = result.into_iter();
+                let name: String = result.next().unwrap().try_into().unwrap();
+                let sum: f64 = result.next().unwrap().try_into().unwrap();
+                let length: usize = result.next().unwrap().try_into().unwrap();
+
+                assert_eq!( name, stringify!( $js_type_name ) );
+                assert_eq!( sum as u64, 6 );
+                assert_eq!( length, 3 );
+            }
+        }
+    }
+
+    test_unsafe_typed_array!( test_unsafe_typed_array_u8, u8, Uint8Array );
+    test_unsafe_typed_array!( test_unsafe_typed_array_i8, i8, Int8Array );
+    test_unsafe_typed_array!( test_unsafe_typed_array_u16, u16, Uint16Array );
+    test_unsafe_typed_array!( test_unsafe_typed_array_i16, i16, Int16Array );
+    test_unsafe_typed_array!( test_unsafe_typed_array_u32, u32, Uint32Array );
+    test_unsafe_typed_array!( test_unsafe_typed_array_i32, i32, Int32Array );
+    test_unsafe_typed_array!( test_unsafe_typed_array_f32, f32, Float32Array );
+    test_unsafe_typed_array!( test_unsafe_typed_array_f64, f64, Float64Array );
 }
 
 #[cfg(test)]

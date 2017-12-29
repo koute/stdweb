@@ -222,6 +222,8 @@ pub mod private {
         FromReferenceUnchecked
     };
 
+    pub use webcore::unsafe_typed_array::UnsafeTypedArray;
+
     #[cfg(feature = "serde")]
     pub use ecosystem::serde::{
         to_value,

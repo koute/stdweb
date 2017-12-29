@@ -198,6 +198,30 @@ pub fn initialize() {
                 };
 
                 return output;
+            } else if( kind === 14 ) {
+                var pointer = HEAPU32[ address / 4 ];
+                var length = HEAPU32[ (address + 4) / 4 ];
+                var array_kind = HEAPU32[ (address + 8) / 4 ];
+                var pointer_end = pointer + length;
+
+                switch( array_kind ) {
+                    case 0:
+                        return HEAPU8.subarray( pointer, pointer_end );
+                    case 1:
+                        return HEAP8.subarray( pointer, pointer_end );
+                    case 2:
+                        return HEAPU16.subarray( pointer, pointer_end );
+                    case 3:
+                        return HEAP16.subarray( pointer, pointer_end );
+                    case 4:
+                        return HEAPU32.subarray( pointer, pointer_end );
+                    case 5:
+                        return HEAP32.subarray( pointer, pointer_end );
+                    case 6:
+                        return HEAPF32.subarray( pointer, pointer_end );
+                    case 7:
+                        return HEAPF64.subarray( pointer, pointer_end );
+                }
             }
         };
     };
