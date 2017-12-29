@@ -1611,6 +1611,26 @@ mod test_serialization {
             1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 + 11 + 12 + 13 + 14 + 15 + 16
         );
     }
+
+    #[test]
+    fn interpolated_args_are_converted_at_the_start() {
+        let mut string = "1".to_owned();
+        let callback = js! {
+            return function() {
+                return @{&string};
+            }
+        };
+
+        unsafe {
+            string.as_bytes_mut()[0] = b'2';
+        }
+
+        let result = js! {
+            return @{callback}();
+        };
+
+        assert_eq!( result, "1" );
+    }
 }
 
 #[cfg(test)]

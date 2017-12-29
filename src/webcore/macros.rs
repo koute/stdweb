@@ -211,23 +211,23 @@ macro_rules! __js_raw_asm {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! _js_impl {
-    (@_inc @_stringify "0" $($rest:tt)*) => { _js_impl!( @_stringify "1" $($rest)* ) };
-    (@_inc @_stringify "1" $($rest:tt)*) => { _js_impl!( @_stringify "2" $($rest)* ) };
-    (@_inc @_stringify "2" $($rest:tt)*) => { _js_impl!( @_stringify "3" $($rest)* ) };
-    (@_inc @_stringify "3" $($rest:tt)*) => { _js_impl!( @_stringify "4" $($rest)* ) };
-    (@_inc @_stringify "4" $($rest:tt)*) => { _js_impl!( @_stringify "5" $($rest)* ) };
-    (@_inc @_stringify "5" $($rest:tt)*) => { _js_impl!( @_stringify "6" $($rest)* ) };
-    (@_inc @_stringify "6" $($rest:tt)*) => { _js_impl!( @_stringify "7" $($rest)* ) };
-    (@_inc @_stringify "7" $($rest:tt)*) => { _js_impl!( @_stringify "8" $($rest)* ) };
-    (@_inc @_stringify "8" $($rest:tt)*) => { _js_impl!( @_stringify "9" $($rest)* ) };
-    (@_inc @_stringify "9" $($rest:tt)*) => { _js_impl!( @_stringify "10" $($rest)* ) };
-    (@_inc @_stringify "10" $($rest:tt)*) => { _js_impl!( @_stringify "11" $($rest)* ) };
-    (@_inc @_stringify "11" $($rest:tt)*) => { _js_impl!( @_stringify "12" $($rest)* ) };
-    (@_inc @_stringify "12" $($rest:tt)*) => { _js_impl!( @_stringify "13" $($rest)* ) };
-    (@_inc @_stringify "13" $($rest:tt)*) => { _js_impl!( @_stringify "14" $($rest)* ) };
-    (@_inc @_stringify "14" $($rest:tt)*) => { _js_impl!( @_stringify "15" $($rest)* ) };
-    (@_inc @_stringify "15" $($rest:tt)*) => { _js_impl!( @_stringify "16" $($rest)* ) };
-    (@_inc @_stringify "16" $($rest:tt)*) => { _js_impl!( @_stringify "17" $($rest)* ) };
+    (@_inc @$cmd:tt "0" $($rest:tt)*) => { _js_impl!( @$cmd "1" $($rest)* ) };
+    (@_inc @$cmd:tt "1" $($rest:tt)*) => { _js_impl!( @$cmd "2" $($rest)* ) };
+    (@_inc @$cmd:tt "2" $($rest:tt)*) => { _js_impl!( @$cmd "3" $($rest)* ) };
+    (@_inc @$cmd:tt "3" $($rest:tt)*) => { _js_impl!( @$cmd "4" $($rest)* ) };
+    (@_inc @$cmd:tt "4" $($rest:tt)*) => { _js_impl!( @$cmd "5" $($rest)* ) };
+    (@_inc @$cmd:tt "5" $($rest:tt)*) => { _js_impl!( @$cmd "6" $($rest)* ) };
+    (@_inc @$cmd:tt "6" $($rest:tt)*) => { _js_impl!( @$cmd "7" $($rest)* ) };
+    (@_inc @$cmd:tt "7" $($rest:tt)*) => { _js_impl!( @$cmd "8" $($rest)* ) };
+    (@_inc @$cmd:tt "8" $($rest:tt)*) => { _js_impl!( @$cmd "9" $($rest)* ) };
+    (@_inc @$cmd:tt "9" $($rest:tt)*) => { _js_impl!( @$cmd "10" $($rest)* ) };
+    (@_inc @$cmd:tt "10" $($rest:tt)*) => { _js_impl!( @$cmd "11" $($rest)* ) };
+    (@_inc @$cmd:tt "11" $($rest:tt)*) => { _js_impl!( @$cmd "12" $($rest)* ) };
+    (@_inc @$cmd:tt "12" $($rest:tt)*) => { _js_impl!( @$cmd "13" $($rest)* ) };
+    (@_inc @$cmd:tt "13" $($rest:tt)*) => { _js_impl!( @$cmd "14" $($rest)* ) };
+    (@_inc @$cmd:tt "14" $($rest:tt)*) => { _js_impl!( @$cmd "15" $($rest)* ) };
+    (@_inc @$cmd:tt "15" $($rest:tt)*) => { _js_impl!( @$cmd "16" $($rest)* ) };
+    (@_inc @$cmd:tt "16" $($rest:tt)*) => { _js_impl!( @$cmd "17" $($rest)* ) };
 
     (@_stringify $arg_counter:tt [$terminator:tt $($terminator_rest:tt)*] [$($out:tt)*] -> [] $next:tt $($rest:tt)*) => {
         _js_impl!( @_stringify $arg_counter [$($terminator_rest)*] [$($out)* ($terminator)] -> $next $($rest)* )
@@ -250,7 +250,7 @@ macro_rules! _js_impl {
     };
 
     (@_stringify $arg_counter:tt [$($terminator:tt)*] [$($out:tt)*] -> [@{$arg:expr} $($remaining:tt)*] $($rest:tt)*) => {
-        _js_impl!( @_inc @_stringify $arg_counter [$($terminator)*] [$($out)* ("Module.STDWEB.to_js($") ($arg_counter) (")")] -> [$($remaining)*] $($rest)* )
+        _js_impl!( @_inc @_stringify $arg_counter [$($terminator)*] [$($out)* ("($") ($arg_counter) (")")] -> [$($remaining)*] $($rest)* )
     };
 
     (@_stringify $arg_counter:tt [$($terminator:tt)*] [$($out:tt)*] -> [++ $($remaining:tt)*] $($rest:tt)*) => {
@@ -287,6 +287,14 @@ macro_rules! _js_impl {
         } else {
             _js_impl!( @_stringify "1" [] [] -> [$($rest)*] )
         })
+    };
+
+    (@prelude $arg_counter:tt [$($out:tt)*] -> $arg:tt $($rest:tt)*) => {
+        _js_impl!( @_inc @prelude $arg_counter [$($out)* ("$") ($arg_counter) (" = Module.STDWEB.to_js($") ($arg_counter) (");")] -> $($rest)* )
+    };
+
+    (@prelude $arg_counter:tt [$($out:tt)*] ->) => {
+        concat!( $(concat! $out),* )
     };
 
     (@if no_return in [no_return $($rest:tt)*] {$($true_case:tt)*} else {$($false_case:tt)*}) => {
@@ -410,7 +418,7 @@ macro_rules! _js_impl {
                     @if no_return in [$($flags)*] {
                         _js_impl!(
                             @call_emscripten
-                            [$code]
+                            [concat!( _js_impl!( @prelude "0" [] -> $($args)* ), $code )]
                             [$($args)*]
                             [a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15]
                         );
@@ -418,7 +426,10 @@ macro_rules! _js_impl {
                         let mut result: $crate::private::SerializedValue = Default::default();
                         _js_impl!(
                             @call_emscripten
-                            [concat!( "Module.STDWEB.from_js($0, (function(){", $code, "})());\0" )]
+                            [concat!(
+                                _js_impl!( @prelude "1" [] -> $($args)* ),
+                                "Module.STDWEB.from_js($0, (function(){", $code, "})());"
+                            )]
                             [RESULT $($args)*]
                             [(&mut result as *mut _) a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15]
                         );
@@ -677,18 +688,18 @@ mod tests {
         assert_eq!( stringify_js! { i++ }, "i ++" );
         assert_eq!( stringify_js! { --i }, "--i" );
         assert_eq!( stringify_js! { i-- }, "i --" );
-        assert_eq!( stringify_js! { ( @{1} ); }.replace( " ", "" ), "(Module.STDWEB.to_js($1));" );
+        assert_eq!( stringify_js! { ( @{1} ); }.replace( " ", "" ), "(($1));" );
         assert_eq!(
             stringify_js! {
                 console.log( "Hello!", @{1234i32} );
             }.replace( " ", "" ),
-            "console.log(\"Hello!\",Module.STDWEB.to_js($1));"
+            "console.log(\"Hello!\",($1));"
         );
         assert_eq!(
             stringify_js! {
                 @{a}.fn( @{b} );
             }.replace( " ", "" ),
-            "Module.STDWEB.to_js($1).fn(Module.STDWEB.to_js($2));"
+            "($1).fn(($2));"
         );
     }
 }
