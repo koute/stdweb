@@ -14,6 +14,7 @@ use webcore::try_from::{TryFrom, TryInto};
 use webcore::number::Number;
 use webcore::object::Object;
 use webcore::array::Array;
+use webcore::type_name::type_name;
 
 use webcore::value::{
     Null,
@@ -952,7 +953,11 @@ macro_rules! impl_for_fn {
                     let $kind = match arguments.next().unwrap().try_into() {
                         Ok( value ) => value,
                         Err( _ ) => {
-                            panic!( "Argument #{} is not convertible", nth_argument + 1 );
+                            panic!(
+                                "Argument #{} is not convertible to '{}'",
+                                nth_argument + 1,
+                                type_name::< $kind >()
+                            );
                         }
                     };
 
@@ -1012,7 +1017,11 @@ macro_rules! impl_for_fn {
                     let $kind = match arguments.next().unwrap().try_into() {
                         Ok( value ) => value,
                         Err( _ ) => {
-                            panic!( "Argument #{} is not convertible", nth_argument + 1 );
+                            panic!(
+                                "Argument #{} is not convertible to '{}'",
+                                nth_argument + 1,
+                                type_name::< $kind >()
+                            );
                         }
                     };
 

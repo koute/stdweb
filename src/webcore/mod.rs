@@ -11,3 +11,4 @@ pub mod try_from;
 pub mod void;
 pub mod object;
 pub mod array;
+pub mod type_name;

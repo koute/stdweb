@@ -24,3 +24,4 @@ serde_derive = "1"
 default = ["serde", "serde_json"]
 dev = ["serde", "serde_json", "clippy"]
 serde-support = ["serde", "serde_json"]
+nightly = []
