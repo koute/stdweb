@@ -7,19 +7,18 @@ use webapi::array_buffer::ArrayBuffer;
 pub trait ArrayKind: Sized {
     fn is_typed_array( reference: &Reference ) -> bool;
     fn into_typed_array( slice: &[Self] ) -> TypedArray< Self >;
-    unsafe fn into_typed_array_no_copy( slice: &[Self] ) -> TypedArray< Self >;
     fn from_typed_array( array: &TypedArray< Self > ) -> Vec< Self >;
 }
 
 macro_rules! arraykind {
-    ($element_type:ty, $js_array_type:ident, $heap_type:ident, $ptr_type:ty) => {
+    ($element_type:ty, $js_array_type:ident, $heap_type:ident) => {
         impl ArrayKind for $element_type {
             fn is_typed_array( reference: &Reference ) -> bool {
                 instanceof!( *reference, $js_array_type )
             }
 
             fn into_typed_array( slice: &[Self] ) -> TypedArray< Self > {
-                let slice_ptr = (slice.as_ptr() as usize / size_of::<$element_type>()) as $ptr_type;
+                let slice_ptr = (slice.as_ptr() as usize / size_of::<$element_type>()) as i32;
                 let raw = __js_raw_asm!(
                     concat!(
                         "return Module.STDWEB.acquire_rust_reference( ",
@@ -27,7 +26,7 @@ macro_rules! arraykind {
                         ".slice( $0, $1 ) );"
                     ),
                     slice_ptr,
-                    (slice_ptr + slice.len() as $ptr_type)
+                    (slice_ptr + slice.len() as i32)
                 );
 
                 let reference = unsafe {
@@ -37,28 +36,10 @@ macro_rules! arraykind {
                 TypedArray::from_reference( reference ).unwrap()
             }
 
-            // This is unsafe due to the erasure of the slice's lifetime.
-            unsafe fn into_typed_array_no_copy( slice: &[Self] ) -> TypedArray< Self > {
-                let slice_ptr = (slice.as_ptr() as usize / size_of::<$element_type>()) as $ptr_type;
-                let raw = __js_raw_asm!(
-                    concat!(
-                        "return Module.STDWEB.acquire_rust_reference( new $0( ",
-                        stringify!($heap_type),
-                        ".buffer, $1, $2 ) );"
-                    ),
-                    stringify!($js_array_type),
-                    slice_ptr,
-                    slice.len() as $ptr_type
-                );
-
-                let reference = Reference::from_raw_unchecked( raw );
-                TypedArray::from_reference( reference ).unwrap()
-            }
-
             fn from_typed_array( array: &TypedArray< Self > ) -> Vec< Self > {
                 let length = array.len();
                 let mut vector = Vec::with_capacity( length );
-                let vec_ptr = (vector.as_ptr() as usize / size_of::<$element_type>()) as $ptr_type;
+                let vec_ptr = (vector.as_ptr() as usize / size_of::<$element_type>()) as i32;
 
                 js!( @(no_return)
                     var array = @{array};
@@ -88,14 +69,14 @@ macro_rules! arraykind {
     }
 }
 
-arraykind!(i8, Int8Array, HEAP8, i32);
-arraykind!(u8, Uint8Array, HEAPU8, i32);
-arraykind!(i16, Int16Array, HEAP16, i32);
-arraykind!(u16, Uint16Array, HEAPU16, i32);
-arraykind!(i32, Int32Array, HEAP32, i32);
-arraykind!(u32, Uint32Array, HEAPU32, i32);
-arraykind!(f32, Float32Array, HEAPF32, i32);
-arraykind!(f64, Float64Array, HEAPF64, i32);
+arraykind!( i8, Int8Array, HEAP8 );
+arraykind!( u8, Uint8Array, HEAPU8 );
+arraykind!( i16, Int16Array, HEAP16 );
+arraykind!( u16, Uint16Array, HEAPU16 );
+arraykind!( i32, Int32Array, HEAP32 );
+arraykind!( u32, Uint32Array, HEAPU32 );
+arraykind!( f32, Float32Array, HEAPF32 );
+arraykind!( f64, Float64Array, HEAPF64 );
 
 /// JavaScript typed arrays are array-like objects and provide a mechanism for accessing raw binary data.
 ///
