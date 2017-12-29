@@ -1129,14 +1129,14 @@ macro_rules! js_serializable {
 ///
 /// let value = js! {
 ///     return {
-///         number: 123,
-///         string: "Hello!"
+///         name: "Bob",
+///         age: 33
 ///     };
 /// };
 ///
-/// let structure: StructureSerializable = value.try_into().unwrap();
-/// assert_eq!( structure.number, 123 );
-/// assert_eq!( structure.string, "Hello!" );
+/// let structure: Person = value.try_into().unwrap();
+/// assert_eq!( structure.name, "Bob" );
+/// assert_eq!( structure.age, 33 );
 /// ```
 ///
 /// This macro also accepts generics just as the [js_serializable!](macro.js_serializable.html) does.
