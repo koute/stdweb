@@ -3,7 +3,7 @@ use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::window_or_worker::IWindowOrWorker;
 use webapi::storage::Storage;
 use webapi::location::Location;
-use webcore::serialization::Once;
+use webcore::once::Once;
 use webcore::value::Value;
 
 /// A handle to a pending animation frame request.

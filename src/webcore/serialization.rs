@@ -1,6 +1,5 @@
 use std::mem;
 use std::slice;
-use std::fmt;
 use std::i32;
 use std::collections::{BTreeMap, HashMap};
 use std::marker::PhantomData;
@@ -16,6 +15,7 @@ use webcore::object::Object;
 use webcore::array::Array;
 use webcore::type_name::type_name;
 use webcore::unsafe_typed_array::UnsafeTypedArray;
+use webcore::once::Once;
 
 use webcore::value::{
     Null,
@@ -947,16 +947,6 @@ impl_for_unsafe_typed_array!( u32, 4 );
 impl_for_unsafe_typed_array!( i32, 5 );
 impl_for_unsafe_typed_array!( f32, 6 );
 impl_for_unsafe_typed_array!( f64, 7 );
-
-// A wrapper for passing FnOnce callbacks into the `js!` macro.
-pub struct Once< T >( pub T );
-
-impl< T > fmt::Debug for Once< T > {
-    #[inline]
-    fn fmt( &self, formatter: &mut fmt::Formatter ) -> Result< (), fmt::Error > {
-        write!( formatter, "Once" )
-    }
-}
 
 #[derive(Debug)]
 pub struct FunctionTag;
