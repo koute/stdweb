@@ -6,7 +6,7 @@ use std::fmt;
 /// `drop()` them manually on the JavaScript side provided they
 /// were actually called.
 ///
-/// You still need  `drop()` any callbacks which were **not** called.
+/// You still need to `drop()` any callbacks which were **not** called.
 ///
 /// # Examples
 ///
@@ -20,7 +20,7 @@ use std::fmt;
 ///     // itself after being called.
 /// }
 /// ```
-pub struct Once< T >( pub(crate) T );
+pub struct Once< T >( pub T );
 
 impl< T > fmt::Debug for Once< T > {
     #[inline]
