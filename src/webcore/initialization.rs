@@ -167,9 +167,10 @@ pub fn initialize() {
 
                 output.drop = function() {
                     output.drop = Module.STDWEB.noop;
+                    var function_pointer = pointer;
                     pointer = 0;
 
-                    Module.STDWEB.dyncall( "vi", deallocator_pointer, [pointer] );
+                    Module.STDWEB.dyncall( "vi", deallocator_pointer, [function_pointer] );
                 };
 
                 return output;
