@@ -2,6 +2,7 @@ use webcore::value::{Value, Reference};
 use webcore::try_from::TryInto;
 use webapi::blob::IBlob;
 use webapi::event_target::{IEventTarget, EventTarget};
+use webapi::array_buffer::ArrayBuffer;
 
 /// The FileReader object lets web applications asynchronously read the contents of files
 /// (or raw data buffers) stored on the user's computer, using [File](struct.File.html)
@@ -18,10 +19,14 @@ reference_boilerplate! {
     convertible to EventTarget
 }
 
-/// The result of a read operation performed with a [FileReader](struct.File.html).
-#[derive(Clone, PartialEq, Eq, Debug)]
-pub enum ReaderResult {
-    Text( String )
+/// The [result](struct.FileReader.html#method.result) of a read operation performed with a [FileReader](struct.File.html).
+#[derive(Clone, Debug)]
+pub enum FileReaderResult {
+    /// A string; a result of calling [FileReader::read_as_text](struct.FileReader.html#method.read_as_text).
+    String( String ),
+
+    /// An [ArrayBuffer](struct.ArrayBuffer.html); a result of calling [FileReader::read_as_text](struct.FileReader.html#method.read_as_array_buffer).
+    ArrayBuffer( ArrayBuffer )
 }
 
 /// A number indicating the state of the `FileReader`.
@@ -39,15 +44,23 @@ impl FileReader {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/FileReader/FileReader)
     pub fn new() -> FileReader {
-        js!( return FileReader(); ).try_into().unwrap()
+        js!( return new FileReader(); ).try_into().unwrap()
     }
 
-    /// Starts reading the contents of the specified blob, once finished, the result
-    /// attribute contains the contents of the file as a text string.
+    /// Starts reading the contents of the specified blob. Once finished
+    /// the `result` attribute will contain the contents of the file as a text string.
     ///
-    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/FileReader)
-    pub fn read_as_text< T: IBlob >( &self, blob: &IBlob ) {
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsText)
+    pub fn read_as_text< T: IBlob >( &self, blob: &T ) {
         js!( @{self}.readAsText( @{blob.as_ref()} ); );
+    }
+
+    /// Starts reading the contents of the specified blob. Once finished
+    /// the `result` attribute will contain the contents of the file as an [TypedArray](struct.ArrayBuffer.html).
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsArrayBuffer)
+    pub fn read_as_array_buffer< T: IBlob >( &self, blob: &T ) {
+        js!( @{self}.readAsArrayBuffer( @{blob.as_ref()} ); );
     }
 
     /// Aborts the read operation. Upon return, the `ready_state` will be `Done`.
@@ -75,11 +88,12 @@ impl FileReader {
     /// to initiate the read operation.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/FileReader/result)
-    pub fn result( &self ) -> Option< ReaderResult > {
+    pub fn result( &self ) -> Option< FileReaderResult > {
         let result = js!( return @{self}.result; );
         match result {
             Value::Undefined | Value::Null => None,
-            Value::String( text ) => Some( ReaderResult::Text( text ) ),
+            Value::String( text ) => Some( FileReaderResult::String( text ) ),
+            Value::Reference( reference ) => Some( FileReaderResult::ArrayBuffer( reference.try_into().unwrap() ) ),
             _ => unreachable!( "Unexpected result of a FileReader: {:?}", result )
         }
     }
