@@ -11,7 +11,7 @@ pub trait TryFrom< T >: Sized {
 
 /// An attempted conversion that consumes self, which may or may not be expensive.
 ///
-/// his definition is only temporary until Rust's `TryInto` is stabilized.
+/// This definition is only temporary until Rust's `TryInto` is stabilized.
 pub trait TryInto< T >: Sized {
     /// The type returned in the event of a conversion error.
     type Error;
