@@ -104,6 +104,7 @@ pub use webcore::object::Object;
 pub use webcore::array::Array;
 
 pub use webcore::unsafe_typed_array::UnsafeTypedArray;
+pub use webcore::once::Once;
 
 #[cfg(feature = "serde")]
 /// A module with serde-related APIs.
