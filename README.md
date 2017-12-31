@@ -214,6 +214,15 @@ For the Nodejs environment the WebAssembly is compiled synchronously.
 
 [Promise]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
 
+## Breaking changes
+
+   * `0.3`
+      * Deleted `ErrorEvent` methods
+      * Renamed:
+         * `LoadEvent` -> `ResourceLoadEvent`
+         * `AbortEvent` -> `ResourceAbortEvent`
+         * `ErrorEvent` -> `ResourceErrorEvent`
+
 ## License
 
 Licensed under either of
