@@ -152,6 +152,10 @@ pub fn initialize() {
                 var pointer = HEAPU32[ (address + 4) / 4 ];
                 var deallocator_pointer = HEAPU32[ (address + 8) / 4 ];
                 var output = function() {
+                    if( pointer === 0 ) {
+                        throw new ReferenceError( "Already dropped Rust function called!" );
+                    }
+
                     var args = Module.STDWEB.alloc( 16 );
                     Module.STDWEB.serialize_array( args, arguments );
                     Module.STDWEB.dyncall( "vii", adapter_pointer, [pointer, args] );
@@ -163,6 +167,8 @@ pub fn initialize() {
 
                 output.drop = function() {
                     output.drop = Module.STDWEB.noop;
+                    pointer = 0;
+
                     Module.STDWEB.dyncall( "vi", deallocator_pointer, [pointer] );
                 };
 
