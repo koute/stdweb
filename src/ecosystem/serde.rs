@@ -1046,7 +1046,7 @@ macro_rules! __js_serializable_serde_boilerplate {
 #[macro_export]
 macro_rules! __js_deserializable_serde_boilerplate {
     (($($impl_arg:tt)*) ($($kind_arg:tt)*) ($($bounds:tt)*)) => {
-        impl< $($impl_arg),* > TryFrom< $crate::Value > for $($kind_arg)* where $($bounds)* {
+        impl< $($impl_arg),* > $crate::unstable::TryFrom< $crate::Value > for $($kind_arg)* where $($bounds)* {
             type Error = $crate::serde::ConversionError;
             #[inline]
             fn try_from( value: $crate::Value ) -> Result< Self, Self::Error > {
