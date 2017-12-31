@@ -1455,7 +1455,7 @@ mod test_serialization {
 
         let result = js! {
             var object = @{object};
-            return object.number === 123 && object.string === "Hello!" && Object.keys( object ).length == 2;
+            return object.number === 123 && object.string === "Hello!" && Object.keys( object ).length === 2;
         };
         assert_eq!( result, Value::Bool( true ) );
     }
@@ -1468,7 +1468,7 @@ mod test_serialization {
 
         let result = js! {
             var object = @{&object};
-            return object.number === 123 && Object.keys( object ).length == 1;
+            return object.number === 123 && Object.keys( object ).length === 1;
         };
         assert_eq!( result, Value::Bool( true ) );
     }
@@ -1482,7 +1482,7 @@ mod test_serialization {
 
         let result = js! {
             var object = @{object};
-            return object.number === 123 && Object.keys( object ).length == 1;
+            return object.number === 123 && Object.keys( object ).length === 1;
         };
         assert_eq!( result, Value::Bool( true ) );
     }
@@ -1496,7 +1496,7 @@ mod test_serialization {
 
         let result = js! {
             var object = @{object};
-            return object.number === 123 && object.string === "Hello!" && Object.keys( object ).length == 2;
+            return object.number === 123 && object.string === "Hello!" && Object.keys( object ).length === 2;
         };
         assert_eq!( result, Value::Bool( true ) );
     }
@@ -1512,9 +1512,9 @@ mod test_serialization {
             var callback = @{|| {}};
             var reference = @{&reference};
             var string = @{"Hello!"};
-            return Object.prototype.toString.call( callback ) == "[object Function]" &&
-                Object.prototype.toString.call( reference ) == "[object Date]" &&
-                Object.prototype.toString.call( string ) == "[object String]"
+            return Object.prototype.toString.call( callback ) === "[object Function]" &&
+                Object.prototype.toString.call( reference ) === "[object Date]" &&
+                Object.prototype.toString.call( string ) === "[object String]"
         };
         assert_eq!( result, Value::Bool( true ) );
     }
