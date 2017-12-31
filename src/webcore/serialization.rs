@@ -824,6 +824,20 @@ impl< T: JsSerializable > JsSerializable for [T] {
 
 __js_serializable_boilerplate!( impl< 'a, T > for &'a [T] where T: JsSerializable );
 
+impl< T: JsSerializable > JsSerializable for Vec< T > {
+    #[inline]
+    fn into_js< 'a >( &'a self, arena: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+        self.as_slice().into_js( arena )
+    }
+
+    #[inline]
+    fn memory_required( &self ) -> usize {
+        self.as_slice().memory_required()
+    }
+}
+
+__js_serializable_boilerplate!( impl< T > for Vec< T > where T: JsSerializable );
+
 fn object_into_js< 'a, K: AsRef< str >, V: 'a + JsSerializable, I: Iterator< Item = (K, &'a V) > + ExactSizeIterator >( iter: I, arena: &'a PreallocatedArena ) -> SerializedValue< 'a > {
     let keys = arena.reserve( iter.len() );
     let values = arena.reserve( iter.len() );
@@ -1501,6 +1515,19 @@ mod test_serialization {
         assert_eq!( result, Value::Bool( true ) );
     }
 
+    #[test]
+    fn vector_of_strings() {
+        let vec: Vec< _ > = vec![
+            "one".to_string(),
+            "two".to_string()
+        ];
+
+        let result = js! {
+            var vec = @{vec};
+            return vec[0] === "one" && vec[1] === "two" && vec.length === 2;
+        };
+        assert_eq!( result, Value::Bool( true ) );
+    }
 
     #[test]
     fn multiple() {
