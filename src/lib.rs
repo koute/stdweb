@@ -103,6 +103,8 @@ pub use webcore::number::Number;
 pub use webcore::object::Object;
 pub use webcore::array::Array;
 
+pub use webcore::unsafe_typed_array::UnsafeTypedArray;
+
 #[cfg(feature = "serde")]
 /// A module with serde-related APIs.
 pub mod serde {
@@ -221,8 +223,6 @@ pub mod private {
         FromReference,
         FromReferenceUnchecked
     };
-
-    pub use webcore::unsafe_typed_array::UnsafeTypedArray;
 
     #[cfg(feature = "serde")]
     pub use ecosystem::serde::{
