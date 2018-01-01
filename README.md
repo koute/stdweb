@@ -12,6 +12,10 @@
 The goal of this crate is to provide Rust bindings to the Web APIs and to allow
 a high degree of interoperability between Rust and JavaScript.
 
+## Donate
+
+[![Become a patron](https://koute.github.io/img/become_a_patron_button.png)](https://www.patreon.com/koute)
+
 ## Examples
 
 You can directly embed JavaScript code into Rust:
