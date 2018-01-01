@@ -99,9 +99,11 @@ Take a look at some of the examples:
   * `examples/todomvc` - a naively implemented [TodoMVC] application; shows how to call into the DOM
   * `examples/hasher` - shows how to export Rust functions to JavaScript and how to call them from
                         the browser or Nodejs
+  * [`pinky-web`] - an NES emulator; you can play with the [precompiled version here](http://koute.github.io/pinky-web/)
 
 [alert]: https://developer.mozilla.org/en-US/docs/Web/API/Window/alert
 [TodoMVC]: http://todomvc.com/
+[`pinky-web`]: https://github.com/koute/pinky/tree/master/pinky-web
 
 ## Running the examples
 
