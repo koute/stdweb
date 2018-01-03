@@ -10,7 +10,7 @@ use webcore::try_from::TryInto;
 /// You can retrieve data from a URL without having to do a full page refresh.
 /// This enables a Web page to update just part of a page without disrupting
 /// what the user is doing. XMLHttpRequest is used heavily in Ajax programming.
-/// 
+///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest)
 pub struct XMLHttpRequest( Reference );
 
@@ -46,7 +46,7 @@ impl XMLHttpRequest {
         js!( return new XMLHttpRequest(); ).try_into().unwrap()
     }
 
-    /// Returns the current state of the request as a [ReadyState](enum.ReadyState.html). 
+    /// Returns the current state of the request as a [ReadyState](enum.ReadyState.html).
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/readyState)
     pub fn ready_state(&self) -> ReadyState {
@@ -82,12 +82,37 @@ impl XMLHttpRequest {
         js!(return @{self}.status;).try_into().unwrap()
     }
 
-    /// Open connection with given method (ie GET or POST), and the url to hit
+    /// Open connection with given method (ie GET or POST), and the url to hit.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/open)
     pub fn open(&self, method: &str, url: &str) {
         js! {
             @{self}.open(@{method}, @{url}, true);
+        };
+    }
+
+    /// Returns the string containing the text of the specified header. If there
+    /// are multiple response headers with the same name, then their values are
+    /// returned as a single concatenated string.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/getRequestHeader)
+    pub fn get_request_header(&self, header: &str) -> Option<String> {
+        let header = js!( return @{self}.getRequestHeader(@{header}); );
+        match header {
+            Value::Null => None,
+            Value::String(text) => Some(text),
+            _ => unreachable!(),
+        }
+    }
+
+    /// Sets the value of an HTTP request header. Must be called after `open()`,
+    /// but before `send()`. If this method is called several times with the same
+    /// header, the values are merged into one single request header.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/setRequestHeader)
+    pub fn set_request_header(&self, header: &str, value: &str) {
+        js! {
+            @{self}.setRequestHeader(@{header}, @{value});
         };
     }
 
@@ -122,7 +147,7 @@ impl XMLHttpRequest {
     /// When a request is aborted, its [ready_state](struct.XMLHttpRequest.html#method.ready_state) is changed to [Done](enum.ReadyState.html#variant.Done)
     /// and the [status](struct.XMLHttpRequest.html#method.status) code is set to
     /// [Unsent](enum.ReadyState.html#variant.Unsent).
-    /// 
+    ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/abort)
     pub fn abort(&self) {
         js! {
