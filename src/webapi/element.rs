@@ -69,7 +69,7 @@ pub trait IElement: IEventTarget {
         ).into_string().unwrap()
     }
 
-    /// Sets the inner html of this element; calling this removes all
+    /// Sets the inner html of this element. Calling this removes all
     /// of node's children and replaces them with html elements
     /// of the given DOM string. If this document is an XML document and you give
     /// innerHTML an not well formed XML, this will throw an exception.
