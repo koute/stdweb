@@ -111,6 +111,8 @@ impl XMLHttpRequest {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/setRequestHeader)
     pub fn set_request_header(&self, header: &str, value: &str) {
+        // TODO: Handle InvalidStateError and SyntaxError exceptions.
+        // https://xhr.spec.whatwg.org/#the-setrequestheader()-method
         js! {
             @{self}.setRequestHeader(@{header}, @{value});
         };
