@@ -86,7 +86,7 @@ impl XMLHttpRequest {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/open)
     pub fn open(&self, method: &str, url: &str) {
-        js! {
+        js! { @(no_return)
             @{self}.open(@{method}, @{url}, true);
         };
     }
@@ -113,7 +113,7 @@ impl XMLHttpRequest {
     pub fn set_request_header(&self, header: &str, value: &str) {
         // TODO: Handle InvalidStateError and SyntaxError exceptions.
         // https://xhr.spec.whatwg.org/#the-setrequestheader()-method
-        js! {
+        js! { @(no_return)
             @{self}.setRequestHeader(@{header}, @{value});
         };
     }
@@ -122,7 +122,7 @@ impl XMLHttpRequest {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/send)
     pub fn send(&self) {
-        js! {
+        js! { @(no_return)
             @{self}.send();
         };
     }
@@ -131,7 +131,7 @@ impl XMLHttpRequest {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/send)
     pub fn send_with_string(&self, body: &str) {
-        js! {
+        js! { @(no_return)
             @{self}.send(@{body});
         };
     }
@@ -140,7 +140,7 @@ impl XMLHttpRequest {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/send)
     pub fn send_with_bytes(&self, body: &[u8]) {
-        js! {
+        js! { @(no_return)
             @{self}.send(@{UnsafeTypedArray(body)});
         };
     }
@@ -152,7 +152,7 @@ impl XMLHttpRequest {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/abort)
     pub fn abort(&self) {
-        js! {
+        js! { @(no_return)
             @{self}.abort();
         };
     }
