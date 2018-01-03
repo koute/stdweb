@@ -112,7 +112,7 @@ reference_boilerplate! {
 }
 
 
-#[cfg(web_api_tests)]
+#[cfg(all(test, feature = "web_test"))]
 mod tests {
     use super::*;
     use webapi::document::document;
