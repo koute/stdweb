@@ -95,9 +95,9 @@ impl XMLHttpRequest {
     /// are multiple response headers with the same name, then their values are
     /// returned as a single concatenated string.
     ///
-    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/getRequestHeader)
-    pub fn get_request_header(&self, header: &str) -> Option<String> {
-        let header = js!( return @{self}.getRequestHeader(@{header}); );
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/getResponseHeader)
+    pub fn get_response_header(&self, header: &str) -> Option<String> {
+        let header = js!( return @{self}.getResponseHeader(@{header}); );
         match header {
             Value::Null => None,
             Value::String(text) => Some(text),
