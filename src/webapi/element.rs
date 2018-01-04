@@ -56,7 +56,8 @@ pub trait IElement: IEventTarget {
     /// Sets the inner html of this element. Calling this removes all
     /// of node's children and replaces them with html elements
     /// of the given DOM string. If this document is an XML document and you give
-    /// innerHTML an not well formed XML, this will throw an exception.
+    /// innerHTML an not well formed XML, this will throw an DOMException for being
+    /// in an invalid state.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML)
     fn set_inner_html( &self, text: &str ) -> Result< (), DOMException > {
@@ -76,7 +77,6 @@ pub trait IElement: IEventTarget {
         if status == true {
             Ok(())
         } else {
-            // as per https://www.w3.org/TR/dom/#invalidstateerror
             Err( DOMException::InvalidStateError )
         }
     }
