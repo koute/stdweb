@@ -1,25 +1,9 @@
-use std::fmt;
-use std::error;
 use webcore::value::Reference;
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
 use webapi::token_list::TokenList;
 use webapi::node_list::NodeList;
-
-/// A structure denoting that the specified DOM [Element](trait.IElement.html) is in an invalid state.
-#[derive(Debug)]
-pub struct InvalidStateError( String );
-impl error::Error for InvalidStateError {
-    fn description( &self ) -> &str {
-        self.0.as_str()
-    }
-}
-
-impl fmt::Display for InvalidStateError {
-    fn fmt( &self, formatter: &mut fmt::Formatter ) -> fmt::Result {
-        write!( formatter, "{}", self.0 )
-    }
-}
+use webapi::error::DOMException;
 
 /// The `IElement` interface represents an object of a [Document](struct.Document.html).
 /// This interface describes methods and properties common to all
@@ -75,13 +59,17 @@ pub trait IElement: IEventTarget {
     /// innerHTML an not well formed XML, this will throw an exception.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML)
-    fn set_inner_html( &self, text: &str ) -> Result< (), InvalidStateError > {
+    fn set_inner_html( &self, text: &str ) -> Result< (), DOMException > {
         let status = js! {
             try {
                 @{self.as_ref()}.innerHTML = @{text};
                 return true;
             } catch( exception ) {
-                throw exception;
+                if( exception instanceof DOMError || exception instanceof DOMException ){
+                    return false;
+                } else {
+                    throw exception;
+                }
             }
         };
 
@@ -89,7 +77,7 @@ pub trait IElement: IEventTarget {
             Ok(())
         } else {
             // as per https://www.w3.org/TR/dom/#invalidstateerror
-            Err( InvalidStateError( "The object is in an invalid state.".to_owned() ) )
+            Err( DOMException::InvalidStateError )
         }
     }
 }
