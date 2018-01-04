@@ -147,6 +147,11 @@ pub mod web {
     pub use webapi::typed_array::TypedArray;
     pub use webapi::file_reader::{FileReader, FileReaderResult};
 
+
+    /// A module containing XMLHttpRequest and its ReadyState
+    pub mod xml_http_request {
+        pub use webapi::xml_http_request::{ XMLHttpRequest, ReadyState };
+    }
     /// A module containing error types.
     pub mod error {
         pub use webapi::node::NotFoundError;
@@ -193,7 +198,8 @@ pub mod web {
             ProgressLoadEvent,
             ProgressAbortEvent,
             ProgressErrorEvent,
-            InputEvent
+            InputEvent,
+            ReadyStateChange,
         };
     }
 }

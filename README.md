@@ -129,7 +129,7 @@ Take a look at some of the examples:
 
     * For the `asmjs-unknown-emscripten` backend:
 
-          $ cargo web start --target-asmjm-emscripten
+          $ cargo web start --target-asmjs-emscripten
 
     * For the `wasm32-unknown-emscripten`:
 
