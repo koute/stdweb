@@ -161,6 +161,7 @@ pub mod web {
     pub mod html_element {
         pub use webapi::html_elements::ImageElement;
         pub use webapi::html_elements::InputElement;
+        pub use webapi::html_elements::TextAreaElement;
     }
 
     /// A module containing JavaScript DOM events.
