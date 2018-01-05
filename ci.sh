@@ -38,6 +38,6 @@ if [ "$TARGET" = "wasm32-unknown-unknown" ]; then
     export CARGO_WEB_ARGS="--target-webasm"
 fi
 
-cargo web test --nodejs $CARGO_WEB_ARGS
+cargo web test --features web_test $CARGO_WEB_ARGS
 cd examples/todomvc
 cargo web build --release $CARGO_WEB_ARGS
