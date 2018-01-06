@@ -16,6 +16,13 @@ a high degree of interoperability between Rust and JavaScript.
 
 [![Become a patron](https://koute.github.io/img/become_a_patron_button.png)](https://www.patreon.com/koute)
 
+## Patrons
+
+This software was brought to you thanks to these wonderful people:
+  * Ben Berman
+
+Thank you!
+
 ## Examples
 
 You can directly embed JavaScript code into Rust:
