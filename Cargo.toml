@@ -11,6 +11,8 @@ keywords = ["web", "asmjs", "webasm", "javascript"]
 categories = ["api-bindings", "gui", "web-programming"]
 description = "A standard library for the client-side Web"
 
+build = "build.rs"
+
 [dependencies]
 serde = { version = "1", optional = true }
 serde_json = { version = "1", optional = true }
