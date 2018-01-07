@@ -4,6 +4,8 @@ use webcore::ffi;
 /// Initializes the library.
 ///
 /// Calling this is required for anything to work.
+#[inline(never)]
+#[cold]
 pub fn initialize() {
     static mut INITIALIZED: bool = false;
     unsafe {
