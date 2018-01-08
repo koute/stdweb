@@ -117,6 +117,25 @@ pub mod serde {
 
 /// A module with bindings to the Web APIs.
 pub mod web {
+
+    /// This is a module
+    pub mod indexeddb {
+        pub use webapi::indexeddb::{
+            IDBOpenDBRequest,
+            IDBDatabase,
+            IDBRequest,
+            DBRequest,
+            IDBIndex,
+            IDBObjectStore,
+            IDBTransaction,
+            IDBFactory,
+            IDBObjectStoreIndexSharedMethods,
+            IDBCursorDirection,
+            IDBRequestReadyState,
+            IDBCursor
+        };
+    }
+    
     pub use webapi::window::{
         Window,
         window
@@ -201,6 +220,9 @@ pub mod web {
             ProgressErrorEvent,
             InputEvent,
             ReadyStateChange,
+            IDBSuccessEvent,
+            IDBVersionChangeEvent,
+            IDBCompleteEvent
         };
     }
 }

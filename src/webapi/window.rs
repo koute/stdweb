@@ -5,6 +5,9 @@ use webapi::storage::Storage;
 use webapi::location::Location;
 use webcore::once::Once;
 use webcore::value::Value;
+use webcore::try_from::TryInto;
+use webapi::indexeddb::IDBFactory;
+
 
 /// A handle to a pending animation frame request.
 #[derive(Debug)]
@@ -126,4 +129,12 @@ impl Window {
         };
         RequestAnimationFrameHandle(values)
     }
+
+    /// This is a method
+    pub fn indexed_db( &self ) -> IDBFactory {
+        js! (
+            return window.indexedDB;
+        ).try_into().unwrap()
+    }
+ 
 }

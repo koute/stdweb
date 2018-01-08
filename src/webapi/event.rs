@@ -1121,6 +1121,89 @@ impl ConcreteEvent for ReadyStateChange {
     const EVENT_TYPE: &'static str = "readystatechange";
 }
 
+/// The `IDBSuccessEvent` handler is fired when a and Indexed DB request succeed.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/success)
+pub struct IDBSuccessEvent( Reference );
+
+reference_boilerplate! {
+    IDBSuccessEvent,
+    instanceof Event
+    convertible to Event
+}
+
+impl IEvent for IDBSuccessEvent {}
+
+impl ConcreteEvent for IDBSuccessEvent {
+    const EVENT_TYPE: &'static str = "success";
+}
+
+/// This event is fired if a new verion of a database has been requested.
+///
+/// [(JavaScript docs)](https://www.w3.org/TR/IndexedDB/#events)
+pub struct IDBVersionChangeEvent( Reference );
+
+reference_boilerplate! {
+    IDBVersionChangeEvent,
+    instanceof Event
+    convertible to Event
+}
+
+impl IEvent for IDBVersionChangeEvent {}
+
+impl ConcreteEvent for IDBVersionChangeEvent {
+    const EVENT_TYPE: &'static str = "upgradeneeded";
+}
+
+impl IDBVersionChangeEvent  {
+    // readonly attribute unsigned long long oldVersion;
+    /// Returns the previous version of the database.
+    pub fn old_version( &self ) -> u64 {
+        js! (
+            return @{self.as_ref()}.oldVersion;
+        ).try_into().unwrap()
+    }
+    
+    // readonly attribute unsigned long long? newVersion;
+    /// Returns the new version of the database, or null if the database is being deleted.
+    pub fn new_version( &self ) -> Option<u64> {
+        js! (
+            return @{self.as_ref()}.newVersion;
+        ).try_into().unwrap()
+    }
+    
+}
+
+/// 
+pub struct IDBCompleteEvent( Reference );
+
+reference_boilerplate! {
+    IDBCompleteEvent,
+    instanceof Event
+    convertible to Event
+}
+
+impl IEvent for IDBCompleteEvent {}
+
+impl ConcreteEvent for IDBCompleteEvent {
+    const EVENT_TYPE: &'static str = "complete";
+}
+
+///
+pub struct IDBErrorEvent( Reference );
+
+reference_boilerplate! {
+    IDBErrorEvent,
+    instanceof Event
+    convertible to Event
+}
+
+impl IEvent for IDBErrorEvent {}
+
+impl ConcreteEvent for IDBErrorEvent {
+    const EVENT_TYPE: &'static str = "error";
+}
+    
 #[cfg(all(test, feature = "web_test"))]
 mod tests {
     use super::*;

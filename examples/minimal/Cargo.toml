@@ -5,3 +5,5 @@ authors = ["Jan Bujak <j@exia.io>"]
 
 [dependencies]
 stdweb = { path = "../.." }
+serde="*"
+serde_derive="*"
