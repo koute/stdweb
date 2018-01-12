@@ -586,6 +586,69 @@ reference_boilerplate! {
     convertible to MouseEvent
 }
 
+/// The `MouseDownEvent` is fired when a pointing device button is pressed on
+/// an element.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/mousedown)
+pub struct MouseDownEvent( Reference );
+
+impl IEvent for MouseDownEvent {}
+impl IUiEvent for MouseDownEvent {}
+impl IMouseEvent for MouseDownEvent {}
+impl ConcreteEvent for MouseDownEvent {
+    const EVENT_TYPE: &'static str = "mousedown";
+}
+
+reference_boilerplate! {
+    MouseDownEvent,
+    instanceof MouseEvent
+    convertible to Event
+    convertible to UiEvent
+    convertible to MouseEvent
+}
+
+/// The `MouseUpEvent` is fired when a pointing device button is released
+/// over an element.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/mouseup)
+pub struct MouseUpEvent( Reference );
+
+impl IEvent for MouseUpEvent {}
+impl IUiEvent for MouseUpEvent {}
+impl IMouseEvent for MouseUpEvent {}
+impl ConcreteEvent for MouseUpEvent {
+    const EVENT_TYPE: &'static str = "mouseup";
+}
+
+reference_boilerplate! {
+    MouseUpEvent,
+    instanceof MouseEvent
+    convertible to Event
+    convertible to UiEvent
+    convertible to MouseEvent
+}
+
+/// The `MouseMoveEvent` is fired when a pointing device (usually a mouse)
+/// is moved while over an element.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/mousemove)
+pub struct MouseMoveEvent( Reference );
+
+impl IEvent for MouseMoveEvent {}
+impl IUiEvent for MouseMoveEvent {}
+impl IMouseEvent for MouseMoveEvent {}
+impl ConcreteEvent for MouseMoveEvent {
+    const EVENT_TYPE: &'static str = "mousemove";
+}
+
+reference_boilerplate! {
+    MouseMoveEvent,
+    instanceof MouseEvent
+    convertible to Event
+    convertible to UiEvent
+    convertible to MouseEvent
+}
+
 /// `IKeyboardEvent` objects describe a user interaction with the
 /// keyboard. Each event describes a key; the event type identifies
 /// what kind of activity was performed.
@@ -1248,6 +1311,30 @@ mod tests {
             return new MouseEvent( @{DoubleClickEvent::EVENT_TYPE} );
         ).try_into().unwrap();
         assert_eq!( event.event_type(), DoubleClickEvent::EVENT_TYPE );
+    }
+
+    #[test]
+    fn test_mouse_down_event() {
+        let event: MouseDownEvent = js!(
+            return new MouseEvent( @{MouseDownEvent::EVENT_TYPE} );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), MouseDownEvent::EVENT_TYPE );
+    }
+
+    #[test]
+    fn test_mouse_up_event() {
+        let event: MouseUpEvent = js!(
+            return new MouseEvent( @{MouseUpEvent::EVENT_TYPE} );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), MouseUpEvent::EVENT_TYPE );
+    }
+
+    #[test]
+    fn test_mouse_move_event() {
+        let event: MouseMoveEvent = js!(
+            return new MouseEvent( @{MouseMoveEvent::EVENT_TYPE} );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), MouseMoveEvent::EVENT_TYPE );
     }
 
     #[test]
