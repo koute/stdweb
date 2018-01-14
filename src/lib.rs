@@ -147,6 +147,7 @@ pub mod web {
     pub use webapi::typed_array::TypedArray;
     pub use webapi::file_reader::{FileReader, FileReaderResult};
     pub use webapi::history::History;
+    pub use webapi::web_socket::WebSocket;
 
 
     /// A module containing XMLHttpRequest and its ReadyState
@@ -176,11 +177,14 @@ pub mod web {
             IMouseEvent,
             IFocusEvent,
             IProgressEvent,
+            ICloseEvent,
+            IMessageEvent,
 
             EventPhase,
             KeyboardLocation,
             ModifierKey,
             MouseButton,
+            CloseEventCode,
 
             ChangeEvent,
             KeypressEvent,
@@ -203,6 +207,11 @@ pub mod web {
             InputEvent,
             ReadyStateChange,
             PopStateEvent,
+
+            CloseEvent,
+            ErrorEvent,
+            OpenEvent,
+            MessageEvent,
         };
     }
 }
