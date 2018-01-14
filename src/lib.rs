@@ -160,9 +160,14 @@ pub mod web {
 
     /// A module containing HTML DOM elements.
     pub mod html_element {
+        pub use webapi::html_elements::AudioElement;
+        pub use webapi::html_elements::HtmlMediaElement;
+        pub use webapi::html_elements::IHtmlMediaElement;
         pub use webapi::html_elements::ImageElement;
         pub use webapi::html_elements::InputElement;
+        pub use webapi::html_elements::ReadyState;
         pub use webapi::html_elements::TextAreaElement;
+        pub use webapi::html_elements::VideoElement;
     }
 
     /// A module containing JavaScript DOM events.
