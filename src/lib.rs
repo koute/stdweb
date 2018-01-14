@@ -148,6 +148,7 @@ pub mod web {
     pub use webapi::file_reader::{FileReader, FileReaderResult};
     pub use webapi::history::History;
     pub use webapi::web_socket::{WebSocket, SocketCloseCode};
+    pub use webapi::html_elements::RenderingContext;
 
 
     /// A module containing XmlHttpRequest and its XhrReadyState
@@ -164,6 +165,7 @@ pub mod web {
         pub use webapi::html_elements::ImageElement;
         pub use webapi::html_elements::InputElement;
         pub use webapi::html_elements::TextAreaElement;
+        pub use webapi::html_elements::CanvasElement;
     }
 
     /// A module containing JavaScript DOM events.
@@ -199,6 +201,7 @@ pub mod web {
             ResourceLoadEvent,
             ResourceAbortEvent,
             ResourceErrorEvent,
+            ResizeEvent,
             ProgressEvent,
             LoadStartEvent,
             LoadEndEvent,

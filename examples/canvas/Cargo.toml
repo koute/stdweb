@@ -1,0 +1,7 @@
+[package]
+name = "canvas"
+version = "0.1.0"
+authors = ["Diggory Blake"]
+
+[dependencies]
+stdweb = { path = "../.." }
