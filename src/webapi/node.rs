@@ -113,9 +113,10 @@ pub trait INode: IEventTarget + FromReference {
     /// Inserts the specified node before the reference node as a child of the current node.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/insertBefore)
-    fn insert_before< T: INode, U: INode >( &self, new_node: &T, reference_node: &U ) {
+    fn insert_before< T: INode, U: INode >( &self, new_node: &T, reference_node: Option<&U> ) {
+        let reference_node = reference_node.map(|n| n.as_ref());
         js! { @(no_return)
-            @{self.as_ref()}.insertBefore( @{new_node.as_ref()}, @{reference_node.as_ref()} );
+            @{self.as_ref()}.insertBefore( @{new_node.as_ref()}, @{reference_node} );
         }
     }
 
@@ -544,7 +545,7 @@ mod tests {
         let child1 = div();
         let child2 = div();
         node.append_child(&child1);
-        node.insert_before(&child2, &child1);
+        node.insert_before(&child2, Some(&child1));
         assert_eq!(node.first_child().unwrap().as_ref(), child2.as_ref());
     }
 
