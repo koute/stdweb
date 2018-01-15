@@ -51,7 +51,7 @@ fn main() {
 
     output_msg("> Connecting...");
 
-    let ws = WebSocket::new("wss://echo.websocket.org");
+    let ws = WebSocket::new("wss://echo.websocket.org").unwrap();
 
     ws.add_event_listener( enclose!( (output_msg) move |_: OpenEvent| {
         output_msg("> Opened connection");

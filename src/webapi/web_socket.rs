@@ -1,16 +1,23 @@
 use webcore::value::{Value, Reference, ConversionError};
 use webcore::try_from::{TryFrom, TryInto};
+use webcore::serialization::JsSerializable;
+use webcore::unsafe_typed_array::UnsafeTypedArray;
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::event::CloseEventCode;
 use webapi::blob::Blob;
 use webapi::array_buffer::ArrayBuffer;
-use webapi::typed_array::TypedArray;
+
+use std::error;
+use std::fmt;
 
 /// The WebSocket object provides the API for creating and managing a WebSocket connection to a
 /// server, as well as for sending and receiving data on the connection.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
 pub struct WebSocket( Reference );
+
+// WebSocket specification:
+// https://html.spec.whatwg.org/multipage/web-sockets.html#the-websocket-interface
 
 impl IEventTarget for WebSocket {}
 
@@ -44,52 +51,80 @@ impl BinaryType {
 
 /// A number indicating the state of the `WebSocket`.
 ///
-/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readyState)
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket#Ready_state_constants)
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum ReadyState {
+pub enum WebSocketReadyState {
     Connecting = 0,
     Open = 1,
     Closing = 2,
     Closed = 3
 }
 
-impl TryFrom<Value> for ReadyState {
+impl TryFrom<Value> for WebSocketReadyState {
     type Error = ConversionError;
 
     /// Performs the conversion.
-    fn try_from(v: Value) -> Result<ReadyState, ConversionError> {
+    fn try_from(v: Value) -> Result<WebSocketReadyState, ConversionError> {
         match v.try_into()? {
-            0 => Ok(ReadyState::Connecting),
-            1 => Ok(ReadyState::Open),
-            2 => Ok(ReadyState::Closing),
-            3 => Ok(ReadyState::Closed),
+            0 => Ok(WebSocketReadyState::Connecting),
+            1 => Ok(WebSocketReadyState::Open),
+            2 => Ok(WebSocketReadyState::Closing),
+            3 => Ok(WebSocketReadyState::Closed),
             other => Err(ConversionError::Custom(format!("Unknown ready_state: {}", other)))
         }
     }
 }
 
-pub trait AsBinaryRef {
-    fn as_binary_ref(&self) -> Reference;
+pub trait ToBinaryRef {
+    type BinaryRef: JsSerializable;
+    fn to_binary_ref(self) -> Self::BinaryRef;
 }
 
-impl AsBinaryRef for Blob {
-    fn as_binary_ref(&self) -> Reference { self.as_ref().clone() }
+impl<'a> ToBinaryRef for &'a Blob {
+    type BinaryRef = Self;
+    fn to_binary_ref(self) -> Self { self }
 }
 
-impl AsBinaryRef for ArrayBuffer {
-    fn as_binary_ref(&self) -> Reference { self.as_ref().clone() }
+impl<'a> ToBinaryRef for &'a ArrayBuffer {
+    type BinaryRef = Self;
+    fn to_binary_ref(self) -> Self { self }
 }
 
-impl AsBinaryRef for [u8] {
-    fn as_binary_ref(&self) -> Reference { TypedArray::from(self).as_ref().clone() }
+impl<'a> ToBinaryRef for &'a [u8] {
+    type BinaryRef = UnsafeTypedArray<'a, u8>;
+    fn to_binary_ref(self) -> Self::BinaryRef { UnsafeTypedArray(self) }
+}
+
+/// A structure denoting that the specified DOM [Node](trait.INode.html) was not found.
+#[derive(Debug)]
+pub struct SyntaxError;
+impl error::Error for SyntaxError {
+    fn description( &self ) -> &str {
+        "SyntaxError"
+    }
+}
+
+impl fmt::Display for SyntaxError {
+    fn fmt( &self, formatter: &mut fmt::Formatter ) -> fmt::Result {
+        write!( formatter, "SyntaxError" )
+    }
 }
 
 impl WebSocket {
     /// Returns a newly constructed `WebSocket`.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
-    pub fn new(url: &str) -> WebSocket {
-        js!( return new WebSocket(@{url}); ).try_into().unwrap()
+    pub fn new(url: &str) -> Result<WebSocket, SyntaxError> {
+        js!(
+            try {
+                return new WebSocket(@{url});
+            } catch (error) {
+                if (error instanceof DOMException) {
+                    return null;
+                }
+                throw error;
+            }
+        ).try_into().map_err(|_| SyntaxError)
     }
 
     /// Returns a newly constructed `WebSocket`.
@@ -100,6 +135,7 @@ impl WebSocket {
     }
 
     /// Returns the binary type of the web socket. Only affects received messages.
+    /// The default binary type is `Blob`.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
     pub fn binary_type(&self) -> BinaryType {
@@ -108,6 +144,7 @@ impl WebSocket {
     }
 
     /// Sets the binary type of the web socket. Only affects received messages.
+    /// The default binary type is `Blob`.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
     pub fn set_binary_type(&self, binary_type: BinaryType) {
@@ -120,7 +157,7 @@ impl WebSocket {
     /// if you keep calling send(), this will continue to climb. 
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
-    pub fn buffered_amount(&self) -> usize {
+    pub fn buffered_amount(&self) -> u64 {
         js!( return @{self}.bufferedAmount; ).try_into().unwrap()
     }
 
@@ -141,12 +178,10 @@ impl WebSocket {
         js!( return @{self}.protocol; ).try_into().unwrap()
     }
 
-    /// Returns a string indicating the name of the sub-protocol the server selected;
-    /// this will be one of the strings specified in the protocols parameter when
-    /// creating the WebSocket object.
+    /// Returns the current state of the connection.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
-    pub fn ready_state(&self) -> ReadyState {
+    pub fn ready_state(&self) -> WebSocketReadyState {
         js!( return @{self}.protocol; ).try_into().unwrap()
     }
 
@@ -182,16 +217,11 @@ impl WebSocket {
         js!( @(no_return) @{self}.send(@{text}); );
     }
 
-    fn _send_binary(&self, binary: Reference) {
-        js!( @(no_return) @{self}.send(@{binary}); );
-    }
-
     /// Enqueues the specified data to be transmitted to the server over the WebSocket
     /// connection, increasing the value of bufferedAmount by the number of bytes needed
     /// to contain the data. If the data can't be sent (for example, because it needs to
     /// be buffered but the buffer is full), the socket is closed automatically.
-    pub fn send_binary<T: AsBinaryRef>(&self, binary: &T) {
-        self._send_binary(binary.as_binary_ref());
+    pub fn send_binary<T: ToBinaryRef>(&self, binary: T) {
+        js!( @(no_return) @{self}.send(@{ binary.to_binary_ref() }); );
     }
 }
-

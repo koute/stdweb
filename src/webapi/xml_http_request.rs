@@ -24,7 +24,7 @@ reference_boilerplate! {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/readyState)
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
-pub enum ReadyState {
+pub enum XHRReadyState {
     /// Client has been created. [open()](struct.XMLHttpRequest.html#method.open) not called yet.
     Unsent,
     /// [open()](struct.XMLHttpRequest.html#method.open) has been called.
@@ -46,11 +46,11 @@ impl XMLHttpRequest {
         js!( return new XMLHttpRequest(); ).try_into().unwrap()
     }
 
-    /// Returns the current state of the request as a [ReadyState](enum.ReadyState.html).
+    /// Returns the current state of the request as a [XHRReadyState](enum.XHRReadyState.html).
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/readyState)
-    pub fn ready_state(&self) -> ReadyState {
-        use self::ReadyState::*;
+    pub fn ready_state(&self) -> XHRReadyState {
+        use self::XHRReadyState::*;
         let state: u16 = js!( return @{self}.readyState; ).try_into().unwrap();
         match state {
             0 => Unsent,
@@ -146,9 +146,9 @@ impl XMLHttpRequest {
     }
 
     /// Aborts the request if it has already been sent.
-    /// When a request is aborted, its [ready_state](struct.XMLHttpRequest.html#method.ready_state) is changed to [Done](enum.ReadyState.html#variant.Done)
+    /// When a request is aborted, its [ready_state](struct.XMLHttpRequest.html#method.ready_state) is changed to [Done](enum.XHRReadyState.html#variant.Done)
     /// and the [status](struct.XMLHttpRequest.html#method.status) code is set to
-    /// [Unsent](enum.ReadyState.html#variant.Unsent).
+    /// [Unsent](enum.XHRReadyState.html#variant.Unsent).
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/abort)
     pub fn abort(&self) {

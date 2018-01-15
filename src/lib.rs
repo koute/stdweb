@@ -150,9 +150,9 @@ pub mod web {
     pub use webapi::web_socket::WebSocket;
 
 
-    /// A module containing XMLHttpRequest and its ReadyState
+    /// A module containing XMLHttpRequest and its XHRReadyState
     pub mod xml_http_request {
-        pub use webapi::xml_http_request::{ XMLHttpRequest, ReadyState };
+        pub use webapi::xml_http_request::{ XMLHttpRequest, XHRReadyState };
     }
     /// A module containing error types.
     pub mod error {

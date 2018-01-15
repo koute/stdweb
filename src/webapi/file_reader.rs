@@ -33,7 +33,7 @@ pub enum FileReaderResult {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readyState)
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
-pub enum ReadyState {
+pub enum FileReaderReadyState {
     Empty,
     Loading,
     Done
@@ -73,12 +73,12 @@ impl FileReader {
     /// Returns the current state of the reader.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readyState)
-    pub fn ready_state( &self ) -> ReadyState {
+    pub fn ready_state( &self ) -> FileReaderReadyState {
         let state: i32 = js!( return @{self}.readyState; ).try_into().unwrap();
         match state {
-            0 => ReadyState::Empty,
-            1 => ReadyState::Loading,
-            2 => ReadyState::Done,
+            0 => FileReaderReadyState::Empty,
+            1 => FileReaderReadyState::Loading,
+            2 => FileReaderReadyState::Done,
             _ => unreachable!( "Unexpected value of FileReader::readyState: {}", state )
         }
     }

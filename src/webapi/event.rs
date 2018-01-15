@@ -1229,6 +1229,8 @@ impl ConcreteEvent for PopStateEvent {
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct CloseEventCode(pub u16);
 
+// Close codes are defined here:
+// https://tools.ietf.org/html/rfc6455#section-7.4
 impl CloseEventCode {
     /// Normal closure; the connection successfully completed whatever purpose for which it was
     /// created.
