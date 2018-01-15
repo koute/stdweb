@@ -1,9 +1,12 @@
+use std::fmt::Debug;
+
 use webcore::value::{Reference, Value, ConversionError};
 use webcore::try_from::{TryFrom, TryInto};
 use webapi::event_target::EventTarget;
 use webapi::window::Window;
 use webapi::blob::Blob;
 use webapi::array_buffer::ArrayBuffer;
+use webapi::web_socket::SocketCloseCode;
 
 /// The `IEvent` interface represents any event which takes place in the DOM; some
 /// are user-generated (such as mouse or keyboard events), while others are
@@ -1223,69 +1226,19 @@ impl ConcreteEvent for PopStateEvent {
     const EVENT_TYPE: &'static str = "popstate";
 }
 
-/// Wrapper type around a CloseEvent code, indicating why the WebSocket was closed
+/// A SocketCloseEvent is sent to clients using WebSockets when the connection is closed.
 ///
-/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent)
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct CloseEventCode(pub u16);
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/close)
+pub struct SocketCloseEvent( Reference );
 
-// Close codes are defined here:
-// https://tools.ietf.org/html/rfc6455#section-7.4
-impl CloseEventCode {
-    /// Normal closure; the connection successfully completed whatever purpose for which it was
-    /// created.
-    pub const NORMAL_CLOSURE: CloseEventCode = CloseEventCode(1000);
-    /// The endpoint is going away, either because of a server failure or because the browser is
-    /// navigating away from the page that opened the connection.
-    pub const GOING_AWAY: CloseEventCode = CloseEventCode(1001);
-    /// The endpoint is terminating the connection due to a protocol error.
-    pub const PROTOCOL_ERROR: CloseEventCode = CloseEventCode(1002);
-    /// The connection is being terminated because the endpoint received data of a type it cannot
-    /// accept (for example, a text-only endpoint received binary data).
-    pub const UNSUPPORTED_DATA: CloseEventCode = CloseEventCode(1003);
-    /// Reserved. Indicates that no status code was provided even though one was expected.
-    pub const NO_STATUS_RECEIVED: CloseEventCode = CloseEventCode(1005);
-    /// Reserved. Used to indicate that a connection was closed abnormally (that is, with no close
-    /// frame being sent) when a status code is expected.
-    pub const ABNORMAL_CLOSURE: CloseEventCode = CloseEventCode(1006);
-    /// The endpoint is terminating the connection because a message was received that contained
-    /// inconsistent data (e.g., non-UTF-8 data within a text message).
-    pub const INVALID_FRAME_PAYLOAD_DATA: CloseEventCode = CloseEventCode(1007);
-    /// The endpoint is terminating the connection because it received a message that violates its
-    /// policy. This is a generic status code, used when codes 1003 and 1009 are not suitable.
-    pub const POLICY_VIOLATION: CloseEventCode = CloseEventCode(1008);
-    /// The endpoint is terminating the connection because a data frame was received that is too
-    /// large.
-    pub const MESSAGE_TOO_BIG: CloseEventCode = CloseEventCode(1009);
-    /// The client is terminating the connection because it expected the server to negotiate one or
-    /// more extensions, but the server didn't.
-    pub const MISSING_EXTENSION: CloseEventCode = CloseEventCode(1010);
-    /// The server is terminating the connection because it encountered an unexpected condition
-    /// that prevented it from fulfilling the request.
-    pub const INTERNAL_ERROR: CloseEventCode = CloseEventCode(1011);
-    /// The server is terminating the connection because it is restarting.
-    pub const SERVICE_RESTART: CloseEventCode = CloseEventCode(1012);
-    /// The server is terminating the connection due to a temporary condition, e.g. it is
-    /// overloaded and is casting off some of its clients.
-    pub const TRY_AGAIN_LATER: CloseEventCode = CloseEventCode(1013);
-    /// The server was acting as a gateway or proxy and received an invalid response from the
-    /// upstream server. This is similar to 502 HTTP Status Code.
-    pub const BAD_GATEWAY: CloseEventCode = CloseEventCode(1014);
-    /// Reserved. Indicates that the connection was closed due to a failure to perform a TLS
-    /// handshake (e.g., the server certificate can't be verified).
-    pub const TLS_HANDSHAKE: CloseEventCode = CloseEventCode(1015);
-}
-
-/// An ICloseEvent is sent to clients using WebSockets when the connection is closed.
-///
-/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent)
-pub trait ICloseEvent: IEvent {
-    /// Returns athe close code sent by the server.
+// https://html.spec.whatwg.org/multipage/web-sockets.html#the-closeevent-interface
+impl SocketCloseEvent {
+    /// Returns the close code sent by the server.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code)
     #[inline]
-    fn code( &self ) -> CloseEventCode {
-        CloseEventCode(js!(
+    pub fn code( &self ) -> SocketCloseCode {
+        SocketCloseCode(js!(
             return @{self.as_ref()}.code;
         ).try_into().unwrap())
     }
@@ -1294,7 +1247,7 @@ pub trait ICloseEvent: IEvent {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/reason)
     #[inline]
-    fn reason( &self ) -> String {
+    pub fn reason( &self ) -> String {
         js!(
             return @{self.as_ref()}.reason;
         ).try_into().unwrap()
@@ -1304,59 +1257,38 @@ pub trait ICloseEvent: IEvent {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/wasClean)
     #[inline]
-    fn was_clean( &self ) -> bool {
+    pub fn was_clean( &self ) -> bool {
         js!(
             return @{self.as_ref()}.wasClean;
         ).try_into().unwrap()
     }
 }
 
-/// A reference to a JavaScript object which implements the [ICloseEvent](trait.ICloseEvent.html)
-/// interface.
-///
-/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent)
-pub struct CloseRelatedEvent( Reference );
-
-impl IEvent for CloseRelatedEvent {}
-impl ICloseEvent for CloseRelatedEvent {}
-
-reference_boilerplate! {
-    CloseRelatedEvent,
-    instanceof CloseEvent
-    convertible to Event
-}
-
-/// A CloseEvent is sent to clients using WebSockets when the connection is closed.
-///
-/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/close)
-pub struct CloseEvent( Reference );
-
-impl IEvent for CloseEvent {}
-impl ICloseEvent for CloseEvent {}
-impl ConcreteEvent for CloseEvent {
+impl IEvent for SocketCloseEvent {}
+impl ConcreteEvent for SocketCloseEvent {
     const EVENT_TYPE: &'static str = "close";
 }
 
 reference_boilerplate! {
-    CloseEvent,
+    SocketCloseEvent,
     instanceof CloseEvent
     convertible to Event
-    convertible to CloseRelatedEvent
 }
 
 /// The error event is fired when an error occurred; the exact circumstances vary,
 /// events by this name are used from a variety of APIs.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/error)
-pub struct ErrorEvent( Reference );
+pub struct SocketErrorEvent( Reference );
 
-impl IEvent for ErrorEvent {}
-impl ConcreteEvent for ErrorEvent {
+// https://html.spec.whatwg.org/multipage/web-sockets.html#handler-websocket-onerror
+impl IEvent for SocketErrorEvent {}
+impl ConcreteEvent for SocketErrorEvent {
     const EVENT_TYPE: &'static str = "error";
 }
 
 reference_boilerplate! {
-    ErrorEvent,
+    SocketErrorEvent,
     instanceof Event
     convertible to Event
 }
@@ -1364,50 +1296,61 @@ reference_boilerplate! {
 /// An open event informs the target that a data connection, has been established.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/open)
-pub struct OpenEvent( Reference );
+pub struct SocketOpenEvent( Reference );
 
-impl IEvent for OpenEvent {}
-impl ConcreteEvent for OpenEvent {
+// https://html.spec.whatwg.org/multipage/web-sockets.html#handler-websocket-onopen
+impl IEvent for SocketOpenEvent {}
+impl ConcreteEvent for SocketOpenEvent {
     const EVENT_TYPE: &'static str = "open";
 }
 
 reference_boilerplate! {
-    OpenEvent,
+    SocketOpenEvent,
     instanceof Event
     convertible to Event
 }
 
+/// Represents the types of data which can be received on a web socket. Messages
+/// are transmitted tagged as either binary or text: text messages are always
+/// received as strings. Binary messages may be received as either blobs or array
+/// buffers as preferred by the receiver. This choice is indicated via the
+/// `binary_type` field on the web socket.
 #[derive(Debug, Clone)]
-pub enum MessageEventData {
+pub enum SocketMessageData {
+    /// Text message
     Text(String),
+    /// Binary message received as a blob
     Blob(Blob),
+    /// Binary message received as an array buffer
     ArrayBuffer(ArrayBuffer),
 }
 
-impl MessageEventData {
+impl SocketMessageData {
+    /// Try to receive the message as text
     pub fn into_text(self) -> Option<String> {
-        if let MessageEventData::Text(s) = self { Some(s) } else { None }
+        if let SocketMessageData::Text(s) = self { Some(s) } else { None }
     }
+    /// Try to receive the message as a binary blob
     pub fn into_blob(self) -> Option<Blob> {
-        if let MessageEventData::Blob(b) = self { Some(b) } else { None }
+        if let SocketMessageData::Blob(b) = self { Some(b) } else { None }
     }
+    /// Try to receive the message as an array buffer
     pub fn into_array_buffer(self) -> Option<ArrayBuffer> {
-        if let MessageEventData::ArrayBuffer(b) = self { Some(b) } else { None }
+        if let SocketMessageData::ArrayBuffer(b) = self { Some(b) } else { None }
     }
 }
 
-impl TryFrom<Value> for MessageEventData {
+impl TryFrom<Value> for SocketMessageData {
     type Error = ConversionError;
 
-    /// Performs the conversion.
-    fn try_from(v: Value) -> Result<MessageEventData, ConversionError> {
+    fn try_from(v: Value) -> Result<SocketMessageData, ConversionError> {
         match v {
-            Value::String(s) => Ok(MessageEventData::Text(s)),
+            Value::String(s) => Ok(SocketMessageData::Text(s)),
             Value::Reference(ref r) => {
                 if let Ok(b) = r.clone().try_into() {
-                    Ok(MessageEventData::Blob(b))
+                    Ok(SocketMessageData::Blob(b))
                 } else if let Ok(b) = r.clone().try_into() {
-                    Ok(MessageEventData::ArrayBuffer(b))
+                    Ok(SocketMessageData::ArrayBuffer(b))
                 } else {
                     Err(ConversionError::Custom(format!("Unknown message event data: {:?}", r)))
                 }
@@ -1420,12 +1363,15 @@ impl TryFrom<Value> for MessageEventData {
 /// The MessageEvent interface represents a message received by a target object.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent)
-pub trait IMessageEvent: IEvent {
+pub trait IMessageEvent: IEvent where <Self::Data as TryFrom<Value>>::Error: Debug {
+    /// The type of data received with this MessageEvent
+    type Data: TryFrom<Value>;
+
     /// The data sent by the message emitter.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent/data)
     #[inline]
-    fn data( &self ) -> MessageEventData {
+    fn data( &self ) -> Self::Data {
         js!(
             return @{self.as_ref()}.data;
         ).try_into().unwrap()
@@ -1475,38 +1421,25 @@ pub trait IMessageEvent: IEvent {
     }
 }
 
-/// A reference to a JavaScript object which implements the
-/// [IMessageEvent](trait.IMessageEvent.html) interface.
-///
-/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent)
-pub struct MessageRelatedEvent( Reference );
-
-impl IEvent for MessageRelatedEvent {}
-impl IMessageEvent for MessageRelatedEvent {}
-
-reference_boilerplate! {
-    MessageRelatedEvent,
-    instanceof MessageEvent
-    convertible to Event
-}
-
-/// A message event informs the target, a WebSocket, RTCDataConnection or a BroadcastChannel
-/// object, that a message has been received.
+/// A message event informs a WebSocket object that a message has been received.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/message)
-pub struct MessageEvent( Reference );
+pub struct SocketMessageEvent( Reference );
 
-impl IEvent for MessageEvent {}
-impl IMessageEvent for MessageEvent {}
-impl ConcreteEvent for MessageEvent {
+// https://html.spec.whatwg.org/multipage/web-sockets.html#handler-websocket-onmessage
+impl IMessageEvent for SocketMessageEvent {
+    type Data = SocketMessageData;
+}
+
+impl IEvent for SocketMessageEvent {}
+impl ConcreteEvent for SocketMessageEvent {
     const EVENT_TYPE: &'static str = "message";
 }
 
 reference_boilerplate! {
-    MessageEvent,
+    SocketMessageEvent,
     instanceof MessageEvent
     convertible to Event
-    convertible to MessageRelatedEvent
 }
 
 #[cfg(all(test, feature = "web_test"))]
@@ -1805,9 +1738,9 @@ mod tests {
 
     #[test]
     fn test_close_event() {
-        let event: CloseEvent = js!(
+        let event: SocketCloseEvent = js!(
             return new CloseEvent(
-                @{CloseEvent::EVENT_TYPE},
+                @{SocketCloseEvent::EVENT_TYPE},
                 {
                     code: 1000,
                     reason: "WebSocket was closed normally",
@@ -1815,8 +1748,8 @@ mod tests {
                 }
             );
         ).try_into().unwrap();
-        assert_eq!( event.event_type(), CloseEvent::EVENT_TYPE );
-        assert_eq!( event.code(), CloseEventCode::NORMAL_CLOSURE );
+        assert_eq!( event.event_type(), SocketCloseEvent::EVENT_TYPE );
+        assert_eq!( event.code(), SocketCloseCode::NORMAL_CLOSURE );
         assert_eq!( event.reason(), "WebSocket was closed normally" );
         assert!( event.was_clean() );
     }

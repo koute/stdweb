@@ -147,12 +147,12 @@ pub mod web {
     pub use webapi::typed_array::TypedArray;
     pub use webapi::file_reader::{FileReader, FileReaderResult};
     pub use webapi::history::History;
-    pub use webapi::web_socket::WebSocket;
+    pub use webapi::web_socket::{WebSocket, SocketCloseCode};
 
 
-    /// A module containing XMLHttpRequest and its XHRReadyState
+    /// A module containing XmlHttpRequest and its XhrReadyState
     pub mod xml_http_request {
-        pub use webapi::xml_http_request::{ XMLHttpRequest, XHRReadyState };
+        pub use webapi::xml_http_request::{ XmlHttpRequest, XhrReadyState };
     }
     /// A module containing error types.
     pub mod error {
@@ -177,14 +177,12 @@ pub mod web {
             IMouseEvent,
             IFocusEvent,
             IProgressEvent,
-            ICloseEvent,
             IMessageEvent,
 
             EventPhase,
             KeyboardLocation,
             ModifierKey,
             MouseButton,
-            CloseEventCode,
 
             ChangeEvent,
             KeypressEvent,
@@ -208,10 +206,10 @@ pub mod web {
             ReadyStateChange,
             PopStateEvent,
 
-            CloseEvent,
-            ErrorEvent,
-            OpenEvent,
-            MessageEvent,
+            SocketCloseEvent,
+            SocketErrorEvent,
+            SocketOpenEvent,
+            SocketMessageEvent,
         };
     }
 }

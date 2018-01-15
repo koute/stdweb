@@ -14,13 +14,12 @@ use stdweb::web::{
 use stdweb::web::event::{
     IEvent,
     IKeyboardEvent,
-    ICloseEvent,
     IMessageEvent,
     KeypressEvent,
-    OpenEvent,
-    CloseEvent,
-    ErrorEvent,
-    MessageEvent,
+    SocketOpenEvent,
+    SocketCloseEvent,
+    SocketErrorEvent,
+    SocketMessageEvent,
 };
 
 use stdweb::web::html_element::InputElement;
@@ -53,19 +52,19 @@ fn main() {
 
     let ws = WebSocket::new("wss://echo.websocket.org").unwrap();
 
-    ws.add_event_listener( enclose!( (output_msg) move |_: OpenEvent| {
+    ws.add_event_listener( enclose!( (output_msg) move |_: SocketOpenEvent| {
         output_msg("> Opened connection");
     }));
 
-    ws.add_event_listener( enclose!( (output_msg) move |_: ErrorEvent| {
+    ws.add_event_listener( enclose!( (output_msg) move |_: SocketErrorEvent| {
         output_msg("> Connection Errored");
     }));
 
-    ws.add_event_listener( enclose!( (output_msg) move |event: CloseEvent| {
+    ws.add_event_listener( enclose!( (output_msg) move |event: SocketCloseEvent| {
         output_msg(&format!("> Connection Closed: {}", event.reason()));
     }));
 
-    ws.add_event_listener( enclose!( (output_msg) move |event: MessageEvent| {
+    ws.add_event_listener( enclose!( (output_msg) move |event: SocketMessageEvent| {
         output_msg(&event.data().into_text().unwrap());
     }));
 
