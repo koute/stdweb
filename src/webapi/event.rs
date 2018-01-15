@@ -1221,6 +1221,133 @@ impl ConcreteEvent for PopStateEvent {
     const EVENT_TYPE: &'static str = "popstate";
 }
 
+/// Declare a list of simple media events, preserving documentation. There are
+/// a lot of these, and almost none of them have an interesting payload.
+macro_rules! media_events {
+    ( $( $( #[$attr:meta] )* event $name:ident $evt_type:expr ; )* ) => {
+        $(
+            $(#[$attr])*
+            pub struct $name( Reference );
+
+            impl IEvent for $name {}
+            impl ConcreteEvent for $name {
+                const EVENT_TYPE: &'static str = $evt_type;
+            }
+
+            reference_boilerplate! {
+                $name,
+                instanceof Event
+                convertible to Event
+            }
+        )*
+    }
+}
+
+media_events! {
+    /// The `CanPlayEvent` is fired when the user agent can play a media
+    /// element, but may not have enough data to support continuous playback.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/canplay)
+    event CanPlayEvent "canplay";
+
+    /// The `CanPlayThroughEvent` is fired when the user agent can play a media
+    /// element, and should have enough data to play through at the current
+    /// loading rate.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/canplaythrough)
+    event CanPlayThroughEvent "canplaythrough";
+
+    /// The `DurationChangeEvent` is fired when the `duration` attribute of a
+    /// media element is updated.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/durationchange)
+    event DurationChangeEvent "durationchange";
+
+    /// The `EmptiedEvent` is fired when a media element becomes empty, for
+    /// example, during a reload.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/emptied)
+    event EmptiedEvent "emptied";
+
+    /// The `EndedEvent` is fired when media playback has reached the end or
+    /// run out of data.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/ended)
+    event EndedEvent "ended";
+
+    /// The `LoadedDataEvent` is fired when the first frame of the media has
+    /// been loaded.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/loadeddata)
+    event LoadedDataEvent "loadeddata";
+
+    /// The `LoadedMetadataEvent` is fired when the first frame of the media has
+    /// been loaded.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/loadedmetadata)
+    event LoadedMetadataEvent "loadedmetadata";
+
+    /// The `PauseEvent` is fired when media playback is paused.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/pause)
+    event PauseEvent "pause";
+
+    /// The `PlayEvent` is fired when playback is triggered.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/play)
+    event PlayEvent "play";
+
+    /// The `PlayingEvent` is fired when playback actually begins.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/playing)
+    event PlayingEvent "playing";
+
+    /// The `RateChangeEvent` is fired when playback rate changes.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/ratechange)
+    event RateChangeEvent "ratechange";
+
+    /// The `SeekedEvent` is fired when a media seek finishes.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/seeked)
+    event SeekedEvent "seekedevent";
+
+    /// The `SeekingEvent` is fired when a media seek begins.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/seeking)
+    event SeekingEvent "seeking";
+
+    /// The `StalledEvent` is fired when playback stops because data is
+    /// unavailable.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/stalled)
+    event StalledEvent "stalled";
+
+    /// The `SuspendEvent` is fired when media loading is suspended, possibly
+    /// because it has finished or because the media has been paused.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/suspend)
+    event SuspendEvent "suspend";
+
+    /// The `TimeUpdateEvent` is fired when the `currentTime` attribute of a
+    /// media element changes.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/timeupdate)
+    event TimeUpdateEvent "timeupdate";
+
+    /// The `VolumeChangeEvent` is fired when a media element's volume is
+    /// changed, or when the mute state changes.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/volumechange)
+    event VolumeChangeEvent "volumechange";
+
+    /// The `WaitingEvent` is sent when an operation is delayed because it is
+    /// waiting on another operation.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/waiting)
+    event WaitingEvent "waiting";
+}
+
 #[cfg(all(test, feature = "web_test"))]
 mod tests {
     use super::*;
