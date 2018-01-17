@@ -148,7 +148,7 @@ pub mod web {
     pub use webapi::file_reader::{FileReader, FileReaderResult};
     pub use webapi::history::History;
     pub use webapi::web_socket::{WebSocket, SocketCloseCode};
-    pub use webapi::html_elements::RenderingContext;
+    pub use webapi::rendering_context::{RenderingContext, CanvasRenderingContext2D};
 
 
     /// A module containing XmlHttpRequest and its XhrReadyState

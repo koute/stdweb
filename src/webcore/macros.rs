@@ -10,8 +10,6 @@ macro_rules! next {
     };
 }
 
-#[doc(hidden)]
-#[macro_export]
 macro_rules! foreach {
     ($callback:tt => $($values:tt),*) => {
         $callback!( (peel, $callback, ($($values),*)) => $($values),* );
@@ -24,8 +22,6 @@ macro_rules! loop_through_identifiers {
     };
 }
 
-#[doc(hidden)]
-#[macro_export]
 macro_rules! call_with_repeated_tail {
     (($($cb:tt)*), ($($output:tt)*), foreach ($($rest:tt)*) -> $token:tt) => {
         call_with_repeated_tail!( @loop ($($cb)*), ($($rest)*), ($($output)*), $token );
@@ -544,8 +540,6 @@ macro_rules! __js_serializable_boilerplate {
     };
 }
 
-#[doc(hidden)]
-#[macro_export]
 macro_rules! __reference_boilerplate {
     (($($impl_arg:tt)*) ($($kind_arg:tt)*) ($($bounds:tt)*), instanceof $js_name:ident $($rest:tt)*) => {
         impl< $($impl_arg)* > $crate::private::FromReference for $($kind_arg)* where $($bounds)* {
@@ -672,7 +666,6 @@ macro_rules! __reference_boilerplate {
     };
 }
 
-#[macro_export]
 macro_rules! reference_boilerplate {
     ($kind:ident, $($rest:tt)*) => {
         __reference_boilerplate!( () ($kind) (), $($rest)* );
@@ -683,7 +676,6 @@ macro_rules! reference_boilerplate {
     };
 }
 
-#[macro_export]
 macro_rules! instanceof {
     ($value:expr, $kind:ident) => {{
         use $crate::unstable::TryInto;

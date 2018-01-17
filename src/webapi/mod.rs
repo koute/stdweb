@@ -26,3 +26,4 @@ pub mod typed_array;
 pub mod xml_http_request;
 pub mod history;
 pub mod web_socket;
+pub mod rendering_context;

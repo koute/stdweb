@@ -1,15 +1,17 @@
-use webcore::value::{Reference, FromReference};
+use webcore::value::Reference;
 use webcore::try_from::TryInto;
+use webcore::once::Once;
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
 use webapi::element::{IElement, Element};
 use webapi::html_element::{IHtmlElement, HtmlElement};
 use webapi::blob::Blob;
+use webapi::rendering_context::RenderingContext;
 
-/// The HTML image element is used to manipulate the layout and presentation of
-/// `<img>` elements.
+/// The HTML `<canvas>` element provides an empty graphic zone on which specific JavaScript APIs
+/// can draw (such as Canvas 2D or WebGL).
 ///
-/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement)
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement)
 pub struct CanvasElement( Reference );
 
 impl IEventTarget for CanvasElement {}
@@ -24,12 +26,6 @@ reference_boilerplate! {
     convertible to Node
     convertible to Element
     convertible to HtmlElement
-}
-
-/// Trait implemented by rendering contexts which can be obtained from a canvas.
-pub trait RenderingContext: FromReference {
-    /// Name which identifies this kind of rendering context.
-    const CONTEXT_TYPE: &'static str;
 }
 
 impl CanvasElement {
@@ -80,10 +76,8 @@ impl CanvasElement {
     /// Returns a drawing context on the canvas, or None if the context identifier is not supported.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext)
-    pub fn get_context<T: RenderingContext>( &self ) -> Option<T> {
-        js! (
-            return @{self}.getContext(@{T::CONTEXT_TYPE});
-        ).try_into().ok().and_then(|r| T::from_reference(r))
+    pub fn get_context<T: RenderingContext>( &self ) -> Result<T, T::Error> {
+        T::from_canvas(self)
     }
 
     /// Returns a data URI containing a representation of the image in the format specified by the
@@ -100,9 +94,9 @@ impl CanvasElement {
     /// cached on the disk or stored in memory at the discretion of the user agent.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob)
-    pub fn to_blob<F: FnMut(Blob) + 'static>( &self, f: F, mime_type: Option<&str>, quality: Option<f64> ) {
+    pub fn to_blob<F: FnOnce(Blob) + 'static>( &self, f: F, mime_type: Option<&str>, quality: Option<f64> ) {
         js! { @(no_return)
-            @{self}.toBlob(@{f}, @{mime_type}, @{quality});
+            @{self}.toBlob(@{Once(f)}, @{mime_type}, @{quality});
         }
     }
 }

@@ -8,7 +8,8 @@ use stdweb::web::{
     IHtmlElement,
     document,
     window,
-    RenderingContext
+    RenderingContext,
+    CanvasRenderingContext2D
 };
 
 use stdweb::web::event::{
@@ -27,25 +28,6 @@ macro_rules! enclose {
             $y
         }
     };
-}
-
-struct CanvasRenderingContext2D(Reference);
-
-reference_boilerplate! {
-    CanvasRenderingContext2D,
-    instanceof CanvasRenderingContext2D
-}
-
-impl RenderingContext for CanvasRenderingContext2D {
-    const CONTEXT_TYPE: &'static str = "2d";
-}
-
-impl CanvasRenderingContext2D {
-    pub fn fill_rect(&self, x: f64, y: f64, width: f64, height: f64) {
-        js! { @(no_return)
-            @{self}.fillRect(@{x}, @{y}, @{width}, @{height});
-        }
-    }
 }
 
 fn main() {
