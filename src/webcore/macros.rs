@@ -667,6 +667,30 @@ macro_rules! instanceof {
     }};
 }
 
+macro_rules! newtype_enum {
+    ($name:ident {
+        $(
+            $(#[$attr:meta])*
+            $variant:ident = $value:expr
+        ),* $(,)*
+    }) => {
+        impl $name {
+            $(
+                $(#[$attr])*
+                pub const $variant: $name = $name($value);
+            )*
+        }
+        impl ::std::fmt::Debug for $name {
+            fn fmt(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                match self.0 {
+                    $($value => write!(formatter, "{}::{}", stringify!($name), stringify!($variant)),)*
+                    other => write!(formatter, "{}({})", stringify!($name), other)
+                }
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     macro_rules! stringify_js {

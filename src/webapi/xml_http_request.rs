@@ -6,51 +6,51 @@ use webcore::value::{
 };
 use webcore::try_from::TryInto;
 
-/// Use XMLHttpRequest (XHR) objects to interact with servers.
+/// Use XmlHttpRequest (XHR) objects to interact with servers.
 /// You can retrieve data from a URL without having to do a full page refresh.
 /// This enables a Web page to update just part of a page without disrupting
-/// what the user is doing. XMLHttpRequest is used heavily in Ajax programming.
+/// what the user is doing. XmlHttpRequest is used heavily in Ajax programming.
 ///
-/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest)
-pub struct XMLHttpRequest( Reference );
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XmlHttpRequest)
+pub struct XmlHttpRequest( Reference );
 
 reference_boilerplate! {
-    XMLHttpRequest,
+    XmlHttpRequest,
     instanceof XMLHttpRequest
     convertible to EventTarget
 }
 
-/// An enum indicating the state of the `XMLHttpRequest`.
+/// An enum indicating the state of the `XmlHttpRequest`.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/readyState)
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
-pub enum ReadyState {
-    /// Client has been created. [open()](struct.XMLHttpRequest.html#method.open) not called yet.
+pub enum XhrReadyState {
+    /// Client has been created. [open()](struct.XmlHttpRequest.html#method.open) not called yet.
     Unsent,
-    /// [open()](struct.XMLHttpRequest.html#method.open) has been called.
+    /// [open()](struct.XmlHttpRequest.html#method.open) has been called.
     Opened,
-    /// [send()](struct.XMLHttpRequest.html#method.send) has been called, and headers and [status()](struct.XMLHttpRequest.html#method.status) are available.
+    /// [send()](struct.XmlHttpRequest.html#method.send) has been called, and headers and [status()](struct.XmlHttpRequest.html#method.status) are available.
     HeadersReceived,
-    /// Downloading; [reponse_text()](struct.XMLHttpRequest.html#method.reponse_text) holds partial data.
+    /// Downloading; [reponse_text()](struct.XmlHttpRequest.html#method.reponse_text) holds partial data.
     Loading,
     /// The operation is complete.
     Done,
 }
 
-impl IEventTarget for XMLHttpRequest {}
+impl IEventTarget for XmlHttpRequest {}
 
 
-impl XMLHttpRequest {
-    /// Creates new `XMLHttpRequest`.
-    pub fn new() -> XMLHttpRequest {
+impl XmlHttpRequest {
+    /// Creates new `XmlHttpRequest`.
+    pub fn new() -> XmlHttpRequest {
         js!( return new XMLHttpRequest(); ).try_into().unwrap()
     }
 
-    /// Returns the current state of the request as a [ReadyState](enum.ReadyState.html).
+    /// Returns the current state of the request as a [XhrReadyState](enum.XhrReadyState.html).
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/readyState)
-    pub fn ready_state(&self) -> ReadyState {
-        use self::ReadyState::*;
+    pub fn ready_state(&self) -> XhrReadyState {
+        use self::XhrReadyState::*;
         let state: u16 = js!( return @{self}.readyState; ).try_into().unwrap();
         match state {
             0 => Unsent,
@@ -146,9 +146,9 @@ impl XMLHttpRequest {
     }
 
     /// Aborts the request if it has already been sent.
-    /// When a request is aborted, its [ready_state](struct.XMLHttpRequest.html#method.ready_state) is changed to [Done](enum.ReadyState.html#variant.Done)
-    /// and the [status](struct.XMLHttpRequest.html#method.status) code is set to
-    /// [Unsent](enum.ReadyState.html#variant.Unsent).
+    /// When a request is aborted, its [ready_state](struct.XmlHttpRequest.html#method.ready_state) is changed to [Done](enum.XhrReadyState.html#variant.Done)
+    /// and the [status](struct.XmlHttpRequest.html#method.status) code is set to
+    /// [Unsent](enum.XhrReadyState.html#variant.Unsent).
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/abort)
     pub fn abort(&self) {
