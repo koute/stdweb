@@ -795,7 +795,7 @@ mod tests {
 
     #[test]
     fn empty_option_node_is_constructible_from_undefined_value() {
-        let empty_opt_node: Option< Node > = Value::Null.try_into().unwrap();
+        let empty_opt_node: Option< Node > = Value::Undefined.try_into().unwrap();
         assert!( empty_opt_node.is_none() );
     }
 
