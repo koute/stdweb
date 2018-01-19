@@ -616,15 +616,20 @@ macro_rules! __reference_boilerplate {
         }
 
         impl< R: $crate::unstable::TryInto< $crate::Reference >, $($impl_arg)* > $crate::unstable::TryFrom< R > for $($kind_arg)*
-            where <R as $crate::unstable::TryInto< $crate::Reference >>::Error: Into< Box< ::std::error::Error > >, $($bounds)*
+            where <R as $crate::unstable::TryInto< $crate::Reference >>::Error: Into< ::webcore::value::ConversionError >, $($bounds)*
         {
-            type Error = Box< ::std::error::Error >; // TODO
+            type Error = ::webcore::value::ConversionError;
 
             #[inline]
             fn try_from( value: R ) -> Result< Self, Self::Error > {
+                use webcore::value::ConversionError;
+
                 value.try_into()
                     .map_err( |error| error.into() )
-                    .and_then( |reference: Reference| reference.downcast().ok_or_else( || "reference is of a different type".into() ) )
+                    .and_then( |reference: Reference| {
+                        reference.downcast()
+                            .ok_or_else( || ConversionError::Custom( "reference is of a different type".into() ) )
+                    })
             }
         }
 
