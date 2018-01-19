@@ -15,14 +15,14 @@ reference_boilerplate! {
 }
 
 
-pub struct MutationObserverInit {
+pub struct MutationObserverInit<'a> {
     child_list: bool,
     attribute: bool,
     character_data: bool,
     subtree: bool,
     attribute_old_value: bool,
     character_data_old_value: bool,
-    attribute_filter: Vec< String >,
+    attribute_filter: &'a [ &'a str ],
 }
 
 
@@ -74,7 +74,7 @@ pub enum MutationRecord {
 
     CharacterData {
         target: Node,
-        old_value: Option< String >,
+        old_data: Option< String >,
     },
 
     ChildList {
@@ -109,7 +109,7 @@ impl TryFrom< Value > for MutationRecord {
 
                     "characterData" => Ok( MutationRecord::CharacterData {
                         target: target,
-                        old_value: js!( @{r}.oldValue ).try_into()?,
+                        old_data: js!( @{r}.oldValue ).try_into()?,
                     } ),
 
                     "childList" => Ok( MutationRecord::ChildList {
