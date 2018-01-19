@@ -834,7 +834,7 @@ impl From< Void > for ConversionError {
 
 impl ConversionError {
     #[inline]
-    fn type_mismatch( actual_value: &Value ) -> Self {
+    pub(crate) fn type_mismatch( actual_value: &Value ) -> Self {
         ConversionError::TypeMismatch {
             actual_type: value_type_name( actual_value )
         }

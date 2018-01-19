@@ -633,6 +633,23 @@ macro_rules! __reference_boilerplate {
             }
         }
 
+        impl< $($impl_arg)* > $crate::unstable::TryFrom< $crate::Value > for Option< $($kind_arg)* > where $($bounds)* {
+            type Error = ::webcore::value::ConversionError;
+
+            #[inline]
+            fn try_from( value: $crate::Value ) -> Result< Self, Self::Error > {
+                use webcore::value::ConversionError;
+                use webcore::value::Value;
+                use webcore::try_from::TryInto;
+
+                match value {
+                    Value::Undefined | Value::Null => Ok( None ),
+                    Value::Reference( reference ) => Ok( Some( reference.try_into()? ) ),
+                    value => Err( ConversionError::type_mismatch( &value ) )
+                }
+            }
+        }
+
         impl< $($impl_arg)* > $crate::private::JsSerializable for $($kind_arg)* where $($bounds)* {
             #[inline]
             fn into_js< 'a >( &'a self, arena: &'a $crate::private::PreallocatedArena ) -> $crate::private::SerializedValue< 'a > {

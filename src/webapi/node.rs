@@ -420,6 +420,7 @@ pub enum NodeType {
 mod tests {
     use super::*;
     use webapi::document::document;
+    use webcore::value::Value;
 
     fn div() -> Node {
         js!(
@@ -777,5 +778,31 @@ mod tests {
         assert_eq!(node.child_nodes().len(), 1);
         let child_text = node.first_child().unwrap().text_content().unwrap();
         assert_eq!(child_text, "test 123");
+    }
+
+    #[test]
+    fn option_node_is_constructible_from_value() {
+        let node: Value = js!( return document.createElement( "div" ) );
+        let opt_node: Option< Node > = node.clone().try_into().unwrap();
+        assert_eq!( opt_node.unwrap().as_ref(), node.as_ref() );
+    }
+
+    #[test]
+    fn empty_option_node_is_constructible_from_null_value() {
+        let empty_opt_node: Option< Node > = Value::Null.try_into().unwrap();
+        assert!( empty_opt_node.is_none() );
+    }
+
+    #[test]
+    fn empty_option_node_is_constructible_from_undefined_value() {
+        let empty_opt_node: Option< Node > = Value::Null.try_into().unwrap();
+        assert!( empty_opt_node.is_none() );
+    }
+
+    #[test]
+    fn option_node_from_numeric_value_results_in_an_error() {
+        let value: Value = 123_i32.into();
+        let empty_opt_node: Result< Option< Node >, _ > = value.try_into();
+        assert!( empty_opt_node.is_err() );
     }
 }
