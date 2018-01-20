@@ -22,33 +22,33 @@ reference_boilerplate! {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#MutationObserverInit)
 #[derive(Debug, Clone)]
 pub struct MutationObserverInit<'a> {
-    /// If set to `true` it will observe all inserts and removals of the target's children (including text nodes).
+    /// If `true` it will observe all inserts and removals of the target's children (including text nodes).
     ///
     /// This is **not** recursive, it will only observe immediate children
-    /// (unless [`subtree`](struct.MutationObserverInit.html#structfield.subtree) is set to `true` in which case it will
+    /// (unless [`subtree`](struct.MutationObserverInit.html#structfield.subtree) is `true` in which case it will
     /// observe **all** children and sub-children recursively).
     pub child_list: bool,
 
-    /// If set to `true` it will observe all changes to the target's attributes.
+    /// If `true` it will observe all changes to the target's attributes.
     pub attributes: bool,
 
-    /// If set to `true` it will observe all changes to the `CharacterData`'s data.
+    /// If `true` it will observe all changes to the `CharacterData`'s data.
     pub character_data: bool,
 
-    /// If set to `true` it will observe all changes to the target, the target's children, and the target's sub-children.
+    /// If `true` it will observe all changes to the target, the target's children, and the target's sub-children.
     ///
     /// This is recursive, so it causes **all** children and sub-children to be observed.
     pub subtree: bool,
 
-    /// If set to `true` it will store the target's old attribute value in [`old_value`](enum.MutationRecord.html#variant.Attribute).
+    /// If `true` it will store the target's old attribute value in [`old_value`](enum.MutationRecord.html#variant.Attribute).
     pub attribute_old_value: bool,
 
-    /// If set to `true` it will store the `CharacterData`'s old data in [`old_data`](enum.MutationRecord.html#variant.CharacterData).
+    /// If `true` it will store the `CharacterData`'s old data in [`old_data`](enum.MutationRecord.html#variant.CharacterData).
     pub character_data_old_value: bool,
 
-    /// If set, it will only observe the specified attributes.
+    /// If `Some` it will only observe the specified attributes. The attributes should be specified without a namespace.
     ///
-    /// The attributes should be specified without a namespace.
+    /// If `None` it will observe all attributes.
     pub attribute_filter: Option< &'a [ &'a str ] >,
 }
 
@@ -84,7 +84,7 @@ impl MutationObserver {
     /// * At least one of
     /// [`child_list`](struct.MutationObserverInit.html#structfield.child_list),
     /// [`attributes`](struct.MutationObserverInit.html#structfield.attributes), or
-    /// [`character_data`](struct.MutationObserverInit.html#structfield.character_data) must be set to `true`.
+    /// [`character_data`](struct.MutationObserverInit.html#structfield.character_data) must be `true`.
     ///
     /// * If [`attribute_old_value`](struct.MutationObserverInit.html#structfield.attribute_old_value) is `true`, then
     /// [`attributes`](struct.MutationObserverInit.html#structfield.attributes) must be `true`.
