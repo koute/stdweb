@@ -20,8 +20,8 @@ reference_boilerplate! {
 /// Only used with the [`MutationObserver::observe`](struct.MutationObserver.html#method.observe) method.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#MutationObserverInit)
-#[derive(Debug, Clone)]
-pub struct MutationObserverInit<'a> {
+#[derive( Debug, Clone )]
+pub struct MutationObserverInit< 'a > {
     /// If `true` it will observe all inserts and removals of the target's children (including text nodes).
     ///
     /// This is **not** recursive, it will only observe immediate children
@@ -146,7 +146,7 @@ impl MutationObserver {
 /// It is passed to [`MutationObserver`](struct.MutationObserver.html)'s callback.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationRecord)
-#[derive(Debug, Clone)]
+#[derive( Debug, Clone )]
 pub enum MutationRecord {
     /// One of the target's attributes was changed.
     Attribute {
@@ -231,7 +231,7 @@ impl TryFrom< Value > for MutationRecord {
 }
 
 
-#[cfg(all(test, feature = "web_test"))]
+#[ cfg( all( test, feature = "web_test" ) ) ]
 mod tests {
     use super::*;
     use webapi::document::document;
