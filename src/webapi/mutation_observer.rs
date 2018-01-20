@@ -241,7 +241,7 @@ mod tests {
 
     #[ test ]
     fn test_observe() {
-        let observer = MutationObserver::new( |_| {} );
+        let observer = MutationObserver::new( |_, _| {} );
 
         // TODO replace with document.body
         observer.observe( &document(),  &MutationObserverInit {
