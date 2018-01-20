@@ -56,13 +56,16 @@ pub struct MutationObserverInit< 'a > {
 impl MutationObserver {
     /// Returns a new `MutationObserver` with the given callback.
     ///
-    /// The callback will be called when the observed DOM nodes change.
+    /// The callback will be called with the following arguments when the observed DOM nodes change:
+    ///
+    /// 1. Vector of changes to the observed DOM nodes.
+    ///
+    /// 2. The `MutationObserver`.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#Constructor)
     pub fn new< F >( callback: F ) -> Self
-        where F: FnMut( Vec< MutationRecord > ) + 'static {
+        where F: FnMut( Vec< MutationRecord >, Self ) + 'static {
         js! (
-            // TODO implement second argument for callback
             return new MutationObserver( @{callback} );
         ).try_into().unwrap()
     }
@@ -198,28 +201,28 @@ impl TryFrom< Value > for MutationRecord {
     fn try_from( v: Value ) -> Result< Self, Self::Error > {
         match v {
             Value::Reference( ref r ) => {
-                let _type: String = js!( @{r}.type ).try_into()?;
-                let target: Node = js!( @{r}.target ).try_into()?;
+                let _type: String = js!( return @{r}.type ).try_into()?;
+                let target: Node = js!( return @{r}.target ).try_into()?;
 
                 match _type.as_str() {
                     "attributes" => Ok( MutationRecord::Attribute {
                         target: target,
-                        name: js!( @{r}.attributeName ).try_into()?,
-                        namespace: js!( @{r}.attributeNamespace ).try_into()?,
-                        old_value: js!( @{r}.oldValue ).try_into()?,
+                        name: js!( return @{r}.attributeName ).try_into()?,
+                        namespace: js!( return @{r}.attributeNamespace ).try_into()?,
+                        old_value: js!( return @{r}.oldValue ).try_into()?,
                     } ),
 
                     "characterData" => Ok( MutationRecord::CharacterData {
                         target: target,
-                        old_data: js!( @{r}.oldValue ).try_into()?,
+                        old_data: js!( return @{r}.oldValue ).try_into()?,
                     } ),
 
                     "childList" => Ok( MutationRecord::ChildList {
                         target: target,
-                        inserted_nodes: js!( @{r}.addedNodes ).try_into()?,
-                        removed_nodes: js!( @{r}.removedNodes ).try_into()?,
-                        previous_sibling: js!( @{r}.previousSibling ).try_into()?,
-                        next_sibling: js!( @{r}.nextSibling ).try_into()?,
+                        inserted_nodes: js!( return @{r}.addedNodes ).try_into()?,
+                        removed_nodes: js!( return @{r}.removedNodes ).try_into()?,
+                        previous_sibling: js!( return @{r}.previousSibling ).try_into()?,
+                        next_sibling: js!( return @{r}.nextSibling ).try_into()?,
                     } ),
 
                     other => Err( ConversionError::Custom( format!( "Unknown MutationRecord type: {:?}", other ) ) ),
