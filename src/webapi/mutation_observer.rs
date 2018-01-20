@@ -230,19 +230,17 @@ mod tests {
 
     #[test]
     fn test_observe() {
-        let observer = MutationObserver::new( |records| {
-
-        } );
+        let observer = MutationObserver::new( |_| {} );
 
         // TODO replace with document.body
-        observer.observe( &document(),  MutationObserverInit {
+        observer.observe( &document(),  &MutationObserverInit {
             child_list: true,
             attributes: false,
             character_data: true,
             subtree: true,
             attribute_old_value: false,
             character_data_old_value: false,
-            attribute_filter: &[ "foo", "bar", "qux" ],
+            attribute_filter: Some( &[ "foo", "bar", "qux" ] ),
         } );
     }
 }
