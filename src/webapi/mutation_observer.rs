@@ -4,7 +4,7 @@ use webcore::try_from::{TryFrom, TryInto};
 use webapi::node::{INode, Node};
 
 
-/// `MutationObserver` provides developers with a way to react to changes in a DOM.
+/// `MutationObserver` provides a way to receive notifications about changes in the DOM.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver)
 pub struct MutationObserver( Reference );
@@ -15,47 +15,117 @@ reference_boilerplate! {
 }
 
 
+/// Specifies which changes should be observed for the target.
+///
+/// Only used with the [`MutationObserver::observe`](struct.MutationObserver.html#method.observe) method.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#MutationObserverInit)
+#[derive(Debug, Clone)]
 pub struct MutationObserverInit<'a> {
-    child_list: bool,
-    attribute: bool,
-    character_data: bool,
-    subtree: bool,
-    attribute_old_value: bool,
-    character_data_old_value: bool,
-    attribute_filter: &'a [ &'a str ],
+    /// If set to `true` it will observe all inserts and removals of the target's children (including text nodes).
+    ///
+    /// This is **not** recursive, it will only observe immediate children
+    /// (unless [`subtree`](struct.MutationObserverInit.html#structfield.subtree) is set to `true` in which case it will
+    /// observe **all** children and sub-children recursively).
+    pub child_list: bool,
+
+    /// If set to `true` it will observe all changes to the target's attributes.
+    pub attributes: bool,
+
+    /// If set to `true` it will observe all changes to the `CharacterData`'s data.
+    pub character_data: bool,
+
+    /// If set to `true` it will observe all changes to the target, the target's children, and the target's sub-children.
+    ///
+    /// This is recursive, so it causes **all** children and sub-children to be observed.
+    pub subtree: bool,
+
+    /// If set to `true` it will store the target's old attribute value in [`old_value`](enum.MutationRecord.html#variant.Attribute).
+    pub attribute_old_value: bool,
+
+    /// If set to `true` it will store the `CharacterData`'s old data in [`old_data`](enum.MutationRecord.html#variant.CharacterData).
+    pub character_data_old_value: bool,
+
+    /// If set, it will only observe the specified attributes.
+    ///
+    /// The attributes should be specified without a namespace.
+    pub attribute_filter: Option< &'a [ &'a str ] >,
 }
 
 
 impl MutationObserver {
-    // TODO implement second argument for callback
-    fn new< F >( callback: F ) -> Self
+    /// Returns a new `MutationObserver` with the given callback.
+    ///
+    /// The callback will be called when the observed DOM nodes change.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#Constructor)
+    pub fn new< F >( callback: F ) -> Self
         where F: FnMut( Vec< MutationRecord > ) + 'static {
         js! (
+            // TODO implement second argument for callback
             return new MutationObserver( @{callback} );
         ).try_into().unwrap()
     }
 
-    fn observe< T: INode >( &self, target: &T, options: MutationObserverInit ) {
+    /// Starts observing the `target`.
+    ///
+    /// The `MutationObserver`'s callback will be called with a list of
+    /// [`MutationRecord`](enum.MutationRecord.html) when the `target` changes.
+    ///
+    /// The `options` specifies which changes should be observed.
+    ///
+    /// Multiple different targets can be observed simultaneously (with the same or different `options`).
+    ///
+    /// If you call `observe` on the same target multiple times, only the first call will have an effect,
+    /// the rest of the calls are ignored.
+    ///
+    /// # Panics
+    ///
+    /// At least one of
+    /// [`child_list`](struct.MutationObserverInit.html#structfield.child_list),
+    /// [`attributes`](struct.MutationObserverInit.html#structfield.attributes), or
+    /// [`character_data`](struct.MutationObserverInit.html#structfield.character_data) must be set to `true`.
+    /// Otherwise "An invalid or illegal string was specified" panic occurs.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#observe())
+    pub fn observe< T: INode >( &self, target: &T, options: &MutationObserverInit ) {
+        let attribute_filter: Value = match options.attribute_filter {
+            Some( a ) => a.into(),
+            // This must compile to JavaScript `undefined`, NOT `null`
+            None => Value::Undefined,
+        };
+
         js! { @(no_return)
             @{self.as_ref()}.observe( @{target.as_ref()}, {
                 childList: @{options.child_list},
-                attributes: @{options.attribute},
+                attributes: @{options.attributes},
                 characterData: @{options.character_data},
                 subtree: @{options.subtree},
                 attributeOldValue: @{options.attribute_old_value},
                 characterDataOldValue: @{options.character_data_old_value},
-                attributeFilter: @{options.attribute_filter.from()}
+                attributeFilter: @{attribute_filter}
             } );
         }
     }
 
-    fn disconnect( &self ) {
+    /// Stops observing all targets.
+    ///
+    /// Until the [`observe`](struct.MutationObserver.html#method.observe) method is called again,
+    /// the `MutationObserver`'s callback will not be called.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#disconnect())
+    pub fn disconnect( &self ) {
         js! { @(no_return)
             @{self.as_ref()}.disconnect();
         }
     }
 
-    fn take_records( &self ) -> Vec< MutationRecord > {
+    /// Empties the `MutationObserver`'s record queue and returns what was in there.
+    ///
+    /// This method is generally not needed, instead use the `MutationObserver` callback to respond to changes.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#takeRecords())
+    pub fn take_records( &self ) -> Vec< MutationRecord > {
         js!(
             return @{self.as_ref()}.takeRecords();
         ).try_into().unwrap()
@@ -63,25 +133,52 @@ impl MutationObserver {
 }
 
 
-#[derive(Debug)]
+/// Contains information about an individual change to the DOM.
+///
+/// It is passed to [`MutationObserver`](struct.MutationObserver.html)'s callback.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationRecord)
+#[derive(Debug, Clone)]
 pub enum MutationRecord {
+    /// One of the target's attributes was changed.
     Attribute {
+        /// The [`Node`](struct.Node.html) whose attribute changed.
         target: Node,
-        attribute_name: Option< String >,
-        attribute_namespace: Option< String >,
+
+        /// The name of the changed attribute.
+        name: String,
+
+        /// The namespace of the changed attribute.
+        namespace: Option< String >,
+
+        /// The value of the changed attribute before the change.
         old_value: Option< String >,
     },
 
+    /// The target's data was changed.
     CharacterData {
+        /// The `CharacterData` node whose data changed.
         target: Node,
+
+        /// The data of the target before the change.
         old_data: Option< String >,
     },
 
+    /// The children of the target were changed.
     ChildList {
+        /// The [`Node`](struct.Node.html) whose children changed.
         target: Node,
-        added_nodes: NodeList,
+
+        /// The nodes which were inserted. Will be an empty [`NodeList`](struct.NodeList.html) if no nodes were inserted.
+        inserted_nodes: NodeList,
+
+        /// The nodes which were removed. Will be an empty [`NodeList`](struct.NodeList.html) if no nodes were removed.
         removed_nodes: NodeList,
+
+        /// The previous sibling of the inserted or removed nodes, or `None`.
         previous_sibling: Option< Node >,
+
+        /// The next sibling of the inserted or removed nodes, or `None`.
         next_sibling: Option< Node >,
     },
 }
@@ -93,17 +190,14 @@ impl TryFrom< Value > for MutationRecord {
     fn try_from( v: Value ) -> Result< Self, Self::Error > {
         match v {
             Value::Reference( ref r ) => {
-                // TODO propagate errors with ?
-                let _type: String = js!( @{r}.type ).try_into().unwrap();
-
-                // TODO propagate errors with ?
-                let target: Node = js!( @{r}.target ).try_into().unwrap();
+                let _type: String = js!( @{r}.type ).try_into()?;
+                let target: Node = js!( @{r}.target ).try_into()?;
 
                 match _type.as_str() {
                     "attributes" => Ok( MutationRecord::Attribute {
                         target: target,
-                        attribute_name: js!( @{r}.attributeName ).try_into()?,
-                        attribute_namespace: js!( @{r}.attributeNamespace ).try_into()?,
+                        name: js!( @{r}.attributeName ).try_into()?,
+                        namespace: js!( @{r}.attributeNamespace ).try_into()?,
                         old_value: js!( @{r}.oldValue ).try_into()?,
                     } ),
 
@@ -114,22 +208,41 @@ impl TryFrom< Value > for MutationRecord {
 
                     "childList" => Ok( MutationRecord::ChildList {
                         target: target,
-
-                        // TODO propagate errors with ?
-                        added_nodes: js!( @{r}.addedNodes ).try_into().unwrap(),
-
-                        // TODO propagate errors with ?
-                        removed_nodes: js!( @{r}.removedNodes ).try_into().unwrap(),
-
+                        inserted_nodes: js!( @{r}.addedNodes ).try_into()?,
+                        removed_nodes: js!( @{r}.removedNodes ).try_into()?,
                         previous_sibling: js!( @{r}.previousSibling ).try_into()?,
-
                         next_sibling: js!( @{r}.nextSibling ).try_into()?,
                     } ),
 
-                    other => Err( ConversionError::Custom( format!( "Unknown MutationRecord type: {:?}", other ) ) )
+                    other => Err( ConversionError::Custom( format!( "Unknown MutationRecord type: {:?}", other ) ) ),
                 }
             },
-            other => Err( ConversionError::Custom( format!( "Expected MutationRecord but got: {:?}", other ) ) )
+            other => Err( ConversionError::Custom( format!( "Expected MutationRecord but got: {:?}", other ) ) ),
         }
+    }
+}
+
+
+#[cfg(all(test, feature = "web_test"))]
+mod tests {
+    use super::*;
+    use webapi::document::document;
+
+    #[test]
+    fn test_observe() {
+        let observer = MutationObserver::new( |records| {
+
+        } );
+
+        // TODO replace with document.body
+        observer.observe( &document(),  MutationObserverInit {
+            child_list: true,
+            attributes: false,
+            character_data: true,
+            subtree: true,
+            attribute_old_value: false,
+            character_data_old_value: false,
+            attribute_filter: &[ "foo", "bar", "qux" ],
+        } );
     }
 }
