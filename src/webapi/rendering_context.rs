@@ -13,14 +13,14 @@ pub trait RenderingContext {
 /// Used for drawing rectangles, text, images and other objects onto the canvas element.
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D)
-pub struct CanvasRenderingContext2D(Reference);
+pub struct CanvasRenderingContext2d(Reference);
 
 reference_boilerplate! {
-    CanvasRenderingContext2D,
+    CanvasRenderingContext2d,
     instanceof CanvasRenderingContext2D
 }
 
-impl RenderingContext for CanvasRenderingContext2D {
+impl RenderingContext for CanvasRenderingContext2d {
     type Error = ConversionError;
     fn from_canvas(canvas: &CanvasElement) -> Result<Self, ConversionError> {
         js!(
@@ -29,7 +29,7 @@ impl RenderingContext for CanvasRenderingContext2D {
     }
 }
 
-impl CanvasRenderingContext2D {
+impl CanvasRenderingContext2d {
     /// Draws a filled rectangle whose starting point is at the coordinates (x, y) with the
     /// specified width and height and whose style is determined by the fillStyle attribute.
     /// 

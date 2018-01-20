@@ -9,7 +9,7 @@ use stdweb::web::{
     document,
     window,
     RenderingContext,
-    CanvasRenderingContext2D
+    CanvasRenderingContext2d
 };
 
 use stdweb::web::event::{
@@ -34,7 +34,7 @@ fn main() {
     stdweb::initialize();
 
     let canvas: CanvasElement = document().query_selector( "#canvas" ).unwrap().try_into().unwrap();
-    let context: CanvasRenderingContext2D = canvas.get_context().unwrap();
+    let context: CanvasRenderingContext2d = canvas.get_context().unwrap();
 
     canvas.set_width(canvas.offset_width() as u32);
     canvas.set_height(canvas.offset_height() as u32);
