@@ -76,16 +76,24 @@ impl MutationObserver {
     ///
     /// Multiple different targets can be observed simultaneously (with the same or different `options`).
     ///
-    /// If you call `observe` on the same target multiple times, only the first call will have an effect,
-    /// the rest of the calls are ignored.
+    /// If you call `observe` on the same `target` multiple times, it will replace the old `options`
+    /// with the new `options`. It will **not** call the callback multiple times for the same `target`.
     ///
     /// # Panics
     ///
-    /// At least one of
+    /// * At least one of
     /// [`child_list`](struct.MutationObserverInit.html#structfield.child_list),
     /// [`attributes`](struct.MutationObserverInit.html#structfield.attributes), or
     /// [`character_data`](struct.MutationObserverInit.html#structfield.character_data) must be set to `true`.
-    /// Otherwise "An invalid or illegal string was specified" panic occurs.
+    ///
+    /// * If [`attribute_old_value`](struct.MutationObserverInit.html#structfield.attribute_old_value) is `true`, then
+    /// [`attributes`](struct.MutationObserverInit.html#structfield.attributes) must be `true`.
+    ///
+    /// * If [`attribute_filter`](struct.MutationObserverInit.html#structfield.attribute_filter) is `Some`, then
+    /// [`attributes`](struct.MutationObserverInit.html#structfield.attributes) must be `true`.
+    ///
+    /// * If [`character_data_old_value`](struct.MutationObserverInit.html#structfield.character_data_old_value) is `true`, then
+    /// [`character_data`](struct.MutationObserverInit.html#structfield.character_data) must be `true`.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#observe())
     pub fn observe< T: INode >( &self, target: &T, options: &MutationObserverInit ) {
