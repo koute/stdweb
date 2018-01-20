@@ -1,4 +1,5 @@
 use webcore::value::Reference;
+use webcore::try_from::TryInto;
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
 use webapi::element::{IElement, Element};
@@ -36,6 +37,23 @@ pub trait IHtmlElement: IElement {
                 return @{self.as_ref()}.dataset;
             ).into_reference_unchecked().unwrap()
         }
+    }
+
+    /// Returns the layout width of an element. Typically, an element's offsetWidth is a
+    /// measurement which includes the element borders, the element horizontal padding, the
+    /// element vertical scrollbar (if present, if rendered) and the element CSS width.
+    fn offset_width( &self ) -> i32 {
+        js!(
+            return @{self.as_ref()}.offsetWidth;
+        ).try_into().unwrap()
+    }
+
+    /// Returns the height of the element including vertical padding and borders, as an
+    /// integer.
+    fn offset_height( &self ) -> i32 {
+        js!(
+            return @{self.as_ref()}.offsetHeight;
+        ).try_into().unwrap()
     }
 }
 

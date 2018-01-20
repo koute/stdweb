@@ -337,6 +337,24 @@ reference_boilerplate! {
     convertible to UiEvent
 }
 
+/// The resize event is fired when the document view has been resized.
+///
+/// MDN incorrectly documents this as a UIEvent, but in browsers it is actually
+/// just an Event.
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/resize)
+pub struct ResizeEvent( Reference );
+
+impl IEvent for ResizeEvent {}
+impl ConcreteEvent for ResizeEvent {
+    const EVENT_TYPE: &'static str = "resize";
+}
+
+reference_boilerplate! {
+    ResizeEvent,
+    instanceof Event
+    convertible to Event
+}
+
 /// The `IMouseEvent` interface represents events that occur due to the user
 /// interacting with a pointing device (such as a mouse).
 ///
