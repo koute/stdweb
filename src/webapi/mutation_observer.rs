@@ -243,11 +243,11 @@ mod tests {
         // TODO replace with document.body
         observer.observe( &document(),  &MutationObserverInit {
             child_list: true,
-            attributes: false,
+            attributes: true,
             character_data: true,
             subtree: true,
-            attribute_old_value: false,
-            character_data_old_value: false,
+            attribute_old_value: true,
+            character_data_old_value: true,
             attribute_filter: Some( &[ "foo", "bar", "qux" ] ),
         } );
     }
