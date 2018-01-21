@@ -99,7 +99,7 @@ impl MutationObserver {
     /// [`character_data`](struct.MutationObserverInit.html#structfield.character_data) must be `true`.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#observe())
-    pub fn observe< T: INode >( &self, target: &T, options: &MutationObserverInit ) {
+    pub fn observe< T: INode >( &self, target: &T, options: MutationObserverInit ) {
         let attribute_filter: Value = match options.attribute_filter {
             Some( a ) => a.into(),
             // This must compile to JavaScript `undefined`, NOT `null`
@@ -244,7 +244,7 @@ mod tests {
         let observer = MutationObserver::new( |_, _| {} );
 
         // TODO replace with document.body
-        observer.observe( &document(),  &MutationObserverInit {
+        observer.observe( &document(),  MutationObserverInit {
             child_list: true,
             attributes: true,
             character_data: true,
