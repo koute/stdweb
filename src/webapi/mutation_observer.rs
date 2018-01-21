@@ -100,11 +100,10 @@ impl MutationObserver {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#observe())
     pub fn observe< T: INode >( &self, target: &T, options: MutationObserverInit ) {
-        let attribute_filter: Value = match options.attribute_filter {
-            Some( a ) => a.into(),
+        let attribute_filter = options.attribute_filter
+            .map( |val| val.into() )
             // This must compile to JavaScript `undefined`, NOT `null`
-            None => Value::Undefined,
-        };
+            .unwrap_or( Value::Undefined );
 
         js! { @(no_return)
             @{self.as_ref()}.observe( @{target.as_ref()}, {
