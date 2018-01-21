@@ -201,28 +201,28 @@ impl TryFrom< Value > for MutationRecord {
     fn try_from( v: Value ) -> Result< Self, Self::Error > {
         match v {
             Value::Reference( ref r ) => {
-                let _type: String = js!( return @{r}.type ).try_into()?;
-                let target: Node = js!( return @{r}.target ).try_into()?;
+                let _type: String = js!( return @{r}.type; ).try_into()?;
+                let target: Node = js!( return @{r}.target; ).try_into()?;
 
                 match _type.as_str() {
                     "attributes" => Ok( MutationRecord::Attribute {
                         target: target,
-                        name: js!( return @{r}.attributeName ).try_into()?,
-                        namespace: js!( return @{r}.attributeNamespace ).try_into()?,
-                        old_value: js!( return @{r}.oldValue ).try_into()?,
+                        name: js!( return @{r}.attributeName; ).try_into()?,
+                        namespace: js!( return @{r}.attributeNamespace; ).try_into()?,
+                        old_value: js!( return @{r}.oldValue; ).try_into()?,
                     } ),
 
                     "characterData" => Ok( MutationRecord::CharacterData {
                         target: target,
-                        old_data: js!( return @{r}.oldValue ).try_into()?,
+                        old_data: js!( return @{r}.oldValue; ).try_into()?,
                     } ),
 
                     "childList" => Ok( MutationRecord::ChildList {
                         target: target,
-                        inserted_nodes: js!( return @{r}.addedNodes ).try_into()?,
-                        removed_nodes: js!( return @{r}.removedNodes ).try_into()?,
-                        previous_sibling: js!( return @{r}.previousSibling ).try_into()?,
-                        next_sibling: js!( return @{r}.nextSibling ).try_into()?,
+                        inserted_nodes: js!( return @{r}.addedNodes; ).try_into()?,
+                        removed_nodes: js!( return @{r}.removedNodes; ).try_into()?,
+                        previous_sibling: js!( return @{r}.previousSibling; ).try_into()?,
+                        next_sibling: js!( return @{r}.nextSibling; ).try_into()?,
                     } ),
 
                     other => Err( ConversionError::Custom( format!( "Unknown MutationRecord type: {:?}", other ) ) ),
