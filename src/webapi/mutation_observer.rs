@@ -201,10 +201,10 @@ impl TryFrom< Value > for MutationRecord {
     fn try_from( v: Value ) -> Result< Self, Self::Error > {
         match v {
             Value::Reference( ref r ) => {
-                let _type: String = js!( return @{r}.type; ).try_into()?;
+                let kind: String = js!( return @{r}.type; ).try_into()?;
                 let target: Node = js!( return @{r}.target; ).try_into()?;
 
-                match _type.as_str() {
+                match kind.as_str() {
                     "attributes" => Ok( MutationRecord::Attribute {
                         target: target,
                         name: js!( return @{r}.attributeName; ).try_into()?,
