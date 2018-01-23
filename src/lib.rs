@@ -149,7 +149,7 @@ pub mod web {
     pub use webapi::history::History;
     pub use webapi::web_socket::{WebSocket, SocketCloseCode};
     pub use webapi::rendering_context::{RenderingContext, CanvasRenderingContext2d};
-    pub use webapi::mutation_observer::{MutationObserver, MutationObserverInit, MutationRecord};
+    pub use webapi::mutation_observer::{IMutationObserver, MutationObserver, MutationObserverHandle, MutationObserverInit, MutationRecord};
 
 
     /// A module containing XmlHttpRequest and its XhrReadyState
