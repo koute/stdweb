@@ -4,6 +4,7 @@ use webcore::unsafe_typed_array::UnsafeTypedArray;
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::blob::Blob;
 use webapi::array_buffer::ArrayBuffer;
+use webapi::dom_exception::{InvalidAccessError, SecurityError, SyntaxError};
 
 use std::error;
 use std::fmt;
@@ -126,52 +127,23 @@ impl TryFrom<Value> for SocketReadyState {
     }
 }
 
-/// A DOMException
-#[derive(Debug)]
-pub struct DomException;
-impl error::Error for DomException {
-    fn description( &self ) -> &str {
-        "DomException"
-    }
-}
-
-impl fmt::Display for DomException {
-    fn fmt( &self, formatter: &mut fmt::Formatter ) -> fmt::Result {
-        write!( formatter, "DomException" )
-    }
-}
-
 impl WebSocket {
     /// Returns a newly constructed `WebSocket`.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
-    pub fn new(url: &str) -> Result<WebSocket, DomException> {
-        js!(
-            try {
-                return new WebSocket(@{url});
-            } catch (error) {
-                if (error instanceof DOMException) {
-                    return null;
-                }
-                throw error;
-            }
-        ).try_into().map_err(|_| DomException)
+    pub fn new(url: &str) -> Result<WebSocket, CreationError> {
+        js_try!(
+            return new WebSocket(@{url});
+        ).unwrap()
     }
 
     /// Returns a newly constructed `WebSocket`.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
-    pub fn new_with_protocols(url: &str, protocols: &[&str]) -> Result<WebSocket, DomException> {
-        js!(
-            try {
-                return new WebSocket(@{url}, @{protocols});
-            } catch (error) {
-                if (error instanceof DOMException) {
-                    return null;
-                }
-                throw error;
-            }
-        ).try_into().map_err(|_| DomException)
+    pub fn new_with_protocols(url: &str, protocols: &[&str]) -> Result<WebSocket, CreationError> {
+        js_try!(
+            return new WebSocket(@{url}, @{protocols});
+        ).unwrap()
     }
 
     /// Returns the binary type of the web socket. Only affects received messages.
@@ -244,23 +216,10 @@ impl WebSocket {
     /// is already CLOSED, this method does nothing.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket#close())
-    pub fn close_with_status(&self, code: SocketCloseCode, reason: &str) -> Result<(), DomException> {
-        let code = code.0;
-        if js!(
-            try {
-                @{self}.close(@{code}, @{reason});
-                return true;
-            } catch (error) {
-                if (error instanceof DOMException) {
-                    return false;
-                }
-                throw error;
-            }
-        ).try_into().unwrap() {
-            Ok(())
-        } else {
-            Err(DomException)
-        }
+    pub fn close_with_status(&self, code: SocketCloseCode, reason: &str) -> Result<(), CloseError> {
+        js_try!( @(no_return)
+            @{self}.close(@{code.0}, @{reason});
+        ).unwrap()
     }
 
     /// Enqueues the specified data to be transmitted to the server over the WebSocket
@@ -296,6 +255,18 @@ impl WebSocket {
     }
 }
 
+/// Errors thrown by `WebSocket::new`.
+error_enum_boilerplate! {
+    CreationError,
+    SecurityError, SyntaxError
+}
+
+/// Errors thrown by `WebSocket::close_with_status`.
+error_enum_boilerplate! {
+    CloseError,
+    InvalidAccessError, SyntaxError
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -306,5 +277,39 @@ mod tests {
         assert_eq!(&format!("{:?}", SocketCloseCode::GOING_AWAY), "SocketCloseCode::GOING_AWAY");
         assert_eq!(&format!("{:?}", SocketCloseCode(1000)), "SocketCloseCode::NORMAL_CLOSURE");
         assert_eq!(&format!("{:?}", SocketCloseCode(3001)), "SocketCloseCode(3001)");
+    }
+
+    #[test]
+    fn test_new() {
+        assert!(WebSocket::new("ws://localhost").is_ok());
+
+        match WebSocket::new("bad url") {
+            Err(CreationError::SyntaxError(_)) => (),
+            v => panic!("expected SyntaxError, got {:?}", v),
+        }
+    }
+
+    #[test]
+    fn test_close() {
+        let socket = WebSocket::new("ws://localhost").unwrap();
+
+        socket.close();
+
+        assert!(socket.close_with_status( SocketCloseCode::NORMAL_CLOSURE, "closed" ).is_ok());
+
+        // Invalid close code
+        match socket.close_with_status( SocketCloseCode(12345), "closed" ) {
+            Err(CloseError::InvalidAccessError(_)) => (),
+            v => panic!("expected InvalidAccessError, got {:?}", v),
+        }
+
+        // Close reason too long (>123 bytes according to spec)
+        match socket.close_with_status(
+            SocketCloseCode::NORMAL_CLOSURE,
+            &(0..200).map(|_| "X").collect::<String>()
+        ) {
+            Err(CloseError::SyntaxError(_)) => (),
+            v => panic!("expected SyntaxError, got {:?}", v),
+        }
     }
 }
