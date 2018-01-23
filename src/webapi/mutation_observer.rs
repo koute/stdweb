@@ -325,7 +325,5 @@ mod tests {
             character_data_old_value: true,
             attribute_filter: Some( &[ "foo", "bar", "qux" ] ),
         } );
-
-        observer.disconnect();
     }
 }
