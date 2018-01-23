@@ -157,7 +157,17 @@ pub mod web {
     }
     /// A module containing error types.
     pub mod error {
-        pub use webapi::node::NotFoundError;
+        pub use webapi::dom_exception::{
+            IDomException,
+            DomException,
+            ConcreteException,
+            HierarchyRequestError,
+            InvalidAccessError,
+            NotFoundError,
+            SecurityError,
+            SyntaxError,
+        };
+        pub use webapi::error::{IError, Error};        
     }
 
     /// A module containing HTML DOM elements.
