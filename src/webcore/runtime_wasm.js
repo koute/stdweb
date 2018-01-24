@@ -1,7 +1,11 @@
-Module.STDWEB.alloc = Module.web_malloc;
+Module.STDWEB.alloc = function alloc( size ) {
+    return Module.web_malloc( size );
+};
+
 Module.STDWEB.dyncall = function( signature, ptr, args ) {
     return Module.web_table.get( ptr ).apply( null, args );
 };
+
 // This is based on code from Emscripten's preamble.js.
 Module.STDWEB.utf8_len = function utf8_len( str ) {
     let len = 0;

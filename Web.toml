@@ -1,0 +1,5 @@
+[target.emscripten]
+prepend-js = ["src/webcore/runtime.js", "src/webcore/runtime_emscripten.js"]
+
+[target.wasm32-unknown-unknown]
+prepend-js = ["src/webcore/runtime.js", "src/webcore/runtime_wasm.js"]

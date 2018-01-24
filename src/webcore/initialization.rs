@@ -3,7 +3,7 @@ use webcore::ffi;
 
 /// Initializes the library.
 ///
-/// Calling this is required for anything to work.
+/// Necessary **only** when compiling **without** `cargo-web`.
 #[inline(never)]
 #[cold]
 pub fn initialize() {
@@ -16,7 +16,7 @@ pub fn initialize() {
         INITIALIZED = true;
     }
 
-    __js_raw_asm!( include!( concat!( env!( "OUT_DIR" ), "/runtime.rs" ) ) );
+    include!( concat!( env!( "OUT_DIR" ), "/runtime.rs" ) );
 
     if cfg!( test ) == false {
         panic::set_hook( Box::new( |info| {

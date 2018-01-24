@@ -15,8 +15,17 @@ fn main() {
     let out_path = Path::new( &out_dir ).join( "runtime.rs" );
     let mut fp = File::create( &out_path ).expect( "cannot create a file in OUT_DIR" );
 
+    // Since cargo-web will prepend the runtime for us there is nothing we
+    // have to do here.
+    if let Ok( var ) = env::var( "COMPILING_UNDER_CARGO_WEB" ) {
+        if var == "1" {
+            fp.write_all( b"()" ).unwrap();
+            return;
+        }
+    }
+
     let mut output = String::new();
-    output.push_str( "r##\"" );
+    output.push_str( "__js_raw_asm!( r##\"" );
 
     let target = env::var( "TARGET" ).expect( "no TARGET defined" );
     let target_specific_runtime_path = match target.as_str() {
@@ -37,9 +46,10 @@ fn main() {
         output.push_str( " " );
     }
 
-    output.push_str( "\"##" );
+    output.push_str( "\"## )" );
 
     fp.write_all( output.as_bytes() ).unwrap();
     println!( "cargo:rerun-if-changed=src/webcore/runtime.js" );
     println!( "cargo:rerun-if-changed={}", target_specific_runtime_path );
+    println!( "cargo:rerun-if-env-changed=COMPILING_UNDER_CARGO_WEB" );
 }
