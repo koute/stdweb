@@ -1,16 +1,85 @@
+use std;
 use webcore::value::{Reference, Value, ConversionError};
 use webapi::node_list::NodeList;
 use webcore::try_from::{TryFrom, TryInto};
 use webapi::node::{INode, Node};
 
 
-/// The `IMutationObserver` interface represents objects which can receive notifications about changes to the DOM.
+/// Provides a way to receive notifications about changes to the DOM.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver)
-pub trait IMutationObserver {
+pub struct MutationObserver( Reference );
+
+reference_boilerplate! {
+    MutationObserver,
+    instanceof MutationObserver
+}
+
+
+/// Specifies which changes should be observed for the target.
+///
+/// This is only used with the [`MutationObserver::observe`](struct.MutationObserver.html#method.observe) method.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#MutationObserverInit)
+#[ derive( Debug, Clone ) ]
+pub struct MutationObserverInit< 'a > {
+    /// If `true` it will observe all inserts and removals of the target's children (including text nodes).
+    ///
+    /// This is **not** recursive, it will only observe immediate children
+    /// (unless [`subtree`](#structfield.subtree) is `true` in which case it will
+    /// observe **all** children and sub-children recursively).
+    pub child_list: bool,
+
+    /// If `true` it will observe all changes to the target's attributes.
+    pub attributes: bool,
+
+    /// If `true` it will observe all changes to the `CharacterData`'s data.
+    pub character_data: bool,
+
+    /// If `true` it will observe all changes to the target, the target's children, and the target's sub-children.
+    ///
+    /// This is recursive, so it causes **all** children and sub-children to be observed.
+    pub subtree: bool,
+
+    /// If `true` it will store the target's old attribute value in [`old_value`](enum.MutationRecord.html#variant.Attribute.field.old_value).
+    pub attribute_old_value: bool,
+
+    /// If `true` it will store the `CharacterData`'s old data in [`old_data`](enum.MutationRecord.html#variant.CharacterData.field.old_data).
+    pub character_data_old_value: bool,
+
+    /// If `Some` it will only observe the specified attributes. The attributes should be specified without a namespace.
+    ///
+    /// If `None` it will observe all attributes.
+    pub attribute_filter: Option< &'a [ &'a str ] >,
+}
+
+
+impl MutationObserver {
+    /// Returns a new [`MutationObserverHandle`](struct.MutationObserverHandle.html) with the given callback.
+    ///
+    /// The callback will be called with the following arguments when the observed DOM nodes change:
+    ///
+    /// 1. A vector of changes to the observed DOM nodes.
+    ///
+    /// 2. The `MutationObserver`.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#Constructor)
+    pub fn new< F >( callback: F ) -> MutationObserverHandle
+        where F: FnMut( Vec< MutationRecord >, Self ) + 'static {
+        let callback_reference: Reference = js! ( return @{callback}; ).try_into().unwrap();
+
+        MutationObserverHandle {
+            callback_reference: callback_reference.clone(),
+
+            mutation_observer: js! (
+                return new MutationObserver( @{callback_reference} );
+            ).try_into().unwrap(),
+        }
+    }
+
     /// Starts observing changes to the `target`.
     ///
-    /// When the `target` is changed, the `IMutationObserver` is notified with a vector of [`MutationRecord`](enum.MutationRecord.html).
+    /// When the `target` is changed, the `MutationObserver` is notified with a vector of [`MutationRecord`](enum.MutationRecord.html).
     ///
     /// The `options` specifies which changes should be observed.
     ///
@@ -30,108 +99,14 @@ pub trait IMutationObserver {
     /// * If [`attribute_old_value`](struct.MutationObserverInit.html#structfield.attribute_old_value) is `true`, then
     /// [`attributes`](struct.MutationObserverInit.html#structfield.attributes) must be `true`.
     ///
-    /// * If [`attribute_filter`](struct.MutationObserverInit.html#structfield.attribute_filter) is `Some`, then
-    /// [`attributes`](struct.MutationObserverInit.html#structfield.attributes) must be `true`.
-    ///
     /// * If [`character_data_old_value`](struct.MutationObserverInit.html#structfield.character_data_old_value) is `true`, then
     /// [`character_data`](struct.MutationObserverInit.html#structfield.character_data) must be `true`.
     ///
+    /// * If [`attribute_filter`](struct.MutationObserverInit.html#structfield.attribute_filter) is `Some`, then
+    /// [`attributes`](struct.MutationObserverInit.html#structfield.attributes) must be `true`.
+    ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#observe())
-    fn observe< T: INode >( &self, target: &T, options: MutationObserverInit );
-
-    /// Stops observing all targets.
-    ///
-    /// Until the [`observe`](trait.IMutationObserver.html#tymethod.observe) method is called again,
-    /// the `IMutationObserver` will not be notified of any changes.
-    ///
-    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#disconnect())
-    fn disconnect( &self );
-
-    /// Empties the `IMutationObserver`'s record queue and returns what was in there.
-    ///
-    /// This method is generally not needed, instead use the [`MutationObserver`](struct.MutationObserver.html#method.new)
-    /// callback to respond to changes.
-    ///
-    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#takeRecords())
-    fn take_records( &self ) -> Vec< MutationRecord >;
-}
-
-
-/// Provides a way to receive notifications about changes to the DOM.
-///
-/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver)
-pub struct MutationObserver( Reference );
-
-reference_boilerplate! {
-    MutationObserver,
-    instanceof MutationObserver
-}
-
-
-/// Specifies which changes should be observed for the target.
-///
-/// This is only used with the [`IMutationObserver::observe`](trait.IMutationObserver.html#tymethod.observe) method.
-///
-/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#MutationObserverInit)
-#[ derive( Debug, Clone ) ]
-pub struct MutationObserverInit< 'a > {
-    /// If `true` it will observe all inserts and removals of the target's children (including text nodes).
-    ///
-    /// This is **not** recursive, it will only observe immediate children
-    /// (unless [`subtree`](struct.MutationObserverInit.html#structfield.subtree) is `true` in which case it will
-    /// observe **all** children and sub-children recursively).
-    pub child_list: bool,
-
-    /// If `true` it will observe all changes to the target's attributes.
-    pub attributes: bool,
-
-    /// If `true` it will observe all changes to the `CharacterData`'s data.
-    pub character_data: bool,
-
-    /// If `true` it will observe all changes to the target, the target's children, and the target's sub-children.
-    ///
-    /// This is recursive, so it causes **all** children and sub-children to be observed.
-    pub subtree: bool,
-
-    /// If `true` it will store the target's old attribute value in [`old_value`](enum.MutationRecord.html#variant.Attribute).
-    pub attribute_old_value: bool,
-
-    /// If `true` it will store the `CharacterData`'s old data in [`old_data`](enum.MutationRecord.html#variant.CharacterData).
-    pub character_data_old_value: bool,
-
-    /// If `Some` it will only observe the specified attributes. The attributes should be specified without a namespace.
-    ///
-    /// If `None` it will observe all attributes.
-    pub attribute_filter: Option< &'a [ &'a str ] >,
-}
-
-
-impl MutationObserver {
-    /// Returns a new [`MutationObserverHandle`](struct.MutationObserverHandle.html) with the given callback.
-    ///
-    /// The callback will be called with the following arguments when the observed DOM nodes change:
-    ///
-    /// 1. Vector of changes to the observed DOM nodes.
-    ///
-    /// 2. The `MutationObserver`.
-    ///
-    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#Constructor)
-    pub fn new< F >( callback: F ) -> MutationObserverHandle
-        where F: FnMut( Vec< MutationRecord >, Self ) + 'static {
-        let callback_reference: Reference = js! ( return @{callback}; ).try_into().unwrap();
-
-        MutationObserverHandle {
-            callback_reference: callback_reference.clone(),
-
-            mutation_observer: js! (
-                return new MutationObserver( @{callback_reference} );
-            ).try_into().unwrap(),
-        }
-    }
-}
-
-impl IMutationObserver for MutationObserver {
-    fn observe< T: INode >( &self, target: &T, options: MutationObserverInit ) {
+    pub fn observe< T: INode >( &self, target: &T, options: MutationObserverInit ) {
         let attribute_filter = options.attribute_filter
             .map( |val| val.into() )
             // This must compile to JavaScript `undefined`, NOT `null`
@@ -150,13 +125,25 @@ impl IMutationObserver for MutationObserver {
         }
     }
 
-    fn disconnect( &self ) {
+    /// Stops observing all targets.
+    ///
+    /// Until the [`observe`](#method.observe) method is called again,
+    /// the `MutationObserver` will not be notified of any changes.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#disconnect())
+    pub fn disconnect( &self ) {
         js! { @(no_return)
             @{self.as_ref()}.disconnect();
         }
     }
 
-    fn take_records( &self ) -> Vec< MutationRecord > {
+    /// Empties the `MutationObserver`'s record queue and returns what was in there.
+    ///
+    /// This method is generally not needed, instead use the [`MutationObserver`](struct.MutationObserver.html#method.new)
+    /// callback to respond to changes.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#takeRecords())
+    pub fn take_records( &self ) -> Vec< MutationRecord > {
         js!(
             return @{self.as_ref()}.takeRecords();
         ).try_into().unwrap()
@@ -166,9 +153,10 @@ impl IMutationObserver for MutationObserver {
 
 /// A wrapper which ensures that memory is properly cleaned up when it's no longer needed.
 ///
-/// This is created by the [`MutationObserver::new`](struct.MutationObserver.html#method.new) method.
+/// This is created by the [`MutationObserver::new`](struct.MutationObserver.html#method.new) method, and
+/// it can use the same methods as [`MutationObserver`](struct.MutationObserver.html).
 ///
-/// When the `MutationObserverHandle` is dropped, the [`disconnect`](trait.IMutationObserver.html#tymethod.disconnect)
+/// When the `MutationObserverHandle` is dropped, the [`disconnect`](#method.disconnect)
 /// method will automatically be called.
 #[ derive( Debug ) ]
 pub struct MutationObserverHandle {
@@ -176,14 +164,11 @@ pub struct MutationObserverHandle {
     callback_reference: Reference,
 }
 
-impl MutationObserverHandle {
-    /// Returns the internal [`MutationObserver`](struct.MutationObserver.html).
-    ///
-    /// This method is generally not needed, because you can call the
-    /// [`observe`](trait.IMutationObserver.html#tymethod.observe),
-    /// [`disconnect`](trait.IMutationObserver.html#tymethod.disconnect), and
-    /// [`take_records`](trait.IMutationObserver.html#tymethod.take_records) methods directly on the `MutationObserverHandle`.
-    pub fn mutation_observer( &self ) -> &MutationObserver {
+impl std::ops::Deref for MutationObserverHandle {
+    type Target = MutationObserver;
+
+    #[inline]
+    fn deref(&self) -> &Self::Target {
         &self.mutation_observer
     }
 }
@@ -194,25 +179,8 @@ impl Drop for MutationObserverHandle {
         self.disconnect();
 
         js! { @(no_return)
-            @{&self.callback_reference}.drop();
+            @{self.callback_reference}.drop();
         }
-    }
-}
-
-impl IMutationObserver for MutationObserverHandle {
-    #[inline]
-    fn observe< T: INode >( &self, target: &T, options: MutationObserverInit ) {
-        self.mutation_observer.observe( target, options );
-    }
-
-    #[inline]
-    fn disconnect( &self ) {
-        self.mutation_observer.disconnect();
-    }
-
-    #[inline]
-    fn take_records( &self ) -> Vec< MutationRecord > {
-        return self.mutation_observer.take_records();
     }
 }
 
