@@ -179,7 +179,7 @@ impl Drop for MutationObserverHandle {
         self.disconnect();
 
         js! { @(no_return)
-            @{self.callback_reference}.drop();
+            @{&self.callback_reference}.drop();
         }
     }
 }
