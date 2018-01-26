@@ -133,6 +133,16 @@ impl CanvasRenderingContext2d {
             @{&self.0}.closePath();
         }
     }
+
+    /// Creates a gradient along the line given by the coordinates represented by the parameters.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createLinearGradient)
+    pub fn create_linear_gradient(&self, x0: f64, y0: f64, x1: f64, y1: f64) {
+        //TODO: returns linear gradient
+        js! { @(no_return)
+            @{&self.0}.createLinearGradient(@{x0}, @{y0}, @{x1}, @{y1});
+        }
+    }
     /// Draws a filled rectangle whose starting point is at the coordinates (x, y) with the
     /// specified width and height and whose style is determined by the fillStyle attribute.
     /// 
