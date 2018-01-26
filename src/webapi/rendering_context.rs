@@ -68,6 +68,17 @@ impl CanvasRenderingContext2d {
             @{&self.0}.beginPath();
         }
     }
+
+    /// Adds a cubic Bézier curve to the path. It requires three points. The first two points 
+    /// are control points and the third one is the end point. The starting point is the last 
+    /// point in the current path, which can be changed using moveTo() before creating the Bézier curve.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/bezierCurveTo)
+    pub fn bezier_curve_to(&self, cp1x: f64, cp1y: f64, cp2x: f64, cp2y: f64, x: f64, y: f64) {
+        js! { @(no_return)
+            @{&self.0}.bezierCurveTo(@{cp1x}, @{cp1y}, @{cp2x}, @{cp2y}, @{x}, @{y});
+        }
+    }
     /// Draws a filled rectangle whose starting point is at the coordinates (x, y) with the
     /// specified width and height and whose style is determined by the fillStyle attribute.
     /// 
