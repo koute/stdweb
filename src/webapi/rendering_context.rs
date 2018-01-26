@@ -1,6 +1,7 @@
 use webcore::value::{Reference, ConversionError};
 use webcore::try_from::TryInto;
 use webapi::html_elements::CanvasElement;
+use webapi::html_elements::{CanvasElement, ImageElement};
 
 /// Trait implemented by rendering contexts which can be obtained from a canvas.
 pub trait RenderingContext {
@@ -21,6 +22,14 @@ pub enum FillRule {
     EvenOdd
 }
 
+#[derive(Debug)]
+pub enum Repitition {
+    Repeat,
+    RepeatX,
+    RepeatY,
+    NoRepeat
+}
+
 reference_boilerplate! {
     CanvasRenderingContext2d,
     instanceof CanvasRenderingContext2D
@@ -36,6 +45,7 @@ impl RenderingContext for CanvasRenderingContext2d {
 }
 
 impl CanvasRenderingContext2d {
+    
     /// Adds an arc to the path which is centered at (x, y) position with radius r starting 
     /// at startAngle and ending at endAngle going in the given direction by anticlockwise 
     /// (defaulting to clockwise).
@@ -143,6 +153,42 @@ impl CanvasRenderingContext2d {
             @{&self.0}.createLinearGradient(@{x0}, @{y0}, @{x1}, @{y1});
         }
     }
+
+    /// Creates a pattern using the specified image (a CanvasImageSource). It repeats the source in 
+    /// the directions specified by the repetition argument. This method returns a CanvasPattern.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createPattern)
+    pub fn create_pattern_image(&self, image: ImageElement, repitition: Option<Repitition>) {
+        let repitition_string;
+        if let Some(repitition) = repitition {
+            match repitition {
+                Repitition::Repeat => {
+                    repitition_string = "repeat";
+                }
+
+                Repitition::RepeatX => {
+                    repitition_string = "repeat-x";
+                }
+
+                Repitition::RepeatY => {
+                    repitition_string = "repeat-y";
+                }
+
+                Repitition::NoRepeat => {
+                    repitition_string = "no-repeat";  
+                }
+            }
+        }
+        else {
+            repitition_string = "repeat";
+        }
+
+        // TODO: returns CanvasPattern
+        js! { @(no_return)
+            @{&self.0}.createPattern(@{image}, @{repitition_string});
+        }
+    }
+
     /// Draws a filled rectangle whose starting point is at the coordinates (x, y) with the
     /// specified width and height and whose style is determined by the fillStyle attribute.
     /// 
