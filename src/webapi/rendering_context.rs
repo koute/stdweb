@@ -79,6 +79,16 @@ impl CanvasRenderingContext2d {
             @{&self.0}.bezierCurveTo(@{cp1x}, @{cp1y}, @{cp2x}, @{cp2y}, @{x}, @{y});
         }
     }
+
+    /// Sets all pixels in the rectangle defined by starting point (x, y) and size (width, height) 
+    /// to transparent black, erasing any previously drawn content.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/clearRect)
+    pub fn clear_rect(&self, x: f64, y: f64, width: f64, height: f64) {
+        js! { @(no_return)
+            @{&self.0}.clearRect(@{x}, @{y}, @{width}, @{width}, @{height});
+        }
+    }
     /// Draws a filled rectangle whose starting point is at the coordinates (x, y) with the
     /// specified width and height and whose style is determined by the fillStyle attribute.
     /// 
