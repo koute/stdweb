@@ -122,6 +122,17 @@ impl CanvasRenderingContext2d {
             }
         }
     }
+
+    /// Causes the point of the pen to move back to the start of the current sub-path. It tries 
+    /// to add a straight line (but does not actually draw it) from the current point to the start. 
+    /// If the shape has already been closed or has only one point, this function does nothing.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/closePath)
+    pub fn close_path(&self) {
+        js! { @(no_return)
+            @{&self.0}.closePath();
+        }
+    }
     /// Draws a filled rectangle whose starting point is at the coordinates (x, y) with the
     /// specified width and height and whose style is determined by the fillStyle attribute.
     /// 
