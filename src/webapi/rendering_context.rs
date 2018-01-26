@@ -59,6 +59,15 @@ impl CanvasRenderingContext2d {
             @{&self.0}.arcTo(@{x1}, @{y1}, @{x2}, @{y2}, @{radius});
         }
     }
+
+    /// Starts a new path by emptying the list of sub-paths. Call this method when you want to create a new path.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/beginPath)
+    pub fn begin_path(&self) {
+        js! { @(no_return)
+            @{&self.0}.beginPath();
+        }
+    }
     /// Draws a filled rectangle whose starting point is at the coordinates (x, y) with the
     /// specified width and height and whose style is determined by the fillStyle attribute.
     /// 
