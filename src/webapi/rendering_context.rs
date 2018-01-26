@@ -30,6 +30,16 @@ impl RenderingContext for CanvasRenderingContext2d {
 }
 
 impl CanvasRenderingContext2d {
+    /// Adds an arc to the path which is centered at (x, y) position with radius r starting 
+    /// at startAngle and ending at endAngle going in the given direction by anticlockwise 
+    /// (defaulting to clockwise).
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/arc)
+    pub fn arc(&self, x: f64, y: f64, start_angle: f64, end_angle: f64, anticlockwise: bool) {
+        js! { @(no_return)
+            @{&self.0}.arc(@{x}, @{y}, @{start_angle}, @{end_angle}, @{anticlockwise});
+        }
+    }
     /// Draws a filled rectangle whose starting point is at the coordinates (x, y) with the
     /// specified width and height and whose style is determined by the fillStyle attribute.
     /// 
