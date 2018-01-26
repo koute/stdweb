@@ -15,6 +15,12 @@ pub trait RenderingContext {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D)
 pub struct CanvasRenderingContext2d(Reference);
 
+#[derive(Debug)]
+pub enum FillRule {
+    NonZero,
+    EvenOdd
+}
+
 reference_boilerplate! {
     CanvasRenderingContext2d,
     instanceof CanvasRenderingContext2D
@@ -87,6 +93,33 @@ impl CanvasRenderingContext2d {
     pub fn clear_rect(&self, x: f64, y: f64, width: f64, height: f64) {
         js! { @(no_return)
             @{&self.0}.clearRect(@{x}, @{y}, @{width}, @{width}, @{height});
+        }
+    }
+
+    /// Turns the path currently being built into the current clipping path.
+    /// ctx.clip(path, fillRule) is not supported because [(Path2D)](https://developer.mozilla.org/en-US/docs/Web/API/Path2D) is still experimental
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/clip)
+    pub fn clip(&self, fill_rule: Option<FillRule>) {
+        if let Some(fill_rule) = fill_rule {
+            let fill_rule_str;
+            match fill_rule {
+                FillRule::NonZero => {
+                    fill_rule_str = "nonzero";
+                }
+
+                FillRule::EvenOdd => {
+                    fill_rule_str = "evenodd";
+                }
+            }
+            js! { @(no_return)
+                @{&self.0}.clip(@{fill_rule_str});
+            }    
+        }
+        else {
+            js! { @(no_return)
+                @{&self.0}.clip();
+            }
         }
     }
     /// Draws a filled rectangle whose starting point is at the coordinates (x, y) with the
