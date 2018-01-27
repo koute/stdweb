@@ -2,6 +2,7 @@ use webcore::value::{Reference, ConversionError};
 use webcore::try_from::TryInto;
 use webcore::value::Undefined;
 use webapi::html_elements::{CanvasElement, ImageElement};
+use webapi::html_element::HtmlElement;
 
 /// Trait implemented by rendering contexts which can be obtained from a canvas.
 pub trait RenderingContext {
@@ -197,6 +198,15 @@ impl CanvasRenderingContext2d {
         //TODO: returns radial gradient
         js! { @(no_return)
             @{&self.0}.createRadialGradient(@{x0}, @{y0}, @{r0}, @{x1}, @{y1}, @{r1});
+        }
+    }
+
+    /// Draws a focus ring around the current path or given path, If a given element is focused.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawFocusIfNeeded)
+    pub fn draw_focus_if_needed(&self, element: HtmlElement) {
+        js! { @(no_return)
+            @{&self.0}.drawFocusIfNeeded(@{element});
         }
     }
     /// Draws a filled rectangle whose starting point is at the coordinates (x, y) with the
