@@ -212,6 +212,33 @@ impl CanvasRenderingContext2d {
 
     //draw_image will go here but waiting to figure out how to do CanvasImageSource
 
+    /// Fills the current or given path with the current fill style using the non-zero or even-odd winding rule.
+    /// 
+    /// ctx.fill(path, fillRule) is not supported because [(Path2D)](https://developer.mozilla.org/en-US/docs/Web/API/Path2D) is still experimental
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fill)
+    pub fn fill(&self, fill_rule: Option<FillRule>) {
+        if let Some(fill_rule) = fill_rule {
+            let fill_rule_str;
+            match fill_rule {
+                FillRule::NonZero => {
+                    fill_rule_str = "nonzero";
+                }
+
+                FillRule::EvenOdd => {
+                    fill_rule_str = "evenodd";
+                }
+            }
+            js! { @(no_return)
+                @{&self.0}.fill(@{fill_rule_str});
+            }    
+        }
+        else {
+            js! { @(no_return)
+                @{&self.0}.fill();
+            }
+        }
+    }
     /// Draws a filled rectangle whose starting point is at the coordinates (x, y) with the
     /// specified width and height and whose style is determined by the fillStyle attribute.
     /// 
