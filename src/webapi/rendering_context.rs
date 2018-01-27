@@ -489,4 +489,13 @@ impl CanvasRenderingContext2d {
             @{&self.0}.transform(@{a}, @{b}, @{c}, @{d}, @{e}, @{f});
         }
     }
+
+    /// Adds a translation transformation by moving the canvas and its origin x horizontally and y vertically on the grid.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/translate)
+    pub fn translate(&self, x: f64, y: f64) {
+        js! { @(no_return)
+            @{&self.0}.translate(@{x}, @{y});
+        }
+    }
 }
