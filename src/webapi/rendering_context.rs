@@ -380,6 +380,16 @@ impl CanvasRenderingContext2d {
             @{&self.0}.rect(@{x}, @{y}, @{width}, @{height});
         }
     }
+
+    /// Restores the most recently saved canvas state by popping the top entry in the drawing state stack. 
+    /// If there is no saved state, this method does nothing.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/restore)
+    pub fn restore(&self) {
+        js! { @(no_return)
+            @{&self.0}.restore();
+        }
+    }
             }
         }
     }
