@@ -348,6 +348,15 @@ impl CanvasRenderingContext2d {
             @{&self.0}.measureText(@{text});
         }
     }
+
+    /// Moves the starting point of a new sub-path to the (x, y) coordinates.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/moveTo)
+    pub fn move_to(&self, x: f64, y: f64) {
+        js! { @(no_return)
+            @{&self.0}.moveTo(@{x}, @{y});
+        }
+    }
             }
         }
     }
