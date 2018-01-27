@@ -357,6 +357,18 @@ impl CanvasRenderingContext2d {
             @{&self.0}.moveTo(@{x}, @{y});
         }
     }
+
+    /// Adds a quadratic Bézier curve to the path. It requires two points. 
+    /// The first point is a control point and the second one is the end point. 
+    /// The starting point is the last point in the current path, which can be changed using 
+    /// moveTo() before creating the quadratic Bézier curve.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/quadraticCurveTo)
+    pub fn quadratic_curve_to(&self, cpx: f64, cpy: f64, x:f64, y: f64) {
+        js! { @(no_return)
+            @{&self.0}.quadraticCurveTo(@{cpx}, @{cpy}, @{x}, @{y});
+        }
+    }
             }
         }
     }
