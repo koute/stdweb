@@ -189,6 +189,16 @@ impl CanvasRenderingContext2d {
         }
     }
 
+    /// Creates a radial gradient given by the coordinates of the two circles represented by the parameters. 
+    /// This method returns a CanvasGradient.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createRadialGradient)
+    pub fn create_radial_gradient(&self, x0: f64, y0: f64, r0: f64, x1: f64, y1: f64, r1: f64) {
+        //TODO: returns radial gradient
+        js! { @(no_return)
+            @{&self.0}.createRadialGradient(@{x0}, @{y0}, @{r0}, @{x1}, @{y1}, @{r1});
+        }
+    }
     /// Draws a filled rectangle whose starting point is at the coordinates (x, y) with the
     /// specified width and height and whose style is determined by the fillStyle attribute.
     /// 
