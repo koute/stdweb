@@ -451,6 +451,15 @@ impl CanvasRenderingContext2d {
             @{&self.0}.stroke();
         }
     }
+
+    /// Paints a rectangle which has a starting point at (x, y) and has a w width and an h height onto the canvas, using the current stroke style.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/strokeRect)
+    pub fn stroke_rect(&self, x: f64, y: f64, width: f64, height: f64) {
+        js! { @(no_return)
+            @{&self.0}.strokeRect(@{x}, @{y}, @{width}, @{height});
+        }
+    }
             }
         }
     }
