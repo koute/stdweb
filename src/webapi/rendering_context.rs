@@ -421,6 +421,15 @@ impl CanvasRenderingContext2d {
             @{&self.0}.scale(@{x}, @{y});
         }
     }
+
+    /// Sets the line dash pattern used when stroking lines, using an array of values which specify alternating lengths of lines and gaps which describe the pattern.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/setLineDash)
+    pub fn set_line_dash(&self, segments: Vec<f64>) {
+        js! { @(no_return)
+            @{&self.0}.setLineDash(@{segments});
+        }
+    }
             }
         }
     }
