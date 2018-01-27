@@ -338,6 +338,16 @@ impl CanvasRenderingContext2d {
             @{&self.0}.lineTo(@{x}, @{y});
         }
     }
+
+    /// Returns a TextMetrics object that contains information about the measured text (such as its width for example).
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/measureText)
+    pub fn measure_text(&self, text: &str) {
+        //TODO: return TextMetrics
+        js! { @(no_return)
+            @{&self.0}.measureText(@{text});
+        }
+    }
             }
         }
     }
