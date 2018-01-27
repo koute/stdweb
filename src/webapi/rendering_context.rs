@@ -1,6 +1,6 @@
 use webcore::value::{Reference, ConversionError};
 use webcore::try_from::TryInto;
-use webapi::html_elements::CanvasElement;
+use webcore::value::Undefined;
 use webapi::html_elements::{CanvasElement, ImageElement};
 
 /// Trait implemented by rendering contexts which can be obtained from a canvas.
