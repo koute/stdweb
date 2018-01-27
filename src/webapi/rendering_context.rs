@@ -317,6 +317,18 @@ impl CanvasRenderingContext2d {
             }
         }
     }
+
+    /// Reports whether or not the specified point is inside the area contained by the stroking of a path.
+    /// 
+    /// ctx.isPointInStroke(path, x, y) is not supported because [(Path2D)](https://developer.mozilla.org/en-US/docs/Web/API/Path2D) is still experimental 
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/isPointInStroke)
+    pub fn is_point_in_stroke(&self, x: f64, y: f64) {
+        //TODO: return Boolean
+        js! { @(no_return)
+            @{&self.0}.isPointInStroke(@{x}, @{y});
+        }
+    }
             }
         }
     }
