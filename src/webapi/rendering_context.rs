@@ -369,6 +369,17 @@ impl CanvasRenderingContext2d {
             @{&self.0}.quadraticCurveTo(@{cpx}, @{cpy}, @{x}, @{y});
         }
     }
+
+    /// Creates a path for a rectangle at position (x, y) with a size that is determined by width and height. 
+    /// Those four points are connected by straight lines and the sub-path is marked as closed, 
+    /// so that you can fill or stroke this rectangle.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/rect)
+    pub fn rect(&self, x: f64, y: f64, width: f64, height: f64) {
+        js! { @(no_return)
+            @{&self.0}.rect(@{x}, @{y}, @{width}, @{height});
+        }
+    }
             }
         }
     }
