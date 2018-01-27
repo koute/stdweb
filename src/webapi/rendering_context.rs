@@ -390,6 +390,15 @@ impl CanvasRenderingContext2d {
             @{&self.0}.restore();
         }
     }
+
+    /// Adds a rotation to the transformation matrix. The angle argument represents a clockwise rotation angle and is expressed in radians.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/rotate)
+    pub fn rotate(&self, angle: f64) {
+        js! { @(no_return)
+            @{&self.0}.rotate(@{angle});
+        }
+    }
             }
         }
     }
