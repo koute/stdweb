@@ -57,6 +57,7 @@ impl CanvasRenderingContext2d {
             @{&self.0}.arc(@{x}, @{y}, @{start_angle}, @{end_angle}, @{anticlockwise});
         }
     }
+
     /// Adds an arc to the path with the given control points and radius.
     /// The arc drawn will be a part of a circle, never elliptical. 
     /// Typical use could be making a rounded corner.
@@ -239,6 +240,7 @@ impl CanvasRenderingContext2d {
             }
         }
     }
+
     /// Draws a filled rectangle whose starting point is at the coordinates (x, y) with the
     /// specified width and height and whose style is determined by the fillStyle attribute.
     /// 
@@ -264,6 +266,10 @@ impl CanvasRenderingContext2d {
         else {
             js! { @(no_return)
                 @{&self.0}.fillText(@{text}, @{x}, @{y});
+            }
+        }
+    }
+
     /// Returns an ImageData object representing the underlying pixel data for the area of the 
     /// canvas denoted by the rectangle which starts at (sx, sy) and has an sw width and sh height. 
     /// This method is not affected by the canvas transformation matrix.
