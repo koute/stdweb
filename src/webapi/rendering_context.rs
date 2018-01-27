@@ -286,6 +286,37 @@ impl CanvasRenderingContext2d {
             @{&self.0}.getLineDash();
         }
     }
+
+    /// Reports whether or not the specified point is contained in the current path.
+    /// 
+    /// ctx.isPointInPath(path, x, y) and ctx.isPointInPath(path, x, y, fillRule) 
+    /// are not supported because [(Path2D)](https://developer.mozilla.org/en-US/docs/Web/API/Path2D) is still experimental 
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/isPointInPath)
+    pub fn is_point_in_path(&self, x: f64, y: f64, fill_rule: Option<FillRule>) {
+        //TODO: return Boolean
+        //TODO: change this fill_rule stuff into a function
+        if let Some(fill_rule) = fill_rule {
+            let fill_rule_str;
+            match fill_rule {
+                FillRule::NonZero => {
+                    fill_rule_str = "nonzero";
+                }
+
+                FillRule::EvenOdd => {
+                    fill_rule_str = "evenodd";
+                }
+            }
+            js! { @(no_return)
+                @{&self.0}.isPointInPath(@{x}, @{y}, @{fill_rule_str});
+            }    
+        }
+        else {
+            js! { @(no_return)
+                @{&self.0}.isPointInPath(@{x}, @{y});
+            }
+        }
+    }
             }
         }
     }
