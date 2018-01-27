@@ -209,6 +209,9 @@ impl CanvasRenderingContext2d {
             @{&self.0}.drawFocusIfNeeded(@{element});
         }
     }
+
+    //draw_image will go here but waiting to figure out how to do CanvasImageSource
+
     /// Draws a filled rectangle whose starting point is at the coordinates (x, y) with the
     /// specified width and height and whose style is determined by the fillStyle attribute.
     /// 
