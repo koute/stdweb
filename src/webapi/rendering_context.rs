@@ -440,6 +440,17 @@ impl CanvasRenderingContext2d {
             @{&self.0}.setTransform(@{a}, @{b}, @{c}, @{d}, @{e}, @{f});
         }
     }
+
+    /// Strokes the current or given path with the current stroke style using the non-zero winding rule.
+    /// 
+    /// ctx.stroke(path) is not supported because [(Path2D)](https://developer.mozilla.org/en-US/docs/Web/API/Path2D) is still experimental
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/stroke)
+    pub fn stroke(&self) {
+        js! { @(no_return)
+            @{&self.0}.stroke();
+        }
+    }
             }
         }
     }
