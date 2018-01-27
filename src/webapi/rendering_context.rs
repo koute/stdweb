@@ -460,6 +460,21 @@ impl CanvasRenderingContext2d {
             @{&self.0}.strokeRect(@{x}, @{y}, @{width}, @{height});
         }
     }
+
+    /// Strokes — that is, draws the outlines of — the characters of a specified text string at the given (x, y) position. 
+    /// If the optional fourth parameter for a maximum width is provided, the text is scaled to fit that width.
+    /// See the CanvasRenderingContext2D.fillText() method to draw the text with the characters filled with color rather than having just their outlines drawn.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/strokeText)
+    pub fn stroke_text(&self, text: &str, x: f64, y: f64, max_width: Option<f64>) {
+        if let Some(max_width) = max_width {
+            js! { @(no_return)
+                @{&self.0}.strokeText(@{text}, @{x}, @{y}, @{max_width});
+            }
+        }
+        else {
+            js! { @(no_return)
+                @{&self.0}.strokeText(@{text}, @{x}, @{y}, @{Undefined});
             }
         }
     }
