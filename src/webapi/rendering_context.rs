@@ -329,6 +329,15 @@ impl CanvasRenderingContext2d {
             @{&self.0}.isPointInStroke(@{x}, @{y});
         }
     }
+
+    /// Connects the last point in the sub-path to the x, y coordinates with a straight line (but does not actually draw it).
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineTo)
+    pub fn line_to(&self, x: f64, y: f64) {
+        js! { @(no_return)
+            @{&self.0}.lineTo(@{x}, @{y});
+        }
+    }
             }
         }
     }
