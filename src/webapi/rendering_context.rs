@@ -399,6 +399,15 @@ impl CanvasRenderingContext2d {
             @{&self.0}.rotate(@{angle});
         }
     }
+
+    /// Saves the entire state of the canvas by pushing the current state onto a stack.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/save)
+    pub fn save(&self) {
+        js! { @(no_return)
+            @{&self.0}.save();
+        }
+    }
             }
         }
     }
