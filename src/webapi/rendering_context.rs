@@ -264,6 +264,18 @@ impl CanvasRenderingContext2d {
         else {
             js! { @(no_return)
                 @{&self.0}.fillText(@{text}, @{x}, @{y});
+    /// Returns an ImageData object representing the underlying pixel data for the area of the 
+    /// canvas denoted by the rectangle which starts at (sx, sy) and has an sw width and sh height. 
+    /// This method is not affected by the canvas transformation matrix.
+    /// Pixels outside of the canvas area are present as transparent black values in the returned ImageData.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getImageData)
+    pub fn get_image_data(&self, sx: f64, sy: f64, sw: f64, sh: f64) {
+        //TODO: return ImageData
+        js! { @(no_return)
+            @{&self.0}.getImageData(@{sx}, @{sy}, @{sw}, @{sh});
+        }
+    }
             }
         }
     }
