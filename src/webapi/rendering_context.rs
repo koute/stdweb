@@ -430,6 +430,16 @@ impl CanvasRenderingContext2d {
             @{&self.0}.setLineDash(@{segments});
         }
     }
+
+    /// Resets (overrides) the current transformation to the identity matrix and then invokes a transformation described by the arguments of this method.
+    /// See also the transform() method, which does not override the current transform matrix and multiplies it with a given one.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/setTransform)
+    pub fn set_transform(&self, a: f64, b: f64, c: f64, d: f64, e: f64, f: f64) {
+        js! { @(no_return)
+            @{&self.0}.setTransform(@{a}, @{b}, @{c}, @{d}, @{e}, @{f});
+        }
+    }
             }
         }
     }
