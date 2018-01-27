@@ -276,6 +276,16 @@ impl CanvasRenderingContext2d {
             @{&self.0}.getImageData(@{sx}, @{sy}, @{sw}, @{sh});
         }
     }
+
+    /// Gets the current line dash pattern.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getLineDash)
+    pub fn get_line_dash(&self) {
+        //TODO: return Array
+        js! { @(no_return)
+            @{&self.0}.getLineDash();
+        }
+    }
             }
         }
     }
