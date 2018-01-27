@@ -478,4 +478,15 @@ impl CanvasRenderingContext2d {
             }
         }
     }
+
+    /// Multiplies the current transformation with the matrix described by the arguments of this method. 
+    /// You are able to scale, rotate, move and skew the context.
+    /// See also the setTransform() method which resets the current transform to the identity matrix and then invokes transform().
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/transform)
+    pub fn transform(&self, a: f64, b: f64, c: f64, d: f64, e: f64, f: f64) {
+        js! { @(no_return)
+            @{&self.0}.transform(@{a}, @{b}, @{c}, @{d}, @{e}, @{f});
+        }
+    }
 }
