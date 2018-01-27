@@ -408,6 +408,19 @@ impl CanvasRenderingContext2d {
             @{&self.0}.save();
         }
     }
+
+    /// adds a scaling transformation to the canvas units by x horizontally and by y vertically.
+    /// By default, one unit on the canvas is exactly one pixel. If we apply, for instance, a scaling factor of 0.5, 
+    /// the resulting unit would become 0.5 pixels and so shapes would be drawn at half size. 
+    /// In a similar way setting the scaling factor to 2.0 would increase the unit size and one unit now becomes two pixels. 
+    /// This results in shapes being drawn twice as large.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/scale)
+    pub fn scale(&self, x: f64, y: f64) {
+        js! { @(no_return)
+            @{&self.0}.scale(@{x}, @{y});
+        }
+    }
             }
         }
     }
