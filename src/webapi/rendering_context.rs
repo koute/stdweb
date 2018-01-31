@@ -17,14 +17,14 @@ pub trait RenderingContext {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D)
 pub struct CanvasRenderingContext2d(Reference);
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum FillRule {
     NonZero,
     EvenOdd
 }
 
-#[derive(Debug)]
-pub enum Repitition {
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum Repetition {
     Repeat,
     RepeatX,
     RepeatY,
@@ -167,23 +167,23 @@ impl CanvasRenderingContext2d {
                 Repitition::Repeat => {
                     repitition_string = "repeat";
                 }
-
-                Repitition::RepeatX => {
-                    repitition_string = "repeat-x";
-                }
-
-                Repitition::RepeatY => {
-                    repitition_string = "repeat-y";
-                }
-
-                Repitition::NoRepeat => {
-                    repitition_string = "no-repeat";  
-                }
+        let repetition_string = match repetition {
+            Some(Repetition::Repeat) | None => {
+                "repeat"
             }
-        }
-        else {
-            repitition_string = "repeat";
-        }
+
+            Some(Repetition::RepeatX) => {
+                "repeat-x"
+            }
+
+            Some(Repetition::RepeatY) => {
+                "repeat-y"
+            }
+
+            Some(Repetition::NoRepeat) => {
+                "no-repeat"
+            }
+        };
 
         // TODO: returns CanvasPattern
         js! { @(no_return)
