@@ -250,7 +250,7 @@ impl CanvasRenderingContext2d {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawFocusIfNeeded)
     pub fn draw_fdraw_focus_if_needed< T: IHtmlElement >(&self, element: &T) {
         js! { @(no_return)
-            @{&self.0}.drawFocusIfNeeded(@{element});
+            @{&self.0}.drawFocusIfNeeded(@{element.as_ref()});
         }
     }
 
