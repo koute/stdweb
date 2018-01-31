@@ -22,13 +22,13 @@ pub struct CanvasRenderingContext2d(Reference);
 /// CanvasRenderingContext2D.createRadialGradient().
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasGradient)
-struct CanvasGradient(Reference);
+pub struct CanvasGradient(Reference);
 
 /// The CanvasPattern interface represents an opaque object describing a pattern, based on an image, 
 /// a canvas or a video, created by the CanvasRenderingContext2D.createPattern() method.
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasPattern)
-struct CanvasPattern(Reference);
+pub struct CanvasPattern(Reference);
 
 /// The ImageData interface represents the underlying pixel data of an area of a <canvas> element. 
 /// It is created using the ImageData() constructor or creator methods on the CanvasRenderingContext2D
@@ -36,12 +36,12 @@ struct CanvasPattern(Reference);
 /// a part of the canvas by using putImageData().
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ImageData)
-struct ImageData(Reference);
+pub struct ImageData(Reference);
 
 /// The TextMetrics interface represents the dimension of a text in the canvas, as created by the CanvasRenderingContext2D.measureText() method.
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/TextMetrics)
-struct TextMetrics(Reference);
+pub struct TextMetrics(Reference);
 
 /// The algorithm by which to determine if a point is inside a path or outside a path.
 /// 
