@@ -2,7 +2,7 @@ use webcore::value::{Reference, ConversionError};
 use webcore::try_from::TryInto;
 use webcore::value::Undefined;
 use webapi::html_elements::{CanvasElement, ImageElement};
-use webapi::html_element::HtmlElement;
+use webapi::html_element::IHtmlElement;
 
 /// Trait implemented by rendering contexts which can be obtained from a canvas.
 pub trait RenderingContext {
@@ -17,12 +17,44 @@ pub trait RenderingContext {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D)
 pub struct CanvasRenderingContext2d(Reference);
 
+/// The CanvasGradient interface represents an opaque object describing a gradient. 
+/// It is returned by the methods CanvasRenderingContext2D.createLinearGradient() or 
+/// CanvasRenderingContext2D.createRadialGradient().
+/// 
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasGradient)
+struct CanvasGradient(Reference);
+
+/// The CanvasPattern interface represents an opaque object describing a pattern, based on an image, 
+/// a canvas or a video, created by the CanvasRenderingContext2D.createPattern() method.
+/// 
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasPattern)
+struct CanvasPattern(Reference);
+
+/// The ImageData interface represents the underlying pixel data of an area of a <canvas> element. 
+/// It is created using the ImageData() constructor or creator methods on the CanvasRenderingContext2D
+///  object associated with a canvas: createImageData() and getImageData(). It can also be used to set 
+/// a part of the canvas by using putImageData().
+/// 
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ImageData)
+struct ImageData(Reference);
+
+/// The TextMetrics interface represents the dimension of a text in the canvas, as created by the CanvasRenderingContext2D.measureText() method.
+/// 
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/TextMetrics)
+struct TextMetrics(Reference);
+
+/// The algorithm by which to determine if a point is inside a path or outside a path.
+/// 
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fill)
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum FillRule {
     NonZero,
     EvenOdd
 }
 
+/// A DOMString indicating how to repeat the image.
+/// 
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createPattern)
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Repetition {
     Repeat,
@@ -34,6 +66,26 @@ pub enum Repetition {
 reference_boilerplate! {
     CanvasRenderingContext2d,
     instanceof CanvasRenderingContext2D
+}
+
+reference_boilerplate! {
+    CanvasGradient,
+    instanceof CanvasGradient
+}
+
+reference_boilerplate! {
+    CanvasPattern,
+    instanceof CanvasPattern
+}
+
+reference_boilerplate! {
+    ImageData,
+    instanceof ImageData
+}
+
+reference_boilerplate! {
+    TextMetrics,
+    instanceof TextMetrics
 }
 
 impl RenderingContext for CanvasRenderingContext2d {
@@ -149,24 +201,17 @@ impl CanvasRenderingContext2d {
     /// Creates a gradient along the line given by the coordinates represented by the parameters.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createLinearGradient)
-    pub fn create_linear_gradient(&self, x0: f64, y0: f64, x1: f64, y1: f64) {
-        //TODO: returns linear gradient
-        js! { @(no_return)
+    pub fn create_linear_gradient(&self, x0: f64, y0: f64, x1: f64, y1: f64) -> CanvasGradient {
+        js! (
             @{&self.0}.createLinearGradient(@{x0}, @{y0}, @{x1}, @{y1});
-        }
+        ).try_into().unwrap()
     }
 
     /// Creates a pattern using the specified image (a CanvasImageSource). It repeats the source in 
     /// the directions specified by the repetition argument. This method returns a CanvasPattern.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createPattern)
-    pub fn create_pattern_image(&self, image: ImageElement, repitition: Option<Repitition>) {
-        let repitition_string;
-        if let Some(repitition) = repitition {
-            match repitition {
-                Repitition::Repeat => {
-                    repitition_string = "repeat";
-                }
+    pub fn create_pattern_image(&self, image: ImageElement, repetition: Option<Repetition>) -> CanvasPattern {
         let repetition_string = match repetition {
             Some(Repetition::Repeat) | None => {
                 "repeat"
@@ -185,27 +230,25 @@ impl CanvasRenderingContext2d {
             }
         };
 
-        // TODO: returns CanvasPattern
-        js! { @(no_return)
-            @{&self.0}.createPattern(@{image}, @{repitition_string});
-        }
+        js! (
+            @{&self.0}.createPattern(@{image}, @{repetition_string});
+        ).try_into().unwrap()
     }
 
     /// Creates a radial gradient given by the coordinates of the two circles represented by the parameters. 
     /// This method returns a CanvasGradient.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createRadialGradient)
-    pub fn create_radial_gradient(&self, x0: f64, y0: f64, r0: f64, x1: f64, y1: f64, r1: f64) {
-        //TODO: returns radial gradient
-        js! { @(no_return)
+    pub fn create_radial_gradient(&self, x0: f64, y0: f64, r0: f64, x1: f64, y1: f64, r1: f64) -> CanvasGradient {
+        js! (
             @{&self.0}.createRadialGradient(@{x0}, @{y0}, @{r0}, @{x1}, @{y1}, @{r1});
-        }
+        ).try_into().unwrap()
     }
 
     /// Draws a focus ring around the current path or given path, If a given element is focused.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawFocusIfNeeded)
-    pub fn draw_focus_if_needed(&self, element: HtmlElement) {
+    pub fn draw_fdraw_focus_if_needed< T: IHtmlElement >(&self, element: &T) {
         js! { @(no_return)
             @{&self.0}.drawFocusIfNeeded(@{element});
         }
@@ -276,21 +319,19 @@ impl CanvasRenderingContext2d {
     /// Pixels outside of the canvas area are present as transparent black values in the returned ImageData.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getImageData)
-    pub fn get_image_data(&self, sx: f64, sy: f64, sw: f64, sh: f64) {
-        //TODO: return ImageData
-        js! { @(no_return)
+    pub fn get_image_data(&self, sx: f64, sy: f64, sw: f64, sh: f64) -> ImageData {
+        js! (
             @{&self.0}.getImageData(@{sx}, @{sy}, @{sw}, @{sh});
-        }
+        ).try_into().unwrap()
     }
 
     /// Gets the current line dash pattern.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getLineDash)
-    pub fn get_line_dash(&self) {
-        //TODO: return Array
-        js! { @(no_return)
+    pub fn get_line_dash(&self) -> Vec<f64> {
+        js! (
             @{&self.0}.getLineDash();
-        }
+        ).try_into().unwrap()
     }
 
     /// Reports whether or not the specified point is contained in the current path.
@@ -299,8 +340,7 @@ impl CanvasRenderingContext2d {
     /// are not supported because [(Path2D)](https://developer.mozilla.org/en-US/docs/Web/API/Path2D) is still experimental 
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/isPointInPath)
-    pub fn is_point_in_path(&self, x: f64, y: f64, fill_rule: Option<FillRule>) {
-        //TODO: return Boolean
+    pub fn is_point_in_path(&self, x: f64, y: f64, fill_rule: Option<FillRule>) -> bool {
         //TODO: change this fill_rule stuff into a function
         if let Some(fill_rule) = fill_rule {
             let fill_rule_str;
@@ -313,14 +353,14 @@ impl CanvasRenderingContext2d {
                     fill_rule_str = "evenodd";
                 }
             }
-            js! { @(no_return)
+            js! (
                 @{&self.0}.isPointInPath(@{x}, @{y}, @{fill_rule_str});
-            }    
+            ).try_into().unwrap()
         }
         else {
-            js! { @(no_return)
+            js! (
                 @{&self.0}.isPointInPath(@{x}, @{y});
-            }
+            ).try_into().unwrap()
         }
     }
 
@@ -329,11 +369,10 @@ impl CanvasRenderingContext2d {
     /// ctx.isPointInStroke(path, x, y) is not supported because [(Path2D)](https://developer.mozilla.org/en-US/docs/Web/API/Path2D) is still experimental 
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/isPointInStroke)
-    pub fn is_point_in_stroke(&self, x: f64, y: f64) {
-        //TODO: return Boolean
-        js! { @(no_return)
+    pub fn is_point_in_stroke(&self, x: f64, y: f64) -> bool {
+        js! (
             @{&self.0}.isPointInStroke(@{x}, @{y});
-        }
+        ).try_into().unwrap()
     }
 
     /// Connects the last point in the sub-path to the x, y coordinates with a straight line (but does not actually draw it).
@@ -348,11 +387,10 @@ impl CanvasRenderingContext2d {
     /// Returns a TextMetrics object that contains information about the measured text (such as its width for example).
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/measureText)
-    pub fn measure_text(&self, text: &str) {
-        //TODO: return TextMetrics
-        js! { @(no_return)
+    pub fn measure_text(&self, text: &str) -> TextMetrics {
+        js! (
             @{&self.0}.measureText(@{text});
-        }
+        ).try_into().unwrap()
     }
 
     /// Moves the starting point of a new sub-path to the (x, y) coordinates.
