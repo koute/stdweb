@@ -114,7 +114,7 @@ Take a look at some of the examples:
 
 ## Running the examples
 
-1. Add one of Rust's Web targets with rustup.
+1. Add one of Rust's web targets with [rustup].
 
     * For compiling to asmjs through Emscripten:
 
@@ -148,11 +148,12 @@ Take a look at some of the examples:
 
 4. Visit `http://localhost:8000` with your browser.
 
-For the `*-emscripten` targets `cargo-web` is not neccessary, however
+For the `*-emscripten` targets `cargo-web` is not necessary, however
 the native `wasm32-unknown-unknown` which doesn't need Emscripten
 **requires** `cargo-web` to work!
 
 [cargo-web]: https://github.com/koute/cargo-web
+[rustup]: https://www.rustup.rs/
 
 ## Exposing Rust functions to JavaScript
 
