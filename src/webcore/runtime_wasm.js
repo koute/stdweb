@@ -33,3 +33,15 @@ Module.STDWEB.utf8_len = function utf8_len( str ) {
     }
     return len;
 };
+
+Module.STDWEB.prepare_any_arg = function( value ) {
+    var arg = Module.STDWEB.alloc( 16 );
+    Module.STDWEB.from_js( arg, value );
+    return arg;
+};
+
+Module.STDWEB.acquire_tmp = function( dummy ) {
+    var value = Module.STDWEB.tmp;
+    Module.STDWEB.tmp = null;
+    return value;
+};

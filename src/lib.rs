@@ -69,7 +69,10 @@
 #![cfg_attr(feature = "dev", allow(unstable_features))]
 #![cfg_attr(feature = "dev", feature(plugin))]
 #![cfg_attr(feature = "dev", plugin(clippy))]
-#![cfg_attr(not(feature = "nightly"), deny(unstable_features))]
+#![cfg_attr(
+    all(target_arch = "wasm32", target_os = "unknown"),
+    feature(proc_macro)
+)]
 #![cfg_attr(feature = "nightly", feature(core_intrinsics))]
 #![recursion_limit="1500"]
 
@@ -83,6 +86,12 @@ extern crate serde_json;
 #[cfg(all(test, feature = "serde"))]
 #[macro_use]
 extern crate serde_derive;
+
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+extern crate stdweb_macros;
+
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+pub use stdweb_macros::js_export;
 
 #[macro_use]
 mod webcore;
