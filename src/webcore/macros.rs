@@ -890,7 +890,7 @@ mod tests {
 
         let v: Result<i32, String> = js_try!( throw "error"; ).unwrap();
         assert_eq!( v, Err("error".to_string()) );
-        
+
         let v: Result<(), String> = js_try!( @(no_return) 2+2; ).unwrap();
         assert_eq!( v, Ok(()) );
 

@@ -58,7 +58,7 @@ mod test {
 
         assert_eq!(error.name(), "Error");
         assert_eq!(error.message(), "foo");
-        
+
         let mut text = String::new();
         write!(&mut text, "{}", error).unwrap();
         assert_eq!(&text, "Error: foo");

@@ -163,7 +163,7 @@ impl WebSocket {
     /// Returns the number of bytes of data that have been queued using calls to send()
     /// but not yet transmitted to the network. This value resets to zero once all queued
     /// data has been sent. This value does not reset to zero when the connection is closed;
-    /// if you keep calling send(), this will continue to climb. 
+    /// if you keep calling send(), this will continue to climb.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
     pub fn buffered_amount(&self) -> u64 {

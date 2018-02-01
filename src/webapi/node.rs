@@ -465,7 +465,7 @@ mod tests {
 
         let removed = parent.remove_child(&child1).unwrap();
         assert_eq!(parent.first_child().unwrap().as_ref(), child2.as_ref());
-        assert_eq!(removed.as_ref(), child1.as_ref());        
+        assert_eq!(removed.as_ref(), child1.as_ref());
         match parent.remove_child(&child1) {
             Err(_) => (),
             _ => panic!("Expected error")

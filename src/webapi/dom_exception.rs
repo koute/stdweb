@@ -60,7 +60,7 @@ impl ConcreteException for HierarchyRequestError {
 
 reference_boilerplate! {
     HierarchyRequestError,
-    convertible to Error    
+    convertible to Error
     convertible to DomException
 }
 error_boilerplate! { HierarchyRequestError }
@@ -76,7 +76,7 @@ impl ConcreteException for InvalidAccessError {
 
 reference_boilerplate! {
     InvalidAccessError,
-    convertible to Error    
+    convertible to Error
     convertible to DomException
 }
 error_boilerplate! { InvalidAccessError }
@@ -92,7 +92,7 @@ impl ConcreteException for NotFoundError {
 
 reference_boilerplate! {
     NotFoundError,
-    convertible to Error    
+    convertible to Error
     convertible to DomException
 }
 error_boilerplate! { NotFoundError }
@@ -108,7 +108,7 @@ impl ConcreteException for SecurityError {
 
 reference_boilerplate! {
     SecurityError,
-    convertible to Error    
+    convertible to Error
     convertible to DomException
 }
 error_boilerplate! { SecurityError }
@@ -124,7 +124,7 @@ impl ConcreteException for SyntaxError {
 
 reference_boilerplate! {
     SyntaxError,
-    convertible to Error    
+    convertible to Error
     convertible to DomException
 }
 error_boilerplate! { SyntaxError }
