@@ -245,8 +245,11 @@ Snippets of documentation which come from [Mozilla Developer Network] are covere
 [Mozilla Developer Network]: https://developer.mozilla.org/en-US/
 [CC-BY-SA, version 2.5]: https://developer.mozilla.org/en-US/docs/MDN/About#Copyrights_and_licenses
 
-### Contribution
+### Contributing
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
 dual licensed as above, without any additional terms or conditions.
+
+You can run `stdweb`'s tests with `cargo web test --features web_test`, which will
+run them under headless Chromium.
