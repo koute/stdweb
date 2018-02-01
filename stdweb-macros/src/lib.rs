@@ -147,12 +147,12 @@ fn process( exports: Vec< Export > ) -> quote::Tokens {
                     let mut __result = Some( __result );
                     let __result = ::stdweb::private::JsSerializableOwned::into_js_owned( &mut __result, &mut __result_arena );
                     let __result = &__result as *const _;
-                    __js_raw_asm!( "Module.STDWEB.tmp = Module.STDWEB.to_js( $0 );", __result );
+                    __js_raw_asm!( "Module.STDWEB_PRIVATE.tmp = Module.STDWEB_PRIVATE.to_js( $0 );", __result );
                     let __result = ();
                 };
                 export_result_metadata = Some( TypeMetadata::Custom {
                     name: None,
-                    conversion_fn: "Module.STDWEB.acquire_tmp".to_owned()
+                    conversion_fn: "Module.STDWEB_PRIVATE.acquire_tmp".to_owned()
                 });
             }
         }
@@ -192,7 +192,7 @@ fn process( exports: Vec< Export > ) -> quote::Tokens {
 
                     export_arg_ty_metadata = TypeMetadata::Custom {
                         name: None,
-                        conversion_fn: "Module.STDWEB.prepare_any_arg".to_owned()
+                        conversion_fn: "Module.STDWEB_PRIVATE.prepare_any_arg".to_owned()
                     };
                 }
             }

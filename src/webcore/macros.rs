@@ -290,7 +290,7 @@ macro_rules! _js_impl {
     };
 
     (@prelude $arg_counter:tt [$($out:tt)*] -> $arg:tt $($rest:tt)*) => {
-        _js_impl!( @_inc @prelude $arg_counter [$($out)* ("$") ($arg_counter) (" = Module.STDWEB.to_js($") ($arg_counter) (");")] -> $($rest)* )
+        _js_impl!( @_inc @prelude $arg_counter [$($out)* ("$") ($arg_counter) (" = Module.STDWEB_PRIVATE.to_js($") ($arg_counter) (");")] -> $($rest)* )
     };
 
     (@prelude $arg_counter:tt [$($out:tt)*] ->) => {
@@ -428,7 +428,7 @@ macro_rules! _js_impl {
                             @call_emscripten
                             [concat!(
                                 _js_impl!( @prelude "1" [] -> $($args)* ),
-                                "Module.STDWEB.from_js($0, (function(){", $code, "})());"
+                                "Module.STDWEB_PRIVATE.from_js($0, (function(){", $code, "})());"
                             )]
                             [RESULT $($args)*]
                             [(&mut result as *mut _) a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15]
@@ -700,7 +700,7 @@ macro_rules! instanceof {
         let reference: Option< &$crate::Reference > = (&$value).try_into().ok();
         reference.map( |reference| {
             __js_raw_asm!(
-                concat!( "return (Module.STDWEB.acquire_js_reference( $0 ) instanceof ", stringify!( $kind ), ") | 0;" ),
+                concat!( "return (Module.STDWEB_PRIVATE.acquire_js_reference( $0 ) instanceof ", stringify!( $kind ), ") | 0;" ),
                 reference.as_raw()
             ) == 1
         }).unwrap_or( false )

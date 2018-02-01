@@ -1,13 +1,13 @@
-Module.STDWEB.alloc = function alloc( size ) {
+Module.STDWEB_PRIVATE.alloc = function alloc( size ) {
     return Module.web_malloc( size );
 };
 
-Module.STDWEB.dyncall = function( signature, ptr, args ) {
+Module.STDWEB_PRIVATE.dyncall = function( signature, ptr, args ) {
     return Module.web_table.get( ptr ).apply( null, args );
 };
 
 // This is based on code from Emscripten's preamble.js.
-Module.STDWEB.utf8_len = function utf8_len( str ) {
+Module.STDWEB_PRIVATE.utf8_len = function utf8_len( str ) {
     let len = 0;
     for( let i = 0; i < str.length; ++i ) {
         // Gotcha: charCodeAt returns a 16-bit word that is a UTF-16 encoded code unit, not a Unicode code point of the character! So decode UTF16->UTF32->UTF8.
@@ -34,14 +34,14 @@ Module.STDWEB.utf8_len = function utf8_len( str ) {
     return len;
 };
 
-Module.STDWEB.prepare_any_arg = function( value ) {
-    var arg = Module.STDWEB.alloc( 16 );
-    Module.STDWEB.from_js( arg, value );
+Module.STDWEB_PRIVATE.prepare_any_arg = function( value ) {
+    var arg = Module.STDWEB_PRIVATE.alloc( 16 );
+    Module.STDWEB_PRIVATE.from_js( arg, value );
     return arg;
 };
 
-Module.STDWEB.acquire_tmp = function( dummy ) {
-    var value = Module.STDWEB.tmp;
-    Module.STDWEB.tmp = null;
+Module.STDWEB_PRIVATE.acquire_tmp = function( dummy ) {
+    var value = Module.STDWEB_PRIVATE.tmp;
+    Module.STDWEB_PRIVATE.tmp = null;
     return value;
 };

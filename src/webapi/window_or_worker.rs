@@ -19,8 +19,8 @@ pub trait IWindowOrWorker: AsRef< Reference > {
     fn set_timeout< F: FnOnce() + 'static >( &self, callback: F, timeout: u32 ) {
         let callback = Box::into_raw( Box::new( callback ) );
         __js_raw_asm!( "\
-            Module.STDWEB.acquire_js_reference( $0 ).setTimeout( function() {\
-                Module.STDWEB.dyncall( 'vi', $1, [$2] );\
+            Module.STDWEB_PRIVATE.acquire_js_reference( $0 ).setTimeout( function() {\
+                Module.STDWEB_PRIVATE.dyncall( 'vi', $1, [$2] );\
             }, $3 );\
         ", self.as_ref().as_raw(), funcall_adapter::< F > as extern fn( *mut F ), callback, timeout );
     }
