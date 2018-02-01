@@ -278,6 +278,11 @@ mod tests {
         assert_eq!(&format!("{:?}", SocketCloseCode(1000)), "SocketCloseCode::NORMAL_CLOSURE");
         assert_eq!(&format!("{:?}", SocketCloseCode(3001)), "SocketCloseCode(3001)");
     }
+}
+
+#[cfg(all(test, feature = "web_test"))]
+mod web_tests {
+    use super::*;
 
     #[test]
     fn test_new() {
