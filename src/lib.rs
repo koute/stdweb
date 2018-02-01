@@ -173,7 +173,7 @@ pub mod web {
             SecurityError,
             SyntaxError,
         };
-        pub use webapi::error::{IError, Error};        
+        pub use webapi::error::{IError, Error};
     }
 
     /// A module containing HTML DOM elements.
@@ -187,51 +187,71 @@ pub mod web {
     /// A module containing JavaScript DOM events.
     pub mod event {
         pub use webapi::event::{
+            IEvent,
+            IUiEvent,
             ConcreteEvent,
 
-            IEvent,
-            IKeyboardEvent,
-            IUiEvent,
+            EventPhase
+        };
+
+        pub use webapi::events::mouse::{
             IMouseEvent,
-            IFocusEvent,
-            IProgressEvent,
-            IMessageEvent,
-
-            EventPhase,
-            KeyboardLocation,
-            ModifierKey,
-            MouseButton,
-
-            ChangeEvent,
-            KeypressEvent,
-            KeyDownEvent,
-            KeyUpEvent,
             ClickEvent,
             DoubleClickEvent,
             MouseDownEvent,
             MouseUpEvent,
             MouseMoveEvent,
-            FocusEvent,
-            BlurEvent,
-            HashChangeEvent,
-            ResourceLoadEvent,
-            ResourceAbortEvent,
-            ResourceErrorEvent,
-            ResizeEvent,
+
+            MouseButton
+        };
+
+        pub use webapi::events::keyboard::{
+            IKeyboardEvent,
+            KeypressEvent,
+            KeyDownEvent,
+            KeyUpEvent,
+
+            KeyboardLocation,
+            ModifierKey
+        };
+
+        pub use webapi::events::progress::{
+            IProgressEvent,
             ProgressEvent,
             LoadStartEvent,
             LoadEndEvent,
             ProgressLoadEvent,
             ProgressAbortEvent,
-            ProgressErrorEvent,
-            InputEvent,
-            ReadyStateChange,
-            PopStateEvent,
+            ProgressErrorEvent
+        };
 
+        pub use webapi::events::socket::{
+            IMessageEvent,
             SocketCloseEvent,
             SocketErrorEvent,
             SocketOpenEvent,
-            SocketMessageEvent,
+            SocketMessageEvent
+        };
+
+        pub use webapi::events::history::{
+            HashChangeEvent,
+            PopStateEvent
+        };
+
+        pub use webapi::events::dom::{
+            ChangeEvent,
+            ResourceLoadEvent,
+            ResourceAbortEvent,
+            ResourceErrorEvent,
+            ResizeEvent,
+            InputEvent,
+            ReadyStateChange
+        };
+
+        pub use webapi::events::focus::{
+            IFocusEvent,
+            FocusEvent,
+            BlurEvent
         };
     }
 }

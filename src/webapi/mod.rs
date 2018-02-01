@@ -30,3 +30,4 @@ pub mod rendering_context;
 pub mod mutation_observer;
 pub mod error;
 pub mod dom_exception;
+pub mod events;
