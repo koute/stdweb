@@ -118,17 +118,17 @@ reference_boilerplate! {
 /// The readystatechange event is fired when the readyState attribute of a document has changed.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/readystatechange)
-pub struct ReadyStateChange( Reference );
+pub struct ReadyStateChangeEvent( Reference );
 
 reference_boilerplate! {
-    ReadyStateChange,
+    ReadyStateChangeEvent,
     instanceof Event
     convertible to Event
 }
 
-impl IEvent for ReadyStateChange {}
+impl IEvent for ReadyStateChangeEvent {}
 
-impl ConcreteEvent for ReadyStateChange {
+impl ConcreteEvent for ReadyStateChangeEvent {
     const EVENT_TYPE: &'static str = "readystatechange";
 }
 
@@ -171,9 +171,9 @@ mod tests {
 
     #[test]
     fn test_ready_state_change_event() {
-        let event: ReadyStateChange = js!(
-            return new Event( @{ReadyStateChange::EVENT_TYPE} );
+        let event: ReadyStateChangeEvent = js!(
+            return new Event( @{ReadyStateChangeEvent::EVENT_TYPE} );
         ).try_into().unwrap();
-        assert_eq!( event.event_type(), ReadyStateChange::EVENT_TYPE);
+        assert_eq!( event.event_type(), ReadyStateChangeEvent::EVENT_TYPE);
     }
 }
