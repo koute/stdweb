@@ -25,7 +25,7 @@ use stdweb::web::event::{
     IKeyboardEvent,
     DoubleClickEvent,
     ClickEvent,
-    KeypressEvent,
+    KeyPressEvent,
     ChangeEvent,
     BlurEvent,
     HashChangeEvent
@@ -70,7 +70,7 @@ fn start_editing( state: &StateRef, index: usize, li: &HtmlElement, label: &Elem
     let edit: InputElement = document().create_element( "input" ).try_into().unwrap();
     edit.class_list().add( "edit" );
     edit.set_value( label.inner_text() );
-    edit.add_event_listener( enclose!( (edit) move |event: KeypressEvent| {
+    edit.add_event_listener( enclose!( (edit) move |event: KeyPressEvent| {
         if event.key() == "Enter" {
             edit.blur();
         }
@@ -209,7 +209,7 @@ fn main() {
     let state = Rc::new( RefCell::new( state ) );
 
     let title_entry: InputElement = document().query_selector( ".new-todo" ).unwrap().try_into().unwrap();
-    title_entry.add_event_listener( enclose!( (state, title_entry) move |event: KeypressEvent| {
+    title_entry.add_event_listener( enclose!( (state, title_entry) move |event: KeyPressEvent| {
         if event.key() == "Enter" {
             event.prevent_default();
 

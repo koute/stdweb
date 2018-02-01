@@ -15,7 +15,7 @@ use stdweb::web::event::{
     IEvent,
     IKeyboardEvent,
     IMessageEvent,
-    KeypressEvent,
+    KeyPressEvent,
     SocketOpenEvent,
     SocketCloseEvent,
     SocketErrorEvent,
@@ -69,7 +69,7 @@ fn main() {
     }));
 
     let text_entry: InputElement = document().query_selector( ".form input" ).unwrap().try_into().unwrap();
-    text_entry.add_event_listener( enclose!( (text_entry) move |event: KeypressEvent| {
+    text_entry.add_event_listener( enclose!( (text_entry) move |event: KeyPressEvent| {
         if event.key() == "Enter" {
             event.prevent_default();
 
