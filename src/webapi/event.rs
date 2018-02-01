@@ -882,39 +882,39 @@ reference_boilerplate! {
     convertible to KeyboardEvent
 }
 
-/// The `KeydownEvent` is fired when a key is pressed down.
+/// The `KeyDownEvent` is fired when a key is pressed down.
 /// Unlike the `KeypressEvent` event it's also fired for keys which
 /// do not produce a character value.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/keydown)
-pub struct KeydownEvent( Reference );
+pub struct KeyDownEvent( Reference );
 
-impl IEvent for KeydownEvent {}
-impl IKeyboardEvent for KeydownEvent {}
-impl ConcreteEvent for KeydownEvent {
+impl IEvent for KeyDownEvent {}
+impl IKeyboardEvent for KeyDownEvent {}
+impl ConcreteEvent for KeyDownEvent {
     const EVENT_TYPE: &'static str = "keydown";
 }
 
 reference_boilerplate! {
-    KeydownEvent,
+    KeyDownEvent,
     instanceof KeyboardEvent
     convertible to Event
     convertible to KeyboardEvent
 }
 
-/// The `KeyupEvent` is fired when a key is released.
+/// The `KeyUpEvent` is fired when a key is released.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/keyup)
-pub struct KeyupEvent( Reference );
+pub struct KeyUpEvent( Reference );
 
-impl IEvent for KeyupEvent {}
-impl IKeyboardEvent for KeyupEvent {}
-impl ConcreteEvent for KeyupEvent {
+impl IEvent for KeyUpEvent {}
+impl IKeyboardEvent for KeyUpEvent {}
+impl ConcreteEvent for KeyUpEvent {
     const EVENT_TYPE: &'static str = "keyup";
 }
 
 reference_boilerplate! {
-    KeyupEvent,
+    KeyUpEvent,
     instanceof KeyboardEvent
     convertible to Event
     convertible to KeyboardEvent

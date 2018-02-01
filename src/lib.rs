@@ -198,8 +198,8 @@ pub mod web {
 
             ChangeEvent,
             KeypressEvent,
-            KeydownEvent,
-            KeyupEvent,
+            KeyDownEvent,
+            KeyUpEvent,
             ClickEvent,
             DoubleClickEvent,
             MouseDownEvent,
