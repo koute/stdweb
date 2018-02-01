@@ -222,14 +222,52 @@ There is also an **experimental** [Parcel] plugin [here](https://github.com/kout
 
 [Parcel]: https://parceljs.org/
 
-## Breaking changes
+## Changelog
+
+   * `0.4`
+      * (breaking change) Renamed:
+         * `KeydownEvent` -> `KeyDownEvent`
+         * `KeyupEvent` -> `KeyUpEvent`
+         * `KeypressEvent` -> `KeyPressEvent`
+         * `ReadyState` -> `FileReaderReadyState`
+      * (breaking change) Changed return types:
+         * `INode::remove_child` now returns `Node` in the `Ok` case
+         * `INode::insert_before` now returns a `Result`
+         * `INode::replace_child` now returns a `Result`
+      * When building using a recent `cargo-web` it's not necessary to call
+        `stdweb::initialize` nor `stdweb::event_loop` anymore
+      * Support for `cdylib` crates on `wasm32-unknown-unknown`
+      * New bindings:
+         * `XmlHttpRequest`
+         * `WebSocket`
+         * `MutationObserver`
+         * `History`
+         * `TextAreaElement`
+         * `CanvasElement`
+      * New event types:
+         * `MouseDownEvent`
+         * `MouseUpEvent`
+         * `MouseMoveEvent`
+         * `PopStateEvent`
+         * `ResizeEvent`
+         * `ReadyStateChange`
+         * `SocketCloseEvent`
+         * `SocketErrorEvent`
+         * `SocketOpenEvent`
+         * `SocketMessageEvent`
+      * Initial support for the Canvas APIs
+      * Add `#[js_export]` procedural attribute (`wasm32-unknown-unknown` only)
+      * Add `DomException` and subtypes for passing around JavaScript exceptions
+      * `IElement` now inherits from `INode`
 
    * `0.3`
-      * Deleted `ErrorEvent` methods
-      * Renamed:
+      * (breaking change) Deleted `ErrorEvent` methods
+      * (breaking change) Renamed:
          * `LoadEvent` -> `ResourceLoadEvent`
          * `AbortEvent` -> `ResourceAbortEvent`
          * `ErrorEvent` -> `ResourceErrorEvent`
+      * Add `UnsafeTypedArray` for zero cost slice passing to `js!`
+      * Add `Once` for passing `FnOnce` closures to `js!`
 
 ## License
 
