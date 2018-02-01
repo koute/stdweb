@@ -69,7 +69,10 @@
 #![cfg_attr(feature = "dev", allow(unstable_features))]
 #![cfg_attr(feature = "dev", feature(plugin))]
 #![cfg_attr(feature = "dev", plugin(clippy))]
-#![cfg_attr(not(feature = "nightly"), deny(unstable_features))]
+#![cfg_attr(
+    all(target_arch = "wasm32", target_os = "unknown"),
+    feature(proc_macro)
+)]
 #![cfg_attr(feature = "nightly", feature(core_intrinsics))]
 #![recursion_limit="1500"]
 
@@ -83,6 +86,12 @@ extern crate serde_json;
 #[cfg(all(test, feature = "serde"))]
 #[macro_use]
 extern crate serde_derive;
+
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+extern crate stdweb_macros;
+
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+pub use stdweb_macros::js_export;
 
 #[macro_use]
 mod webcore;
@@ -149,12 +158,9 @@ pub mod web {
     pub use webapi::history::History;
     pub use webapi::web_socket::{WebSocket, SocketCloseCode};
     pub use webapi::rendering_context::{RenderingContext, CanvasRenderingContext2d};
+    pub use webapi::mutation_observer::{MutationObserver, MutationObserverHandle, MutationObserverInit, MutationRecord};
+    pub use webapi::xml_http_request::{XmlHttpRequest, XhrReadyState};
 
-
-    /// A module containing XmlHttpRequest and its XhrReadyState
-    pub mod xml_http_request {
-        pub use webapi::xml_http_request::{ XmlHttpRequest, XhrReadyState };
-    }
     /// A module containing error types.
     pub mod error {
         pub use webapi::dom_exception::{
@@ -198,8 +204,8 @@ pub mod web {
 
             ChangeEvent,
             KeypressEvent,
-            KeydownEvent,
-            KeyupEvent,
+            KeyDownEvent,
+            KeyUpEvent,
             ClickEvent,
             DoubleClickEvent,
             MouseDownEvent,

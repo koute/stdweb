@@ -301,7 +301,7 @@ pub fn deserialize_object< R, F: FnOnce( &mut ObjectDeserializer ) -> R >( refer
         var object = Module.STDWEB.acquire_js_reference( $0 );\
         Module.STDWEB.serialize_object( $1, object );",
         reference.as_raw(),
-        (&mut result as *mut _)
+        &mut result as *mut _
     );
 
     assert_eq!( result.tag, Tag::Object );
@@ -363,7 +363,7 @@ pub fn deserialize_array< R, F: FnOnce( &mut ArrayDeserializer ) -> R >( referen
         var array = Module.STDWEB.acquire_js_reference( $0 );\
         Module.STDWEB.serialize_array( $1, array );",
         reference.as_raw(),
-        (&mut result as *mut _)
+        &mut result as *mut _
     );
 
     assert_eq!( result.tag, Tag::Array );

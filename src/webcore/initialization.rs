@@ -3,7 +3,7 @@ use webcore::ffi;
 
 /// Initializes the library.
 ///
-/// Calling this is required for anything to work.
+/// Necessary **only** when compiling **without** `cargo-web`.
 #[inline(never)]
 #[cold]
 pub fn initialize() {
@@ -16,7 +16,7 @@ pub fn initialize() {
         INITIALIZED = true;
     }
 
-    __js_raw_asm!( include!( concat!( env!( "OUT_DIR" ), "/runtime.rs" ) ) );
+    include!( concat!( env!( "OUT_DIR" ), "/runtime.rs" ) );
 
     if cfg!( test ) == false {
         panic::set_hook( Box::new( |info| {
@@ -36,17 +36,14 @@ pub fn initialize() {
     }
 }
 
-/// Runs the event loop.
+/// Runs Emscripten's event loop.
 ///
-/// You should call this before returning from `main()`,
-/// otherwise bad things will happen.
+/// If you're compiling your project **without** using `cargo-web`
+/// **and** you're using an Emscripten-based target (`asmjs-unknown-emscripten`,
+/// or `wasm32-unknown-emscripten`) then calling this before returning
+/// from `main()` is **mandatory** and will **not** return. (It is, effectively, an infinite loop.)
 ///
-/// On Emscripten-based targets (`asmjs-unknown-emscripten`,
-/// `wasm32-unknown-emscripten`) calling this is **mandatory**
-/// and will **not** return. (It is, effectively, an infinite loop.)
-///
-/// On Rust's native wasm target (`wasm32-unknown-unknown`)
-/// calling this is not necessary and doesn't do anything.
+/// If you're using `cargo-web` to build your project then you never need to call this.
 pub fn event_loop() {
     ffi::event_loop();
 }

@@ -9,7 +9,7 @@ See README in the root of this project for a more in-depth explanation.
 
 1. Start the demo:
 
-    $ cargo-web start --target-webasm
+    $ cargo-web start --target=wasm32-unknown-unknown
 
 2. Visit `http://localhost:8000` with your browser.
 
@@ -17,7 +17,7 @@ See README in the root of this project for a more in-depth explanation.
 
 1. Build the example:
 
-    $ cargo-web build --target-webasm
+    $ cargo-web build --target=wasm32-unknown-unknown
 
 2. Run it:
 

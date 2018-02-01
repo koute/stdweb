@@ -27,7 +27,7 @@ macro_rules! arraykind {
                         ".slice( $0, $1 ) );"
                     ),
                     slice_ptr,
-                    (slice_ptr + slice.len() as i32)
+                    slice_ptr + slice.len() as i32
                 );
 
                 let reference = unsafe {

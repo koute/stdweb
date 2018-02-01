@@ -412,7 +412,7 @@ macro_rules! _js_impl {
 
             $crate::private::noop( &mut memory_required );
 
-            #[allow(unused_unsafe)]
+            #[allow(unused_unsafe, unused_parens)]
             unsafe {
                 _js_impl!(
                     @if no_return in [$($flags)*] {
@@ -579,6 +579,7 @@ macro_rules! __reference_boilerplate {
         }
 
         impl< $($impl_arg)* > Clone for $($kind_arg)* where $($bounds)* {
+            #[allow(unused_parens)]
             #[inline]
             fn clone( &self ) -> Self {
                 call_with_repeated_tail!( ($($kind_arg)*), ((self.0.clone())), foreach ($($impl_arg)*) -> (::std::default::Default::default()) )
@@ -593,6 +594,7 @@ macro_rules! __reference_boilerplate {
         }
 
         impl< $($impl_arg)* > $crate::private::FromReferenceUnchecked for $($kind_arg)* where $($bounds)* {
+            #[allow(unused_parens)]
             #[inline]
             unsafe fn from_reference_unchecked( reference: $crate::Reference ) -> Self {
                 call_with_repeated_tail!( ($($kind_arg)*), (reference), foreach ($($impl_arg)*) -> (::std::default::Default::default()) )

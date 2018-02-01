@@ -9,7 +9,7 @@ use webapi::node_list::NodeList;
 /// kinds of elements.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element)
-pub trait IElement: IEventTarget {
+pub trait IElement: INode {
     /// The Element.classList is a read-only property which returns a live
     /// [TokenList](struct.TokenList.html) collection of the class attributes
     /// of the element.
