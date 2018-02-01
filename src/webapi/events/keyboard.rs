@@ -193,27 +193,27 @@ reference_boilerplate! {
     convertible to Event
 }
 
-/// The `KeypressEvent` is fired when a key is pressed down. It's only
+/// The `KeyPressEvent` is fired when a key is pressed down. It's only
 /// fired for keys which produce a character value.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/keypress)
-pub struct KeypressEvent( Reference );
+pub struct KeyPressEvent( Reference );
 
-impl IEvent for KeypressEvent {}
-impl IKeyboardEvent for KeypressEvent {}
-impl ConcreteEvent for KeypressEvent {
+impl IEvent for KeyPressEvent {}
+impl IKeyboardEvent for KeyPressEvent {}
+impl ConcreteEvent for KeyPressEvent {
     const EVENT_TYPE: &'static str = "keypress";
 }
 
 reference_boilerplate! {
-    KeypressEvent,
+    KeyPressEvent,
     instanceof KeyboardEvent
     convertible to Event
     convertible to KeyboardEvent
 }
 
 /// The `KeyDownEvent` is fired when a key is pressed down.
-/// Unlike the `KeypressEvent` event it's also fired for keys which
+/// Unlike the `KeyPressEvent` event it's also fired for keys which
 /// do not produce a character value.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/keydown)
@@ -258,7 +258,7 @@ mod tests {
     fn test_keyboard_event() {
         let event: KeyboardEvent = js!(
             return new KeyboardEvent(
-                @{KeypressEvent::EVENT_TYPE},
+                @{KeyPressEvent::EVENT_TYPE},
                 {
                     key: "A",
                     code: "KeyA",
@@ -288,9 +288,9 @@ mod tests {
 
     #[test]
     fn test_keypress_event() {
-        let event: KeypressEvent = js!(
-            return new KeyboardEvent( @{KeypressEvent::EVENT_TYPE} );
+        let event: KeyPressEvent = js!(
+            return new KeyboardEvent( @{KeyPressEvent::EVENT_TYPE} );
         ).try_into().unwrap();
-        assert_eq!( event.event_type(), KeypressEvent::EVENT_TYPE );
+        assert_eq!( event.event_type(), KeyPressEvent::EVENT_TYPE );
     }
 }

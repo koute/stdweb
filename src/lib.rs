@@ -207,7 +207,7 @@ pub mod web {
 
         pub use webapi::events::keyboard::{
             IKeyboardEvent,
-            KeypressEvent,
+            KeyPressEvent,
             KeyDownEvent,
             KeyUpEvent,
 
