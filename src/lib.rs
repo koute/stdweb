@@ -159,12 +159,8 @@ pub mod web {
     pub use webapi::web_socket::{WebSocket, SocketCloseCode};
     pub use webapi::rendering_context::{RenderingContext, CanvasRenderingContext2d};
     pub use webapi::mutation_observer::{MutationObserver, MutationObserverHandle, MutationObserverInit, MutationRecord};
+    pub use webapi::xml_http_request::{XmlHttpRequest, XhrReadyState};
 
-
-    /// A module containing XmlHttpRequest and its XhrReadyState
-    pub mod xml_http_request {
-        pub use webapi::xml_http_request::{ XmlHttpRequest, XhrReadyState };
-    }
     /// A module containing error types.
     pub mod error {
         pub use webapi::node::NotFoundError;
