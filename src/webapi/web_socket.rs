@@ -6,9 +6,6 @@ use webapi::blob::Blob;
 use webapi::array_buffer::ArrayBuffer;
 use webapi::dom_exception::{InvalidAccessError, SecurityError, SyntaxError};
 
-use std::error;
-use std::fmt;
-
 /// Wrapper type around a CloseEvent code, indicating why the WebSocket was closed
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent)

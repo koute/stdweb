@@ -1,6 +1,6 @@
 use std::mem;
 
-use webcore::value::{Reference, FromReference, Value};
+use webcore::value::{Reference, FromReference};
 use webcore::try_from::{TryFrom, TryInto};
 use webapi::document::Document;
 use webapi::dom_exception::{HierarchyRequestError, NotFoundError};
