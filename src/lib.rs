@@ -88,10 +88,10 @@ extern crate serde_json;
 extern crate serde_derive;
 
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
-extern crate stdweb_macros;
+extern crate stdweb_internal_macros;
 
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
-pub use stdweb_macros::js_export;
+pub use stdweb_internal_macros::js_export;
 
 #[macro_use]
 mod webcore;

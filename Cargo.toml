@@ -30,4 +30,4 @@ nightly = []
 web_test = []
 
 [target.wasm32-unknown-unknown.dependencies]
-stdweb-macros = { path = "stdweb-macros" }
+stdweb-internal-macros = { path = "stdweb-internal-macros" }

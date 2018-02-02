@@ -8,5 +8,4 @@ crate-type = ["cdylib"]
 
 [dependencies]
 stdweb = { path = "../.." }
-stdweb-macros = { path = "../../stdweb-macros" }
 sha1 = "0.3"

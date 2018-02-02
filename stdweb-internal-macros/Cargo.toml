@@ -1,5 +1,5 @@
 [package]
-name = "stdweb-macros"
+name = "stdweb-internal-macros"
 version = "0.0.0"
 authors = ["Jan Bujak <j@exia.io>"]
 repository = "https://github.com/koute/stdweb"
@@ -9,7 +9,7 @@ license = "MIT/Apache-2.0"
 readme = "README.md"
 keywords = ["web", "asmjs", "webasm", "javascript"]
 categories = ["api-bindings", "gui", "web-programming"]
-description = "Procedural macros for the `stdweb` crate"
+description = "Internal procedural macros for the `stdweb` crate"
 
 [lib]
 proc-macro = true
