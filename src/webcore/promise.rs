@@ -17,7 +17,7 @@ reference_boilerplate! {
 }
 
 impl Promise {
-    pub fn done< A, B >( &self, callback: B ) -> Self
+    pub fn done< A, B >( &self, callback: B )
         where A: TryFrom< Value >,
               A::Error: Error,
               B: FnOnce( Result< A, JSError > ) + 'static {
@@ -34,15 +34,16 @@ impl Promise {
             callback( value );
         };
 
-        (js! {
+        js! { @(no_return)
             var callback = @{Once( callback )};
 
-            return @{self}.then( function (value) {
+            // TODO don't swallow any errors thrown inside callback
+            @{self}.then( function (value) {
                 callback( value, true );
             }, function (value) {
                 callback( value, false );
             } );
-        }).try_into().unwrap()
+        }
     }
 
     // We can't use the IntoFuture trait because Promise doesn't have a type argument
@@ -53,14 +54,15 @@ impl Promise {
 
         let ( sender, receiver ) = channel();
 
+        self.done( |value| {
+            // TODO is this correct ?
+            match sender.send( value ) {
+                Ok( _ ) => {},
+                Err( _ ) => {},
+            };
+        } );
+
         PromiseFuture {
-            promise: self.done( |value| {
-                // TODO is this correct ?
-                match sender.send( value ) {
-                    Ok( _ ) => {},
-                    Err( _ ) => {},
-                };
-            } ),
             future: Box::new( receiver.map_err( |x| JSError::new( x.description() ) ).and_then( future::result ) ),
             phantom: PhantomData,
         }
@@ -69,7 +71,6 @@ impl Promise {
 
 
 pub struct PromiseFuture< A > {
-    promise: Promise,
     future: Box< Future< Item = A, Error = JSError > >,
     phantom: PhantomData< A >,
 }
@@ -85,7 +86,7 @@ pub struct PromiseFuture< A > {
 
 impl< A > std::fmt::Debug for PromiseFuture< A > {
     fn fmt( &self, formatter: &mut std::fmt::Formatter ) -> std::fmt::Result {
-        write!( formatter, "PromiseFuture {:?}", self.promise )
+        write!( formatter, "PromiseFuture" )
     }
 }
 
