@@ -131,7 +131,7 @@ pub use webcore::instance_of::InstanceOf;
 pub use webcore::reference_type::ReferenceType;
 pub use webcore::serialization::JsSerialize;
 
-pub use webcore::promise::PromiseFuture;
+pub use webcore::promise::{Promise, PromiseFuture};
 
 #[cfg(feature = "serde")]
 /// A module with serde-related APIs.
