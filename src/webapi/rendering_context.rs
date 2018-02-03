@@ -431,6 +431,26 @@ impl CanvasRenderingContext2d {
             @{&self.0}.lineWidth = @{line_width};
         }
     }
+
+    /// sets the miter limit ratio in space units. When getting, it returns the current value (10.0 by default). 
+    /// When setting, zero, negative, Infinity and NaN values are ignored; otherwise the current value is set to the new value.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/miterLimit)
+    pub fn get_miter_limit(&self) -> f64 {
+        js! (
+            return @{&self.0}.miterLimit;
+        ).try_into().unwrap()
+    }
+
+    /// sets the miter limit ratio in space units. When getting, it returns the current value (10.0 by default). 
+    /// When setting, zero, negative, Infinity and NaN values are ignored; otherwise the current value is set to the new value.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/miterLimit)
+    pub fn set_miter_limit(&self, miter_limit: f64) {
+        js! { @(no_return)
+            @{&self.0}.miterLimit = @{miter_limit};
+        }
+    }
     
     /// Adds an arc to the path which is centered at (x, y) position with radius r starting 
     /// at startAngle and ending at endAngle going in the given direction by anticlockwise 
