@@ -17,6 +17,10 @@ reference_boilerplate! {
 }
 
 impl Promise {
+    pub fn promisify( input: Value ) -> Promise {
+        js!( return Promise.resolve( @{input} ); ).try_into().unwrap()
+    }
+
     pub fn done< A, B >( &self, callback: B )
         where A: TryFrom< Value >,
               A::Error: Error,
@@ -94,7 +98,7 @@ impl< A > Future for PromiseFuture< A > {
     type Item = A;
     type Error = JSError;
 
-    fn poll (&mut self ) -> Poll< Self::Item, Self::Error > {
+    fn poll( &mut self ) -> Poll< Self::Item, Self::Error > {
         self.future.poll()
     }
 }
