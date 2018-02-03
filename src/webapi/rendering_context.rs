@@ -451,6 +451,26 @@ impl CanvasRenderingContext2d {
             @{&self.0}.miterLimit = @{miter_limit};
         }
     }
+
+    /// Specifies the level of the blurring effect; this value doesn't correspond to a number of pixels and is not 
+    /// affected by the current transformation matrix. The default value is 0.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/shadowBlur)
+    pub fn get_shadow_blur(&self) -> f64 {
+        js! (
+            return @{&self.0}.shadowBlur;
+        ).try_into().unwrap()
+    }
+
+    /// Specifies the level of the blurring effect; this value doesn't correspond to a number of pixels and is not 
+    /// affected by the current transformation matrix. The default value is 0.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/shadowBlur)
+    pub fn set_shadow_blur(&self, shadow_blur: f64) {
+        js! { @(no_return)
+            @{&self.0}.shadowBlur = @{shadow_blur};
+        }
+    }
     
     /// Adds an arc to the path which is centered at (x, y) position with radius r starting 
     /// at startAngle and ending at endAngle going in the given direction by anticlockwise 
