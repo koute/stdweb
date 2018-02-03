@@ -471,6 +471,24 @@ impl CanvasRenderingContext2d {
             @{&self.0}.shadowBlur = @{shadow_blur};
         }
     }
+
+    /// Specifies the color of the shadow.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/shadowColor)
+    pub fn get_shadow_color(&self) -> String {
+        js! (
+            return @{&self.0}.shadowColor;
+        ).try_into().unwrap()
+    }
+
+    /// Specifies the color of the shadow.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/shadowColor)
+    pub fn set_shadow_color(&self, shadow_color: &str) {
+        js! { @(no_return)
+            @{&self.0}.shadowColor = @{shadow_color};
+        }
+    }
     
     /// Adds an arc to the path which is centered at (x, y) position with radius r starting 
     /// at startAngle and ending at endAngle going in the given direction by anticlockwise 
