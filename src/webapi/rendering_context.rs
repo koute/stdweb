@@ -411,6 +411,26 @@ impl CanvasRenderingContext2d {
             @{&self.0}.lineJoin = @{line_join_str};
         }
     }
+
+    /// Sets the thickness of lines in space units. When getting, it returns the current value (1.0 by default). 
+    /// When setting, zero, negative, Infinity and NaN values are ignored; otherwise the current value is set to the new value.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineWidth)
+    pub fn get_line_width(&self) -> f64 {
+        js! (
+            return @{&self.0}.lineWidth;
+        ).try_into().unwrap()
+    }
+
+    /// Sets the thickness of lines in space units. When getting, it returns the current value (1.0 by default). 
+    /// When setting, zero, negative, Infinity and NaN values are ignored; otherwise the current value is set to the new value.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineWidth)
+    pub fn set_line_width(&self, line_width: f64) {
+        js! { @(no_return)
+            @{&self.0}.lineWidth = @{line_width};
+        }
+    }
     
     /// Adds an arc to the path which is centered at (x, y) position with radius r starting 
     /// at startAngle and ending at endAngle going in the given direction by anticlockwise 
