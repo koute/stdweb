@@ -43,6 +43,39 @@ pub struct ImageData(Reference);
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/TextMetrics)
 pub struct TextMetrics(Reference);
 
+/// The type of compositing operation to apply when drawing new shapes, where type is a string 
+/// identifying which of the twelve compositing operations to use.
+/// 
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation)
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum CompositeOperation {
+    SourceOver,
+    SourceIn,
+    SourceOut,
+    SourceAtop,
+    DestinationOver,
+    DestinationIn,
+    DestinationAtop,
+    Lighter,
+    Copy,
+    Xor,
+    Multiply,
+    Screen,
+    Overlay,
+    Darken,
+    Lighten,
+    ColorDodge,
+    ColorBurn,
+    HardLight,
+    SoftLight,
+    Difference,
+    Exclusion,
+    Hue,
+    Saturation,
+    Color,
+    Luminosity
+}
+
 /// The algorithm by which to determine if a point is inside a path or outside a path.
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fill)
@@ -192,6 +225,83 @@ impl CanvasRenderingContext2d {
         assert!(global_alpha > 0 as f64 && global_alpha < 1 as f64);
         js! { @(no_return)
             @{&self.0}.globalAlpha = @{global_alpha};
+        }
+    }
+
+    /// The CanvasRenderingContext2D.globalCompositeOperation property of the Canvas 2D API sets the 
+    /// type of compositing operation to apply when drawing new shapes, where type is a string identifying 
+    /// which of the compositing or blending mode operations to use.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation)
+    pub fn get_global_composite_operation(&self) -> CompositeOperation {
+        let composite_operation_str: String = js! (
+            return @{&self.0}.globalCompositeOperation
+        ).try_into().unwrap();
+        match composite_operation_str.as_ref() {
+            "source-over" => CompositeOperation::SourceOver,
+            "source-in" => CompositeOperation::SourceIn,
+            "source-out" => CompositeOperation::SourceOut,
+            "source-atop" => CompositeOperation::SourceAtop,
+            "destination-over" => CompositeOperation::DestinationOver,
+            "destination-in" => CompositeOperation::DestinationIn,
+            "destination-atop" => CompositeOperation::DestinationAtop,
+            "lighter" => CompositeOperation::Lighter,
+            "copy" => CompositeOperation::Copy,
+            "xor" => CompositeOperation::Xor,
+            "multiply" => CompositeOperation::Multiply,
+            "screen" => CompositeOperation::Screen,
+            "overlay" => CompositeOperation::Overlay,
+            "darken" => CompositeOperation::Darken,
+            "lighten" => CompositeOperation::Lighten,
+            "color-dodge" => CompositeOperation::ColorDodge,
+            "color-burn" => CompositeOperation::ColorBurn,
+            "hard-light" => CompositeOperation::HardLight,
+            "soft-light" => CompositeOperation::SoftLight,
+            "difference" => CompositeOperation::Difference,
+            "exclusion" => CompositeOperation::Exclusion,
+            "hue" => CompositeOperation::Hue,
+            "saturation" => CompositeOperation::Saturation,
+            "color" => CompositeOperation::Color,
+            "luminosity" => CompositeOperation::Luminosity,
+            _ => panic!("Unexpected globalCompositeOperation value"),
+        }
+    }
+
+    /// The CanvasRenderingContext2D.globalCompositeOperation property of the Canvas 2D API sets the 
+    /// type of compositing operation to apply when drawing new shapes, where type is a string identifying 
+    /// which of the compositing or blending mode operations to use.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation)
+    pub fn set_global_composite_operation(&self, composite_operation: CompositeOperation) {
+        let composite_string = match composite_operation {
+            CompositeOperation::SourceOver => "source-over",
+            CompositeOperation::SourceIn => "source-in",
+            CompositeOperation::SourceOut => "source-out",
+            CompositeOperation::SourceAtop => "source-atop",
+            CompositeOperation::DestinationOver => "destination-over",
+            CompositeOperation::DestinationIn => "destination-in",
+            CompositeOperation::DestinationAtop => "destination-atop",
+            CompositeOperation::Lighter => "lighter",
+            CompositeOperation::Copy => "copy",
+            CompositeOperation::Xor => "xor",
+            CompositeOperation::Multiply => "multiply",
+            CompositeOperation::Screen => "screen",
+            CompositeOperation::Overlay => "overlay",
+            CompositeOperation::Darken => "darken",
+            CompositeOperation::Lighten => "lighten",
+            CompositeOperation::ColorDodge => "color-dodge",
+            CompositeOperation::ColorBurn => "color-burn",
+            CompositeOperation::HardLight => "hard-light",
+            CompositeOperation::SoftLight => "soft-light",
+            CompositeOperation::Difference => "difference",
+            CompositeOperation::Exclusion => "exclusion",
+            CompositeOperation::Hue => "hue",
+            CompositeOperation::Saturation => "saturation",
+            CompositeOperation::Color => "color",
+            CompositeOperation::Luminosity => "luminosity"
+        };
+        js! {@(no_return)
+            @{&self.0}.globalCompositeOperation = @{composite_string};
         }
     }
     
