@@ -85,6 +85,16 @@ pub enum FillRule {
     EvenOdd
 }
 
+/// h=How the end points of every line are drawn.
+/// 
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineCap)
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum LineCap {
+    Butt,
+    Round,
+    Square
+}
+
 /// A DOMString indicating how to repeat the image.
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createPattern)
@@ -302,6 +312,40 @@ impl CanvasRenderingContext2d {
         };
         js! {@(no_return)
             @{&self.0}.globalCompositeOperation = @{composite_string};
+        }
+    }
+
+    /// Determines how the end points of every line are drawn. 
+    /// There are three possible values for this property and those are: butt, round and square.
+    /// By default this property is set to butt.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineCap)
+    pub fn get_line_cap(&self) -> LineCap {
+        let line_cap_str: String = js! (
+            return @{&self.0}.lineCap
+        ).try_into().unwrap();
+
+        match line_cap_str.as_ref() {
+            "butt" => LineCap::Butt,
+            "round" => LineCap::Round,
+            "square" => LineCap::Square,
+            _ => panic!("Unexpected lineCap value"),
+        }
+    }
+
+    /// Determines how the end points of every line are drawn. 
+    /// There are three possible values for this property and those are: butt, round and square.
+    /// By default this property is set to butt.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineCap)
+    pub fn set_line_cap(&self, line_cap: LineCap) {
+        let line_cap_string = match line_cap {
+            LineCap::Butt => "butt",
+            LineCap::Round => "round",
+            LineCap::Square => "square",
+        };
+        js! { @(no_return)
+            @{&self.0}.lineCap = @{line_cap_string};
         }
     }
     
