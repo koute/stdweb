@@ -28,7 +28,7 @@ impl< A > Future for PromiseFuture< A > {
     type Item = A;
     type Error = JSError;
 
-    fn poll (&mut self ) -> Poll<Self::Item, Self::Error> {
+    fn poll (&mut self ) -> Poll< Self::Item, Self::Error > {
         self.future.poll()
     }
 }
