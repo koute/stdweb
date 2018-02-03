@@ -95,6 +95,18 @@ pub enum LineCap {
     Square
 }
 
+/// determines how two connecting segments (of lines, arcs or curves) with non-zero lengths in a shape are 
+/// joined together (degenerate segments with zero lengths, whose specified endpoints and control points are 
+/// exactly at the same position, are skipped).
+/// 
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineJoin)
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum LineJoin {
+    Bevel,
+    Round,
+    Miter
+}
+
 /// A DOMString indicating how to repeat the image.
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createPattern)
@@ -364,6 +376,39 @@ impl CanvasRenderingContext2d {
     pub fn set_line_dash_offset(&self, line_dash_offset: f64) {
         js! { @(no_return)
             @{&self.0}.lineDashOffset = @{line_dash_offset};
+        }
+    }
+
+    /// Determines how two connecting segments (of lines, arcs or curves) with non-zero lengths in a shape are 
+    /// joined together (degenerate segments with zero lengths, whose specified endpoints and control points are 
+    /// exactly at the same position, are skipped).
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineJoin)
+    pub fn get_line_join(&self) -> LineJoin {
+        let line_join_str: String = js! (
+            return @{&self.0}.lineJoin;
+        ).try_into().unwrap();
+        match line_join_str.as_ref() {
+            "bevel" => LineJoin::Bevel,
+            "round" => LineJoin::Round,
+            "miter" => LineJoin::Miter,
+            _ => panic!("Unexpected lineJoin value"),
+        }
+    }
+
+    /// Determines how two connecting segments (of lines, arcs or curves) with non-zero lengths in a shape are 
+    /// joined together (degenerate segments with zero lengths, whose specified endpoints and control points are 
+    /// exactly at the same position, are skipped).
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineJoin)
+    pub fn set_line_join(&self, line_join: LineJoin) {
+        let line_join_str = match line_join {
+            LineJoin::Bevel => "bevel",
+            LineJoin::Round => "round",
+            LineJoin::Miter => "miter",
+        };
+        js! { @(no_return)
+            @{&self.0}.lineJoin = @{line_join_str};
         }
     }
     
