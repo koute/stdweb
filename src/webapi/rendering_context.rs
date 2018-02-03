@@ -171,6 +171,29 @@ impl CanvasRenderingContext2d {
             @{&self.0}.font = @{font};
         }
     }
+
+    /// The CanvasRenderingContext2D.globalAlpha property of the Canvas 2D API specifies the alpha 
+    /// value that is applied to shapes and images before they are drawn onto the canvas. 
+    /// The value is in the range from 0.0 (fully transparent) to 1.0 (fully opaque).
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalAlpha)
+    pub fn get_global_alpha(&self) -> f64 {
+        js! (
+            return @{&self.0}.globalAlpha
+        ).try_into().unwrap()
+    }
+
+    /// The CanvasRenderingContext2D.globalAlpha property of the Canvas 2D API specifies the alpha 
+    /// value that is applied to shapes and images before they are drawn onto the canvas. 
+    /// The value is in the range from 0.0 (fully transparent) to 1.0 (fully opaque).
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalAlpha)
+    pub fn set_global_alpha(&self, global_alpha: f64) {
+        assert!(global_alpha > 0 as f64 && global_alpha < 1 as f64);
+        js! { @(no_return)
+            @{&self.0}.globalAlpha = @{global_alpha};
+        }
+    }
     
     /// Adds an arc to the path which is centered at (x, y) position with radius r starting 
     /// at startAngle and ending at endAngle going in the given direction by anticlockwise 
