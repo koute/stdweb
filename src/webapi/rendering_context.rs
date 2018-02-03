@@ -98,6 +98,18 @@ impl RenderingContext for CanvasRenderingContext2d {
 }
 
 impl CanvasRenderingContext2d {
+    /// # Properties
+    
+    /// The CanvasRenderingContext2D.canvas property is a read-only reference to the HTMLCanvasElement 
+    /// object that is associated with the context. It might be null if there is no association with an <canvas> element.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/canvas)
+    pub fn get_canvas(&self) -> Option<CanvasElement> {
+        js! (
+            @{&self.0}.canvas;
+        ).try_into().unwrap()
+    }
+
     
     /// Adds an arc to the path which is centered at (x, y) position with radius r starting 
     /// at startAngle and ending at endAngle going in the given direction by anticlockwise 
