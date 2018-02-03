@@ -110,6 +110,45 @@ impl CanvasRenderingContext2d {
         ).try_into().unwrap()
     }
 
+    /// The CanvasRenderingContext2D.fillStyle property of the Canvas 2D API specifies the color or style to use inside shapes. 
+    /// The default is #000 (black).
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillStyle)
+    pub fn get_fill_style(&self) -> String {
+        js! (
+            @{&self.0}.fillStyle
+        ).try_into().unwrap()
+    }
+
+    /// The CanvasRenderingContext2D.fillStyle property of the Canvas 2D API specifies the color or style to use inside shapes. 
+    /// The default is #000 (black).
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillStyle)
+    pub fn set_fill_style_color(&self, color: &str){
+        js! { @(no_return)
+            @{&self.0}.fillStyle = @{color};
+        }
+    }
+
+    /// The CanvasRenderingContext2D.fillStyle property of the Canvas 2D API specifies the color or style to use inside shapes. 
+    /// The default is #000 (black).
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillStyle)
+    pub fn set_fill_style_gradient(&self, gradient: CanvasGradient){
+        js! { @(no_return)
+            @{&self.0}.fillStyle = @{gradient};
+        }
+    }
+
+    /// The CanvasRenderingContext2D.fillStyle property of the Canvas 2D API specifies the color or style to use inside shapes. 
+    /// The default is #000 (black).
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillStyle)
+    pub fn set_fill_style_pattern(&self, pattern: CanvasPattern){
+        js! { @(no_return)
+            @{&self.0}.fillStyle = @{pattern};
+        }
+    }
     
     /// Adds an arc to the path which is centered at (x, y) position with radius r starting 
     /// at startAngle and ending at endAngle going in the given direction by anticlockwise 
