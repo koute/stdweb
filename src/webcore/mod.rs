@@ -15,6 +15,7 @@ pub mod unsafe_typed_array;
 pub mod once;
 pub mod instance_of;
 pub mod reference_type;
+pub mod promise;
 
 #[cfg(feature = "nightly")]
 pub mod void {
