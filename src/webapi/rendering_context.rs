@@ -118,6 +118,18 @@ pub enum Repetition {
     NoRepeat
 }
 
+/// Specifies text alignment
+/// 
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/textAlign)
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum TextAlign {
+    Left,
+    Right,
+    Center,
+    Start,
+    End
+}
+
 reference_boilerplate! {
     CanvasRenderingContext2d,
     instanceof CanvasRenderingContext2D
@@ -559,6 +571,43 @@ impl CanvasRenderingContext2d {
     pub fn set_stroke_style_pattern(&self, pattern: CanvasPattern){
         js! { @(no_return)
             @{&self.0}.strokeStyle = @{pattern};
+        }
+    }
+
+    /// specifies the current text alignment being used when drawing text. 
+    /// Beware that the alignment is based on the x value of the fillText() method. 
+    /// So if textAlign is "center", then the text would be drawn at x - (width / 2).
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/textAlign)
+    pub fn get_text_align(&self) -> TextAlign {
+        let text_align_str: String = js! (
+            return @{&self.0}.textAlign;
+        ).try_into().unwrap();
+        match text_align_str.as_ref() {
+            "center" => TextAlign::Center,
+            "end" => TextAlign::End,
+            "left" => TextAlign::Left,
+            "right" => TextAlign::Right,
+            "start" => TextAlign::Start,
+            _ => panic!("Unexpected textAlign value"),
+        }
+    }
+
+    /// specifies the current text alignment being used when drawing text. 
+    /// Beware that the alignment is based on the x value of the fillText() method. 
+    /// So if textAlign is "center", then the text would be drawn at x - (width / 2).
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/textAlign)
+    pub fn set_text_align(&self, text_align: TextAlign) {
+        let text_align_str = match text_align {
+            TextAlign::Center => "center",
+            TextAlign::End => "end",
+            TextAlign::Left => "left",
+            TextAlign::Right => "right",
+            TextAlign::Start => "start",
+        };
+        js! { @(no_return)
+            @{&self.0}.textAlign = @{text_align_str};
         }
     }
     
