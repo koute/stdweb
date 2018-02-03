@@ -489,6 +489,24 @@ impl CanvasRenderingContext2d {
             @{&self.0}.shadowColor = @{shadow_color};
         }
     }
+
+    /// Specifies the distance that the shadow will be offset in horizontal distance.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/shadowOffsetX)
+    pub fn get_shadow_offset_x(&self) -> f64 {
+        js! (
+            return @{&self.0}.shadowOffsetX;
+        ).try_into().unwrap()
+    }
+
+    /// Specifies the distance that the shadow will be offset in horizontal distance.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/shadowOffsetX)
+    pub fn set_shadow_offset_x(&self, shadow_offset_x: f64) {
+        js! { @(no_return)
+            @{&self.0}.shadowOffsetX = @{shadow_offset_x};
+        }
+    }
     
     /// Adds an arc to the path which is centered at (x, y) position with radius r starting 
     /// at startAngle and ending at endAngle going in the given direction by anticlockwise 
