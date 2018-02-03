@@ -525,6 +525,42 @@ impl CanvasRenderingContext2d {
             @{&self.0}.shadowOffsetY = @{shadow_offset_y};
         }
     }
+
+    /// Specifies the color or style to use for the lines around shapes. The default is #000 (black).
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/strokeStyle)
+    pub fn get_stroke_style(&self) -> String {
+        js! (
+            return @{&self.0}.strokeStyle;
+        ).try_into().unwrap()
+    }
+
+    /// Specifies the color or style to use for the lines around shapes. The default is #000 (black).
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/strokeStyle)
+    pub fn set_stroke_style_color(&self, color: &str){
+        js! { @(no_return)
+            @{&self.0}.strokeStyle = @{color};
+        }
+    }
+
+    /// Specifies the color or style to use for the lines around shapes. The default is #000 (black).
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/strokeStyle)
+    pub fn set_stroke_style_gradient(&self, gradient: CanvasGradient){
+        js! { @(no_return)
+            @{&self.0}.strokeStyle = @{gradient};
+        }
+    }
+
+    /// Specifies the color or style to use for the lines around shapes. The default is #000 (black).
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/strokeStyle)
+    pub fn set_stroke_style_pattern(&self, pattern: CanvasPattern){
+        js! { @(no_return)
+            @{&self.0}.strokeStyle = @{pattern};
+        }
+    }
     
     /// Adds an arc to the path which is centered at (x, y) position with radius r starting 
     /// at startAngle and ending at endAngle going in the given direction by anticlockwise 
