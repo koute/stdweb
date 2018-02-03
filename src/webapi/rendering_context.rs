@@ -149,6 +149,28 @@ impl CanvasRenderingContext2d {
             @{&self.0}.fillStyle = @{pattern};
         }
     }
+
+    /// The CanvasRenderingContext2D.font property of the Canvas 2D API specifies the current 
+    /// text style being used when drawing text. This string uses the same syntax as the CSS 
+    /// font specifier. The default font is 10px sans-serif.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/font)
+    pub fn get_font(&self) -> String {
+        js! (
+            return @{&self.0}.font
+        ).try_into().unwrap()
+    }
+
+    /// The CanvasRenderingContext2D.font property of the Canvas 2D API specifies the current 
+    /// text style being used when drawing text. This string uses the same syntax as the CSS 
+    /// font specifier. The default font is 10px sans-serif.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/font)
+    pub fn set_font(&self, font: &str) {
+        js! { @(no_return)
+            @{&self.0}.font = @{font};
+        }
+    }
     
     /// Adds an arc to the path which is centered at (x, y) position with radius r starting 
     /// at startAngle and ending at endAngle going in the given direction by anticlockwise 
