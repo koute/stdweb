@@ -348,6 +348,24 @@ impl CanvasRenderingContext2d {
             @{&self.0}.lineCap = @{line_cap_string};
         }
     }
+
+    /// Sets the line dash pattern offset or "phase" to achieve a "marching ants" effect, for example.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineDashOffset)
+    pub fn get_line_dash_offset(&self) -> f64 {
+        js! (
+            return @{&self.0}.lineDashOffset;
+        ).try_into().unwrap()
+    }
+
+    /// Sets the line dash pattern offset or "phase" to achieve a "marching ants" effect, for example.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineDashOffset)
+    pub fn set_line_dash_offset(&self, line_dash_offset: f64) {
+        js! { @(no_return)
+            @{&self.0}.lineDashOffset = @{line_dash_offset};
+        }
+    }
     
     /// Adds an arc to the path which is centered at (x, y) position with radius r starting 
     /// at startAngle and ending at endAngle going in the given direction by anticlockwise 
