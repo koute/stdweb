@@ -6,7 +6,7 @@ use webcore::value::{Value, Reference, ConversionError};
 use webcore::try_from::{TryInto, TryFrom};
 use web::error::Error as JSError;
 use futures::{future, Future, Poll};
-use futures::sync::oneshot::channel;
+use futures::unsync::oneshot::channel;
 
 
 pub struct Promise( Reference );
