@@ -130,6 +130,19 @@ pub enum TextAlign {
     End
 }
 
+/// Text baseline being used when drawing text
+/// 
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/textBaseline)
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum TextBaseline {
+    Top,
+    Hanging,
+    Middle,
+    Alphabetic,
+    Ideographic,
+    Bottom
+}
+
 reference_boilerplate! {
     CanvasRenderingContext2d,
     instanceof CanvasRenderingContext2D
@@ -610,6 +623,43 @@ impl CanvasRenderingContext2d {
             @{&self.0}.textAlign = @{text_align_str};
         }
     }
+
+    /// Specifies the current text baseline being used when drawing text.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/textBaseline)
+    pub fn get_text_baseline(&self) -> TextBaseline {
+        let text_baseline_str: String = js! (
+            return @{&self.0}.textBaseline;
+        ).try_into().unwrap();
+        match text_baseline_str.as_ref() {
+            "alphabetic" => TextBaseline::Alphabetic,
+            "bottom" => TextBaseline::Bottom,
+            "hanging" => TextBaseline::Hanging,
+            "ideographic" => TextBaseline::Ideographic,
+            "middle" => TextBaseline::Middle,
+            "top" => TextBaseline::Top,
+            _ => panic!("Unexpected textBaseLine value")
+        }
+    }
+
+    /// Specifies the current text baseline being used when drawing text.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/textBaseline)
+    pub fn set_text_baseline(&self, text_baseline: TextBaseline) {
+        let text_baseline_str = match text_baseline {
+            TextBaseline::Alphabetic => "alphabetic",
+            TextBaseline::Bottom => "bottom",
+            TextBaseline::Hanging => "hanging",
+            TextBaseline::Ideographic => "ideographic",
+            TextBaseline::Middle => "middle",
+            TextBaseline::Top => "top"
+        };
+        js! { @(no_return)
+            @{&self.0}.textBaseline = @{text_baseline_str};
+        }
+    }
+
+    /// # Methods
     
     /// Adds an arc to the path which is centered at (x, y) position with radius r starting 
     /// at startAngle and ending at endAngle going in the given direction by anticlockwise 
