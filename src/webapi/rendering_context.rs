@@ -203,7 +203,7 @@ impl CanvasRenderingContext2d {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createLinearGradient)
     pub fn create_linear_gradient(&self, x0: f64, y0: f64, x1: f64, y1: f64) -> CanvasGradient {
         js! (
-            @{&self.0}.createLinearGradient(@{x0}, @{y0}, @{x1}, @{y1});
+            return @{&self.0}.createLinearGradient(@{x0}, @{y0}, @{x1}, @{y1});
         ).try_into().unwrap()
     }
 
@@ -231,7 +231,7 @@ impl CanvasRenderingContext2d {
         };
 
         js! (
-            @{&self.0}.createPattern(@{image}, @{repetition_string});
+            return @{&self.0}.createPattern(@{image}, @{repetition_string});
         ).try_into().unwrap()
     }
 
@@ -241,7 +241,7 @@ impl CanvasRenderingContext2d {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createRadialGradient)
     pub fn create_radial_gradient(&self, x0: f64, y0: f64, r0: f64, x1: f64, y1: f64, r1: f64) -> CanvasGradient {
         js! (
-            @{&self.0}.createRadialGradient(@{x0}, @{y0}, @{r0}, @{x1}, @{y1}, @{r1});
+            return @{&self.0}.createRadialGradient(@{x0}, @{y0}, @{r0}, @{x1}, @{y1}, @{r1});
         ).try_into().unwrap()
     }
 
@@ -321,7 +321,7 @@ impl CanvasRenderingContext2d {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getImageData)
     pub fn get_image_data(&self, sx: f64, sy: f64, sw: f64, sh: f64) -> ImageData {
         js! (
-            @{&self.0}.getImageData(@{sx}, @{sy}, @{sw}, @{sh});
+            return @{&self.0}.getImageData(@{sx}, @{sy}, @{sw}, @{sh});
         ).try_into().unwrap()
     }
 
@@ -330,7 +330,7 @@ impl CanvasRenderingContext2d {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getLineDash)
     pub fn get_line_dash(&self) -> Vec<f64> {
         js! (
-            @{&self.0}.getLineDash();
+            return @{&self.0}.getLineDash();
         ).try_into().unwrap()
     }
 
@@ -354,12 +354,12 @@ impl CanvasRenderingContext2d {
                 }
             }
             js! (
-                @{&self.0}.isPointInPath(@{x}, @{y}, @{fill_rule_str});
+                return @{&self.0}.isPointInPath(@{x}, @{y}, @{fill_rule_str});
             ).try_into().unwrap()
         }
         else {
             js! (
-                @{&self.0}.isPointInPath(@{x}, @{y});
+                return @{&self.0}.isPointInPath(@{x}, @{y});
             ).try_into().unwrap()
         }
     }
@@ -371,7 +371,7 @@ impl CanvasRenderingContext2d {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/isPointInStroke)
     pub fn is_point_in_stroke(&self, x: f64, y: f64) -> bool {
         js! (
-            @{&self.0}.isPointInStroke(@{x}, @{y});
+            return @{&self.0}.isPointInStroke(@{x}, @{y});
         ).try_into().unwrap()
     }
 
@@ -389,7 +389,7 @@ impl CanvasRenderingContext2d {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/measureText)
     pub fn measure_text(&self, text: &str) -> TextMetrics {
         js! (
-            @{&self.0}.measureText(@{text});
+            return @{&self.0}.measureText(@{text});
         ).try_into().unwrap()
     }
 
