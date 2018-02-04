@@ -14,8 +14,6 @@ set -e
 
 echo "Is Rust from nightly: $IS_NIGHTLY"
 
-command -v cargo-web >/dev/null 2>&1 || cargo install cargo-web
-
 echo "Testing for asmjs-unknown-emscripten..."
 cargo web test --features web_test --target=asmjs-unknown-emscripten
 

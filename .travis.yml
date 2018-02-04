@@ -17,4 +17,5 @@ rust:
 
 script:
   - nvm install 9
-  - ./ci.sh
+  - ./ci/install_cargo_web.sh
+  - ./ci/run_tests.sh
