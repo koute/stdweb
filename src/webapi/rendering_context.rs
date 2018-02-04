@@ -1040,6 +1040,23 @@ impl CanvasRenderingContext2d {
         }
     }
 
+    /// paints data from the given ImageData object onto the bitmap. If a dirty rectangle is provided, only the pixels 
+    /// from that rectangle are painted. This method is not affected by the canvas transformation matrix.
+    pub fn put_image_data(&self, 
+                            image_data: ImageData, 
+                            dx: f64, dy: f64, 
+                            dirty_x: Option<f64>, dirty_y: Option<f64>, 
+                            dirty_width: Option<f64>, dirty_height: Option<f64>
+                        ) -> Result<(), SyntaxError> {
+        let dirty_x = dirty_x.unwrap_or(0 as f64);
+        let dirty_y = dirty_y.unwrap_or(0 as f64);
+        let dirty_width = dirty_width.unwrap_or(image_data.get_width());
+        let dirty_height = dirty_height.unwrap_or(image_data.get_height());
+        js_try! ( @(no_return)
+            @{&self.0}.putImageData(@{image_data}, @{dx}, @{dy}, @{dirty_x}, @{dirty_y}, @{dirty_width}, @{dirty_height});
+        ).unwrap()
+    }
+
     /// Adds a quadratic Bézier curve to the path. It requires two points. 
     /// The first point is a control point and the second one is the end point. 
     /// The starting point is the last point in the current path, which can be changed using 
