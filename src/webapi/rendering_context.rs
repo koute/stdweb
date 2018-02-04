@@ -1,9 +1,9 @@
 use webcore::value::{Reference, ConversionError};
-use webcore::try_from::TryInto;
+use webcore::try_from::{TryFrom, TryInto};
 use webcore::value::Undefined;
 use webapi::html_elements::{CanvasElement, ImageElement};
 use webapi::html_element::IHtmlElement;
-
+use webapi::dom_exception::{SyntaxError, SecurityError};
 /// Trait implemented by rendering contexts which can be obtained from a canvas.
 pub trait RenderingContext {
     /// Type of error which can occur whilst creating this context
@@ -141,6 +141,31 @@ pub enum TextBaseline {
     Alphabetic,
     Ideographic,
     Bottom
+}
+
+error_enum_boilerplate! {
+    IndexSizeError,
+    SyntaxError
+}
+
+error_enum_boilerplate! {
+    InvalidStateError,
+    SyntaxError
+}
+
+error_enum_boilerplate! {
+    NotSupportedError,
+    SyntaxError
+}
+
+error_enum_boilerplate! {
+    TypeMismatchError,
+    SyntaxError
+}
+
+error_enum_boilerplate! {
+    NsErrorNotAvailable,
+    SecurityError
 }
 
 reference_boilerplate! {
