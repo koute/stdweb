@@ -5,8 +5,8 @@ use webcore::once::Once;
 use webcore::value::{Value, Reference, ConversionError};
 use webcore::try_from::{TryInto, TryFrom};
 use web::error::Error as JSError;
-use futures::{future, Future, Poll};
-use futures::unsync::oneshot::channel;
+use futures::{Future, Poll, Async};
+use futures::unsync::oneshot::{Receiver, channel};
 
 
 pub struct Promise( Reference );
@@ -67,7 +67,7 @@ impl Promise {
         } );
 
         PromiseFuture {
-            future: Box::new( receiver.map_err( |x| JSError::new( x.description() ) ).and_then( future::result ) ),
+            future: receiver,
             phantom: PhantomData,
         }
     }
@@ -75,7 +75,7 @@ impl Promise {
 
 
 pub struct PromiseFuture< A > {
-    future: Box< Future< Item = A, Error = JSError > >,
+    future: Receiver< Result< A, JSError > >,
     phantom: PhantomData< A >,
 }
 
@@ -99,7 +99,12 @@ impl< A > Future for PromiseFuture< A > {
     type Error = JSError;
 
     fn poll( &mut self ) -> Poll< Self::Item, Self::Error > {
-        self.future.poll()
+        match self.future.poll() {
+            Ok( Async::Ready( Ok( a ) ) ) => Ok( Async::Ready( a ) ),
+            Ok( Async::Ready( Err( e ) ) ) => Err( e ),
+            Ok( Async::NotReady ) => Ok( Async::NotReady ),
+            Err( e ) => Err( JSError::new( e.description() ) ),
+        }
     }
 }
 
