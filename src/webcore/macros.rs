@@ -290,7 +290,7 @@ macro_rules! _js_impl {
     };
 
     (@prelude $arg_counter:tt [$($out:tt)*] -> $arg:tt $($rest:tt)*) => {
-        _js_impl!( @_inc @prelude $arg_counter [$($out)* ("$") ($arg_counter) (" = Module.STDWEB.to_js($") ($arg_counter) (");")] -> $($rest)* )
+        _js_impl!( @_inc @prelude $arg_counter [$($out)* ("$") ($arg_counter) (" = Module.STDWEB_PRIVATE.to_js($") ($arg_counter) (");")] -> $($rest)* )
     };
 
     (@prelude $arg_counter:tt [$($out:tt)*] ->) => {
@@ -428,7 +428,7 @@ macro_rules! _js_impl {
                             @call_emscripten
                             [concat!(
                                 _js_impl!( @prelude "1" [] -> $($args)* ),
-                                "Module.STDWEB.from_js($0, (function(){", $code, "})());"
+                                "Module.STDWEB_PRIVATE.from_js($0, (function(){", $code, "})());"
                             )]
                             [RESULT $($args)*]
                             [(&mut result as *mut _) a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15]
@@ -678,13 +678,29 @@ macro_rules! reference_boilerplate {
     };
 }
 
+macro_rules! error_boilerplate {
+    ($name:ident) => {
+        impl ::std::fmt::Display for $name {
+            fn fmt(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                write!(formatter, "{}: {}", stringify!($name), self.message())
+            }
+        }
+
+        impl ::std::error::Error for $name {
+            fn description(&self) -> &str {
+                stringify!($name)
+            }
+        }
+    }
+}
+
 macro_rules! instanceof {
     ($value:expr, $kind:ident) => {{
         use $crate::unstable::TryInto;
         let reference: Option< &$crate::Reference > = (&$value).try_into().ok();
         reference.map( |reference| {
             __js_raw_asm!(
-                concat!( "return (Module.STDWEB.acquire_js_reference( $0 ) instanceof ", stringify!( $kind ), ") | 0;" ),
+                concat!( "return (Module.STDWEB_PRIVATE.acquire_js_reference( $0 ) instanceof ", stringify!( $kind ), ") | 0;" ),
                 reference.as_raw()
             ) == 1
         }).unwrap_or( false )
@@ -710,6 +726,114 @@ macro_rules! newtype_enum {
                     $($value => write!(formatter, "{}::{}", stringify!($name), stringify!($variant)),)*
                     other => write!(formatter, "{}({})", stringify!($name), other)
                 }
+            }
+        }
+    }
+}
+
+/// Embeds JavaScript code into your Rust program similar to the `js!` macro, but
+/// catches errors that may be thrown.
+///
+/// This macro will attempt to coerce the value into the inferred `Result` type.
+/// The success and error types should implement `TryFrom<Value>`.
+///
+/// # Examples
+///
+/// ```
+/// let result: Result<i32, String> = js_try! {
+///     throw "error";
+/// }.unwrap();
+/// assert_eq!(result, Err("error".to_string()));
+/// ```
+macro_rules! js_try {
+    (@(no_return) $($token:tt)*) => {{
+        let result = js! {
+            try {
+                $($token)*
+                return {
+                    success: true
+                };
+            } catch( error ) {
+                return {
+                    error: error,
+                    success: false
+                };
+            }
+        };
+
+        use ::webcore::try_from::TryInto;
+        if js!( return @{result.as_ref()}.success; ) == true {
+            Ok(Ok(()))
+        } else {
+            match js!( return @{result}.error; ).try_into() {
+                Ok(e) => Ok(Err(e)),
+                Err(e) => Err(e),
+            }
+        }
+    }};
+
+    ($($token:tt)*) => {{
+        let result = js! {
+            try {
+                return {
+                    value: function() { $($token)* }(),
+                    success: true
+                };
+            } catch( error ) {
+                return {
+                    error: error,
+                    success: false
+                };
+            }
+        };
+
+        use webcore::try_from::TryInto;
+        if js!( return @{result.as_ref()}.success; ) == true {
+            match js!( return @{result}.value; ).try_into() {
+                Ok(t) => Ok(Ok(t)),
+                Err(e) => Err(e),
+            }
+        } else {
+            match js!( return @{result}.error; ).try_into() {
+                Ok(e) => Ok(Err(e)),
+                Err(e) => Err(e),
+            }
+        }
+    }};
+}
+
+macro_rules! error_enum_boilerplate {
+    ($error_name:ident, $($variant:ident),*) => {
+        #[derive(Debug, Clone)]
+        pub enum $error_name {
+            $($variant($variant)),*
+        }
+
+        impl TryFrom<::webcore::value::Value> for $error_name {
+            type Error = ::webcore::value::ConversionError;
+
+            fn try_from(value: ::webcore::value::Value) -> Result<Self, Self::Error> {
+                $(
+                    if let Ok(v) = $variant::try_from(value.clone()) {
+                        return Ok($error_name::$variant(v));
+                    }
+                )*
+
+                Err(::webcore::value::ConversionError::type_mismatch( &value ))
+            }
+        }
+
+        impl ::std::fmt::Display for $error_name {
+            fn fmt(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                match *self {
+                    $($error_name::$variant( ref r ) => r.fmt(formatter),)*
+                }
+            }
+        }
+
+        impl ::std::error::Error for $error_name {
+            fn description(&self) -> &str {
+                stringify!($error_name)
             }
         }
     }
@@ -749,5 +873,40 @@ mod tests {
             }.replace( " ", "" ),
             "($1).fn(($2));"
         );
+    }
+
+    #[test]
+    fn js_try() {
+        use ::webcore::value::{ConversionError, Value};
+
+        let v: Result<Value, Value> = js_try!( return "test"; ).unwrap();
+        assert_eq!( v, Ok(Value::String("test".to_string())) );
+
+        let v: Result<bool, bool> = js_try!( return true; ).unwrap();
+        assert_eq!( v, Ok(true) );
+
+        let v: Result<bool, bool> = js_try!( throw true; ).unwrap();
+        assert_eq!( v, Err(true) );
+
+        let v: Result<i32, String> = js_try!( throw "error"; ).unwrap();
+        assert_eq!( v, Err("error".to_string()) );
+
+        let v: Result<(), String> = js_try!( @(no_return) 2+2; ).unwrap();
+        assert_eq!( v, Ok(()) );
+
+        let v: Result<(), f64> = js_try!( @(no_return) throw 3.3; ).unwrap();
+        assert_eq!( v, Err(3.3) );
+
+        let v: Result< Result<i32, i32>, _ > = js_try!( return "f"; );
+        match v {
+            Err(ConversionError::TypeMismatch { actual_type: _ }) => (),
+            _ => panic!("Expected ConversionError::TypeMistmatch, got {:?}", v),
+        }
+
+        let v: Result< Result<i32, i32>, _ > = js_try!( throw "Broken"; );
+        match v {
+            Err(ConversionError::TypeMismatch { actual_type: _ }) => (),
+            _ => panic!("Expected ConversionError::TypeMistmatch, got {:?}", v),
+        }
     }
 }

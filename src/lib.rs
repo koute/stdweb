@@ -69,7 +69,10 @@
 #![cfg_attr(feature = "dev", allow(unstable_features))]
 #![cfg_attr(feature = "dev", feature(plugin))]
 #![cfg_attr(feature = "dev", plugin(clippy))]
-#![cfg_attr(not(feature = "nightly"), deny(unstable_features))]
+#![cfg_attr(
+    all(target_arch = "wasm32", target_os = "unknown"),
+    feature(proc_macro)
+)]
 #![cfg_attr(feature = "nightly", feature(core_intrinsics))]
 #![recursion_limit="1500"]
 
@@ -83,6 +86,12 @@ extern crate serde_json;
 #[cfg(all(test, feature = "serde"))]
 #[macro_use]
 extern crate serde_derive;
+
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+extern crate stdweb_internal_macros;
+
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+pub use stdweb_internal_macros::js_export;
 
 #[macro_use]
 mod webcore;
@@ -150,15 +159,21 @@ pub mod web {
     pub use webapi::web_socket::{WebSocket, SocketCloseCode};
     pub use webapi::rendering_context::{RenderingContext, CanvasRenderingContext2d};
     pub use webapi::mutation_observer::{MutationObserver, MutationObserverHandle, MutationObserverInit, MutationRecord};
+    pub use webapi::xml_http_request::{XmlHttpRequest, XhrReadyState};
 
-
-    /// A module containing XmlHttpRequest and its XhrReadyState
-    pub mod xml_http_request {
-        pub use webapi::xml_http_request::{ XmlHttpRequest, XhrReadyState };
-    }
     /// A module containing error types.
     pub mod error {
-        pub use webapi::node::NotFoundError;
+        pub use webapi::dom_exception::{
+            IDomException,
+            DomException,
+            ConcreteException,
+            HierarchyRequestError,
+            InvalidAccessError,
+            NotFoundError,
+            SecurityError,
+            SyntaxError,
+        };
+        pub use webapi::error::{IError, Error};
     }
 
     /// A module containing HTML DOM elements.
@@ -172,51 +187,71 @@ pub mod web {
     /// A module containing JavaScript DOM events.
     pub mod event {
         pub use webapi::event::{
+            IEvent,
+            IUiEvent,
             ConcreteEvent,
 
-            IEvent,
-            IKeyboardEvent,
-            IUiEvent,
+            EventPhase
+        };
+
+        pub use webapi::events::mouse::{
             IMouseEvent,
-            IFocusEvent,
-            IProgressEvent,
-            IMessageEvent,
-
-            EventPhase,
-            KeyboardLocation,
-            ModifierKey,
-            MouseButton,
-
-            ChangeEvent,
-            KeypressEvent,
-            KeydownEvent,
-            KeyupEvent,
             ClickEvent,
             DoubleClickEvent,
             MouseDownEvent,
             MouseUpEvent,
             MouseMoveEvent,
-            FocusEvent,
-            BlurEvent,
-            HashChangeEvent,
-            ResourceLoadEvent,
-            ResourceAbortEvent,
-            ResourceErrorEvent,
-            ResizeEvent,
+
+            MouseButton
+        };
+
+        pub use webapi::events::keyboard::{
+            IKeyboardEvent,
+            KeyPressEvent,
+            KeyDownEvent,
+            KeyUpEvent,
+
+            KeyboardLocation,
+            ModifierKey
+        };
+
+        pub use webapi::events::progress::{
+            IProgressEvent,
             ProgressEvent,
             LoadStartEvent,
             LoadEndEvent,
             ProgressLoadEvent,
             ProgressAbortEvent,
-            ProgressErrorEvent,
-            InputEvent,
-            ReadyStateChange,
-            PopStateEvent,
+            ProgressErrorEvent
+        };
 
+        pub use webapi::events::socket::{
+            IMessageEvent,
             SocketCloseEvent,
             SocketErrorEvent,
             SocketOpenEvent,
-            SocketMessageEvent,
+            SocketMessageEvent
+        };
+
+        pub use webapi::events::history::{
+            HashChangeEvent,
+            PopStateEvent
+        };
+
+        pub use webapi::events::dom::{
+            ChangeEvent,
+            ResourceLoadEvent,
+            ResourceAbortEvent,
+            ResourceErrorEvent,
+            ResizeEvent,
+            InputEvent,
+            ReadyStateChangeEvent
+        };
+
+        pub use webapi::events::focus::{
+            IFocusEvent,
+            FocusEvent,
+            BlurEvent
         };
     }
 }

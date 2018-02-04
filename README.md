@@ -114,49 +114,38 @@ Take a look at some of the examples:
 
 ## Running the examples
 
-1. Add one of Rust's Web targets with rustup.
-
-    * For compiling to asmjs through Emscripten:
-
-          $ rustup target add asmjs-unknown-emscripten
-
-    * For compiling to WebAssembly through Emscripten:
-
-          $ rustup target add wasm32-unknown-emscripten
-
-    * For compiling to WebAssembly through Rust's native backend:
-
-          $ rustup target add wasm32-unknown-unknown
-
-2. Install [cargo-web]:
+1. Install [cargo-web]:
 
        $ cargo install -f cargo-web
 
-3. Go into `examples/todomvc` and start the example.
+3. Go into `examples/todomvc` and start the example using one of these commands:
 
-    * For the `asmjs-unknown-emscripten` backend:
+    * Compile to [WebAssembly] using Rust's native WebAssembly backend (requires Rust nightly!):
 
-          $ cargo web start --target-asmjs-emscripten
+          $ cargo web start --target=wasm32-unknown-unknown
 
-    * For the `wasm32-unknown-emscripten`:
+    * Compile to [asm.js] using Emscripten:
 
-          $ cargo web start --target-webasm-emscripten
+          $ cargo web start --target=asmjs-unknown-emscripten
 
-    * For the `wasm32-unknown-unknown`:
+    * Compile to [WebAssembly] using Emscripten:
 
-          $ cargo web start --target-webasm
+          $ cargo web start --target=wasm32-unknown-emscripten
 
 4. Visit `http://localhost:8000` with your browser.
 
-For the `*-emscripten` targets `cargo-web` is not neccessary, however
+For the `*-emscripten` targets `cargo-web` is not necessary, however
 the native `wasm32-unknown-unknown` which doesn't need Emscripten
 **requires** `cargo-web` to work!
 
 [cargo-web]: https://github.com/koute/cargo-web
+[asm.js]: https://en.wikipedia.org/wiki/Asm.js
+[WebAssembly]: https://en.wikipedia.org/wiki/WebAssembly
 
 ## Exposing Rust functions to JavaScript
 
-***WARNING***: This is only supported for Rust's native `wasm32-unknown-unknown` target!
+***WARNING***: This is only supported for Rust's native `wasm32-unknown-unknown` target
+and requires Rust nightly!
 
 (Note: this is based on the `examples/hasher` example)
 
@@ -185,7 +174,7 @@ fn main() {
 }
 ```
 
-If you compile this code with `cargo-web build --target-webasm` you'll get two files:
+If you compile this code with `cargo-web build --target=wasm32-unknown-unknown` you'll get two files:
 
    * `target/wasm32-unknown-unknown/release/hasher.js`
    * `target/wasm32-unknown-unknown/release/hasher.wasm`
@@ -227,14 +216,58 @@ For the Nodejs environment the WebAssembly is compiled synchronously.
 
 [Promise]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
 
-## Breaking changes
+## Parcel plugin
+
+There is also an **experimental** [Parcel] plugin [here](https://github.com/koute/parcel-plugin-cargo-web).
+
+[Parcel]: https://parceljs.org/
+
+## Changelog
+
+   * `0.4`
+      * (breaking change) Renamed:
+         * `KeydownEvent` -> `KeyDownEvent`
+         * `KeyupEvent` -> `KeyUpEvent`
+         * `KeypressEvent` -> `KeyPressEvent`
+         * `ReadyState` -> `FileReaderReadyState`
+      * (breaking change) Changed return types:
+         * `INode::remove_child` now returns `Node` in the `Ok` case
+         * `INode::insert_before` now returns a `Result`
+         * `INode::replace_child` now returns a `Result`
+      * When building using a recent `cargo-web` it's not necessary to call
+        `stdweb::initialize` nor `stdweb::event_loop` anymore
+      * Support for `cdylib` crates on `wasm32-unknown-unknown`
+      * New bindings:
+         * `XmlHttpRequest`
+         * `WebSocket`
+         * `MutationObserver`
+         * `History`
+         * `TextAreaElement`
+         * `CanvasElement`
+      * New event types:
+         * `MouseDownEvent`
+         * `MouseUpEvent`
+         * `MouseMoveEvent`
+         * `PopStateEvent`
+         * `ResizeEvent`
+         * `ReadyStateChange`
+         * `SocketCloseEvent`
+         * `SocketErrorEvent`
+         * `SocketOpenEvent`
+         * `SocketMessageEvent`
+      * Initial support for the Canvas APIs
+      * Add `#[js_export]` procedural attribute (`wasm32-unknown-unknown` only)
+      * Add `DomException` and subtypes for passing around JavaScript exceptions
+      * `IElement` now inherits from `INode`
 
    * `0.3`
-      * Deleted `ErrorEvent` methods
-      * Renamed:
+      * (breaking change) Deleted `ErrorEvent` methods
+      * (breaking change) Renamed:
          * `LoadEvent` -> `ResourceLoadEvent`
          * `AbortEvent` -> `ResourceAbortEvent`
          * `ErrorEvent` -> `ResourceErrorEvent`
+      * Add `UnsafeTypedArray` for zero cost slice passing to `js!`
+      * Add `Once` for passing `FnOnce` closures to `js!`
 
 ## License
 
@@ -250,8 +283,11 @@ Snippets of documentation which come from [Mozilla Developer Network] are covere
 [Mozilla Developer Network]: https://developer.mozilla.org/en-US/
 [CC-BY-SA, version 2.5]: https://developer.mozilla.org/en-US/docs/MDN/About#Copyrights_and_licenses
 
-### Contribution
+### Contributing
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
 dual licensed as above, without any additional terms or conditions.
+
+You can run `stdweb`'s tests with `cargo web test --features web_test`, which will
+run them under headless Chromium.

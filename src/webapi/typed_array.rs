@@ -22,7 +22,7 @@ macro_rules! arraykind {
                 let slice_ptr = (slice.as_ptr() as usize / size_of::<$element_type>()) as i32;
                 let raw = __js_raw_asm!(
                     concat!(
-                        "return Module.STDWEB.acquire_rust_reference( ",
+                        "return Module.STDWEB_PRIVATE.acquire_rust_reference( ",
                         stringify!($heap_type),
                         ".slice( $0, $1 ) );"
                     ),
@@ -40,9 +40,9 @@ macro_rules! arraykind {
             fn into_typed_array_from_array_buffer( buffer: &ArrayBuffer ) -> TypedArray< Self > {
                 let raw = __js_raw_asm!(
                     concat!(
-                        "return Module.STDWEB.acquire_rust_reference( new ",
+                        "return Module.STDWEB_PRIVATE.acquire_rust_reference( new ",
                         stringify!( $js_array_type ),
-                        "( Module.STDWEB.acquire_js_reference( $0 ) )",
+                        "( Module.STDWEB_PRIVATE.acquire_js_reference( $0 ) )",
                         " );"
                     ),
                     buffer.as_ref().as_raw()

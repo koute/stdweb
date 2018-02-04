@@ -1,28 +1,12 @@
-use std::fmt;
-use std::error;
 use std::mem;
 
 use webcore::value::{Reference, FromReference};
-use webcore::try_from::TryInto;
+use webcore::try_from::{TryFrom, TryInto};
 use webapi::document::Document;
+use webapi::dom_exception::{HierarchyRequestError, NotFoundError};
 use webapi::element::Element;
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node_list::NodeList;
-
-/// A structure denoting that the specified DOM [Node](trait.INode.html) was not found.
-#[derive(Debug)]
-pub struct NotFoundError( String );
-impl error::Error for NotFoundError {
-    fn description( &self ) -> &str {
-        self.0.as_str()
-    }
-}
-
-impl fmt::Display for NotFoundError {
-    fn fmt( &self, formatter: &mut fmt::Formatter ) -> fmt::Result {
-        write!( formatter, "{}", self.0 )
-    }
-}
 
 /// An enum which determines whenever the DOM [Node](trait.INode.html)'s children will also be cloned or not.
 ///
@@ -63,26 +47,10 @@ pub trait INode: IEventTarget + FromReference {
     /// Removes a child node from the DOM.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/removeChild)
-    fn remove_child< T: INode >( &self, child: &T ) -> Result< (), NotFoundError > {
-        // TODO: Return the removed node.
-        let status = js! {
-            try {
-                @{self.as_ref()}.removeChild( @{child.as_ref()} );
-                return true;
-            } catch( exception ) {
-                if( exception instanceof NotFoundError ) {
-                    return false;
-                } else {
-                    throw exception;
-                }
-            }
-        };
-
-        if status == true {
-            Ok(())
-        } else {
-            Err( NotFoundError( "The node to be removed is not a child of this node.".to_owned() ) )
-        }
+    fn remove_child< T: INode >( &self, child: &T ) -> Result< Node, NotFoundError > {
+        js_try! (
+            return @{self.as_ref()}.removeChild( @{child.as_ref()} );
+        ).unwrap()
     }
 
     /// Returns a duplicate of the node on which this method was called.
@@ -113,19 +81,19 @@ pub trait INode: IEventTarget + FromReference {
     /// Inserts the specified node before the reference node as a child of the current node.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/insertBefore)
-    fn insert_before< T: INode, U: INode >( &self, new_node: &T, reference_node: &U ) {
-        js! { @(no_return)
-            @{self.as_ref()}.insertBefore( @{new_node.as_ref()}, @{reference_node.as_ref()} );
-        }
+    fn insert_before< T: INode, U: INode >( &self, new_node: &T, reference_node: &U ) -> Result< Node, InsertNodeError > {
+        js_try! (
+            return @{self.as_ref()}.insertBefore( @{new_node.as_ref()}, @{reference_node.as_ref()} );
+        ).unwrap()
     }
 
     /// Replaces one hild node of the specified node with another.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/replaceChild)
-    fn replace_child< T: INode, U: INode >( &self, new_child: &T, old_child: &U ) {
-        js! { @(no_return)
-            @{self.as_ref()}.replaceChild( @{new_child.as_ref()}, @{old_child.as_ref()} );
-        }
+    fn replace_child< T: INode, U: INode >( &self, new_child: &T, old_child: &U ) -> Result< Node, InsertNodeError > {
+        js_try! (
+            return @{self.as_ref()}.replaceChild( @{new_child.as_ref()}, @{old_child.as_ref()} );
+        ).unwrap()
     }
 
     /// Returns the parent of this node in the DOM tree.
@@ -357,6 +325,12 @@ pub trait INode: IEventTarget + FromReference {
     }
 }
 
+/// Errors thrown by `Node` insertion methods.
+error_enum_boilerplate! {
+    InsertNodeError,
+    NotFoundError, HierarchyRequestError
+}
+
 /// A reference to a JavaScript object which implements the [INode](trait.INode.html)
 /// interface.
 ///
@@ -489,10 +463,13 @@ mod tests {
         parent.append_child(&child1);
         parent.append_child(&child2);
 
-        parent.remove_child(&child1).unwrap();
+        let removed = parent.remove_child(&child1).unwrap();
         assert_eq!(parent.first_child().unwrap().as_ref(), child2.as_ref());
-
-        // TODO: assert!(parent.remove_child(&child1).is_err());
+        assert_eq!(removed.as_ref(), child1.as_ref());
+        match parent.remove_child(&child1) {
+            Err(_) => (),
+            _ => panic!("Expected error")
+        }
 
         parent.remove_child(&child2).unwrap();
         assert!(parent.first_child().is_none())
@@ -544,9 +521,20 @@ mod tests {
         let node = div();
         let child1 = div();
         let child2 = div();
+        let child3 = div();
         node.append_child(&child1);
-        node.insert_before(&child2, &child1);
+        node.insert_before(&child2, &child1).unwrap();
         assert_eq!(node.first_child().unwrap().as_ref(), child2.as_ref());
+
+        match node.insert_before(&child3, &child3) {
+            Err(InsertNodeError::NotFoundError(_)) => (),
+            _ => panic!("Expected NotFoundError")
+        }
+
+        match node.insert_before(&doc_type(), &child1) {
+            Err(InsertNodeError::HierarchyRequestError(_)) => (),
+            _ => panic!("Expected HierarchyRequestError")
+        }
     }
 
     #[test]
@@ -555,9 +543,19 @@ mod tests {
         let child1 = div();
         let child2 = div();
         node.append_child(&child1);
-        node.replace_child(&child2, &child1);
+        node.replace_child(&child2, &child1).unwrap();
         assert_eq!(node.first_child().unwrap().as_ref(), child2.as_ref());
         assert!(child1.parent_node().is_none());
+
+        match node.replace_child(&child2, &child1) {
+            Err(InsertNodeError::NotFoundError(_)) => (),
+            _ => panic!("Expected NotFoundError")
+        }
+
+        match node.replace_child(&doc_type(), &child2) {
+            Err(InsertNodeError::HierarchyRequestError(_)) => (),
+            _ => panic!("Expected HierarchyRequestError")
+        }
     }
 
     #[test]

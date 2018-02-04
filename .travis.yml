@@ -1,5 +1,10 @@
 language: rust
 
+cache:
+  cargo: true
+  directories:
+    - /home/travis/.local/share/cargo-web/emscripten
+
 dist: trusty
 sudo: false
 addons:
@@ -9,11 +14,6 @@ rust:
   - nightly
   - stable
   - beta
-
-env:
-  - TARGET=wasm32-unknown-unknown
-  - TARGET=asmjs-unknown-emscripten
-  - TARGET=wasm32-unknown-emscripten
 
 script:
   - nvm install 9

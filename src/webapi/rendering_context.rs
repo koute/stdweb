@@ -13,7 +13,7 @@ pub trait RenderingContext {
 }
 
 /// Used for drawing rectangles, text, images and other objects onto the canvas element.
-/// 
+///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D)
 pub struct CanvasRenderingContext2d(Reference);
 
@@ -848,7 +848,7 @@ impl CanvasRenderingContext2d {
 
     /// Draws a filled rectangle whose starting point is at the coordinates (x, y) with the
     /// specified width and height and whose style is determined by the fillStyle attribute.
-    /// 
+    ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillRect)
     pub fn fill_rect(&self, x: f64, y: f64, width: f64, height: f64) {
         js! { @(no_return)
@@ -856,11 +856,11 @@ impl CanvasRenderingContext2d {
         }
     }
 
-    /// Draws a text string at the specified coordinates, filling the string's characters 
-    /// with the current foreground color. An optional parameter allows specifying a maximum 
-    /// width for the rendered text, which the user agent will achieve by condensing the 
+    /// Draws a text string at the specified coordinates, filling the string's characters
+    /// with the current foreground color. An optional parameter allows specifying a maximum
+    /// width for the rendered text, which the user agent will achieve by condensing the
     /// text or by using a lower font size.
-    /// 
+    ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillText)
     pub fn fill_text(&self, text: &str, x: f64, y: f64, max_width: Option<f64>) {
         if let Some(max_width) = max_width {

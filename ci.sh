@@ -14,32 +14,31 @@ set -e
 
 echo "Is Rust from nightly: $IS_NIGHTLY"
 
-if [ "$IS_NIGHTLY" = "0" ]; then
-    if [ "$TARGET" = "wasm32-unknown-unknown" ]; then
-        echo "Skipping tests; wasm32-unknown-unknown is only supported on nightly"
-        exit 0
-    fi
+command -v cargo-web >/dev/null 2>&1 || cargo install cargo-web
+
+echo "Testing for asmjs-unknown-emscripten..."
+cargo web test --features web_test --target=asmjs-unknown-emscripten
+
+pushd examples/todomvc > /dev/null
+cargo web build --release --target=asmjs-unknown-emscripten
+popd > /dev/null
+
+echo "Testing for wasm32-unknown-emscripten..."
+cargo web test --features web_test --target=wasm32-unknown-emscripten
+
+pushd examples/todomvc > /dev/null
+cargo web build --release --target=wasm32-unknown-emscripten
+popd > /dev/null
+
+if [ "$IS_NIGHTLY" = "1" ]; then
+    cargo web test --nodejs --target=wasm32-unknown-unknown
+
+    pushd examples/todomvc > /dev/null
+    cargo web build --release --target=wasm32-unknown-unknown
+    popd > /dev/null
+
+    pushd standalone-tests > /dev/null
+    cargo-web build --release --target=wasm32-unknown-unknown
+    node target/wasm32-unknown-unknown/release/standalone-tests.js
+    popd > /dev/null
 fi
-
-cargo install cargo-web -f
-
-if [ "$TARGET" = "asmjs-unknown-emscripten" ]; then
-    rustup target add asmjs-unknown-emscripten
-    export CARGO_WEB_ARGS="--target-asmjs-emscripten"
-    cargo web test --features web_test $CARGO_WEB_ARGS
-fi
-
-if [ "$TARGET" = "wasm32-unknown-emscripten" ]; then
-    rustup target add wasm32-unknown-emscripten
-    export CARGO_WEB_ARGS="--target-webasm-emscripten"
-    cargo web test --features web_test $CARGO_WEB_ARGS
-fi
-
-if [ "$TARGET" = "wasm32-unknown-unknown" ]; then
-    rustup target add wasm32-unknown-unknown
-    export CARGO_WEB_ARGS="--target-webasm"
-    cargo web test --nodejs $CARGO_WEB_ARGS
-fi
-
-cd examples/todomvc
-cargo web build --release $CARGO_WEB_ARGS
