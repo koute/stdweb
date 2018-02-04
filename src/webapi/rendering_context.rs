@@ -794,6 +794,26 @@ impl CanvasRenderingContext2d {
         ).try_into().unwrap()
     }
 
+    /// Creates a new, blank ImageData object with the specified dimensions. 
+    /// All of the pixels in the new object are transparent black.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createImageData)
+    pub fn create_image_data_wh(&self, width: f64, height: f64) -> Result<ImageData, IndexSizeError> {
+        js_try! (
+            return @{&self.0}.createImageData(@{width}, @{height});
+        ).unwrap()
+    }
+
+    /// Creates a new, blank ImageData object with the specified dimensions. 
+    /// All of the pixels in the new object are transparent black.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createImageData)
+    pub fn create_image_data_id(&self, image_data: ImageData) -> Result<ImageData, IndexSizeError> {
+        js_try! (
+            return @{&self.0}.createImageData(@{image_data});
+        ).unwrap()
+    }
+
     /// Creates a pattern using the specified image (a CanvasImageSource). It repeats the source in 
     /// the directions specified by the repetition argument. This method returns a CanvasPattern.
     /// 
