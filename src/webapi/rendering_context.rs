@@ -861,7 +861,38 @@ impl CanvasRenderingContext2d {
         }
     }
 
-    //draw_image will go here but waiting to figure out how to do CanvasImageSource
+    /// Provides different ways to draw an image onto the canvas.
+    /// TODO: allow errors other than InvalidStateError
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage)
+    pub fn draw_image(&self, image: ImageElement, dx: f64, dy: f64) -> Result<(), InvalidStateError> {
+        js_try! ( @(no_return)
+            @{&self.0}.drawImage(@{image}, @{dx}, @{dy});
+        ).unwrap()
+    }
+
+    /// Provides different ways to draw an image onto the canvas.
+    /// TODO: allow errors other than InvalidStateError
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage)
+    pub fn draw_image_d(&self, image: ImageElement, dx: f64, dy: f64, d_width: f64, d_height: f64) -> Result<(), InvalidStateError> {
+        js_try! ( @(no_return)
+            @{&self.0}.drawImage(@{image}, @{dx}, @{dy}, @{d_width}, @{d_height});
+        ).unwrap()
+    }
+
+    /// Provides different ways to draw an image onto the canvas.
+    /// TODO: allow errors other than InvalidStateError
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage)
+    pub fn draw_image_s(&self, image: ImageElement, 
+                        sx: f64, sy: f64, s_width: f64, s_height: f64, 
+                        dx: f64, dy: f64, d_width: f64, d_height: f64
+                    ) -> Result<(), InvalidStateError> {
+        js_try!( @(no_return)
+            @{&self.0}.drawImage(@{image}, @{sx}, @{sy}, @{s_width}, @{s_height}, @{dx}, @{dy}, @{d_width}, @{d_height});
+        ).unwrap()
+    }
 
     /// Fills the current or given path with the current fill style using the non-zero or even-odd winding rule.
     /// 
