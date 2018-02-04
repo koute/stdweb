@@ -202,6 +202,21 @@ impl RenderingContext for CanvasRenderingContext2d {
     }
 }
 
+impl CanvasGradient {
+
+    /// Adds a new stop, defined by an offset and a color, to the gradient. If the offset is 
+    /// not between 0 and 1, an INDEX_SIZE_ERR is raised, if the color can't be parsed as a 
+    /// CSS <color>, a SYNTAX_ERR is raised.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasGradient/addColorStop)
+    pub fn add_color_stop(&self, offset: f64, color: &str) -> Result<(), SyntaxError> {
+        assert!(offset > 0 as f64 && offset < 1 as f64);
+        js_try! ( @(no_return)
+            @{&self.0}.addColorStop(@{offset}, @{color});
+        ).unwrap()
+    }
+}
+
 impl ImageData {
 
     /// Returns a Uint8ClampedArray representing a one-dimensional array containing the data in the RGBA order, 
