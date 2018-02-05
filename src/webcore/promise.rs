@@ -173,9 +173,10 @@ impl PromiseFuture< () > {
     ///
     /// ```rust
     /// fn main() {
-    ///     create_some_future()
-    ///         .inspect(|x| println!("Future finished: {:#?}", x))
-    ///         .spawn()
+    ///     PromiseFuture::spawn(
+    ///         create_some_future()
+    ///             .inspect(|x| println!("Future finished: {:#?}", x))
+    ///     )
     /// }
     /// ```
     pub fn spawn< B >( future: B ) where
