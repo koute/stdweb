@@ -163,23 +163,33 @@ pub struct PromiseFuture< A > {
 }
 
 impl PromiseFuture< () > {
-    /// Asynchronously runs the [`Future`](https://docs.rs/futures/0.1.18/futures/future/trait.Future.html) and then immediately returns. This does not block the current thread.
+    /// This is identical to [`spawn`](#method.spawn), except that if the [`Future`](https://docs.rs/futures/0.1.18/futures/future/trait.Future.html) errors it will print the error to the console. See the documentation of [`spawn`](#method.spawn) for more details.
     ///
-    /// If the [`Future`](https://docs.rs/futures/0.1.18/futures/future/trait.Future.html) errors it will print the error to the console.
-    ///
-    /// This function is normally called once in `main`, it is usually not needed to call it multiple times.
+    /// If you want to handle all errors yourself, then use [`spawn`](#method.spawn), but if you simply want to print the errors to the console, then use `spawn_print`.
     ///
     /// # Examples
     ///
+    /// Asynchronously run a future in `main`:
+    ///
     /// ```rust
     /// fn main() {
-    ///     PromiseFuture::spawn(
+    ///     PromiseFuture::spawn_print(
+    ///         create_some_future()
+    ///     );
+    /// }
+    /// ```
+    ///
+    /// Inspect the output value of the future:
+    ///
+    /// ```rust
+    /// fn main() {
+    ///     PromiseFuture::spawn_print(
     ///         create_some_future()
     ///             .inspect(|x| println!("Future finished: {:#?}", x))
     ///     );
     /// }
     /// ```
-    pub fn spawn< B >( future: B ) where
+    pub fn spawn_print< B >( future: B ) where
         B: Future< Item = (), Error = Error > + 'static {
 
         spawn( future.map_err( |e| {
@@ -190,6 +200,53 @@ impl PromiseFuture< () > {
 
             ()
         } ) );
+    }
+
+    /// Asynchronously runs the [`Future`](https://docs.rs/futures/0.1.18/futures/future/trait.Future.html) and then immediately returns. This does not block the current thread.
+    ///
+    /// This function is normally called once in `main`, it is usually not needed to call it multiple times.
+    ///
+    /// Because the error happens asynchronously, the only way to catch it is to use a [`Future`](https://docs.rs/futures/0.1.18/futures/future/trait.Future.html) method, such as [`map_err`](https://docs.rs/futures/0.1.18/futures/future/trait.Future.html#method.map_err).
+    ///
+    /// And the only way to retrieve the value of the future is to use the various [`Future`](https://docs.rs/futures/0.1.18/futures/future/trait.Future.html) methods, such as [`map`](https://docs.rs/futures/0.1.18/futures/future/trait.Future.html#method.map) or [`inspect`](https://docs.rs/futures/0.1.18/futures/future/trait.Future.html#method.inspect).
+    ///
+    /// # Examples
+    ///
+    /// Asynchronously run a future in `main`:
+    ///
+    /// ```rust
+    /// fn main() {
+    ///     PromiseFuture::spawn(
+    ///         create_some_future()
+    ///     );
+    /// }
+    /// ```
+    ///
+    /// Inspect the output value of the future:
+    ///
+    /// ```rust
+    /// fn main() {
+    ///     PromiseFuture::spawn(
+    ///         create_some_future()
+    ///             .inspect(|x| println!("Future finished: {:#?}", x))
+    ///     );
+    /// }
+    /// ```
+    ///
+    /// Catch errors and handle them:
+    ///
+    /// ```rust
+    /// fn main() {
+    ///     PromiseFuture::spawn(
+    ///         create_some_future()
+    ///             .map_err(|e| handle_error_somehow(e))
+    ///     );
+    /// }
+    /// ```
+    #[inline]
+    pub fn spawn< B >( future: B ) where
+        B: Future< Item = (), Error = () > + 'static {
+        spawn( future );
     }
 }
 
