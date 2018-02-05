@@ -1,4 +1,4 @@
-use futures::future::{Future, lazy, ExecuteError, Executor, IntoFuture};
+use futures::future::{Future, ExecuteError, Executor};
 use futures::executor::{self, Notify, Spawn};
 use futures::Async;
 use std::result::Result as StdResult;
