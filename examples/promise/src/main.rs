@@ -26,7 +26,7 @@ fn log( a: &str ) {
 fn main() {
     stdweb::initialize();
 
-    PromiseFuture::spawn(
+    PromiseFuture::spawn_print(
         sleep( 5000 ).inspect( |_| log( "Timeout 1 done!") ).join(
         sleep( 5000 ).inspect( |_| log( "Timeout 2 done!" ) ) )
             .and_then( |_|
