@@ -15,6 +15,7 @@ use webcore::promise_executor::spawn;
 /// In most situations you shouldn't use this, use [`PromiseFuture`](struct.PromiseFuture.html) instead.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)
+// https://www.ecma-international.org/ecma-262/6.0/#sec-promise-objects
 pub struct Promise( Reference );
 
 reference_boilerplate! {
@@ -53,6 +54,9 @@ impl Promise {
     /// ```
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/resolve)
+    // https://www.ecma-international.org/ecma-262/6.0/#sec-promise.resolve
+    // https://www.ecma-international.org/ecma-262/6.0/#sec-promise-resolve-functions
+    // https://www.ecma-international.org/ecma-262/6.0/#sec-promiseresolvethenablejob
     pub fn promisify( input: Value ) -> Promise {
         js!( return Promise.resolve( @{input} ); ).try_into().unwrap()
     }
@@ -79,6 +83,7 @@ impl Promise {
     /// ```
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then)
+    // https://www.ecma-international.org/ecma-262/6.0/#sec-performpromisethen
     pub fn done< A, B >( &self, callback: B )
         where A: TryFrom< Value >,
               A::Error: std::error::Error,
