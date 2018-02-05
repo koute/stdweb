@@ -7,6 +7,7 @@ use webcore::try_from::{TryInto, TryFrom};
 use web::error::Error as JSError;
 use futures::{Future, Poll, Async};
 use futures::unsync::oneshot::{Receiver, channel};
+use webcore::promise_executor::spawn;
 
 
 pub struct Promise( Reference );
@@ -80,6 +81,21 @@ pub struct PromiseFuture< A > {
 }
 
 
+impl PromiseFuture< () > {
+    pub fn spawn< B >( future: B ) where
+        B: Future< Item = (), Error = JSError > + 'static {
+
+        spawn( future.map_err( |e| {
+            // TODO better error handling
+            js! { @(no_return)
+                console.error( @{e} );
+            }
+
+            ()
+        } ) );
+    }
+}
+
 /*impl< A > PromiseFuture< A > {
     pub fn new< B >( callback: B ) -> Self
         where B: FnOnce( FnOnce( A ), FnOnce( JSError ) ) {
@@ -117,5 +133,30 @@ impl< A > TryFrom< Value > for PromiseFuture< A >
     fn try_from( v: Value ) -> Result< Self, Self::Error > {
         let promise: Promise = v.try_into()?;
         Ok( promise.to_future() )
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use webcore::promise::PromiseFuture;
+    use webcore::try_from::TryInto;
+    use futures::Future;
+    use webcore::value::Null;
+
+    #[test]
+    fn wait() {
+        let future: PromiseFuture< Null > = js!( return new Promise( function ( success, failure ) {
+            setTimeout( function () {
+                success( null );
+            }, 1000 );
+        } ); ).try_into().unwrap();
+
+        PromiseFuture::spawn( future.map( |x| {
+            println!( "Timeout done! {:#?}", x );
+            ()
+        } ) );
+
+        //println!("{:#?}", future.wait());
     }
 }
