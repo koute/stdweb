@@ -16,14 +16,21 @@ fn sleep( ms: u32 ) -> PromiseFuture< Null > {
 }
 
 
+fn log( a: &str ) {
+    js! { @(no_return)
+        console.log( @{a} );
+    }
+}
+
+
 fn main() {
     stdweb::initialize();
 
     PromiseFuture::spawn(
-        sleep( 5000 ).inspect( |_| println!( "Timeout 1 done!") ).join(
-        sleep( 5000 ).inspect( |_| println!( "Timeout 2 done!" ) ) )
+        sleep( 5000 ).inspect( |_| log( "Timeout 1 done!") ).join(
+        sleep( 5000 ).inspect( |_| log( "Timeout 2 done!" ) ) )
             .and_then( |_|
-                sleep( 5000 ).inspect( |_| println!( "Timeout 3 done!") ) ).map( |_| () )
+                sleep( 5000 ).inspect( |_| log( "Timeout 3 done!") ) ).map( |_| () )
     );
 
     stdweb::event_loop();

@@ -37,6 +37,7 @@ pub trait IError: ReferenceType {
 pub struct Error( Reference );
 
 impl Error {
+    ///
     #[inline]
     pub fn new( description: &str ) -> Self {
         js!( return new Error( @{description} ); ).try_into().unwrap()

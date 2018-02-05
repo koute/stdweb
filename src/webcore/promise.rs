@@ -10,6 +10,7 @@ use futures::unsync::oneshot::{Receiver, channel};
 use webcore::promise_executor::spawn;
 
 
+///
 pub struct Promise( Reference );
 
 reference_boilerplate! {
@@ -18,10 +19,12 @@ reference_boilerplate! {
 }
 
 impl Promise {
+    ///
     pub fn promisify( input: Value ) -> Promise {
         js!( return Promise.resolve( @{input} ); ).try_into().unwrap()
     }
 
+    ///
     pub fn done< A, B >( &self, callback: B )
         where A: TryFrom< Value >,
               A::Error: Error,
@@ -51,6 +54,7 @@ impl Promise {
         }
     }
 
+    ///
     // We can't use the IntoFuture trait because Promise doesn't have a type argument
     // TODO explain more why we can't use the IntoFuture trait
     pub fn to_future< A >( &self ) -> PromiseFuture< A >
@@ -75,6 +79,7 @@ impl Promise {
 }
 
 
+///
 pub struct PromiseFuture< A > {
     future: Receiver< Result< A, JSError > >,
     phantom: PhantomData< A >,
@@ -82,6 +87,7 @@ pub struct PromiseFuture< A > {
 
 
 impl PromiseFuture< () > {
+    ///
     pub fn spawn< B >( future: B ) where
         B: Future< Item = (), Error = JSError > + 'static {
 
@@ -133,30 +139,5 @@ impl< A > TryFrom< Value > for PromiseFuture< A >
     fn try_from( v: Value ) -> Result< Self, Self::Error > {
         let promise: Promise = v.try_into()?;
         Ok( promise.to_future() )
-    }
-}
-
-
-#[cfg(test)]
-mod tests {
-    use webcore::promise::PromiseFuture;
-    use webcore::try_from::TryInto;
-    use futures::Future;
-    use webcore::value::Null;
-
-    #[test]
-    fn wait() {
-        let future: PromiseFuture< Null > = js!( return new Promise( function ( success, failure ) {
-            setTimeout( function () {
-                success( null );
-            }, 1000 );
-        } ); ).try_into().unwrap();
-
-        PromiseFuture::spawn( future.map( |x| {
-            println!( "Timeout done! {:#?}", x );
-            ()
-        } ) );
-
-        //println!("{:#?}", future.wait());
     }
 }

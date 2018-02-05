@@ -46,7 +46,6 @@ impl SpawnedTask {
             let mut count = spawned.ref_count.get();
             count -= 1;
             spawned.ref_count.set( count );
-            println!("Drop {}", count);
             count
         };
 
@@ -65,13 +64,9 @@ struct Core;
 impl< F > Executor< F > for Core where
     F: Future< Item = (), Error = () > + 'static {
     fn execute( &self, future: F ) -> StdResult< (), ExecuteError< F > > {
-        println!("Execute");
-
         let spawned_ptr = Box::into_raw( Box::new( SpawnedTask::new( future ) ) );
 
         SpawnedTask::execute_spawn( spawned_ptr );
-
-        println!("Execute End");
 
         Ok( () )
     }
@@ -79,13 +74,9 @@ impl< F > Executor< F > for Core where
 
 impl Notify for Core {
     fn notify( &self, spawned_id: usize ) {
-        println!("Notify");
-
         let spawned_ptr = spawned_id as *const SpawnedTask;
 
         SpawnedTask::execute_spawn( spawned_ptr );
-
-        println!("Notify End");
     }
 
     fn clone_id( &self, id: usize ) -> usize {
@@ -94,7 +85,6 @@ impl Notify for Core {
         let mut count = spawned.ref_count.get();
         count += 1;
         spawned.ref_count.set( count );
-        println!("Clone {}", count);
         id
     }
 
