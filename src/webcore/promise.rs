@@ -1,10 +1,10 @@
 use std;
-use std::error::Error;
+use std::error::Error as _Error;
 use std::marker::PhantomData;
 use webcore::once::Once;
 use webcore::value::{Value, Reference, ConversionError};
 use webcore::try_from::{TryInto, TryFrom};
-use web::error::Error as JSError;
+use web::error::Error;
 use futures::{Future, Poll, Async};
 use futures::unsync::oneshot::{Receiver, channel};
 use webcore::promise_executor::spawn;
@@ -81,16 +81,16 @@ impl Promise {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then)
     pub fn done< A, B >( &self, callback: B )
         where A: TryFrom< Value >,
-              A::Error: Error,
-              B: FnOnce( Result< A, JSError > ) + 'static {
+              A::Error: std::error::Error,
+              B: FnOnce( Result< A, Error > ) + 'static {
 
         let callback = |value: Value, success: bool| {
-            let value: Result< A, JSError > = if success {
+            let value: Result< A, Error > = if success {
                 let value: Result< A, A::Error > = value.try_into();
-                value.map_err( |e| JSError::new( e.description() ) )
+                value.map_err( |e| Error::new( e.description() ) )
             } else {
-                let value: Result< JSError, ConversionError > = value.try_into();
-                value.map_err( |e| JSError::new( e.description() ) ).and_then( Err )
+                let value: Result< Error, ConversionError > = value.try_into();
+                value.map_err( |e| Error::new( e.description() ) ).and_then( Err )
             };
 
             callback( value );
@@ -121,7 +121,7 @@ impl Promise {
     // TODO explain more why we can't use the IntoFuture trait
     pub fn to_future< A >( &self ) -> PromiseFuture< A >
          where A: TryFrom< Value > + 'static,
-               A::Error: Error {
+               A::Error: std::error::Error {
 
         let ( sender, receiver ) = channel();
 
@@ -153,7 +153,7 @@ impl Promise {
 /// let future: PromiseFuture<String> = js!( return Promise.resolve("foo"); ).try_into().unwrap();
 /// ```
 pub struct PromiseFuture< A > {
-    future: Receiver< Result< A, JSError > >,
+    future: Receiver< Result< A, Error > >,
     phantom: PhantomData< A >,
 }
 
@@ -174,7 +174,7 @@ impl PromiseFuture< () > {
     /// }
     /// ```
     pub fn spawn< B >( future: B ) where
-        B: Future< Item = (), Error = JSError > + 'static {
+        B: Future< Item = (), Error = Error > + 'static {
 
         spawn( future.map_err( |e| {
             // TODO better error handling
@@ -195,21 +195,21 @@ impl< A > std::fmt::Debug for PromiseFuture< A > {
 
 impl< A > Future for PromiseFuture< A > {
     type Item = A;
-    type Error = JSError;
+    type Error = Error;
 
     fn poll( &mut self ) -> Poll< Self::Item, Self::Error > {
         match self.future.poll() {
             Ok( Async::Ready( Ok( a ) ) ) => Ok( Async::Ready( a ) ),
             Ok( Async::Ready( Err( e ) ) ) => Err( e ),
             Ok( Async::NotReady ) => Ok( Async::NotReady ),
-            Err( e ) => Err( JSError::new( e.description() ) ),
+            Err( e ) => Err( Error::new( e.description() ) ),
         }
     }
 }
 
 impl< A > TryFrom< Value > for PromiseFuture< A >
     where A: TryFrom< Value > + 'static,
-          A::Error: Error {
+          A::Error: std::error::Error {
 
     type Error = ConversionError;
 
