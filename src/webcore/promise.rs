@@ -157,7 +157,6 @@ pub struct PromiseFuture< A > {
     phantom: PhantomData< A >,
 }
 
-
 impl PromiseFuture< () > {
     /// Asynchronously runs the [`Future`](https://docs.rs/futures/0.1.18/futures/future/trait.Future.html) and immediately returns. This does not block the current thread.
     ///
@@ -187,14 +186,6 @@ impl PromiseFuture< () > {
         } ) );
     }
 }
-
-/*impl< A > PromiseFuture< A > {
-    pub fn new< B >( callback: B ) -> Self
-        where B: FnOnce( FnOnce( A ), FnOnce( JSError ) ) {
-        js!( return new Promise( @{Once( callback )} ); ).try_from().unwrap()
-    }
-}*/
-
 
 impl< A > std::fmt::Debug for PromiseFuture< A > {
     fn fmt( &self, formatter: &mut std::fmt::Formatter ) -> std::fmt::Result {
