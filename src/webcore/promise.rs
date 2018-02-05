@@ -163,7 +163,7 @@ pub struct PromiseFuture< A > {
 }
 
 impl PromiseFuture< () > {
-    /// Asynchronously runs the [`Future`](https://docs.rs/futures/0.1.18/futures/future/trait.Future.html) and immediately returns. This does not block the current thread.
+    /// Asynchronously runs the [`Future`](https://docs.rs/futures/0.1.18/futures/future/trait.Future.html) and then immediately returns. This does not block the current thread.
     ///
     /// If the [`Future`](https://docs.rs/futures/0.1.18/futures/future/trait.Future.html) errors it will print the error to the console.
     ///
@@ -176,7 +176,7 @@ impl PromiseFuture< () > {
     ///     PromiseFuture::spawn(
     ///         create_some_future()
     ///             .inspect(|x| println!("Future finished: {:#?}", x))
-    ///     )
+    ///     );
     /// }
     /// ```
     pub fn spawn< B >( future: B ) where
