@@ -37,7 +37,9 @@ pub trait IError: ReferenceType {
 pub struct Error( Reference );
 
 impl Error {
+    /// Creates a new `Error` with the specified `description`.
     ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error)
     #[inline]
     pub fn new( description: &str ) -> Self {
         js!( return new Error( @{description} ); ).try_into().unwrap()
