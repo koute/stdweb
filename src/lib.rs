@@ -297,4 +297,8 @@ pub mod private {
     #[allow(dead_code)]
     #[inline(always)]
     pub fn noop< T >( _: &mut T ) {}
+
+    // TODO: Remove this.
+    #[derive(Debug)]
+    pub struct UnimplementedException;
 }

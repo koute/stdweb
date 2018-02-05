@@ -7,6 +7,7 @@ use webapi::dom_exception::{HierarchyRequestError, NotFoundError};
 use webapi::element::Element;
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node_list::NodeList;
+use private::UnimplementedException;
 
 /// An enum which determines whenever the DOM [Node](trait.INode.html)'s children will also be cloned or not.
 ///
@@ -22,6 +23,7 @@ pub enum CloneKind {
 /// `INode` is an interface from which a number of DOM API object types inherit.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node)
+// https://dom.spec.whatwg.org/#node
 pub trait INode: IEventTarget + FromReference {
     /// Casts a reference to this object into a reference to a [Node](struct.Node.html).
     fn as_node( &self ) -> &Node {
@@ -38,6 +40,7 @@ pub trait INode: IEventTarget + FromReference {
     /// to remove the node from its parent node before appending it to some other node).
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/appendChild)
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-appendchild
     fn append_child< T: INode >( &self, child: &T ) {
         js! { @(no_return)
             @{self.as_ref()}.appendChild( @{child.as_ref()} );
@@ -47,6 +50,7 @@ pub trait INode: IEventTarget + FromReference {
     /// Removes a child node from the DOM.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/removeChild)
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-removechild
     fn remove_child< T: INode >( &self, child: &T ) -> Result< Node, NotFoundError > {
         js_try! (
             return @{self.as_ref()}.removeChild( @{child.as_ref()} );
@@ -56,7 +60,8 @@ pub trait INode: IEventTarget + FromReference {
     /// Returns a duplicate of the node on which this method was called.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/cloneNode)
-    fn clone_node( &self, kind: CloneKind ) -> Self {
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-clonenode
+    fn clone_node( &self, kind: CloneKind ) -> Result< Self, UnimplementedException > {
         let is_deep = match kind {
             CloneKind::Deep => true,
             CloneKind::Shallow => false
@@ -66,12 +71,13 @@ pub trait INode: IEventTarget + FromReference {
             return @{self.as_ref()}.cloneNode( @{is_deep} );
         };
 
-        cloned.into_reference().unwrap().downcast::< Self >().unwrap()
+        Ok( cloned.into_reference().unwrap().downcast::< Self >().unwrap() )
     }
 
     /// Checks whenever a given node is a descendant of this one or not.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/contains)
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-contains
     fn contains< T: INode >( &self, node: &T ) -> bool {
         js!(
             return @{self.as_ref()}.contains( @{node.as_ref()} );
@@ -81,6 +87,7 @@ pub trait INode: IEventTarget + FromReference {
     /// Inserts the specified node before the reference node as a child of the current node.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/insertBefore)
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-insertbefore
     fn insert_before< T: INode, U: INode >( &self, new_node: &T, reference_node: &U ) -> Result< Node, InsertNodeError > {
         js_try! (
             return @{self.as_ref()}.insertBefore( @{new_node.as_ref()}, @{reference_node.as_ref()} );
@@ -90,6 +97,7 @@ pub trait INode: IEventTarget + FromReference {
     /// Replaces one hild node of the specified node with another.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/replaceChild)
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-replacechild
     fn replace_child< T: INode, U: INode >( &self, new_child: &T, old_child: &U ) -> Result< Node, InsertNodeError > {
         js_try! (
             return @{self.as_ref()}.replaceChild( @{new_child.as_ref()}, @{old_child.as_ref()} );
@@ -99,6 +107,7 @@ pub trait INode: IEventTarget + FromReference {
     /// Returns the parent of this node in the DOM tree.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/parentNode)
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-parentnode
     fn parent_node( &self ) -> Option< Node > {
         js!(
             return @{self.as_ref()}.parentNode;
@@ -108,6 +117,7 @@ pub trait INode: IEventTarget + FromReference {
     /// Returns the node's first child in the tree, or `None` if the node is childless.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en/docs/Web/API/Node/firstChild)
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-firstchild
     fn first_child( &self ) -> Option< Node > {
         js!(
             return @{self.as_ref()}.firstChild;
@@ -117,6 +127,7 @@ pub trait INode: IEventTarget + FromReference {
     /// Returns the node's last child in the tree, or `None` if the node is childless.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en/docs/Web/API/Node/lastChild)
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-lastchild
     fn last_child( &self ) -> Option< Node > {
         js!(
             return @{self.as_ref()}.lastChild;
@@ -126,6 +137,7 @@ pub trait INode: IEventTarget + FromReference {
     /// Returns the node's next sibling in the tree, or `None` if there isn't such a node.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en/docs/Web/API/Node/nextSibling)
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-nextsibling
     fn next_sibling( &self ) -> Option< Node > {
         js!(
             return @{self.as_ref()}.nextSibling;
@@ -135,6 +147,7 @@ pub trait INode: IEventTarget + FromReference {
     /// Returns the name of the node.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeName)
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-nodename
     fn node_name( &self ) -> String {
         js!(
             return @{self.as_ref()}.nodeName;
@@ -144,12 +157,15 @@ pub trait INode: IEventTarget + FromReference {
     /// Returns the type of the node.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeType)
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-nodetype
     fn node_type( &self ) -> NodeType {
         match js!(
             return @{self.as_ref()}.nodeType;
         ).try_into().unwrap() {
             1 => NodeType::Element,
+            2 => NodeType::Attribute,
             3 => NodeType::Text,
+            4 => NodeType::CDataSection,
             7 => NodeType::ProcessingInstruction,
             8 => NodeType::Comment,
             9 => NodeType::Document,
@@ -162,6 +178,7 @@ pub trait INode: IEventTarget + FromReference {
     /// Returns the value of the node.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeValue)
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-nodevalue
     fn node_value( &self ) -> Option<String> {
         js!(
             return @{self.as_ref()}.nodeValue;
@@ -171,6 +188,7 @@ pub trait INode: IEventTarget + FromReference {
     /// Sets the value of the node.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeValue)
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-nodevalue
     fn set_node_value( &self, value: Option< &str > ) {
         js! { @(no_return)
             @{self.as_ref()}.nodeValue = @{value};
@@ -180,6 +198,7 @@ pub trait INode: IEventTarget + FromReference {
     /// Returns the `Document` that this node belongs to.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/ownerDocument)
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-ownerdocument
     fn owner_document( &self ) -> Option< Document > {
         js!(
             return @{self.as_ref()}.ownerDocument;
@@ -190,6 +209,7 @@ pub trait INode: IEventTarget + FromReference {
     /// has no parent or the parent is not an `Element`.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/parentElement)
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-parentelement
     fn parent_element( &self ) -> Option< Element > {
         js!(
             return @{self.as_ref()}.parentElement;
@@ -199,29 +219,17 @@ pub trait INode: IEventTarget + FromReference {
     /// Returns the node's previous sibling in the tree, or `None` if there isn't such a node.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en/docs/Web/API/Node/previousSibling)
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-previoussibling
     fn previous_sibling( &self ) -> Option< Node > {
         js!(
             return @{self.as_ref()}.previousSibling;
         ).try_into().ok()
     }
 
-    /// A property which represents the "rendered" text content of a node and its descendants.
-    /// It approximates the text the user would get if they highlighted the contents of the element
-    /// with the cursor and then copied to the clipboard.
-    ///
-    /// This feature was originally introduced by Internet Explorer, and was formally specified in the HTML
-    /// standard in 2016 after being adopted by all major browser vendors.
-    ///
-    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/innerText)
-    fn inner_text( &self ) -> String {
-        js!(
-            return @{self.as_ref()}.innerText;
-        ).try_into().unwrap()
-    }
-
     /// A property which represents the text content of a node and its descendants.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/textContent)
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-textcontent
     fn text_content( &self ) -> Option< String > {
         js!(
             return @{self.as_ref()}.textContent;
@@ -233,6 +241,7 @@ pub trait INode: IEventTarget + FromReference {
     /// with the given value.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/textContent)
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-textcontent
     fn set_text_content( &self, text: &str ) {
         js! { @(no_return)
             @{self.as_ref()}.textContent = @{text};
@@ -242,6 +251,7 @@ pub trait INode: IEventTarget + FromReference {
     /// Returns a live collection of child nodes of this node.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/childNodes)
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-childnodes
     fn child_nodes( &self ) -> NodeList {
         unsafe {
             js!(
@@ -253,15 +263,17 @@ pub trait INode: IEventTarget + FromReference {
     /// Gets the base URL.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/baseURI)
-    fn base_uri( &self ) -> Option<String> {
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-baseuri
+    fn base_uri( &self ) -> String {
         js!(
             return @{self.as_ref()}.baseURI;
-        ).try_into().ok()
+        ).try_into().unwrap()
     }
 
     /// Returns whether this node has children nodes.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/hasChildNodes)
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-haschildnodes
     fn has_child_nodes( &self ) -> bool {
         js!(
             return @{self.as_ref()}.hasChildNodes();
@@ -271,6 +283,7 @@ pub trait INode: IEventTarget + FromReference {
     /// Determines whether the given namespace is the default namespace of this node.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/isDefaultNamespace)
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-isdefaultnamespace
     fn is_default_namespace( &self, namespace: &str ) -> bool {
         js!(
             return @{self.as_ref()}.isDefaultNamespace( @{namespace} );
@@ -282,6 +295,7 @@ pub trait INode: IEventTarget + FromReference {
     /// and so on.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/isEqualNode)
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-isequalnode
     fn is_equal_node< T: INode >( &self, node: &T ) -> bool {
         js!(
             return @{self.as_ref()}.isEqualNode( @{node.as_ref()} );
@@ -291,6 +305,7 @@ pub trait INode: IEventTarget + FromReference {
     /// Test whether two `Node` references are the same.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/isSameNode)
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-issamenode
     fn is_same_node< T: INode >( &self, node: &T ) -> bool {
         js!(
             return @{self.as_ref()}.isSameNode( @{node.as_ref()} );
@@ -300,6 +315,7 @@ pub trait INode: IEventTarget + FromReference {
     /// Returns the prefix for the given namespace URI, if present.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/lookupPrefix)
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-lookupprefix
     fn lookup_prefix( &self, namespace: &str ) -> Option<String> {
         js!(
             return @{self.as_ref()}.lookupPrefix( @{namespace} );
@@ -309,6 +325,7 @@ pub trait INode: IEventTarget + FromReference {
     /// Returns the namespace URI for the given prefix.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/lookupNamespaceURI)
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-lookupnamespaceuri
     fn lookup_namespace_uri( &self, prefix: &str ) -> Option<String> {
         js!(
             return @{self.as_ref()}.lookupNamespaceURI( @{prefix} );
@@ -318,6 +335,7 @@ pub trait INode: IEventTarget + FromReference {
     /// Merges any adjacent text nodes and removes empty text nodes under this node.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/normalize)
+    // https://dom.spec.whatwg.org/#ref-for-dom-node-normalize
     fn normalize( &self ) {
         js! { @(no_return)
             @{self.as_ref()}.normalize();
@@ -335,6 +353,7 @@ error_enum_boilerplate! {
 /// interface.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node)
+// https://dom.spec.whatwg.org/#interface-node
 pub struct Node( Reference );
 
 impl IEventTarget for Node {}
@@ -481,12 +500,12 @@ mod tests {
         let child = text("test");
         node.append_child(&child);
 
-        let clone = node.clone_node(CloneKind::Shallow);
+        let clone = node.clone_node(CloneKind::Shallow).unwrap();
         assert_ne!(node.as_ref(), clone.as_ref());
         assert_eq!(clone.node_name(), "DIV");
         assert!(clone.first_child().is_none());
 
-        let clone = node.clone_node(CloneKind::Deep);
+        let clone = node.clone_node(CloneKind::Deep).unwrap();
         assert_ne!(node.as_ref(), clone.as_ref());
         assert_eq!(clone.node_name(), "DIV");
         let clone_child = clone.first_child().unwrap();
@@ -670,16 +689,6 @@ mod tests {
     }
 
     #[test]
-    fn test_inner_text() {
-        let node: Node = div();
-        assert_eq!(node.inner_text(), "");
-        node.append_child(&text("foo "));
-        assert_eq!(node.inner_text(), "foo ");
-        node.append_child(&text("foo"));
-        assert_eq!(node.inner_text(), "foo foo");
-    }
-
-    #[test]
     fn test_text_content() {
         let node: Node = div();
         assert_eq!(node.text_content().unwrap(), "");
@@ -695,7 +704,7 @@ mod tests {
     #[test]
     fn test_base_uri() {
         let node = div();
-        assert!(node.base_uri().is_some());
+        assert!(!node.base_uri().is_empty());
     }
 
     #[test]

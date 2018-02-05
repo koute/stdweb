@@ -13,6 +13,7 @@ pub trait RenderingContext {
 /// Used for drawing rectangles, text, images and other objects onto the canvas element.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D)
+// https://html.spec.whatwg.org/#canvasrenderingcontext2d
 pub struct CanvasRenderingContext2d(Reference);
 
 reference_boilerplate! {
@@ -34,6 +35,7 @@ impl CanvasRenderingContext2d {
     /// specified width and height and whose style is determined by the fillStyle attribute.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillRect)
+    // https://html.spec.whatwg.org/#2dcontext:#dom-context-2d-fillrect
     pub fn fill_rect(&self, x: f64, y: f64, width: f64, height: f64) {
         js! { @(no_return)
             @{&self.0}.fillRect(@{x}, @{y}, @{width}, @{height});
@@ -46,6 +48,7 @@ impl CanvasRenderingContext2d {
     /// text or by using a lower font size.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillText)
+    // https://html.spec.whatwg.org/#2dcontext:#dom-context-2d-filltext
     pub fn fill_text(&self, text: &str, x: f64, y: f64, max_width: Option<f64>) {
         if let Some(max_width) = max_width {
             js! { @(no_return)

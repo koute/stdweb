@@ -1,4 +1,5 @@
 use webcore::value::Reference;
+use webcore::try_from::TryInto;
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
 use webapi::token_list::TokenList;
@@ -42,6 +43,21 @@ pub trait IElement: INode {
             js!( return @{self.as_ref()}.querySelectorAll( @{selector} ); ).into_reference_unchecked().unwrap()
         }
     }
+
+    /// A property which represents the "rendered" text content of a node and its descendants.
+    /// It approximates the text the user would get if they highlighted the contents of the element
+    /// with the cursor and then copied to the clipboard.
+    ///
+    /// This feature was originally introduced by Internet Explorer, and was formally specified in the HTML
+    /// standard in 2016 after being adopted by all major browser vendors.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/innerText)
+    // https://html.spec.whatwg.org/#elements-in-the-dom:dom-innertext
+    fn inner_text( &self ) -> String {
+        js!(
+            return @{self.as_ref()}.innerText;
+        ).try_into().unwrap()
+    }
 }
 
 /// A reference to a JavaScript object which implements the [IElement](trait.IElement.html)
@@ -59,4 +75,31 @@ reference_boilerplate! {
     instanceof Element
     convertible to EventTarget
     convertible to Node
+}
+
+#[cfg(all(test, feature = "web_test"))]
+mod tests {
+    use super::*;
+
+    fn div() -> Element {
+        js!(
+            return document.createElement("div");
+        ).try_into().unwrap()
+    }
+
+    fn text(text: &str) -> Node {
+        js!(
+            return new Text(@{text});
+        ).try_into().unwrap()
+    }
+
+    #[test]
+    fn test_inner_text() {
+        let element: Element = div();
+        assert_eq!(element.inner_text(), "");
+        element.append_child(&text("foo "));
+        assert_eq!(element.inner_text(), "foo ");
+        element.append_child(&text("foo"));
+        assert_eq!(element.inner_text(), "foo foo");
+    }
 }
