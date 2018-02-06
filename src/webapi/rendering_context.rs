@@ -23,6 +23,7 @@ pub struct CanvasRenderingContext2d(Reference);
 /// CanvasRenderingContext2D.createRadialGradient().
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasGradient)
+// https://html.spec.whatwg.org/#canvasgradient
 pub struct CanvasGradient(Reference);
 
 /// The CanvasPattern interface represents an opaque object describing a pattern, based on an image, 
@@ -30,6 +31,7 @@ pub struct CanvasGradient(Reference);
 /// Intentionally blank, no non-experimental properties or methods.
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasPattern)
+// https://html.spec.whatwg.org/#canvaspattern
 pub struct CanvasPattern(Reference);
 
 /// The ImageData interface represents the underlying pixel data of an area of a <canvas> element. 
@@ -38,11 +40,13 @@ pub struct CanvasPattern(Reference);
 /// a part of the canvas by using putImageData().
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ImageData)
+// https://html.spec.whatwg.org/#imagedata
 pub struct ImageData(Reference);
 
 /// The TextMetrics interface represents the dimension of a text in the canvas, as created by the CanvasRenderingContext2D.measureText() method.
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/TextMetrics)
+// https://html.spec.whatwg.org/#textmetrics
 pub struct TextMetrics(Reference);
 
 /// The type of compositing operation to apply when drawing new shapes, where type is a string 
@@ -211,6 +215,7 @@ impl CanvasGradient {
     /// CSS <color>, a SYNTAX_ERR is raised.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasGradient/addColorStop)
+    // https://html.spec.whatwg.org/#2dcontext:dom-canvasgradient-addcolorstop
     pub fn add_color_stop(&self, offset: f64, color: &str) -> Result<(), SyntaxError> {
         assert!(offset > 0 as f64 && offset < 1 as f64);
         js_try! ( @(no_return)
@@ -739,6 +744,7 @@ impl CanvasRenderingContext2d {
     /// (defaulting to clockwise).
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/arc)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-arc
     pub fn arc(&self, x: f64, y: f64, start_angle: f64, end_angle: f64, anticlockwise: bool) {
         js! { @(no_return)
             @{&self.0}.arc(@{x}, @{y}, @{start_angle}, @{end_angle}, @{anticlockwise});
@@ -768,6 +774,7 @@ impl CanvasRenderingContext2d {
     /// Starts a new path by emptying the list of sub-paths. Call this method when you want to create a new path.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/beginPath)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-arcto
     pub fn begin_path(&self) {
         js! { @(no_return)
             @{&self.0}.beginPath();
@@ -779,6 +786,7 @@ impl CanvasRenderingContext2d {
     /// point in the current path, which can be changed using moveTo() before creating the Bézier curve.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/bezierCurveTo)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-beziercurveto
     pub fn bezier_curve_to(&self, cp1x: f64, cp1y: f64, cp2x: f64, cp2y: f64, x: f64, y: f64) {
         js! { @(no_return)
             @{&self.0}.bezierCurveTo(@{cp1x}, @{cp1y}, @{cp2x}, @{cp2y}, @{x}, @{y});
@@ -789,6 +797,7 @@ impl CanvasRenderingContext2d {
     /// to transparent black, erasing any previously drawn content.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/clearRect)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-clearrect
     pub fn clear_rect(&self, x: f64, y: f64, width: f64, height: f64) {
         js! { @(no_return)
             @{&self.0}.clearRect(@{x}, @{y}, @{width}, @{width}, @{height});
@@ -799,6 +808,7 @@ impl CanvasRenderingContext2d {
     /// ctx.clip(path, fillRule) is not supported because [(Path2D)](https://developer.mozilla.org/en-US/docs/Web/API/Path2D) is still experimental
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/clip)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-clip
     pub fn clip(&self, fill_rule: Option<FillRule>) {
         if let Some(fill_rule) = fill_rule {
             let fill_rule_str = &self.fill_rule_to_str(fill_rule);
@@ -818,6 +828,7 @@ impl CanvasRenderingContext2d {
     /// If the shape has already been closed or has only one point, this function does nothing.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/closePath)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-closepath
     pub fn close_path(&self) {
         js! { @(no_return)
             @{&self.0}.closePath();
@@ -827,6 +838,7 @@ impl CanvasRenderingContext2d {
     /// Creates a gradient along the line given by the coordinates represented by the parameters.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createLinearGradient)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-createlineargradient
     pub fn create_linear_gradient(&self, x0: f64, y0: f64, x1: f64, y1: f64) -> CanvasGradient {
         js! (
             return @{&self.0}.createLinearGradient(@{x0}, @{y0}, @{x1}, @{y1});
@@ -837,6 +849,7 @@ impl CanvasRenderingContext2d {
     /// All of the pixels in the new object are transparent black.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createImageData)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-createimagedata
     pub fn create_image_data_wh(&self, width: f64, height: f64) -> Result<ImageData, IndexSizeError> {
         js_try! (
             return @{&self.0}.createImageData(@{width}, @{height});
@@ -847,6 +860,7 @@ impl CanvasRenderingContext2d {
     /// All of the pixels in the new object are transparent black.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createImageData)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-createimagedata
     pub fn create_image_data_id(&self, image_data: ImageData) -> Result<ImageData, IndexSizeError> {
         js_try! (
             return @{&self.0}.createImageData(@{image_data});
@@ -857,6 +871,7 @@ impl CanvasRenderingContext2d {
     /// the directions specified by the repetition argument. This method returns a CanvasPattern.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createPattern)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-createpattern
     pub fn create_pattern_image(&self, image: ImageElement, repetition: Option<Repetition>) -> CanvasPattern {
         let repetition_string = match repetition {
             Some(Repetition::Repeat) | None => {
@@ -885,6 +900,7 @@ impl CanvasRenderingContext2d {
     /// This method returns a CanvasGradient.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createRadialGradient)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-createradialgradient
     pub fn create_radial_gradient(&self, x0: f64, y0: f64, r0: f64, x1: f64, y1: f64, r1: f64) -> CanvasGradient {
         js! (
             return @{&self.0}.createRadialGradient(@{x0}, @{y0}, @{r0}, @{x1}, @{y1}, @{r1});
@@ -894,6 +910,7 @@ impl CanvasRenderingContext2d {
     /// Draws a focus ring around the current path or given path, If a given element is focused.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawFocusIfNeeded)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-drawfocusifneeded
     pub fn draw_focus_if_needed< T: IHtmlElement >(&self, element: &T) {
         js! { @(no_return)
             @{&self.0}.drawFocusIfNeeded(@{element.as_ref()});
@@ -904,6 +921,7 @@ impl CanvasRenderingContext2d {
     /// TODO: allow errors other than InvalidStateError
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-drawimage
     pub fn draw_image(&self, image: ImageElement, dx: f64, dy: f64) -> Result<(), InvalidStateError> {
         js_try! ( @(no_return)
             @{&self.0}.drawImage(@{image}, @{dx}, @{dy});
@@ -914,6 +932,7 @@ impl CanvasRenderingContext2d {
     /// TODO: allow errors other than InvalidStateError
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-drawimage
     pub fn draw_image_d(&self, image: ImageElement, dx: f64, dy: f64, d_width: f64, d_height: f64) -> Result<(), InvalidStateError> {
         js_try! ( @(no_return)
             @{&self.0}.drawImage(@{image}, @{dx}, @{dy}, @{d_width}, @{d_height});
@@ -924,6 +943,7 @@ impl CanvasRenderingContext2d {
     /// TODO: allow errors other than InvalidStateError
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-drawimage
     pub fn draw_image_s(&self, image: ImageElement, 
                         sx: f64, sy: f64, s_width: f64, s_height: f64, 
                         dx: f64, dy: f64, d_width: f64, d_height: f64
@@ -938,6 +958,7 @@ impl CanvasRenderingContext2d {
     /// ctx.fill(path, fillRule) is not supported because [(Path2D)](https://developer.mozilla.org/en-US/docs/Web/API/Path2D) is still experimental
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fill)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-fill
     pub fn fill(&self, fill_rule: Option<FillRule>) {
         if let Some(fill_rule) = fill_rule {
             let fill_rule_str = &self.fill_rule_to_str(fill_rule);
@@ -956,7 +977,7 @@ impl CanvasRenderingContext2d {
     /// specified width and height and whose style is determined by the fillStyle attribute.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillRect)
-    // https://html.spec.whatwg.org/#2dcontext:#dom-context-2d-fillrect
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-fillrect
     pub fn fill_rect(&self, x: f64, y: f64, width: f64, height: f64) {
         js! { @(no_return)
             @{&self.0}.fillRect(@{x}, @{y}, @{width}, @{height});
@@ -969,7 +990,7 @@ impl CanvasRenderingContext2d {
     /// text or by using a lower font size.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillText)
-    // https://html.spec.whatwg.org/#2dcontext:#dom-context-2d-filltext
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-filltext
     pub fn fill_text(&self, text: &str, x: f64, y: f64, max_width: Option<f64>) {
         if let Some(max_width) = max_width {
             js! { @(no_return)
@@ -989,6 +1010,7 @@ impl CanvasRenderingContext2d {
     /// Pixels outside of the canvas area are present as transparent black values in the returned ImageData.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getImageData)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-getimagedata
     pub fn get_image_data(&self, sx: f64, sy: f64, sw: f64, sh: f64) -> Result<ImageData, IndexSizeError> {
         js_try! (
             return @{&self.0}.getImageData(@{sx}, @{sy}, @{sw}, @{sh});
@@ -998,6 +1020,7 @@ impl CanvasRenderingContext2d {
     /// Gets the current line dash pattern.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getLineDash)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-getlinedash
     pub fn get_line_dash(&self) -> Vec<f64> {
         js! (
             return @{&self.0}.getLineDash();
@@ -1010,6 +1033,7 @@ impl CanvasRenderingContext2d {
     /// are not supported because [(Path2D)](https://developer.mozilla.org/en-US/docs/Web/API/Path2D) is still experimental 
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/isPointInPath)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-ispointinpath
     pub fn is_point_in_path(&self, x: f64, y: f64, fill_rule: Option<FillRule>) -> bool {
         if let Some(fill_rule) = fill_rule {
             let fill_rule_str = &self.fill_rule_to_str(fill_rule);
@@ -1029,6 +1053,7 @@ impl CanvasRenderingContext2d {
     /// ctx.isPointInStroke(path, x, y) is not supported because [(Path2D)](https://developer.mozilla.org/en-US/docs/Web/API/Path2D) is still experimental 
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/isPointInStroke)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-ispointinstroke
     pub fn is_point_in_stroke(&self, x: f64, y: f64) -> bool {
         js! (
             return @{&self.0}.isPointInStroke(@{x}, @{y});
@@ -1038,6 +1063,7 @@ impl CanvasRenderingContext2d {
     /// Connects the last point in the sub-path to the x, y coordinates with a straight line (but does not actually draw it).
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineTo)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-lineto
     pub fn line_to(&self, x: f64, y: f64) {
         js! { @(no_return)
             @{&self.0}.lineTo(@{x}, @{y});
@@ -1047,6 +1073,7 @@ impl CanvasRenderingContext2d {
     /// Returns a TextMetrics object that contains information about the measured text (such as its width for example).
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/measureText)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-measuretext
     pub fn measure_text(&self, text: &str) -> TextMetrics {
         js! (
             return @{&self.0}.measureText(@{text});
@@ -1056,14 +1083,18 @@ impl CanvasRenderingContext2d {
     /// Moves the starting point of a new sub-path to the (x, y) coordinates.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/moveTo)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-moveto
     pub fn move_to(&self, x: f64, y: f64) {
         js! { @(no_return)
             @{&self.0}.moveTo(@{x}, @{y});
         }
     }
 
-    /// paints data from the given ImageData object onto the bitmap. If a dirty rectangle is provided, only the pixels 
+    /// Paints data from the given ImageData object onto the bitmap. If a dirty rectangle is provided, only the pixels 
     /// from that rectangle are painted. This method is not affected by the canvas transformation matrix.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/putImageData)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-putimagedata
     pub fn put_image_data(&self, 
                             image_data: ImageData, 
                             dx: f64, dy: f64, 
@@ -1085,6 +1116,7 @@ impl CanvasRenderingContext2d {
     /// moveTo() before creating the quadratic Bézier curve.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/quadraticCurveTo)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-quadraticcurveto
     pub fn quadratic_curve_to(&self, cpx: f64, cpy: f64, x:f64, y: f64) {
         js! { @(no_return)
             @{&self.0}.quadraticCurveTo(@{cpx}, @{cpy}, @{x}, @{y});
@@ -1096,6 +1128,7 @@ impl CanvasRenderingContext2d {
     /// so that you can fill or stroke this rectangle.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/rect)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-rect
     pub fn rect(&self, x: f64, y: f64, width: f64, height: f64) {
         js! { @(no_return)
             @{&self.0}.rect(@{x}, @{y}, @{width}, @{height});
@@ -1106,6 +1139,7 @@ impl CanvasRenderingContext2d {
     /// If there is no saved state, this method does nothing.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/restore)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-restore
     pub fn restore(&self) {
         js! { @(no_return)
             @{&self.0}.restore();
@@ -1115,6 +1149,7 @@ impl CanvasRenderingContext2d {
     /// Adds a rotation to the transformation matrix. The angle argument represents a clockwise rotation angle and is expressed in radians.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/rotate)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-rotate
     pub fn rotate(&self, angle: f64) {
         js! { @(no_return)
             @{&self.0}.rotate(@{angle});
@@ -1124,6 +1159,7 @@ impl CanvasRenderingContext2d {
     /// Saves the entire state of the canvas by pushing the current state onto a stack.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/save)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-save
     pub fn save(&self) {
         js! { @(no_return)
             @{&self.0}.save();
@@ -1137,6 +1173,7 @@ impl CanvasRenderingContext2d {
     /// This results in shapes being drawn twice as large.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/scale)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-scale
     pub fn scale(&self, x: f64, y: f64) {
         js! { @(no_return)
             @{&self.0}.scale(@{x}, @{y});
@@ -1146,6 +1183,7 @@ impl CanvasRenderingContext2d {
     /// Sets the line dash pattern used when stroking lines, using an array of values which specify alternating lengths of lines and gaps which describe the pattern.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/setLineDash)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-setlinedash
     pub fn set_line_dash(&self, segments: Vec<f64>) {
         js! { @(no_return)
             @{&self.0}.setLineDash(@{segments});
@@ -1156,6 +1194,7 @@ impl CanvasRenderingContext2d {
     /// See also the transform() method, which does not override the current transform matrix and multiplies it with a given one.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/setTransform)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-settransform
     pub fn set_transform(&self, a: f64, b: f64, c: f64, d: f64, e: f64, f: f64) {
         js! { @(no_return)
             @{&self.0}.setTransform(@{a}, @{b}, @{c}, @{d}, @{e}, @{f});
@@ -1167,6 +1206,7 @@ impl CanvasRenderingContext2d {
     /// ctx.stroke(path) is not supported because [(Path2D)](https://developer.mozilla.org/en-US/docs/Web/API/Path2D) is still experimental
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/stroke)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-stroke
     pub fn stroke(&self) {
         js! { @(no_return)
             @{&self.0}.stroke();
@@ -1176,6 +1216,7 @@ impl CanvasRenderingContext2d {
     /// Paints a rectangle which has a starting point at (x, y) and has a w width and an h height onto the canvas, using the current stroke style.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/strokeRect)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-strokerect
     pub fn stroke_rect(&self, x: f64, y: f64, width: f64, height: f64) {
         js! { @(no_return)
             @{&self.0}.strokeRect(@{x}, @{y}, @{width}, @{height});
@@ -1187,6 +1228,7 @@ impl CanvasRenderingContext2d {
     /// See the CanvasRenderingContext2D.fillText() method to draw the text with the characters filled with color rather than having just their outlines drawn.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/strokeText)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-stroketext
     pub fn stroke_text(&self, text: &str, x: f64, y: f64, max_width: Option<f64>) {
         if let Some(max_width) = max_width {
             js! { @(no_return)
@@ -1205,6 +1247,7 @@ impl CanvasRenderingContext2d {
     /// See also the setTransform() method which resets the current transform to the identity matrix and then invokes transform().
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/transform)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-transform
     pub fn transform(&self, a: f64, b: f64, c: f64, d: f64, e: f64, f: f64) {
         js! { @(no_return)
             @{&self.0}.transform(@{a}, @{b}, @{c}, @{d}, @{e}, @{f});
@@ -1214,6 +1257,7 @@ impl CanvasRenderingContext2d {
     /// Adds a translation transformation by moving the canvas and its origin x horizontally and y vertically on the grid.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/translate)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-translate
     pub fn translate(&self, x: f64, y: f64) {
         js! { @(no_return)
             @{&self.0}.translate(@{x}, @{y});
