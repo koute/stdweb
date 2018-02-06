@@ -800,16 +800,7 @@ impl CanvasRenderingContext2d {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/clip)
     pub fn clip(&self, fill_rule: Option<FillRule>) {
         if let Some(fill_rule) = fill_rule {
-            let fill_rule_str;
-            match fill_rule {
-                FillRule::NonZero => {
-                    fill_rule_str = "nonzero";
-                }
-
-                FillRule::EvenOdd => {
-                    fill_rule_str = "evenodd";
-                }
-            }
+            let fill_rule_str = &self.fill_rule_to_str(fill_rule);
             js! { @(no_return)
                 @{&self.0}.clip(@{fill_rule_str});
             }    
@@ -948,16 +939,7 @@ impl CanvasRenderingContext2d {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fill)
     pub fn fill(&self, fill_rule: Option<FillRule>) {
         if let Some(fill_rule) = fill_rule {
-            let fill_rule_str;
-            match fill_rule {
-                FillRule::NonZero => {
-                    fill_rule_str = "nonzero";
-                }
-
-                FillRule::EvenOdd => {
-                    fill_rule_str = "evenodd";
-                }
-            }
+            let fill_rule_str = &self.fill_rule_to_str(fill_rule);
             js! { @(no_return)
                 @{&self.0}.fill(@{fill_rule_str});
             }    
@@ -1026,18 +1008,8 @@ impl CanvasRenderingContext2d {
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/isPointInPath)
     pub fn is_point_in_path(&self, x: f64, y: f64, fill_rule: Option<FillRule>) -> bool {
-        //TODO: change this fill_rule stuff into a function
         if let Some(fill_rule) = fill_rule {
-            let fill_rule_str;
-            match fill_rule {
-                FillRule::NonZero => {
-                    fill_rule_str = "nonzero";
-                }
-
-                FillRule::EvenOdd => {
-                    fill_rule_str = "evenodd";
-                }
-            }
+            let fill_rule_str = &self.fill_rule_to_str(fill_rule);
             js! (
                 return @{&self.0}.isPointInPath(@{x}, @{y}, @{fill_rule_str});
             ).try_into().unwrap()
@@ -1242,6 +1214,18 @@ impl CanvasRenderingContext2d {
     pub fn translate(&self, x: f64, y: f64) {
         js! { @(no_return)
             @{&self.0}.translate(@{x}, @{y});
+        }
+    }
+
+    fn fill_rule_to_str(&self, fill_rule: FillRule) -> &'static str {
+        match fill_rule {
+            FillRule::NonZero => {
+                "nonzero"
+            }
+
+            FillRule::EvenOdd => {
+                "evenodd"
+            }
         }
     }
 }
