@@ -232,8 +232,15 @@ There is also an **experimental** [Parcel] plugin [here](https://github.com/kout
          * `ReadyState` -> `FileReaderReadyState`
       * (breaking change) Changed return types:
          * `INode::remove_child` now returns `Node` in the `Ok` case
-         * `INode::insert_before` now returns a `Result`
-         * `INode::replace_child` now returns a `Result`
+         * The following now return a `Result`:
+            * `INode::insert_before`
+            * `INode::replace_child`
+            * `INode::clone_node`
+            * `StringMap::insert`
+            * `TokenList::add`
+            * `TokenList::remove`
+        * `INode::base_uri` now returns a `String` instead of `Option< String >`
+      * (breaking change) `INode::inner_text` was moved to `IElement::inner_text`
       * When building using a recent `cargo-web` it's not necessary to call
         `stdweb::initialize` nor `stdweb::event_loop` anymore
       * Support for `cdylib` crates on `wasm32-unknown-unknown`

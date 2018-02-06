@@ -97,6 +97,7 @@ arraykind!( f64, Float64Array, HEAPF64 );
 /// JavaScript typed arrays are array-like objects and provide a mechanism for accessing raw binary data.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays)
+// https://www.ecma-international.org/ecma-262/6.0/#sec-typedarray-objects
 pub struct TypedArray< T: ArrayKind >( Reference, PhantomData< T > );
 
 reference_boilerplate! {
@@ -118,6 +119,7 @@ impl< T: ArrayKind > TypedArray< T > {
     /// Returns the [TypedArray](struct.ArrayBuffer.html) referenced by this typed array.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray/buffer)
+    // https://www.ecma-international.org/ecma-262/6.0/#sec-get-%typedarray%.prototype.buffer
     pub fn buffer( &self ) -> ArrayBuffer {
         js!( return @{self}.buffer; ).try_into().unwrap()
     }

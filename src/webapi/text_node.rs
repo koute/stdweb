@@ -10,6 +10,7 @@ use webapi::node::{INode, Node};
 /// into information items and `TextNode`s that form its children.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Text)
+// https://dom.spec.whatwg.org/#text
 pub struct TextNode( Reference );
 
 impl IEventTarget for TextNode {}

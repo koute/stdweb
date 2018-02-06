@@ -27,6 +27,7 @@ impl RequestAnimationFrameHandle {
 /// The `Window` object represents a window containing a DOM document.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Window)
+// https://html.spec.whatwg.org/#window
 pub struct Window( Reference );
 
 impl IEventTarget for Window {}
@@ -50,6 +51,7 @@ impl Window {
     /// with the optional specified content and an OK button.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Window/alert)
+    // https://html.spec.whatwg.org/#the-window-object:dom-alert
     pub fn alert( &self, message: &str ) {
         js!( @(no_return)
             @{self}.alert( @{message} );
@@ -65,6 +67,7 @@ impl Window {
     /// the browsing session ends - that is, when the browser is closed.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage)
+    // https://html.spec.whatwg.org/#the-localstorage-attribute:dom-localstorage
     pub fn local_storage( &self ) -> Storage {
         unsafe {
             js!(
@@ -86,6 +89,7 @@ impl Window {
     /// a new session to be initiated, which differs from how session cookies work.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage)
+    // https://html.spec.whatwg.org/#the-sessionstorage-attribute:dom-sessionstorage
     pub fn session_storage( &self ) -> Storage {
         unsafe {
             js!(
@@ -99,6 +103,7 @@ impl Window {
     /// for changing that URL and loading another URL.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Window/location)
+    // https://html.spec.whatwg.org/#the-window-object:dom-location
     pub fn location( &self ) -> Option< Location > {
         unsafe {
             js!(
@@ -119,6 +124,7 @@ impl Window {
     /// This timestamp is a decimal number, in milliseconds, but with a minimal precision of 1ms (1000 µs).
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame)
+    // https://html.spec.whatwg.org/#the-window-object:dom-window-requestanimationframe
     pub fn request_animation_frame< F: FnOnce(f64) + 'static>( &self, callback: F) -> RequestAnimationFrameHandle {
         let values: Value = js!{
             var callback = @{Once(callback)};
@@ -132,6 +138,7 @@ impl Window {
     /// manipulate the browser history.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Window/history)
+    // https://html.spec.whatwg.org/#the-window-object:dom-history
     pub fn history(&self) -> History {
         unsafe {
             js!(
