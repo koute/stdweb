@@ -4,6 +4,7 @@ extern crate futures;
 
 use futures::Future;
 use stdweb::unstable::{TryInto};
+use stdweb::web::error::Error;
 use stdweb::{Null, PromiseFuture};
 
 
@@ -26,11 +27,14 @@ fn log( a: &str ) {
 fn main() {
     stdweb::initialize();
 
-    PromiseFuture::spawn_print(
+    PromiseFuture::spawn(
         sleep( 5000 ).inspect( |_| log( "Timeout 1 done!") ).join(
         sleep( 5000 ).inspect( |_| log( "Timeout 2 done!" ) ) )
             .and_then( |_|
-                sleep( 5000 ).inspect( |_| log( "Timeout 3 done!") ) ).map( |_| () )
+                sleep( 5000 ).inspect( |_| log( "Timeout 3 done!") ) )
+            .and_then( |_|
+                futures::future::err( Error::new( "Testing error!" ) ) )
+            .map_err( |e| e.print() )
     );
 
     stdweb::event_loop();
