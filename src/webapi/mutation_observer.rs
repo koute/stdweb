@@ -3,11 +3,12 @@ use webcore::value::{Reference, Value, ConversionError};
 use webapi::node_list::NodeList;
 use webcore::try_from::{TryFrom, TryInto};
 use webapi::node::{INode, Node};
-
+use private::UnimplementedException;
 
 /// Provides a way to receive notifications about changes to the DOM.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver)
+// https://dom.spec.whatwg.org/#mutationobserver
 pub struct MutationObserver( Reference );
 
 reference_boilerplate! {
@@ -64,6 +65,7 @@ impl MutationObserver {
     /// 2. The `MutationObserver`.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#Constructor)
+    // https://dom.spec.whatwg.org/#ref-for-dom-mutationobserver-mutationobserver
     pub fn new< F >( callback: F ) -> MutationObserverHandle
         where F: FnMut( Vec< MutationRecord >, Self ) + 'static {
         let callback_reference: Reference = js! ( return @{callback}; ).try_into().unwrap();
@@ -106,7 +108,8 @@ impl MutationObserver {
     /// [`attributes`](struct.MutationObserverInit.html#structfield.attributes) must be `true`.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#observe())
-    pub fn observe< T: INode >( &self, target: &T, options: MutationObserverInit ) {
+    // https://dom.spec.whatwg.org/#ref-for-dom-mutationobserver-observe
+    pub fn observe< T: INode >( &self, target: &T, options: MutationObserverInit ) -> Result< (), UnimplementedException > {
         let attribute_filter = options.attribute_filter
             .map( |val| val.into() )
             // This must compile to JavaScript `undefined`, NOT `null`
@@ -123,6 +126,8 @@ impl MutationObserver {
                 attributeFilter: @{attribute_filter}
             } );
         }
+
+        Ok(())
     }
 
     /// Stops observing all targets.
@@ -131,6 +136,7 @@ impl MutationObserver {
     /// the `MutationObserver` will not be notified of any changes.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#disconnect())
+    // https://dom.spec.whatwg.org/#ref-for-dom-mutationobserver-disconnect
     pub fn disconnect( &self ) {
         js! { @(no_return)
             @{self.as_ref()}.disconnect();
@@ -143,6 +149,7 @@ impl MutationObserver {
     /// callback to respond to changes.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#takeRecords())
+    // https://dom.spec.whatwg.org/#ref-for-dom-mutationobserver-takerecords
     pub fn take_records( &self ) -> Vec< MutationRecord > {
         js!(
             return @{self.as_ref()}.takeRecords();
@@ -190,6 +197,7 @@ impl Drop for MutationObserverHandle {
 /// It is passed to the [`MutationObserver`](struct.MutationObserver.html)'s callback.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationRecord)
+// https://dom.spec.whatwg.org/#mutationrecord
 #[ derive( Debug, Clone ) ]
 pub enum MutationRecord {
     /// One of the target's attributes was changed.
@@ -292,6 +300,6 @@ mod tests {
             attribute_old_value: true,
             character_data_old_value: true,
             attribute_filter: Some( &[ "foo", "bar", "qux" ] ),
-        } );
+        }).unwrap();
     }
 }

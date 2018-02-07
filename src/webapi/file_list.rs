@@ -7,6 +7,7 @@ use webapi::file::File;
 /// It's also used for a list of files dropped into web content when using the drag and drop API.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/FileList)
+// https://w3c.github.io/FileAPI/#dfn-filelist
 pub struct FileList( Reference );
 
 reference_boilerplate! {
@@ -18,6 +19,7 @@ impl FileList {
     /// Returns the number of [File](struct.File.html)s contained in this list.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/FileList/length)
+    // https://w3c.github.io/FileAPI/#ref-for-dfn-length
     pub fn len( &self ) -> usize {
         let length: i32 = js!( return @{self}.length; ).try_into().unwrap();
         length as usize

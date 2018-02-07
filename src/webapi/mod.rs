@@ -31,3 +31,4 @@ pub mod mutation_observer;
 pub mod error;
 pub mod dom_exception;
 pub mod events;
+pub mod parent_node;
