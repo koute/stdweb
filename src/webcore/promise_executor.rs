@@ -1,31 +1,3 @@
-//! This code was originally written by @CryZe
-//! https://github.com/CryZe/stdweb-io/blob/9b8429e2452a699e8280cca50ea48f7e6af30c41/src/core.rs
-//!
-//! It is provided under the following license:
-//!
-//! MIT License
-//!
-//! Copyright (c) 2017 Christopher Serr
-//!
-//! Permission is hereby granted, free of charge, to any person obtaining a copy
-//! of this software and associated documentation files (the "Software"), to deal
-//! in the Software without restriction, including without limitation the rights
-//! to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//! copies of the Software, and to permit persons to whom the Software is
-//! furnished to do so, subject to the following conditions:
-//!
-//! The above copyright notice and this permission notice shall be included in all
-//! copies or substantial portions of the Software.
-//!
-//! THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//! IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//! FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//! AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//! LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//! OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-//! SOFTWARE.
-
-
 use futures::future::{Future, ExecuteError, Executor};
 use futures::executor::{self, Notify, Spawn};
 use futures::Async;
@@ -35,6 +7,7 @@ use std::cell::{Cell, RefCell};
 
 struct SpawnedTask {
     ref_count: Cell< usize >,
+    resubmission_count: Cell< usize >,
     spawn: RefCell< Spawn< Box< Future<Item = (), Error = () > + 'static > > >,
 }
 
@@ -43,34 +16,74 @@ impl SpawnedTask {
         where F: Future< Item = (), Error = () > + 'static {
         Self {
             ref_count: Cell::new( 1 ),
+            resubmission_count: Cell::new( 0 ),
             spawn: RefCell::new( executor::spawn( Box::new( future.fuse() )
                 as Box< Future<Item = (), Error = () > + 'static> ) ),
         }
     }
 
-    fn execute_spawn( spawned_ptr: *const SpawnedTask ) {
-        let spawned = unsafe { &*spawned_ptr };
+    unsafe fn execute_spawn( spawned_ptr: *const SpawnedTask ) {
+        let spawned = &*spawned_ptr;
 
-        // This is probably suboptimal, as a resubmission of the same Task while it
-        // is being executed results in a panic. It is not entirely clear if a Task
-        // is allowed to do that, but I would expect that this is valid behavior, as
-        // the notification could happen while the Task is still executing, in a
-        // truly multi-threaded situation. So we probably have to deal with it here
-        // at some point too. This already happened in the IntervalStream, so that
-        // should be cleaned up then as well then. The easiest solution is to try to
-        // lock it instead and if it fails, increment a counter. The one that
-        // initially blocked the RefCell then just reexecutes the Task until the
-        // Task is finished or the counter reaches 0.
+        // Queue up the task for execution.
+        spawned
+            .resubmission_count
+            .set( spawned.resubmission_count.get() + 1 );
 
-        if spawned.spawn.borrow_mut().poll_future_notify( &CORE, spawned_ptr as usize ) != Ok( Async::NotReady ) {
-            SpawnedTask::decrement_ref_count( spawned_ptr as usize );
+        loop {
+            // Here we try to take an execution token from the queue and execute
+            // the future. This may not be possible, as the future may already
+            // be executed somewhere higher up in the stack. We know there is at
+            // least one execution scheduled, so it's styled more like a
+            // do-while loop.
+
+            // The usage of the lock needs to be contained in a scope that is
+            // separate from the decrement_ref_count, as that can deallocate the
+            // whole spawned task, causing a segfault when the RefCell is trying
+            // to release its borrow. That's why the poll_future_notify call is
+            // contained inside the map.
+
+            let result = spawned
+                .spawn
+                .try_borrow_mut()
+                .map( |mut s| s.poll_future_notify( &CORE, spawned_ptr as usize ) );
+
+            if let Ok( result ) = result {
+                // We were able to successfully execute the future, allowing us
+                // to dequeue one resubmission token.
+                spawned
+                    .resubmission_count
+                    .set( spawned.resubmission_count.get() - 1 );
+
+                if result != Ok( Async::NotReady ) {
+                    SpawnedTask::decrement_ref_count( spawned_ptr as usize );
+
+                    // Return out early. The whole object might be deallocated
+                    // at this point, so it would be very dangerous to touch
+                    // anything else.
+                    return;
+                }
+
+                if spawned.resubmission_count.get() == 0 {
+                    // Looks like there is no additional executions queued up.
+                    // We can end the execution loop here.
+                    return;
+                }
+            } else {
+                // We failed to execute the Task as it is already being executed
+                // higher up in the stack. We don't consume our execution token,
+                // and just leave it for the Task execution higher up to
+                // consume. We can't do anything anymore, so we yield execution
+                // back to the caller.
+                return;
+            }
         }
     }
 
-    fn decrement_ref_count( id: usize ) {
+    unsafe fn decrement_ref_count( id: usize ) {
         let count = {
             let spawned_ptr = id as *const SpawnedTask;
-            let spawned = unsafe { &*spawned_ptr };
+            let spawned = &*spawned_ptr;
             let mut count = spawned.ref_count.get();
             count -= 1;
             spawned.ref_count.set( count );
@@ -79,7 +92,7 @@ impl SpawnedTask {
 
         if count == 0 {
             let spawned_ptr = id as *mut SpawnedTask;
-            unsafe { Box::from_raw( spawned_ptr ) };
+            Box::from_raw( spawned_ptr );
         }
     }
 }
@@ -94,7 +107,9 @@ impl< F > Executor< F > for Core where
     fn execute( &self, future: F ) -> StdResult< (), ExecuteError< F > > {
         let spawned_ptr = Box::into_raw( Box::new( SpawnedTask::new( future ) ) );
 
-        SpawnedTask::execute_spawn( spawned_ptr );
+        unsafe {
+            SpawnedTask::execute_spawn( spawned_ptr );
+        }
 
         Ok( () )
     }
@@ -104,7 +119,9 @@ impl Notify for Core {
     fn notify( &self, spawned_id: usize ) {
         let spawned_ptr = spawned_id as *const SpawnedTask;
 
-        SpawnedTask::execute_spawn( spawned_ptr );
+        unsafe {
+            SpawnedTask::execute_spawn( spawned_ptr );
+        }
     }
 
     fn clone_id( &self, id: usize ) -> usize {
@@ -117,7 +134,9 @@ impl Notify for Core {
     }
 
     fn drop_id( &self, id: usize ) {
-        SpawnedTask::decrement_ref_count( id );
+        unsafe {
+            SpawnedTask::decrement_ref_count( id );
+        }
     }
 }
 
