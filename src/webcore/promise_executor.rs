@@ -69,6 +69,7 @@ impl SpawnedTask {
                     // We can end the execution loop here.
                     return;
                 }
+
             } else {
                 // We failed to execute the Task as it is already being executed
                 // higher up in the stack. We don't consume our execution token,
@@ -78,6 +79,15 @@ impl SpawnedTask {
                 return;
             }
         }
+    }
+
+    unsafe fn increment_ref_count( id: usize ) -> usize {
+        let spawned_ptr = id as *const SpawnedTask;
+        let spawned = &*spawned_ptr;
+        let mut count = spawned.ref_count.get();
+        count += 1;
+        spawned.ref_count.set( count );
+        id
     }
 
     unsafe fn decrement_ref_count( id: usize ) {
@@ -92,6 +102,8 @@ impl SpawnedTask {
 
         if count == 0 {
             let spawned_ptr = id as *mut SpawnedTask;
+
+            // This causes the SpawnedTask to be dropped
             Box::from_raw( spawned_ptr );
         }
     }
@@ -125,12 +137,9 @@ impl Notify for Core {
     }
 
     fn clone_id( &self, id: usize ) -> usize {
-        let spawned_ptr = id as *const SpawnedTask;
-        let spawned = unsafe { &*spawned_ptr };
-        let mut count = spawned.ref_count.get();
-        count += 1;
-        spawned.ref_count.set( count );
-        id
+        unsafe {
+            SpawnedTask::increment_ref_count( id )
+        }
     }
 
     fn drop_id( &self, id: usize ) {
