@@ -74,6 +74,7 @@
     feature(proc_macro)
 )]
 #![cfg_attr(feature = "nightly", feature(core_intrinsics))]
+#![cfg_attr(feature = "nightly", feature(never_type))]
 #![recursion_limit="1500"]
 
 #[cfg(feature = "serde")]
