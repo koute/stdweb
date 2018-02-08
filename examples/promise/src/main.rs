@@ -5,7 +5,7 @@ extern crate futures;
 use futures::Future;
 use stdweb::unstable::{TryInto};
 use stdweb::web::error::Error;
-use stdweb::{Null, PromiseFuture};
+use stdweb::{Null, Promise, PromiseFuture};
 
 
 fn sleep( ms: u32 ) -> PromiseFuture< Null > {
@@ -77,6 +77,13 @@ impl Future for MyFuture {
 
 fn main() {
     stdweb::initialize();
+
+    let promise: Promise = js!( return Promise.resolve(null); ).try_into().unwrap();
+
+    promise.done( |result: Result< Null, Error >| {
+        log( &format!( "Promise result: {:#?}", result ) );
+        panic!( "Testing panic!" );
+    } );
 
     PromiseFuture::spawn(
         MyFuture::new().map( |x| {
