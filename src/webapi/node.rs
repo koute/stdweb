@@ -546,12 +546,12 @@ mod tests {
         node.insert_before(&child2, Some(&child1)).unwrap();
         assert_eq!(node.first_child().unwrap().as_ref(), child2.as_ref());
 
-        match node.insert_before(&child3, &child3) {
+        match node.insert_before(&child3, Some(&child3)) {
             Err(InsertNodeError::NotFoundError(_)) => (),
             _ => panic!("Expected NotFoundError")
         }
 
-        match node.insert_before(&doc_type(), &child1) {
+        match node.insert_before(&doc_type(), Some(&child1)) {
             Err(InsertNodeError::HierarchyRequestError(_)) => (),
             _ => panic!("Expected HierarchyRequestError")
         }
