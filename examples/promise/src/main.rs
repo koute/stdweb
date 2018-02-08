@@ -24,8 +24,66 @@ fn log( a: &str ) {
 }
 
 
+struct MyFuture {
+    count: u32,
+    receiver: futures::unsync::oneshot::Receiver< () >,
+}
+
+impl MyFuture {
+    fn new() -> Self {
+        let ( sender, receiver ) = futures::unsync::oneshot::channel();
+
+        let callback = || {
+            log( "setTimeout done" );
+            sender.send( () ).unwrap();
+        };
+
+        js! { @(no_return)
+            setTimeout( @{stdweb::Once( callback )}, 1000 );
+        }
+
+        Self {
+            count: 0,
+            receiver,
+        }
+    }
+}
+
+impl Future for MyFuture {
+    type Item = u32;
+    type Error = ();
+
+    fn poll( &mut self ) -> futures::Poll< Self::Item, Self::Error > {
+        self.count += 1;
+
+        let task = futures::task::current();
+
+        log( "Task notification 1" );
+        task.notify();
+
+        log( "Task notification 2" );
+        task.notify();
+
+        log( "Task notification done" );
+
+        match self.receiver.poll() {
+            Ok( futures::Async::Ready( () ) ) => Ok( futures::Async::Ready( self.count ) ),
+            Ok( futures::Async::NotReady ) => Ok( futures::Async::NotReady ),
+            Err( _ ) => Err( () ),
+        }
+    }
+}
+
+
 fn main() {
     stdweb::initialize();
+
+    PromiseFuture::spawn(
+        MyFuture::new().map( |x| {
+            log( &format!( "MyFuture count: {}", x ) );
+            ()
+        } )
+    );
 
     PromiseFuture::spawn(
         sleep( 5000 ).inspect( |_| log( "Timeout 1 done!") ).join(

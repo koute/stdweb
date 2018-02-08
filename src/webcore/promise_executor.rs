@@ -3,6 +3,7 @@ use futures::executor::{self, Notify, Spawn};
 use futures::Async;
 use std::result::Result as StdResult;
 use std::cell::{Cell, RefCell};
+use Once;
 
 
 struct SpawnedTask {
@@ -30,7 +31,9 @@ impl SpawnedTask {
             .resubmission_count
             .set( spawned.resubmission_count.get() + 1 );
 
-        loop {
+        unsafe fn run( spawned_ptr: *const SpawnedTask ) {
+            let spawned = &*spawned_ptr;
+
             // Here we try to take an execution token from the queue and execute
             // the future. This may not be possible, as the future may already
             // be executed somewhere higher up in the stack. We know there is at
@@ -55,30 +58,27 @@ impl SpawnedTask {
                     .resubmission_count
                     .set( spawned.resubmission_count.get() - 1 );
 
-                if result != Ok( Async::NotReady ) {
+                if let Ok( Async::NotReady ) = result {
+                    // If there are more queued executions, then we execute them on the next event tick.
+                    // This is necessary because the Future might be waiting for an event on the event loop.
+                    if spawned.resubmission_count.get() != 0 {
+                        let callback = move || run( spawned_ptr );
+
+                        // TODO setTimeout isn't available in all JavaScript environments
+                        js! { @(no_return)
+                            setTimeout( @{Once( callback )}, 0 );
+                        }
+                    }
+
+                } else {
+                    // The whole object might be deallocated at this point, so
+                    // it would be very dangerous to touch anything else.
                     SpawnedTask::decrement_ref_count( spawned_ptr as usize );
-
-                    // Return out early. The whole object might be deallocated
-                    // at this point, so it would be very dangerous to touch
-                    // anything else.
-                    return;
                 }
-
-                if spawned.resubmission_count.get() == 0 {
-                    // Looks like there is no additional executions queued up.
-                    // We can end the execution loop here.
-                    return;
-                }
-
-            } else {
-                // We failed to execute the Task as it is already being executed
-                // higher up in the stack. We don't consume our execution token,
-                // and just leave it for the Task execution higher up to
-                // consume. We can't do anything anymore, so we yield execution
-                // back to the caller.
-                return;
             }
         }
+
+        run( spawned_ptr );
     }
 
     unsafe fn increment_ref_count( id: usize ) -> usize {
