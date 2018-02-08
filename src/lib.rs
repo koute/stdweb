@@ -69,8 +69,12 @@
 #![cfg_attr(feature = "dev", allow(unstable_features))]
 #![cfg_attr(feature = "dev", feature(plugin))]
 #![cfg_attr(feature = "dev", plugin(clippy))]
-#![cfg_attr(not(feature = "nightly"), deny(unstable_features))]
+#![cfg_attr(
+    all(target_arch = "wasm32", target_os = "unknown"),
+    feature(proc_macro)
+)]
 #![cfg_attr(feature = "nightly", feature(core_intrinsics))]
+#![cfg_attr(feature = "nightly", feature(never_type))]
 #![recursion_limit="1500"]
 
 #[cfg(feature = "serde")]
@@ -83,6 +87,12 @@ extern crate serde_json;
 #[cfg(all(test, feature = "serde"))]
 #[macro_use]
 extern crate serde_derive;
+
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+extern crate stdweb_internal_macros;
+
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+pub use stdweb_internal_macros::js_export;
 
 #[macro_use]
 mod webcore;
@@ -138,6 +148,7 @@ pub mod web {
     pub use webapi::text_node::TextNode;
     pub use webapi::html_element::{IHtmlElement, HtmlElement};
     pub use webapi::window_or_worker::IWindowOrWorker;
+    pub use webapi::parent_node::IParentNode;
     pub use webapi::token_list::TokenList;
     pub use webapi::node_list::NodeList;
     pub use webapi::string_map::StringMap;
@@ -147,15 +158,24 @@ pub mod web {
     pub use webapi::typed_array::TypedArray;
     pub use webapi::file_reader::{FileReader, FileReaderResult};
     pub use webapi::history::History;
+    pub use webapi::web_socket::{WebSocket, SocketCloseCode};
+    pub use webapi::rendering_context::{RenderingContext, CanvasRenderingContext2d};
+    pub use webapi::mutation_observer::{MutationObserver, MutationObserverHandle, MutationObserverInit, MutationRecord};
+    pub use webapi::xml_http_request::{XmlHttpRequest, XhrReadyState};
 
-
-    /// A module containing XMLHttpRequest and its ReadyState
-    pub mod xml_http_request {
-        pub use webapi::xml_http_request::{ XMLHttpRequest, ReadyState };
-    }
     /// A module containing error types.
     pub mod error {
-        pub use webapi::node::NotFoundError;
+        pub use webapi::dom_exception::{
+            IDomException,
+            DomException,
+            ConcreteException,
+            HierarchyRequestError,
+            InvalidAccessError,
+            NotFoundError,
+            SecurityError,
+            SyntaxError,
+        };
+        pub use webapi::error::{IError, Error};
     }
 
     /// A module containing HTML DOM elements.
@@ -163,46 +183,77 @@ pub mod web {
         pub use webapi::html_elements::ImageElement;
         pub use webapi::html_elements::InputElement;
         pub use webapi::html_elements::TextAreaElement;
+        pub use webapi::html_elements::CanvasElement;
     }
 
     /// A module containing JavaScript DOM events.
     pub mod event {
         pub use webapi::event::{
+            IEvent,
+            IUiEvent,
             ConcreteEvent,
 
-            IEvent,
-            IKeyboardEvent,
-            IUiEvent,
+            EventPhase
+        };
+
+        pub use webapi::events::mouse::{
             IMouseEvent,
-            IFocusEvent,
-            IProgressEvent,
-
-            EventPhase,
-            KeyboardLocation,
-            ModifierKey,
-            MouseButton,
-
-            ChangeEvent,
-            KeypressEvent,
-            KeydownEvent,
-            KeyupEvent,
             ClickEvent,
             DoubleClickEvent,
-            FocusEvent,
-            BlurEvent,
-            HashChangeEvent,
-            ResourceLoadEvent,
-            ResourceAbortEvent,
-            ResourceErrorEvent,
+            MouseDownEvent,
+            MouseUpEvent,
+            MouseMoveEvent,
+
+            MouseButton
+        };
+
+        pub use webapi::events::keyboard::{
+            IKeyboardEvent,
+            KeyPressEvent,
+            KeyDownEvent,
+            KeyUpEvent,
+
+            KeyboardLocation,
+            ModifierKey
+        };
+
+        pub use webapi::events::progress::{
+            IProgressEvent,
             ProgressEvent,
             LoadStartEvent,
             LoadEndEvent,
             ProgressLoadEvent,
             ProgressAbortEvent,
-            ProgressErrorEvent,
+            ProgressErrorEvent
+        };
+
+        pub use webapi::events::socket::{
+            IMessageEvent,
+            SocketCloseEvent,
+            SocketErrorEvent,
+            SocketOpenEvent,
+            SocketMessageEvent
+        };
+
+        pub use webapi::events::history::{
+            HashChangeEvent,
+            PopStateEvent
+        };
+
+        pub use webapi::events::dom::{
+            ChangeEvent,
+            ResourceLoadEvent,
+            ResourceAbortEvent,
+            ResourceErrorEvent,
+            ResizeEvent,
             InputEvent,
-            ReadyStateChange,
-            PopStateEvent,
+            ReadyStateChangeEvent
+        };
+
+        pub use webapi::events::focus::{
+            IFocusEvent,
+            FocusEvent,
+            BlurEvent
         };
     }
 }
@@ -248,4 +299,8 @@ pub mod private {
     #[allow(dead_code)]
     #[inline(always)]
     pub fn noop< T >( _: &mut T ) {}
+
+    // TODO: Remove this.
+    #[derive(Debug)]
+    pub struct UnimplementedException;
 }

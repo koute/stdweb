@@ -1,8 +1,10 @@
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
 use webcore::serialization::JsSerializable;
+use private::UnimplementedException;
 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/History)
+// https://html.spec.whatwg.org/#history-3
 pub struct History(Reference);
 
 reference_boilerplate! {
@@ -33,6 +35,7 @@ impl History {
     /// This parameter is optional; if it isn't specified, it's set to the document's current URL.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/History_API#The_pushState%28%29_method)
+    // https://html.spec.whatwg.org/#the-history-interface:dom-history-pushstate
     pub fn push_state<T: JsSerializable>(&self, state: T, title: &str, url: Option<&str>) {
         js!{ @(no_return)
             @{self}.pushState(@{state}, @{title}, @{url});
@@ -44,10 +47,12 @@ impl History {
     /// a new entry in the global browser history.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/History_API#The_replaceState%28%29_method)
-    pub fn replace_state<T: JsSerializable>(&self, state: T, title: &str, url: Option<&str>) {
+    // https://html.spec.whatwg.org/#the-history-interface:dom-history-replacestate
+    pub fn replace_state<T: JsSerializable>(&self, state: T, title: &str, url: Option<&str>) -> Result< (), UnimplementedException > {
         js!{ @(no_return)
             @{self}.replaceState(@{state}, @{title}, @{url});
         };
+        Ok(())
     }
 
     /// You can use the go() method to load a specific page from session history, identified by its
@@ -55,33 +60,40 @@ impl History {
     /// index 0).
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/History_API#Traveling_through_history)
-    pub fn go(&self, offset: i32) {
+    // https://html.spec.whatwg.org/#the-history-interface:dom-history-go
+    pub fn go(&self, offset: i32) -> Result< (), UnimplementedException > {
         js! { @(no_return)
             @{self}.go(@{offset});
         };
+        Ok(())
     }
 
     /// Move one step backward through history.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/History_API#Traveling_through_history)
-    pub fn back(&self) {
+    // https://html.spec.whatwg.org/#the-history-interface:dom-history-back
+    pub fn back(&self) -> Result< (), UnimplementedException > {
         js! { @(no_return)
             @{self}.back();
         };
+        Ok(())
     }
 
     /// Move one step forward through history.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/History_API#Traveling_through_history)
-    pub fn forward(&self) {
+    // https://html.spec.whatwg.org/#the-history-interface:dom-history-forward
+    pub fn forward(&self) -> Result< (), UnimplementedException > {
         js! { @(no_return)
             @{self}.forward();
         };
+        Ok(())
     }
 
     /// Returns the current number of history entries.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/History)
+    // https://html.spec.whatwg.org/#the-history-interface:dom-history-length
     pub fn len(&self) -> usize {
         js!(
             return @{self}.length;

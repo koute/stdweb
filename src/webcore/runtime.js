@@ -1,7 +1,7 @@
-Module.STDWEB = {};
+Module.STDWEB_PRIVATE = {};
 
 // This is based on code from Emscripten's preamble.js.
-Module.STDWEB.to_utf8 = function to_utf8( str, addr ) {
+Module.STDWEB_PRIVATE.to_utf8 = function to_utf8( str, addr ) {
     for( var i = 0; i < str.length; ++i ) {
         // Gotcha: charCodeAt returns a 16-bit word that is a UTF-16 encoded code unit, not a Unicode code point of the character! So decode UTF16->UTF32->UTF8.
         // See http://unicode.org/faq/utf_bom.html#utf16-3
@@ -42,8 +42,8 @@ Module.STDWEB.to_utf8 = function to_utf8( str, addr ) {
     }
 };
 
-Module.STDWEB.noop = function() {};
-Module.STDWEB.to_js = function to_js( address ) {
+Module.STDWEB_PRIVATE.noop = function() {};
+Module.STDWEB_PRIVATE.to_js = function to_js( address ) {
     var kind = HEAPU8[ address + 12 ];
     if( kind === 0 ) {
         return undefined;
@@ -56,7 +56,7 @@ Module.STDWEB.to_js = function to_js( address ) {
     } else if( kind === 4 ) {
         var pointer = HEAPU32[ address / 4 ];
         var length = HEAPU32[ (address + 4) / 4 ];
-        return Module.STDWEB.to_js_string( pointer, length );
+        return Module.STDWEB_PRIVATE.to_js_string( pointer, length );
     } else if( kind === 5 ) {
         return false;
     } else if( kind === 6 ) {
@@ -66,7 +66,7 @@ Module.STDWEB.to_js = function to_js( address ) {
         var length = HEAPU32[ (address + 4) / 4 ];
         var output = [];
         for( var i = 0; i < length; ++i ) {
-            output.push( Module.STDWEB.to_js( pointer + i * 16 ) );
+            output.push( Module.STDWEB_PRIVATE.to_js( pointer + i * 16 ) );
         }
         return output;
     } else if( kind === 8 ) {
@@ -77,13 +77,13 @@ Module.STDWEB.to_js = function to_js( address ) {
         for( var i = 0; i < length; ++i ) {
             var key_pointer = HEAPU32[ (key_array_pointer + i * 8) / 4 ];
             var key_length = HEAPU32[ (key_array_pointer + 4 + i * 8) / 4 ];
-            var key = Module.STDWEB.to_js_string( key_pointer, key_length );
-            var value = Module.STDWEB.to_js( value_array_pointer + i * 16 );
+            var key = Module.STDWEB_PRIVATE.to_js_string( key_pointer, key_length );
+            var value = Module.STDWEB_PRIVATE.to_js( value_array_pointer + i * 16 );
             output[ key ] = value;
         }
         return output;
     } else if( kind === 9 || kind === 11 || kind === 12 ) {
-        return Module.STDWEB.acquire_js_reference( HEAP32[ address / 4 ] );
+        return Module.STDWEB_PRIVATE.acquire_js_reference( HEAP32[ address / 4 ] );
     } else if( kind === 10 ) {
         var adapter_pointer = HEAPU32[ address / 4 ];
         var pointer = HEAPU32[ (address + 4) / 4 ];
@@ -93,21 +93,21 @@ Module.STDWEB.to_js = function to_js( address ) {
                 throw new ReferenceError( "Already dropped Rust function called!" );
             }
 
-            var args = Module.STDWEB.alloc( 16 );
-            Module.STDWEB.serialize_array( args, arguments );
-            Module.STDWEB.dyncall( "vii", adapter_pointer, [pointer, args] );
-            var result = Module.STDWEB.tmp;
-            Module.STDWEB.tmp = null;
+            var args = Module.STDWEB_PRIVATE.alloc( 16 );
+            Module.STDWEB_PRIVATE.serialize_array( args, arguments );
+            Module.STDWEB_PRIVATE.dyncall( "vii", adapter_pointer, [pointer, args] );
+            var result = Module.STDWEB_PRIVATE.tmp;
+            Module.STDWEB_PRIVATE.tmp = null;
 
             return result;
         };
 
         output.drop = function() {
-            output.drop = Module.STDWEB.noop;
+            output.drop = Module.STDWEB_PRIVATE.noop;
             var function_pointer = pointer;
             pointer = 0;
 
-            Module.STDWEB.dyncall( "vi", deallocator_pointer, [function_pointer] );
+            Module.STDWEB_PRIVATE.dyncall( "vi", deallocator_pointer, [function_pointer] );
         };
 
         return output;
@@ -120,25 +120,25 @@ Module.STDWEB.to_js = function to_js( address ) {
                 throw new ReferenceError( "Already called or dropped FnOnce function called!" );
             }
 
-            output.drop = Module.STDWEB.noop;
+            output.drop = Module.STDWEB_PRIVATE.noop;
             var function_pointer = pointer;
             pointer = 0;
 
-            var args = Module.STDWEB.alloc( 16 );
-            Module.STDWEB.serialize_array( args, arguments );
-            Module.STDWEB.dyncall( "vii", adapter_pointer, [function_pointer, args] );
-            var result = Module.STDWEB.tmp;
-            Module.STDWEB.tmp = null;
+            var args = Module.STDWEB_PRIVATE.alloc( 16 );
+            Module.STDWEB_PRIVATE.serialize_array( args, arguments );
+            Module.STDWEB_PRIVATE.dyncall( "vii", adapter_pointer, [function_pointer, args] );
+            var result = Module.STDWEB_PRIVATE.tmp;
+            Module.STDWEB_PRIVATE.tmp = null;
 
             return result;
         };
 
         output.drop = function() {
-            output.drop = Module.STDWEB.noop;
+            output.drop = Module.STDWEB_PRIVATE.noop;
             var function_pointer = pointer;
             pointer = 0;
 
-            Module.STDWEB.dyncall( "vi", deallocator_pointer, [function_pointer] );
+            Module.STDWEB_PRIVATE.dyncall( "vi", deallocator_pointer, [function_pointer] );
         };
 
         return output;
@@ -169,48 +169,48 @@ Module.STDWEB.to_js = function to_js( address ) {
     }
 };
 
-Module.STDWEB.serialize_object = function serialize_object( address, value ) {
+Module.STDWEB_PRIVATE.serialize_object = function serialize_object( address, value ) {
     var keys = Object.keys( value );
     var length = keys.length;
-    var key_array_pointer = Module.STDWEB.alloc( length * 8 );
-    var value_array_pointer = Module.STDWEB.alloc( length * 16 );
+    var key_array_pointer = Module.STDWEB_PRIVATE.alloc( length * 8 );
+    var value_array_pointer = Module.STDWEB_PRIVATE.alloc( length * 16 );
     HEAPU8[ address + 12 ] = 8;
     HEAPU32[ address / 4 ] = value_array_pointer;
     HEAPU32[ (address + 4) / 4 ] = length;
     HEAPU32[ (address + 8) / 4 ] = key_array_pointer;
     for( var i = 0; i < length; ++i ) {
         var key = keys[ i ];
-        var key_length = Module.STDWEB.utf8_len( key );
-        var key_pointer = Module.STDWEB.alloc( key_length );
-        Module.STDWEB.to_utf8( key, key_pointer );
+        var key_length = Module.STDWEB_PRIVATE.utf8_len( key );
+        var key_pointer = Module.STDWEB_PRIVATE.alloc( key_length );
+        Module.STDWEB_PRIVATE.to_utf8( key, key_pointer );
 
         var key_address = key_array_pointer + i * 8;
         HEAPU32[ key_address / 4 ] = key_pointer;
         HEAPU32[ (key_address + 4) / 4 ] = key_length;
 
-        Module.STDWEB.from_js( value_array_pointer + i * 16, value[ key ] );
+        Module.STDWEB_PRIVATE.from_js( value_array_pointer + i * 16, value[ key ] );
     }
 };
 
-Module.STDWEB.serialize_array = function serialize_array( address, value ) {
+Module.STDWEB_PRIVATE.serialize_array = function serialize_array( address, value ) {
     var length = value.length;
-    var pointer = Module.STDWEB.alloc( length * 16 );
+    var pointer = Module.STDWEB_PRIVATE.alloc( length * 16 );
     HEAPU8[ address + 12 ] = 7;
     HEAPU32[ address / 4 ] = pointer;
     HEAPU32[ (address + 4) / 4 ] = length;
     for( var i = 0; i < length; ++i ) {
-        Module.STDWEB.from_js( pointer + i * 16, value[ i ] );
+        Module.STDWEB_PRIVATE.from_js( pointer + i * 16, value[ i ] );
     }
 };
 
-Module.STDWEB.from_js = function from_js( address, value ) {
+Module.STDWEB_PRIVATE.from_js = function from_js( address, value ) {
     var kind = Object.prototype.toString.call( value );
     if( kind === "[object String]" ) {
-        var length = Module.STDWEB.utf8_len( value );
+        var length = Module.STDWEB_PRIVATE.utf8_len( value );
         var pointer = 0;
         if( length > 0 ) {
-            pointer = Module.STDWEB.alloc( length );
-            Module.STDWEB.to_utf8( value, pointer );
+            pointer = Module.STDWEB_PRIVATE.alloc( length );
+            Module.STDWEB_PRIVATE.to_utf8( value, pointer );
         }
         HEAPU8[ address + 12 ] = 4;
         HEAPU32[ address / 4 ] = pointer;
@@ -232,7 +232,7 @@ Module.STDWEB.from_js = function from_js( address, value ) {
     } else if( value === true ) {
         HEAPU8[ address + 12 ] = 6;
     } else {
-        var refid = Module.STDWEB.acquire_rust_reference( value );
+        var refid = Module.STDWEB_PRIVATE.acquire_rust_reference( value );
         var id = 9;
         if( kind === "[object Object]" ) {
             id = 11;
@@ -247,7 +247,7 @@ Module.STDWEB.from_js = function from_js( address, value ) {
 
 // This is ported from Rust's stdlib; it's faster than
 // the string conversion from Emscripten.
-Module.STDWEB.to_js_string = function to_js_string( index, length ) {
+Module.STDWEB_PRIVATE.to_js_string = function to_js_string( index, length ) {
     index = index|0;
     length = length|0;
     var end = (index|0) + (length|0);
@@ -291,7 +291,7 @@ var ref_to_id_map = new WeakMap();
 var ref_to_id_symbol_map = {};
 var last_refid = 1;
 
-Module.STDWEB.acquire_rust_reference = function( reference ) {
+Module.STDWEB_PRIVATE.acquire_rust_reference = function( reference ) {
     if( reference === undefined || reference === null ) {
         return 0;
     }
@@ -317,15 +317,15 @@ Module.STDWEB.acquire_rust_reference = function( reference ) {
     return refid;
 };
 
-Module.STDWEB.acquire_js_reference = function( refid ) {
+Module.STDWEB_PRIVATE.acquire_js_reference = function( refid ) {
     return id_to_ref_map[ refid ];
 };
 
-Module.STDWEB.increment_refcount = function( refid ) {
+Module.STDWEB_PRIVATE.increment_refcount = function( refid ) {
     id_to_refcount_map[ refid ]++;
 };
 
-Module.STDWEB.decrement_refcount = function( refid ) {
+Module.STDWEB_PRIVATE.decrement_refcount = function( refid ) {
     id_to_refcount_map[ refid ]--;
     if( id_to_refcount_map[ refid ] === 0 ) {
         var reference = id_to_ref_map[ refid ];

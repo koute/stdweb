@@ -22,12 +22,12 @@ macro_rules! arraykind {
                 let slice_ptr = (slice.as_ptr() as usize / size_of::<$element_type>()) as i32;
                 let raw = __js_raw_asm!(
                     concat!(
-                        "return Module.STDWEB.acquire_rust_reference( ",
+                        "return Module.STDWEB_PRIVATE.acquire_rust_reference( ",
                         stringify!($heap_type),
                         ".slice( $0, $1 ) );"
                     ),
                     slice_ptr,
-                    (slice_ptr + slice.len() as i32)
+                    slice_ptr + slice.len() as i32
                 );
 
                 let reference = unsafe {
@@ -40,9 +40,9 @@ macro_rules! arraykind {
             fn into_typed_array_from_array_buffer( buffer: &ArrayBuffer ) -> TypedArray< Self > {
                 let raw = __js_raw_asm!(
                     concat!(
-                        "return Module.STDWEB.acquire_rust_reference( new ",
+                        "return Module.STDWEB_PRIVATE.acquire_rust_reference( new ",
                         stringify!( $js_array_type ),
-                        "( Module.STDWEB.acquire_js_reference( $0 ) )",
+                        "( Module.STDWEB_PRIVATE.acquire_js_reference( $0 ) )",
                         " );"
                     ),
                     buffer.as_ref().as_raw()
@@ -97,6 +97,7 @@ arraykind!( f64, Float64Array, HEAPF64 );
 /// JavaScript typed arrays are array-like objects and provide a mechanism for accessing raw binary data.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays)
+// https://www.ecma-international.org/ecma-262/6.0/#sec-typedarray-objects
 pub struct TypedArray< T: ArrayKind >( Reference, PhantomData< T > );
 
 reference_boilerplate! {
@@ -118,6 +119,7 @@ impl< T: ArrayKind > TypedArray< T > {
     /// Returns the [TypedArray](struct.ArrayBuffer.html) referenced by this typed array.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray/buffer)
+    // https://www.ecma-international.org/ecma-262/6.0/#sec-get-%typedarray%.prototype.buffer
     pub fn buffer( &self ) -> ArrayBuffer {
         js!( return @{self}.buffer; ).try_into().unwrap()
     }

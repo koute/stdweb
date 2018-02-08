@@ -15,6 +15,7 @@ use webapi::node::Node;
 /// a static `NodeList`.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/NodeList)
+// https://dom.spec.whatwg.org/#nodelist
 pub struct NodeList( Reference );
 
 reference_boilerplate! {
@@ -26,6 +27,7 @@ impl NodeList {
     /// Returns the number of [Node](struct.Node.html)s contained in this list.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/NodeList/length)
+    // https://dom.spec.whatwg.org/#ref-for-dom-nodelist-length
     pub fn len( &self ) -> usize {
         let length: i32 = js!( return @{self}.length; ).try_into().unwrap();
         length as usize

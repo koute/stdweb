@@ -298,10 +298,10 @@ impl< 'a > ExactSizeIterator for ObjectDeserializer< 'a > {}
 pub fn deserialize_object< R, F: FnOnce( &mut ObjectDeserializer ) -> R >( reference: &Reference, callback: F ) -> R {
     let mut result: SerializedValue = Default::default();
     __js_raw_asm!( "\
-        var object = Module.STDWEB.acquire_js_reference( $0 );\
-        Module.STDWEB.serialize_object( $1, object );",
+        var object = Module.STDWEB_PRIVATE.acquire_js_reference( $0 );\
+        Module.STDWEB_PRIVATE.serialize_object( $1, object );",
         reference.as_raw(),
-        (&mut result as *mut _)
+        &mut result as *mut _
     );
 
     assert_eq!( result.tag, Tag::Object );
@@ -360,10 +360,10 @@ impl< 'a > ExactSizeIterator for ArrayDeserializer< 'a > {}
 pub fn deserialize_array< R, F: FnOnce( &mut ArrayDeserializer ) -> R >( reference: &Reference, callback: F ) -> R {
     let mut result: SerializedValue = Default::default();
     __js_raw_asm!( "\
-        var array = Module.STDWEB.acquire_js_reference( $0 );\
-        Module.STDWEB.serialize_array( $1, array );",
+        var array = Module.STDWEB_PRIVATE.acquire_js_reference( $0 );\
+        Module.STDWEB_PRIVATE.serialize_array( $1, array );",
         reference.as_raw(),
-        (&mut result as *mut _)
+        &mut result as *mut _
     );
 
     assert_eq!( result.tag, Tag::Array );
@@ -1021,7 +1021,7 @@ macro_rules! impl_for_fn {
                 let result = &result as *const _;
 
                 // This is kinda hacky but I'm not sure how else to do it at the moment.
-                __js_raw_asm!( "Module.STDWEB.tmp = Module.STDWEB.to_js( $0 );", result );
+                __js_raw_asm!( "Module.STDWEB_PRIVATE.tmp = Module.STDWEB_PRIVATE.to_js( $0 );", result );
             }
 
             extern fn deallocator( callback: *mut F ) {
@@ -1085,7 +1085,7 @@ macro_rules! impl_for_fn {
                 let result = &result as *const _;
 
                 // This is kinda hacky but I'm not sure how else to do it at the moment.
-                __js_raw_asm!( "Module.STDWEB.tmp = Module.STDWEB.to_js( $0 );", result );
+                __js_raw_asm!( "Module.STDWEB_PRIVATE.tmp = Module.STDWEB_PRIVATE.to_js( $0 );", result );
             }
 
             extern fn deallocator( callback: *mut F ) {

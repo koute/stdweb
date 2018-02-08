@@ -12,15 +12,17 @@ extern fn funcall_adapter< F: FnOnce() >( callback: *mut F ) {
 /// the `Window` and the global scope of web workers.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope)
+// https://html.spec.whatwg.org/#windoworworkerglobalscope
 pub trait IWindowOrWorker: AsRef< Reference > {
     /// Sets a timer which executes a function once after the timer expires.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout)
+    // https://html.spec.whatwg.org/#windoworworkerglobalscope-mixin:dom-settimeout
     fn set_timeout< F: FnOnce() + 'static >( &self, callback: F, timeout: u32 ) {
         let callback = Box::into_raw( Box::new( callback ) );
         __js_raw_asm!( "\
-            Module.STDWEB.acquire_js_reference( $0 ).setTimeout( function() {\
-                Module.STDWEB.dyncall( 'vi', $1, [$2] );\
+            Module.STDWEB_PRIVATE.acquire_js_reference( $0 ).setTimeout( function() {\
+                Module.STDWEB_PRIVATE.dyncall( 'vi', $1, [$2] );\
             }, $3 );\
         ", self.as_ref().as_raw(), funcall_adapter::< F > as extern fn( *mut F ), callback, timeout );
     }

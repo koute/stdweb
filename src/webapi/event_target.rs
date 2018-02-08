@@ -3,6 +3,7 @@ use std::fmt;
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
 use webapi::event::{ConcreteEvent, IEvent};
+use private::UnimplementedException;
 
 /// A handle to a particular event listener.
 pub struct EventListenerHandle {
@@ -22,6 +23,7 @@ impl EventListenerHandle {
     /// which it was previously registered.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/removeEventListener)
+    // https://dom.spec.whatwg.org/#ref-for-dom-eventtarget-removeeventlistener%E2%91%A0
     pub fn remove( self ) {
         js! { @(no_return)
             var self = @{self.reference};
@@ -37,11 +39,13 @@ impl EventListenerHandle {
 /// can receive events and may have listeners for them.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget)
+// https://dom.spec.whatwg.org/#eventtarget
 pub trait IEventTarget: AsRef< Reference > {
     /// Adds given event handler to the list the list of event listeners for
     /// the specified `EventTarget` on which it's called.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener)
+    // https://dom.spec.whatwg.org/#ref-for-dom-eventtarget-addeventlistener%E2%91%A0
     fn add_event_listener< T, F >( &self, listener: F ) -> EventListenerHandle
         where T: ConcreteEvent, F: FnMut( T ) + 'static
     {
@@ -61,11 +65,12 @@ pub trait IEventTarget: AsRef< Reference > {
 
     /// Dispatches an `Event` at this `EventTarget`, invoking the affected event listeners in the
     /// appropriate order.
+    ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/dispatchEvent)
-    fn dispatch_event< T: IEvent >( &self, event: &T ) -> bool {
-        js! (
+    fn dispatch_event< T: IEvent >( &self, event: &T ) -> Result< bool, UnimplementedException > {
+        Ok( js! (
             return @{self.as_ref()}.dispatchEvent( @{event.as_ref()} );
-        ).try_into().unwrap()
+        ).try_into().unwrap() )
     }
 }
 
@@ -73,6 +78,7 @@ pub trait IEventTarget: AsRef< Reference > {
 /// interface.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget)
+// https://dom.spec.whatwg.org/#eventtarget
 pub struct EventTarget( Reference );
 
 impl IEventTarget for EventTarget {}

@@ -28,3 +28,6 @@ dev = ["serde", "serde_json", "clippy"]
 serde-support = ["serde", "serde_json"]
 nightly = []
 web_test = []
+
+[target.wasm32-unknown-unknown.dependencies]
+stdweb-internal-macros = { path = "stdweb-internal-macros" }
