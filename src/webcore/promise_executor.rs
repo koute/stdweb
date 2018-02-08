@@ -2,11 +2,13 @@ use futures::future::{Future, ExecuteError, Executor};
 use futures::executor::{self, Notify, Spawn};
 use futures::Async;
 use std::result::Result as StdResult;
+use std::rc::Rc;
 use std::cell::{Cell, RefCell};
 use Once;
 
 
 struct SpawnedTask {
+    is_alive: Rc< Cell< bool > >,
     ref_count: Cell< usize >,
     resubmission_count: Cell< usize >,
     spawn: RefCell< Spawn< Box< Future<Item = (), Error = () > + 'static > > >,
@@ -16,6 +18,7 @@ impl SpawnedTask {
     fn new< F >( future: F ) -> Self
         where F: Future< Item = (), Error = () > + 'static {
         Self {
+            is_alive: Rc::new( Cell::new( true ) ),
             ref_count: Cell::new( 1 ),
             resubmission_count: Cell::new( 0 ),
             spawn: RefCell::new( executor::spawn( Box::new( future.fuse() )
@@ -62,11 +65,20 @@ impl SpawnedTask {
                     // If there are more queued executions, then we execute them on the next event tick.
                     // This is necessary because the Future might be waiting for an event on the event loop.
                     if spawned.resubmission_count.get() != 0 {
-                        let callback = move || run( spawned_ptr );
+                        let is_alive = spawned.is_alive.clone();
+
+                        let callback = move || {
+                            // Don't run the SpawnedTask if it's dropped
+                            if is_alive.get() {
+                                run( spawned_ptr );
+                            }
+                        };
 
                         // TODO setTimeout isn't available in all JavaScript environments
                         js! { @(no_return)
-                            setTimeout( @{Once( callback )}, 0 );
+                            setTimeout( function () {
+                                @{Once( callback )}();
+                            }, 0 );
                         }
                     }
 
@@ -103,8 +115,10 @@ impl SpawnedTask {
         if count == 0 {
             let spawned_ptr = id as *mut SpawnedTask;
 
-            // This causes the SpawnedTask to be dropped
-            Box::from_raw( spawned_ptr );
+            // This causes the SpawnedTask to be dropped at the end of the scope
+            let task = Box::from_raw( spawned_ptr );
+
+            task.is_alive.set( false );
         }
     }
 }

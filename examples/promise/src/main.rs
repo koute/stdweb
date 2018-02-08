@@ -35,11 +35,16 @@ impl MyFuture {
 
         let callback = || {
             log( "setTimeout done" );
-            sender.send( () ).unwrap();
+
+            log( &format!("Sending {:#?}", sender.send( () ) ) );
         };
 
+        log( "setTimeout started" );
+
         js! { @(no_return)
-            setTimeout( @{stdweb::Once( callback )}, 1000 );
+            setTimeout( function () {
+                @{stdweb::Once( callback )}();
+            }, 1000 );
         }
 
         Self {
@@ -58,13 +63,8 @@ impl Future for MyFuture {
 
         let task = futures::task::current();
 
-        log( "Task notification 1" );
         task.notify();
-
-        log( "Task notification 2" );
         task.notify();
-
-        log( "Task notification done" );
 
         match self.receiver.poll() {
             Ok( futures::Async::Ready( () ) ) => Ok( futures::Async::Ready( self.count ) ),
@@ -86,10 +86,10 @@ fn main() {
     );
 
     PromiseFuture::spawn(
-        sleep( 5000 ).inspect( |_| log( "Timeout 1 done!") ).join(
-        sleep( 5000 ).inspect( |_| log( "Timeout 2 done!" ) ) )
+        sleep( 2000 ).inspect( |_| log( "Timeout 1 done!") ).join(
+        sleep( 2000 ).inspect( |_| log( "Timeout 2 done!" ) ) )
             .and_then( |_|
-                sleep( 5000 ).inspect( |_| log( "Timeout 3 done!") ) )
+                sleep( 1000 ).inspect( |_| log( "Timeout 3 done!") ) )
             .and_then( |_|
                 futures::future::err( Error::new( "Testing error!" ) ) )
             .map_err( |e| e.print() )
