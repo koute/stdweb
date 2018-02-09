@@ -594,7 +594,7 @@ mod tests {
     macro_rules! conversion_test {
         ($src_type:tt, $(($dst_type:tt, $test_name:ident)),+) => {
             $(
-                #[allow(trivial_numeric_casts, const_err)]
+                #[allow(trivial_numeric_casts, const_err, unreachable_patterns)]
                 #[test]
                 fn $test_name() {
                     for value in $src_type::example_values() {

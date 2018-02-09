@@ -239,8 +239,21 @@ There is also an **experimental** [Parcel] plugin [here](https://github.com/kout
             * `StringMap::insert`
             * `TokenList::add`
             * `TokenList::remove`
+            * `Document::create_element`
+            * `IEventTarget::dispatch_event`
+            * `FileReader::read_as_text`
+            * `FileReader::read_as_array_buffer`
+            * `FileReader::read_as_text`
+            * `History::replace_state`
+            * `History::go`
+            * `History::back`
+            * `History::forward`
+            * `Location::href`
+            * `Location::hash`
         * `INode::base_uri` now returns a `String` instead of `Option< String >`
-      * (breaking change) `INode::inner_text` was moved to `IElement::inner_text`
+      * (breaking change) `INode::inner_text` was moved to `IHtmlElement::inner_text`
+      * (breaking change) `Document::query_selector` and `Document::query_selector_all` were moved to `IParentNode`
+      * (breaking change) `IElement::query_selector` and `IElement::query_selector_all` were moved to `IParentNode`
       * When building using a recent `cargo-web` it's not necessary to call
         `stdweb::initialize` nor `stdweb::event_loop` anymore
       * Support for `cdylib` crates on `wasm32-unknown-unknown`

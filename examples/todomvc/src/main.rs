@@ -14,6 +14,7 @@ use stdweb::web::{
     IElement,
     IHtmlElement,
     INode,
+    IParentNode,
     HtmlElement,
     Element,
     document,
@@ -64,11 +65,11 @@ impl State {
 
 type StateRef = Rc< RefCell< State > >;
 
-fn start_editing( state: &StateRef, index: usize, li: &HtmlElement, label: &Element ) {
-    li.class_list().add( "editing" );
+fn start_editing( state: &StateRef, index: usize, li: &HtmlElement, label: &HtmlElement ) {
+    li.class_list().add( "editing" ).unwrap();
 
-    let edit: InputElement = document().create_element( "input" ).try_into().unwrap();
-    edit.class_list().add( "edit" );
+    let edit: InputElement = document().create_element( "input" ).unwrap().try_into().unwrap();
+    edit.class_list().add( "edit" ).unwrap();
     edit.set_value( label.inner_text() );
     edit.add_event_listener( enclose!( (edit) move |event: KeyPressEvent| {
         if event.key() == "Enter" {
@@ -77,7 +78,7 @@ fn start_editing( state: &StateRef, index: usize, li: &HtmlElement, label: &Elem
     }));
 
     edit.add_event_listener( enclose!( (state, li, edit) move |_: BlurEvent| {
-        li.class_list().remove( "editing" );
+        li.class_list().remove( "editing" ).unwrap();
         li.remove_child( &edit ).unwrap();
         state.borrow_mut().todo_list[ index ].title = edit.value().into_string().unwrap();
         update_dom( &state );
@@ -88,15 +89,15 @@ fn start_editing( state: &StateRef, index: usize, li: &HtmlElement, label: &Elem
 }
 
 fn create_entry( state: &StateRef, index: usize, text: &str ) -> HtmlElement {
-    let li: HtmlElement = document().create_element( "li" ).try_into().unwrap();
-    let div = document().create_element( "div" );
-    let checkbox: InputElement = document().create_element( "input" ).try_into().unwrap();
-    let label = document().create_element( "label" );
-    let button = document().create_element( "button" );
+    let li: HtmlElement = document().create_element( "li" ).unwrap().try_into().unwrap();
+    let div = document().create_element( "div" ).unwrap();
+    let checkbox: InputElement = document().create_element( "input" ).unwrap().try_into().unwrap();
+    let label: HtmlElement = document().create_element( "label" ).unwrap().try_into().unwrap();
+    let button = document().create_element( "button" ).unwrap();
 
-    div.class_list().add( "view" );
+    div.class_list().add( "view" ).unwrap();
 
-    checkbox.class_list().add( "toggle" );
+    checkbox.class_list().add( "toggle" ).unwrap();
     checkbox.set_kind( "checkbox" );
     checkbox.add_event_listener( enclose!( (state, checkbox) move |_: ChangeEvent| {
         let checked: bool = js!( return @{&checkbox}.checked; ).try_into().unwrap();
@@ -109,7 +110,7 @@ fn create_entry( state: &StateRef, index: usize, text: &str ) -> HtmlElement {
         start_editing( &state, index, &li, &label );
     }));
 
-    button.class_list().add( "destroy" );
+    button.class_list().add( "destroy" ).unwrap();
     button.add_event_listener( enclose!( (state) move |_: ClickEvent| {
         state.borrow_mut().todo_list.remove( index );
         update_dom( &state );
@@ -134,7 +135,7 @@ fn update_dom( state: &StateRef ) {
     fn all( _: &Todo ) -> bool { true }
 
     // See which filter we're supposed to use based on the URL.
-    let hash = document().location().unwrap().hash();
+    let hash = document().location().unwrap().hash().unwrap();
     let filter = match hash.as_str() {
         "#/active" => only_active,
         "#/completed" => only_completed,
@@ -147,18 +148,18 @@ fn update_dom( state: &StateRef ) {
     };
 
     // Select the filter "button".
-    let filter_anchors = document().query_selector_all( ".filters a" );
+    let filter_anchors = document().query_selector_all( ".filters a" ).unwrap();
     for anchor in &filter_anchors {
         let anchor: Element = anchor.try_into().unwrap();
-        anchor.class_list().remove( "selected" );
+        anchor.class_list().remove( "selected" ).unwrap();
     }
 
     let filter_anchor_selector = format!( ".filters a[href='{}']", filter_anchor_selector );
-    let selected_anchor: Element = document().query_selector( filter_anchor_selector.as_str() ).unwrap().try_into().unwrap();
-    selected_anchor.class_list().add( "selected" );
+    let selected_anchor: Element = document().query_selector( filter_anchor_selector.as_str() ).unwrap().unwrap().try_into().unwrap();
+    selected_anchor.class_list().add( "selected" ).unwrap();
 
     // Clear previous entries in the list.
-    let list = document().query_selector( ".todo-list" ).unwrap();
+    let list = document().query_selector( ".todo-list" ).unwrap().unwrap();
     while let Some( child ) = list.first_child() {
         list.remove_child( &child ).unwrap();
     }
@@ -168,7 +169,7 @@ fn update_dom( state: &StateRef ) {
     for (index, todo) in state_borrow.todo_list.iter().enumerate().filter( |&(_, todo)| filter( todo ) ) {
         let entry_node = create_entry( state, index, todo.title.as_str() );
         if todo.completed {
-            entry_node.class_list().add( "completed" );
+            entry_node.class_list().add( "completed" ).unwrap();
             let checkbox = entry_node.query_selector( "input[type='checkbox']" ).unwrap();
             js!( @{checkbox}.checked = true; );
         }
@@ -180,7 +181,7 @@ fn update_dom( state: &StateRef ) {
         todo.completed == false
     }).count();
 
-    let counter_display = document().query_selector( ".todo-count" ).unwrap();
+    let counter_display = document().query_selector( ".todo-count" ).unwrap().unwrap();
     if items_left == 1 {
         counter_display.set_text_content( "1 item left" );
     } else {
@@ -197,7 +198,7 @@ fn update_dom( state: &StateRef ) {
 
     // Save the state into local storage.
     let state_json = serde_json::to_string( &*state_borrow ).unwrap();
-    window().local_storage().insert( "state", state_json.as_str() );
+    window().local_storage().insert( "state", state_json.as_str() ).unwrap();
 }
 
 fn main() {
@@ -208,7 +209,7 @@ fn main() {
     }).unwrap_or_else( State::new );
     let state = Rc::new( RefCell::new( state ) );
 
-    let title_entry: InputElement = document().query_selector( ".new-todo" ).unwrap().try_into().unwrap();
+    let title_entry: InputElement = document().query_selector( ".new-todo" ).unwrap().unwrap().try_into().unwrap();
     title_entry.add_event_listener( enclose!( (state, title_entry) move |event: KeyPressEvent| {
         if event.key() == "Enter" {
             event.prevent_default();
@@ -226,7 +227,7 @@ fn main() {
         }
     }));
 
-    let clear_completed = document().query_selector( ".clear-completed" ).unwrap();
+    let clear_completed = document().query_selector( ".clear-completed" ).unwrap().unwrap();
     clear_completed.add_event_listener( enclose!( (state) move |_: ClickEvent| {
         state.borrow_mut().todo_list.retain( |todo| todo.completed == false );
         update_dom( &state );
