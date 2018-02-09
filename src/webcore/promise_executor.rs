@@ -34,13 +34,13 @@ impl SpawnedTask {
     }
 
     fn poll(&self) {
-        // Clear `is_queued` flag
-        self.is_queued.set(false);
-
         let mut spawn = self.spawn.borrow_mut();
 
         // Take the future so that if we panic it gets dropped
         if let Some(mut spawn_future) = spawn.take() {
+            // Clear `is_queued` flag
+            self.is_queued.set(false);
+
             if spawn_future.poll_future_notify( &&Core, self as *const _ as usize ) == Ok(Async::NotReady) {
                 // Future was not ready, so put it back
                 *spawn = Some(spawn_future);
