@@ -14,6 +14,7 @@ enum TaskState {
 
 struct SpawnedTask {
     state: Cell< TaskState >,
+    // TODO use Rc<SpawnedTask> instead ?
     ref_count: Cell< usize >,
     spawn: RefCell< Spawn< Box< Future< Item = (), Error = () > + 'static > > >,
 }
