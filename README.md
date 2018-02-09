@@ -14,7 +14,9 @@ a high degree of interoperability between Rust and JavaScript.
 
 ## Donate
 
-[![Become a patron](https://koute.github.io/img/become_a_patron_button.png)](https://www.patreon.com/koute)
+<a href="https://www.patreon.com/koute">
+    <img src="https://c5.patreon.com/external/logo/become_a_patron_button@2x.png" width="217" alt="Become a patron">
+</a>
 
 ## Patrons
 
