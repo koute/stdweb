@@ -25,12 +25,14 @@ fn log( a: &str ) {
 
 
 struct MyFuture {
+    polls: u32,
     count: u32,
+    done: bool,
     receiver: futures::unsync::oneshot::Receiver< () >,
 }
 
 impl MyFuture {
-    fn new() -> Self {
+    fn new( count: u32 ) -> Self {
         let ( sender, receiver ) = futures::unsync::oneshot::channel();
 
         let callback = || {
@@ -48,7 +50,9 @@ impl MyFuture {
         }
 
         Self {
-            count: 0,
+            polls: 0,
+            count: count,
+            done: false,
             receiver,
         }
     }
@@ -59,17 +63,46 @@ impl Future for MyFuture {
     type Error = ();
 
     fn poll( &mut self ) -> futures::Poll< Self::Item, Self::Error > {
-        self.count += 1;
+        self.polls += 1;
 
-        let task = futures::task::current();
+        if !self.done {
+            match self.receiver.poll() {
+                Ok( futures::Async::Ready( () ) ) => self.done = true,
 
-        task.notify();
-        task.notify();
+                Ok( futures::Async::NotReady ) => {},
 
-        match self.receiver.poll() {
-            Ok( futures::Async::Ready( () ) ) => Ok( futures::Async::Ready( self.count ) ),
-            Ok( futures::Async::NotReady ) => Ok( futures::Async::NotReady ),
-            Err( _ ) => Err( () ),
+                Err( _ ) => self.done = true,
+            }
+        }
+
+        if self.done {
+            if self.count == 0 {
+                Ok( futures::Async::Ready( self.polls ) )
+
+            } else {
+                self.count -= 1;
+
+                let task = futures::task::current();
+                task.notify();
+                task.notify();
+                task.notify();
+                task.notify();
+                task.notify();
+                task.notify();
+                task.notify();
+                task.notify();
+                task.notify();
+                task.notify();
+                task.notify();
+                task.notify();
+                task.notify();
+                task.notify();
+
+                Ok( futures::Async::NotReady )
+            }
+
+        } else {
+            Ok( futures::Async::NotReady )
         }
     }
 }
@@ -86,9 +119,9 @@ fn main() {
     } );
 
     PromiseFuture::spawn(
-        MyFuture::new().map( |x| {
+        MyFuture::new( 5 ).map( |x| {
             log( &format!( "MyFuture count: {}", x ) );
-            ()
+            assert_eq!( x, 7 );
         } )
     );
 
