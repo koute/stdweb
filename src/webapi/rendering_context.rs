@@ -3,7 +3,7 @@ use webcore::try_from::{TryFrom, TryInto};
 use webcore::value::Undefined;
 use webapi::html_elements::{CanvasElement, ImageElement};
 use webapi::html_element::IHtmlElement;
-use webapi::dom_exception::{SyntaxError, SecurityError};
+use webapi::dom_exception::SyntaxError;
 /// Trait implemented by rendering contexts which can be obtained from a canvas.
 pub trait RenderingContext {
     /// Type of error which can occur whilst creating this context
@@ -155,11 +155,6 @@ error_enum_boilerplate! {
 }
 
 error_enum_boilerplate! {
-    InvalidStateError,
-    SyntaxError
-}
-
-error_enum_boilerplate! {
     NotSupportedError,
     SyntaxError
 }
@@ -167,11 +162,6 @@ error_enum_boilerplate! {
 error_enum_boilerplate! {
     TypeMismatchError,
     SyntaxError
-}
-
-error_enum_boilerplate! {
-    NsErrorNotAvailable,
-    SecurityError
 }
 
 reference_boilerplate! {
@@ -918,37 +908,37 @@ impl CanvasRenderingContext2d {
     }
 
     /// Provides different ways to draw an image onto the canvas.
-    /// TODO: allow errors other than InvalidStateError
+    /// TODO: Potentially throw more than just TypeMismatchError
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage)
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-drawimage
-    pub fn draw_image(&self, image: ImageElement, dx: f64, dy: f64) -> Result<(), InvalidStateError> {
-        js_try! ( @(no_return)
+    pub fn draw_image(&self, image: ImageElement, dx: f64, dy: f64) -> Result<(), TypeMismatchError> {
+        js_try! (@(no_return)
             @{&self.0}.drawImage(@{image}, @{dx}, @{dy});
         ).unwrap()
     }
 
     /// Provides different ways to draw an image onto the canvas.
-    /// TODO: allow errors other than InvalidStateError
+    /// TODO: Potentially throw more than just TypeMismatchError
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage)
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-drawimage
-    pub fn draw_image_d(&self, image: ImageElement, dx: f64, dy: f64, d_width: f64, d_height: f64) -> Result<(), InvalidStateError> {
-        js_try! ( @(no_return)
+    pub fn draw_image_d(&self, image: ImageElement, dx: f64, dy: f64, d_width: f64, d_height: f64) -> Result<(), TypeMismatchError> {
+        js_try! (@(no_return)
             @{&self.0}.drawImage(@{image}, @{dx}, @{dy}, @{d_width}, @{d_height});
         ).unwrap()
     }
 
     /// Provides different ways to draw an image onto the canvas.
-    /// TODO: allow errors other than InvalidStateError
+    /// TODO: Potentially throw more than just TypeMismatchError
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage)
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-drawimage
     pub fn draw_image_s(&self, image: ImageElement, 
                         sx: f64, sy: f64, s_width: f64, s_height: f64, 
                         dx: f64, dy: f64, d_width: f64, d_height: f64
-                    ) -> Result<(), InvalidStateError> {
-        js_try!( @(no_return)
+                    ) -> Result<(), TypeMismatchError> {
+        js_try!(@(no_return)
             @{&self.0}.drawImage(@{image}, @{sx}, @{sy}, @{s_width}, @{s_height}, @{dx}, @{dy}, @{d_width}, @{d_height});
         ).unwrap()
     }
