@@ -24,41 +24,52 @@ reference_boilerplate! {
 }
 
 impl Promise {
+    // https://www.ecma-international.org/ecma-262/6.0/#sec-promise-resolve-functions
+    fn is_promise_like( input: &Value ) -> bool {
+        (js! {
+            var input = @{input};
+            // This emulates the `Type(input) is Object` and `IsCallable(input.then)` ECMAScript abstract operations.
+            return Object( input ) === input &&
+                   typeof input.then === "function";
+        }).try_into().unwrap()
+    }
+
     /// This function should rarely be needed, use [`PromiseFuture`](struct.PromiseFuture.html) instead.
     ///
-    /// This function is used for two different purposes:
+    /// This function is needed if you have a JavaScript value which is a Promise-like object
+    /// (it has a `then` method) but it isn't a true `Promise`.
     ///
-    /// 1. If you have a JavaScript value which is not a `Promise` but you want to wrap it in a `Promise`, you can use `Promise::promisify(value)`.
-    ///    In this situation, it is recommended to use [`futures::future::ok`](https://docs.rs/futures/0.1.18/futures/future/fn.ok.html) instead.
+    /// That situation is rare, but it can happen if you are using a Promise library such as jQuery or
+    /// Bluebird.
     ///
-    /// 2. If you have a JavaScript value which is a Promise-like object (it has a `then` method) but it isn't a true `Promise`, you can use
-    ///    `Promise::promisify(value)` to convert it into a true `Promise`. This situation is rare, but it can happen if you are using a Promise
-    ///    library such as jQuery or Bluebird.
+    /// In that situation you can use `Promise::convert(value)` to convert it into a true `Promise`.
+    ///
+    /// If the `input` isn't a Promise-like object then it returns `None`.
     ///
     /// # Examples
-    ///
-    /// Convert a JavaScript value to a `Promise`:
-    ///
-    /// ```rust
-    /// Promise::promisify(js!( return 5; ))
-    /// ```
     ///
     /// Convert a Promise-like object to a `Promise`:
     ///
     /// ```rust
     /// // jQuery Promise
-    /// Promise::promisify(js!( return $.get("test.php"); ))
+    /// Promise::convert(js!( return $.get("test.php"); ))
     ///
     /// // Bluebird Promise
-    /// Promise::promisify(js!( return bluebird_promise.timeout(1000); ))
+    /// Promise::convert(js!( return bluebird_promise.timeout(1000); ))
     /// ```
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/resolve)
     // https://www.ecma-international.org/ecma-262/6.0/#sec-promise.resolve
     // https://www.ecma-international.org/ecma-262/6.0/#sec-promise-resolve-functions
     // https://www.ecma-international.org/ecma-262/6.0/#sec-promiseresolvethenablejob
-    pub fn promisify( input: Value ) -> Promise {
-        js!( return Promise.resolve( @{input} ); ).try_into().unwrap()
+    pub fn convert( input: Value ) -> Option< Self > {
+        // TODO this can probably be made more efficient
+        if Promise::is_promise_like( &input ) {
+            Some( js!( return Promise.resolve( @{input} ); ).try_into().unwrap() )
+
+        } else {
+            None
+        }
     }
 
     /// This method is usually not needed, use [`PromiseFuture`](struct.PromiseFuture.html) instead.
