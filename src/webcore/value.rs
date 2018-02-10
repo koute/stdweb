@@ -8,6 +8,7 @@ use webcore::number::{self, Number};
 use webcore::object::Object;
 use webcore::array::Array;
 use webcore::serialization::JsSerializable;
+use webcore::reference_type::ReferenceType;
 
 /// A unit type representing JavaScript's `undefined`.
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Debug)]
@@ -39,8 +40,12 @@ impl Reference {
     /// Converts this reference into the given type `T`; checks whenever the reference
     /// is really of type `T` and returns `None` if it's not.
     #[inline]
-    pub fn downcast< T: FromReference >( self ) -> Option< T > {
-        T::from_reference( self )
+    pub fn downcast< T: ReferenceType >( self ) -> Option< T > {
+        if T::instance_of( &self ) {
+            Some( unsafe { T::from_reference_unchecked( self ) } )
+        } else {
+            None
+        }
     }
 }
 
@@ -103,29 +108,6 @@ macro_rules! impl_infallible_try_from {
 impl_infallible_try_from! {
     Reference => Reference;
     impl< 'a > for &'a Reference => &'a Reference;
-}
-
-#[doc(hidden)]
-pub trait FromReferenceUnchecked: Sized {
-    unsafe fn from_reference_unchecked( reference: Reference ) -> Self;
-
-    #[inline]
-    unsafe fn from_value_unchecked( value: Value ) -> Option< Self > {
-        let reference: Option< Reference > = value.try_into().ok();
-        reference.map( |reference| Self::from_reference_unchecked( reference ) )
-    }
-}
-
-#[doc(hidden)]
-pub trait FromReference: FromReferenceUnchecked {
-    fn from_reference( reference: Reference ) -> Option< Self >;
-}
-
-impl FromReferenceUnchecked for Reference {
-    #[inline]
-    unsafe fn from_reference_unchecked( reference: Reference ) -> Self {
-        reference
-    }
 }
 
 /// A type representing a JavaScript value.
@@ -249,8 +231,9 @@ impl Value {
     ///
     /// In cases where the value is not a `Reference` a `None` is returned.
     #[inline]
-    pub unsafe fn into_reference_unchecked< T: FromReferenceUnchecked >( self ) -> Option< T > {
-        T::from_value_unchecked( self )
+    pub unsafe fn into_reference_unchecked< T: ReferenceType >( self ) -> Option< T > {
+        let reference: Option< Reference > = self.try_into().ok();
+        reference.map( |reference| T::from_reference_unchecked( reference ) )
     }
 
     /// Returns the `String` inside this `Value`.
@@ -775,6 +758,7 @@ impl_partial_eq_boilerplate! {
 
 /// A structure denoting a conversion error encountered when
 /// converting to or from a `Value`.
+#[doc(hidden)]
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum ConversionError {
     TypeMismatch {
@@ -1041,7 +1025,6 @@ impl_nullable_try_from_value! {
     impl< V > HashMap< String, V > where (V: TryFrom< Value, Error = ConversionError >);
     impl< T > Vec< T > where (T: TryFrom< Value, Error = ConversionError >);
     String;
-    Reference;
 }
 
 impl< 'a > TryFrom< &'a Value > for Option< &'a str > {
@@ -1064,6 +1047,18 @@ impl< 'a > TryFrom< &'a Value > for Option< &'a Reference > {
         match *value {
             Value::Reference( ref value ) => Ok( Some( value ) ),
             ref value => value.try_into().map( Some )
+        }
+    }
+}
+
+impl< T: TryFrom< Value, Error = ConversionError > + AsRef< Reference > > TryFrom< Value > for Option< T > {
+    type Error = ConversionError;
+
+    #[inline]
+    fn try_from( value: Value ) -> Result< Self, Self::Error > {
+        match value {
+            Value::Undefined | Value::Null => Ok( None ),
+            value => value.try_into().map( Some )
         }
     }
 }
@@ -1107,25 +1102,19 @@ mod tests {
         assert!( &reference == &value );
     }
 
+    #[derive(Clone, Debug, ReferenceType)]
+    #[reference(instance_of = "Error")]
     pub struct Error( Reference );
-    reference_boilerplate! {
-        Error,
-        instanceof Error
-    }
 
+    #[derive(Clone, Debug, ReferenceType)]
+    #[reference(instance_of = "ReferenceError")]
+    #[reference(subclass_of(Error))]
     pub struct ReferenceError( Reference );
-    reference_boilerplate! {
-        ReferenceError,
-        instanceof ReferenceError
-        convertible to Error
-    }
 
+    #[derive(Clone, Debug, ReferenceType)]
+    #[reference(instance_of = "TypeError")]
+    #[reference(subclass_of(Error))]
     pub struct TypeError( Reference );
-    reference_boilerplate! {
-        TypeError,
-        instanceof TypeError
-        convertible to Error
-    }
 
     #[test]
     fn reference_downcast() {
@@ -1166,5 +1155,35 @@ mod tests {
         let reference: ReferenceError = js! { return new ReferenceError(); }.into_reference().unwrap().downcast().unwrap();
         let _: Error = reference.clone().into();
         let _: Reference = reference.clone().into();
+    }
+
+    #[test]
+    fn reference_try_into_downcast_from_ref_value() {
+        let value = js! { return new ReferenceError(); };
+        let value: &Value = &value;
+
+        let typed_reference: Result< Error, _ > = value.try_into();
+        assert!( typed_reference.is_ok() );
+
+        let typed_reference: Result< ReferenceError, _ > = value.try_into();
+        assert!( typed_reference.is_ok() );
+
+        let typed_reference: Result< TypeError, _ > = value.try_into();
+        assert!( typed_reference.is_err() );
+    }
+
+    #[test]
+    fn reference_try_into_downcast_from_ref_reference() {
+        let reference: Reference = js! { return new ReferenceError(); }.try_into().unwrap();
+        let reference: &Reference = &reference;
+
+        let typed_reference: Result< Error, _ > = reference.try_into();
+        assert!( typed_reference.is_ok() );
+
+        let typed_reference: Result< ReferenceError, _ > = reference.try_into();
+        assert!( typed_reference.is_ok() );
+
+        let typed_reference: Result< TypeError, _ > = reference.try_into();
+        assert!( typed_reference.is_err() );
     }
 }

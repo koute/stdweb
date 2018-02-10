@@ -7,17 +7,14 @@ use webapi::event::{IEvent, IUiEvent, UiEvent, Event, ConcreteEvent};
 /// necessarily fired for each change to an element's value.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/change)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "Event")] // TODO: Better type check.
+#[reference(subclass_of(Event))]
 pub struct ChangeEvent( Reference );
 
 impl IEvent for ChangeEvent {}
 impl ConcreteEvent for ChangeEvent {
     const EVENT_TYPE: &'static str = "change";
-}
-
-reference_boilerplate! {
-    ChangeEvent,
-    instanceof Event
-    convertible to Event
 }
 
 /// The `InputEvent` is fired synchronously when the value of an
@@ -29,6 +26,9 @@ reference_boilerplate! {
 /// elements of these types.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/input)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "Event")] // TODO: Better type check.
+#[reference(subclass_of(Event))]
 pub struct InputEvent( Reference );
 
 impl IEvent for InputEvent {}
@@ -36,15 +36,12 @@ impl ConcreteEvent for InputEvent {
     const EVENT_TYPE: &'static str = "input";
 }
 
-reference_boilerplate! {
-    InputEvent,
-    instanceof Event
-    convertible to Event
-}
-
 /// The `ResourceLoadEvent` is fired when a resource and its dependent resources have finished loading.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/load)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "UIEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, UiEvent))]
 pub struct ResourceLoadEvent( Reference );
 
 impl IEvent for ResourceLoadEvent {}
@@ -53,16 +50,12 @@ impl ConcreteEvent for ResourceLoadEvent {
     const EVENT_TYPE: &'static str = "load";
 }
 
-reference_boilerplate! {
-    ResourceLoadEvent,
-    instanceof UIEvent
-    convertible to Event
-    convertible to UiEvent
-}
-
 /// The `ResourceAbortEvent` is fired when the loading of a resource has been aborted.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/abort)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "UIEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, UiEvent))]
 pub struct ResourceAbortEvent( Reference );
 
 impl IEvent for ResourceAbortEvent {}
@@ -71,17 +64,13 @@ impl ConcreteEvent for ResourceAbortEvent {
     const EVENT_TYPE: &'static str = "abort";
 }
 
-reference_boilerplate! {
-    ResourceAbortEvent,
-    instanceof UIEvent
-    convertible to Event
-    convertible to UiEvent
-}
-
 /// The `ResourceErrorEvent` is fired when an error occurred; the exact circumstances vary,
 /// since this event is used from a variety of APIs.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/error)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "UIEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, UiEvent))]
 pub struct ResourceErrorEvent( Reference );
 
 impl IEvent for ResourceErrorEvent {}
@@ -90,18 +79,14 @@ impl ConcreteEvent for ResourceErrorEvent {
     const EVENT_TYPE: &'static str = "error";
 }
 
-reference_boilerplate! {
-    ResourceErrorEvent,
-    instanceof UIEvent
-    convertible to Event
-    convertible to UiEvent
-}
-
 /// The resize event is fired when the document view has been resized.
 ///
 /// MDN incorrectly documents this as a UIEvent, but in browsers it is actually
 /// just an Event.
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/resize)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "Event")] // TODO: Better type check.
+#[reference(subclass_of(Event))]
 pub struct ResizeEvent( Reference );
 
 impl IEvent for ResizeEvent {}
@@ -109,22 +94,13 @@ impl ConcreteEvent for ResizeEvent {
     const EVENT_TYPE: &'static str = "resize";
 }
 
-reference_boilerplate! {
-    ResizeEvent,
-    instanceof Event
-    convertible to Event
-}
-
 /// The readystatechange event is fired when the readyState attribute of a document has changed.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/readystatechange)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "Event")] // TODO: Better type check.
+#[reference(subclass_of(Event))]
 pub struct ReadyStateChangeEvent( Reference );
-
-reference_boilerplate! {
-    ReadyStateChangeEvent,
-    instanceof Event
-    convertible to Event
-}
 
 impl IEvent for ReadyStateChangeEvent {}
 

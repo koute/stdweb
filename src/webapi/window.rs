@@ -28,16 +28,13 @@ impl RequestAnimationFrameHandle {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Window)
 // https://html.spec.whatwg.org/#window
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "Window")]
+#[reference(subclass_of(EventTarget))]
 pub struct Window( Reference );
 
 impl IEventTarget for Window {}
 impl IWindowOrWorker for Window {}
-
-reference_boilerplate! {
-    Window,
-    instanceof Window
-    convertible to EventTarget
-}
 
 /// A global instance of [Window](struct.Window.html).
 ///

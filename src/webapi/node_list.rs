@@ -1,5 +1,6 @@
-use webcore::value::{Value, Reference, FromReferenceUnchecked};
+use webcore::value::{Value, Reference};
 use webcore::try_from::TryInto;
+use webcore::reference_type::ReferenceType;
 use webapi::node::Node;
 
 /// `NodeList` objects are collections of nodes such as those returned by properties
@@ -16,12 +17,9 @@ use webapi::node::Node;
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/NodeList)
 // https://dom.spec.whatwg.org/#nodelist
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "NodeList")]
 pub struct NodeList( Reference );
-
-reference_boilerplate! {
-    NodeList,
-    instanceof NodeList
-}
 
 impl NodeList {
     /// Returns the number of [Node](struct.Node.html)s contained in this list.

@@ -1,4 +1,5 @@
 use webcore::value::Reference;
+use webcore::instance_of::InstanceOf;
 use webapi::error::{IError, Error};
 
 /// The `IDomException` interface represents an abnormal event which occurs as the result of
@@ -10,6 +11,9 @@ pub trait IDomException: IError {}
 /// A reference to a JavaScript `DOMException` object.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DOMException)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "DOMException")]
+#[reference(subclass_of(Error))]
 pub struct DomException( Reference );
 
 // DOMException specification:
@@ -18,11 +22,6 @@ pub struct DomException( Reference );
 impl IError for DomException {}
 impl IDomException for DomException {}
 
-reference_boilerplate! {
-    DomException,
-    instanceof DOMException
-    convertible to Error
-}
 error_boilerplate! { DomException }
 
 /// A trait representing a concrete DOMException.
@@ -35,21 +34,16 @@ pub trait ConcreteException: IDomException {
 
 // To safely cast from a reference to a specific DomException, we must check that the object is an
 // instance of DOMException, and that the error name matches.
-impl<T: ConcreteException + ::webcore::value::FromReferenceUnchecked> ::webcore::value::FromReference for T {
+impl< T: ConcreteException > InstanceOf for T {
     #[inline]
-    fn from_reference( reference: Reference ) -> Option< Self > {
-        if instanceof!( reference, DOMException ) &&
-            js!( return @{reference.clone()}.name; ) == Self::ERROR_NAME {
-            unsafe {
-                Some( Self::from_reference_unchecked( reference ) )
-            }
-        } else {
-            None
-        }
+    fn instance_of( reference: &Reference ) -> bool {
+        instanceof!( *reference, DOMException ) && js!( return @{reference.clone()}.name; ) == T::ERROR_NAME
     }
 }
 
 /// Occurs when an operation would result in an incorrect node tree.
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(subclass_of(Error, DomException))]
 pub struct HierarchyRequestError( Reference );
 
 impl IError for HierarchyRequestError {}
@@ -58,14 +52,11 @@ impl ConcreteException for HierarchyRequestError {
     const ERROR_NAME: &'static str = "HierarchyRequestError";
 }
 
-reference_boilerplate! {
-    HierarchyRequestError,
-    convertible to Error
-    convertible to DomException
-}
 error_boilerplate! { HierarchyRequestError }
 
 /// Occurs when an object does not support an operation or argument.
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(subclass_of(Error, DomException))]
 pub struct InvalidAccessError( Reference );
 
 impl IError for InvalidAccessError {}
@@ -74,14 +65,11 @@ impl ConcreteException for InvalidAccessError {
     const ERROR_NAME: &'static str = "InvalidAccessError";
 }
 
-reference_boilerplate! {
-    InvalidAccessError,
-    convertible to Error
-    convertible to DomException
-}
 error_boilerplate! { InvalidAccessError }
 
 /// Occurs when the specified object cannot be found.
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(subclass_of(Error, DomException))]
 pub struct NotFoundError( Reference );
 
 impl IError for NotFoundError {}
@@ -90,14 +78,11 @@ impl ConcreteException for NotFoundError {
     const ERROR_NAME: &'static str = "NotFoundError";
 }
 
-reference_boilerplate! {
-    NotFoundError,
-    convertible to Error
-    convertible to DomException
-}
 error_boilerplate! { NotFoundError }
 
 /// Occurs when the requested operation is insecure.
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(subclass_of(Error, DomException))]
 pub struct SecurityError( Reference );
 
 impl IError for SecurityError {}
@@ -106,14 +91,11 @@ impl ConcreteException for SecurityError {
     const ERROR_NAME: &'static str = "SecurityError";
 }
 
-reference_boilerplate! {
-    SecurityError,
-    convertible to Error
-    convertible to DomException
-}
 error_boilerplate! { SecurityError }
 
 /// Occurs when an argument does not match the expected pattern.
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(subclass_of(Error, DomException))]
 pub struct SyntaxError( Reference );
 
 impl IError for SyntaxError {}
@@ -122,11 +104,6 @@ impl ConcreteException for SyntaxError {
     const ERROR_NAME: &'static str = "SyntaxError";
 }
 
-reference_boilerplate! {
-    SyntaxError,
-    convertible to Error
-    convertible to DomException
-}
 error_boilerplate! { SyntaxError }
 
 #[cfg(all(test, feature = "web_test"))]

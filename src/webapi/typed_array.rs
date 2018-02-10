@@ -1,7 +1,8 @@
 use std::marker::PhantomData;
 use std::mem::size_of;
-use webcore::value::{Reference, FromReference};
+use webcore::value::Reference;
 use webcore::try_from::TryInto;
+use webcore::instance_of::InstanceOf;
 use webapi::array_buffer::ArrayBuffer;
 
 pub trait ArrayKind: Sized {
@@ -34,7 +35,7 @@ macro_rules! arraykind {
                     Reference::from_raw_unchecked( raw )
                 };
 
-                TypedArray::from_reference( reference ).unwrap()
+                reference.downcast().unwrap()
             }
 
             fn into_typed_array_from_array_buffer( buffer: &ArrayBuffer ) -> TypedArray< Self > {
@@ -49,7 +50,7 @@ macro_rules! arraykind {
                 );
 
                 let reference = unsafe { Reference::from_raw_unchecked( raw ) };
-                TypedArray::from_reference( reference ).unwrap()
+                reference.downcast().unwrap()
             }
 
             fn from_typed_array( array: &TypedArray< Self > ) -> Vec< Self > {
@@ -94,26 +95,19 @@ arraykind!( u32, Uint32Array, HEAPU32 );
 arraykind!( f32, Float32Array, HEAPF32 );
 arraykind!( f64, Float64Array, HEAPF64 );
 
+impl< T: ArrayKind > InstanceOf for TypedArray< T > {
+    #[inline]
+    fn instance_of( reference: &Reference ) -> bool {
+        T::is_typed_array( reference )
+    }
+}
+
 /// JavaScript typed arrays are array-like objects and provide a mechanism for accessing raw binary data.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays)
 // https://www.ecma-international.org/ecma-262/6.0/#sec-typedarray-objects
+#[derive(Clone, Debug, ReferenceType)]
 pub struct TypedArray< T: ArrayKind >( Reference, PhantomData< T > );
-
-reference_boilerplate! {
-    impl< T > for TypedArray< T > where (T: ArrayKind)
-}
-
-impl< T: ArrayKind > FromReference for TypedArray< T > {
-    #[inline]
-    fn from_reference( reference: Reference ) -> Option< Self > {
-        if T::is_typed_array( &reference ) {
-            Some( TypedArray( reference, PhantomData ) )
-        } else {
-            None
-        }
-    }
-}
 
 impl< T: ArrayKind > TypedArray< T > {
     /// Returns the [TypedArray](struct.ArrayBuffer.html) referenced by this typed array.

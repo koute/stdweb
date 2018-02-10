@@ -1,4 +1,4 @@
-use webcore::value::Reference;
+use webcore::reference_type::ReferenceType;
 use webapi::node_list::NodeList;
 use webapi::element::Element;
 use private::UnimplementedException;
@@ -9,7 +9,7 @@ use private::UnimplementedException;
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ParentNode)
 // https://dom.spec.whatwg.org/#parentnode
-pub trait IParentNode: AsRef< Reference > {
+pub trait IParentNode: ReferenceType {
     /// Returns the first element that is a descendant of the element on which it is
     /// invoked that matches the specified group of selectors.
     ///

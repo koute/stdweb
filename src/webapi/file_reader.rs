@@ -11,15 +11,12 @@ use private::UnimplementedException;
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/FileReader)
 // https://w3c.github.io/FileAPI/#dfn-filereader
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "FileReader")]
+#[reference(subclass_of(EventTarget))]
 pub struct FileReader( Reference );
 
 impl IEventTarget for FileReader {}
-
-reference_boilerplate! {
-    FileReader,
-    instanceof FileReader
-    convertible to EventTarget
-}
 
 /// The [result](struct.FileReader.html#method.result) of a read operation performed with a [FileReader](struct.File.html).
 #[derive(Clone, Debug)]

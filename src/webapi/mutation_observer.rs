@@ -9,13 +9,9 @@ use private::UnimplementedException;
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver)
 // https://dom.spec.whatwg.org/#mutationobserver
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "MutationObserver")]
 pub struct MutationObserver( Reference );
-
-reference_boilerplate! {
-    MutationObserver,
-    instanceof MutationObserver
-}
-
 
 /// Specifies which changes should be observed for the target.
 ///

@@ -21,8 +21,7 @@ use webcore::value::{
     Null,
     Undefined,
     Reference,
-    Value,
-    FromReferenceUnchecked
+    Value
 };
 
 #[repr(u8)]
@@ -400,7 +399,7 @@ impl SerializedUntaggedObjectReference {
     fn deserialize( &self ) -> Object {
         unsafe {
             let reference = Reference::from_raw_unchecked( self.refid );
-            Object::from_reference_unchecked( reference )
+            Object( reference )
         }
     }
 }
@@ -410,7 +409,7 @@ impl SerializedUntaggedArrayReference {
     fn deserialize( &self ) -> Array {
         unsafe {
             let reference = Reference::from_raw_unchecked( self.refid );
-            Array::from_reference_unchecked( reference )
+            Array( reference )
         }
     }
 }
@@ -1858,5 +1857,23 @@ mod test_reserialization {
         };
 
         assert_eq!( non_empty, Value::String( "死神はりんごしか食べない!".to_string() ) );
+    }
+
+    #[derive(Clone, Debug, ReferenceType)]
+    #[reference(instance_of = "Error")]
+    pub struct Error( Reference );
+
+    #[test]
+    fn closure_returning_reference_object() {
+        fn identity( error: Error ) -> Error {
+            error
+        }
+
+        let value = js! {
+            var identity = @{identity};
+            return identity( new ReferenceError() );
+        };
+
+        assert!( instanceof!( value, Error ) );
     }
 }

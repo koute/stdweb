@@ -7,12 +7,9 @@ use private::UnimplementedException;
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Storage)
 // https://html.spec.whatwg.org/#storage-2
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "Storage")]
 pub struct Storage( Reference );
-
-reference_boilerplate! {
-    Storage,
-    instanceof Storage
-}
 
 impl Storage {
     /// Gets the number of data items stored in the `Storage` object.

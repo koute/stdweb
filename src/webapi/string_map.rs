@@ -6,12 +6,9 @@ use private::UnimplementedException;
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DOMStringMap)
 // https://html.spec.whatwg.org/#domstringmap
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "DOMStringMap")]
 pub struct StringMap( Reference );
-
-reference_boilerplate! {
-    StringMap,
-    instanceof DOMStringMap
-}
 
 // The methods here are deliberately named exactly as those from Rust's HashMap.
 impl StringMap {

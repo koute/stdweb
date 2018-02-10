@@ -14,12 +14,9 @@ pub trait RenderingContext {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D)
 // https://html.spec.whatwg.org/#canvasrenderingcontext2d
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "CanvasRenderingContext2D")]
 pub struct CanvasRenderingContext2d(Reference);
-
-reference_boilerplate! {
-    CanvasRenderingContext2d,
-    instanceof CanvasRenderingContext2D
-}
 
 impl RenderingContext for CanvasRenderingContext2d {
     type Error = ConversionError;

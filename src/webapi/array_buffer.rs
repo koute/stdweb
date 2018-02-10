@@ -8,6 +8,8 @@ use webapi::typed_array::TypedArray;
 /// to do it.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "ArrayBuffer")]
 pub struct ArrayBuffer( Reference );
 
 impl ArrayBuffer {
@@ -23,11 +25,6 @@ impl ArrayBuffer {
         let length: i32 = js!( return @{reference}.byteLength; ).try_into().unwrap();
         length as usize
     }
-}
-
-reference_boilerplate! {
-    ArrayBuffer,
-    instanceof ArrayBuffer
 }
 
 // TODO: Implement for other types.

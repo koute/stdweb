@@ -13,6 +13,8 @@ pub mod array;
 pub mod type_name;
 pub mod unsafe_typed_array;
 pub mod once;
+pub mod instance_of;
+pub mod reference_type;
 
 #[cfg(feature = "nightly")]
 pub mod void {

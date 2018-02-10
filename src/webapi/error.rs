@@ -1,11 +1,12 @@
-use webcore::value::{Value, Reference};
-use webcore::try_from::{TryFrom, TryInto};
+use webcore::value::Reference;
+use webcore::try_from::TryInto;
+use webcore::reference_type::ReferenceType;
 
 /// Represents the JavaScript `Error` interface. An `Error` is thrown whenever a run-time error
 /// occurs.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error)
-pub trait IError: AsRef< Reference > + TryFrom< Value > {
+pub trait IError: ReferenceType {
     /// Returns a human-readable description of the error.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/message)
@@ -31,6 +32,8 @@ pub trait IError: AsRef< Reference > + TryFrom< Value > {
 /// occurs.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "Error")]
 pub struct Error( Reference );
 
 // Error specification:
@@ -38,10 +41,6 @@ pub struct Error( Reference );
 
 impl IError for Error {}
 
-reference_boilerplate! {
-    Error,
-    instanceof Error
-}
 error_boilerplate! { Error }
 
 #[cfg(test)]

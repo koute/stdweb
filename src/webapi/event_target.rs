@@ -2,6 +2,7 @@ use std::fmt;
 
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
+use webcore::reference_type::ReferenceType;
 use webapi::event::{ConcreteEvent, IEvent};
 use private::UnimplementedException;
 
@@ -40,7 +41,7 @@ impl EventListenerHandle {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget)
 // https://dom.spec.whatwg.org/#eventtarget
-pub trait IEventTarget: AsRef< Reference > {
+pub trait IEventTarget: ReferenceType {
     /// Adds given event handler to the list the list of event listeners for
     /// the specified `EventTarget` on which it's called.
     ///
@@ -79,11 +80,8 @@ pub trait IEventTarget: AsRef< Reference > {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget)
 // https://dom.spec.whatwg.org/#eventtarget
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "EventTarget")]
 pub struct EventTarget( Reference );
 
 impl IEventTarget for EventTarget {}
-
-reference_boilerplate! {
-    EventTarget,
-    instanceof EventTarget
-}

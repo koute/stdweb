@@ -10,6 +10,9 @@ use webapi::event::{IEvent, Event, ConcreteEvent};
 /// A SocketCloseEvent is sent to clients using WebSockets when the connection is closed.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/close)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "CloseEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event))]
 pub struct SocketCloseEvent( Reference );
 
 // https://html.spec.whatwg.org/multipage/web-sockets.html#the-closeevent-interface
@@ -50,16 +53,13 @@ impl ConcreteEvent for SocketCloseEvent {
     const EVENT_TYPE: &'static str = "close";
 }
 
-reference_boilerplate! {
-    SocketCloseEvent,
-    instanceof CloseEvent
-    convertible to Event
-}
-
 /// The error event is fired when an error occurred; the exact circumstances vary,
 /// events by this name are used from a variety of APIs.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/error)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "Event")] // TODO: Better type check.
+#[reference(subclass_of(Event))]
 pub struct SocketErrorEvent( Reference );
 
 // https://html.spec.whatwg.org/multipage/web-sockets.html#handler-websocket-onerror
@@ -68,27 +68,18 @@ impl ConcreteEvent for SocketErrorEvent {
     const EVENT_TYPE: &'static str = "error";
 }
 
-reference_boilerplate! {
-    SocketErrorEvent,
-    instanceof Event
-    convertible to Event
-}
-
 /// An open event informs the target that a data connection, has been established.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/open)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "Event")] // TODO: Better type check.
+#[reference(subclass_of(Event))]
 pub struct SocketOpenEvent( Reference );
 
 // https://html.spec.whatwg.org/multipage/web-sockets.html#handler-websocket-onopen
 impl IEvent for SocketOpenEvent {}
 impl ConcreteEvent for SocketOpenEvent {
     const EVENT_TYPE: &'static str = "open";
-}
-
-reference_boilerplate! {
-    SocketOpenEvent,
-    instanceof Event
-    convertible to Event
 }
 
 /// Represents the types of data which can be received on a web socket. Messages
@@ -205,6 +196,9 @@ pub trait IMessageEvent: IEvent where <Self::Data as TryFrom<Value>>::Error: Deb
 /// A message event informs a WebSocket object that a message has been received.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/message)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "MessageEvent")]
+#[reference(subclass_of(Event))]
 pub struct SocketMessageEvent( Reference );
 
 // https://html.spec.whatwg.org/multipage/web-sockets.html#handler-websocket-onmessage
@@ -215,12 +209,6 @@ impl IMessageEvent for SocketMessageEvent {
 impl IEvent for SocketMessageEvent {}
 impl ConcreteEvent for SocketMessageEvent {
     const EVENT_TYPE: &'static str = "message";
-}
-
-reference_boilerplate! {
-    SocketMessageEvent,
-    instanceof MessageEvent
-    convertible to Event
 }
 
 #[cfg(all(test, feature = "web_test"))]

@@ -1,16 +1,10 @@
 use webcore::try_from::{TryFrom, TryInto};
-use webcore::value::{Reference, Value, ConversionError, FromReferenceUnchecked};
+use webcore::value::{Reference, Value, ConversionError};
 use webcore::serialization::{JsSerializable, deserialize_array};
 
 /// A type representing a JavaScript array.
 #[derive(Clone, PartialEq, Debug)]
-pub struct Array( Reference );
-
-impl FromReferenceUnchecked for Array {
-    unsafe fn from_reference_unchecked( reference: Reference ) -> Self {
-        Array( reference )
-    }
-}
+pub struct Array( pub(crate) Reference );
 
 impl From< Array > for Reference {
     fn from( array: Array ) -> Self {

@@ -7,17 +7,14 @@ use webapi::event::{IEvent, Event, ConcreteEvent};
 /// that follows the # symbol, including the # symbol).
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/hashchange)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "HashChangeEvent")]
+#[reference(subclass_of(Event))]
 pub struct HashChangeEvent( Reference );
 
 impl IEvent for HashChangeEvent {}
 impl ConcreteEvent for HashChangeEvent {
     const EVENT_TYPE: &'static str = "hashchange";
-}
-
-reference_boilerplate! {
-    HashChangeEvent,
-    instanceof HashChangeEvent
-    convertible to Event
 }
 
 impl HashChangeEvent {
@@ -48,13 +45,10 @@ impl HashChangeEvent {
 /// the popstate event's state property contains a copy of the history entry's state object.
 ///
 /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/PopStateEvent)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "Event")] // TODO: Better type check.
+#[reference(subclass_of(Event))]
 pub struct PopStateEvent(Reference);
-
-reference_boilerplate! {
-    PopStateEvent,
-    instanceof Event
-    convertible to Event
-}
 
 impl PopStateEvent {
     /// The state object associated to the new history entry, if that entry was created with

@@ -10,21 +10,15 @@ use webapi::file_list::FileList;
 /// for web-based forms in order to accept data from the user.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en/docs/Web/HTML/Element/input)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "HTMLInputElement")]
+#[reference(subclass_of(EventTarget, Node, Element, HtmlElement))]
 pub struct InputElement( Reference );
 
 impl IEventTarget for InputElement {}
 impl INode for InputElement {}
 impl IElement for InputElement {}
 impl IHtmlElement for InputElement {}
-
-reference_boilerplate! {
-    InputElement,
-    instanceof HTMLInputElement
-    convertible to EventTarget
-    convertible to Node
-    convertible to Element
-    convertible to HtmlElement
-}
 
 impl InputElement {
     /// The value of the control. This attribute is optional except when the input is a radio button or a checkbox.

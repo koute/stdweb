@@ -95,9 +95,18 @@ extern crate stdweb_internal_macros;
 pub use stdweb_internal_macros::js_export;
 
 #[macro_use]
+extern crate stdweb_derive;
+
+#[macro_use]
 mod webcore;
 mod webapi;
 mod ecosystem;
+
+// This is here so that our procedural macros
+// can work within the crate.
+pub(crate) mod stdweb {
+    pub use super::*;
+}
 
 pub use webcore::initialization::{
     initialize,
@@ -115,6 +124,8 @@ pub use webcore::array::Array;
 
 pub use webcore::unsafe_typed_array::UnsafeTypedArray;
 pub use webcore::once::Once;
+pub use webcore::instance_of::InstanceOf;
+pub use webcore::reference_type::ReferenceType;
 
 #[cfg(feature = "serde")]
 /// A module with serde-related APIs.
@@ -285,11 +296,6 @@ pub mod private {
         Newtype
     };
 
-    pub use webcore::value::{
-        FromReference,
-        FromReferenceUnchecked
-    };
-
     #[cfg(feature = "serde")]
     pub use ecosystem::serde::{
         to_value,
@@ -304,4 +310,6 @@ pub mod private {
     // TODO: Remove this.
     #[derive(Debug)]
     pub struct UnimplementedException;
+
+    pub use webcore::value::ConversionError;
 }

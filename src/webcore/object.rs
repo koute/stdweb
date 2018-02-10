@@ -1,18 +1,12 @@
 use std::collections::{BTreeMap, HashMap};
 use std::hash::Hash;
 use webcore::try_from::{TryFrom, TryInto};
-use webcore::value::{Reference, Value, ConversionError, FromReferenceUnchecked};
+use webcore::value::{Reference, Value, ConversionError};
 use webcore::serialization::{JsSerializable, deserialize_object};
 
 /// A type representing a JavaScript object.
 #[derive(Clone, PartialEq, Debug)]
-pub struct Object( Reference );
-
-impl FromReferenceUnchecked for Object {
-    unsafe fn from_reference_unchecked( reference: Reference ) -> Self {
-        Object( reference )
-    }
-}
+pub struct Object( pub(crate) Reference );
 
 impl From< Object > for Reference {
     fn from( object: Object ) -> Self {

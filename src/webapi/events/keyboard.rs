@@ -182,21 +182,21 @@ pub enum KeyboardLocation {
 /// interface.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "KeyboardEvent")]
+#[reference(subclass_of(Event))]
 pub struct KeyboardEvent( Reference );
 
 impl IEvent for KeyboardEvent {}
 impl IKeyboardEvent for KeyboardEvent {}
 
-reference_boilerplate! {
-    KeyboardEvent,
-    instanceof KeyboardEvent
-    convertible to Event
-}
-
 /// The `KeyPressEvent` is fired when a key is pressed down. It's only
 /// fired for keys which produce a character value.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/keypress)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "KeyboardEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, KeyboardEvent))]
 pub struct KeyPressEvent( Reference );
 
 impl IEvent for KeyPressEvent {}
@@ -205,18 +205,14 @@ impl ConcreteEvent for KeyPressEvent {
     const EVENT_TYPE: &'static str = "keypress";
 }
 
-reference_boilerplate! {
-    KeyPressEvent,
-    instanceof KeyboardEvent
-    convertible to Event
-    convertible to KeyboardEvent
-}
-
 /// The `KeyDownEvent` is fired when a key is pressed down.
 /// Unlike the `KeyPressEvent` event it's also fired for keys which
 /// do not produce a character value.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/keydown)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "KeyboardEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, KeyboardEvent))]
 pub struct KeyDownEvent( Reference );
 
 impl IEvent for KeyDownEvent {}
@@ -225,29 +221,18 @@ impl ConcreteEvent for KeyDownEvent {
     const EVENT_TYPE: &'static str = "keydown";
 }
 
-reference_boilerplate! {
-    KeyDownEvent,
-    instanceof KeyboardEvent
-    convertible to Event
-    convertible to KeyboardEvent
-}
-
 /// The `KeyUpEvent` is fired when a key is released.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/keyup)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "KeyboardEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, KeyboardEvent))]
 pub struct KeyUpEvent( Reference );
 
 impl IEvent for KeyUpEvent {}
 impl IKeyboardEvent for KeyUpEvent {}
 impl ConcreteEvent for KeyUpEvent {
     const EVENT_TYPE: &'static str = "keyup";
-}
-
-reference_boilerplate! {
-    KeyUpEvent,
-    instanceof KeyboardEvent
-    convertible to Event
-    convertible to KeyboardEvent
 }
 
 #[cfg(all(test, feature = "web_test"))]

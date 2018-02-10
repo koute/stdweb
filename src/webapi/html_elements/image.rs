@@ -10,21 +10,15 @@ use webapi::html_element::{IHtmlElement, HtmlElement};
 /// `<img>` elements.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "HTMLImageElement")]
+#[reference(subclass_of(EventTarget, Node, Element, HtmlElement))]
 pub struct ImageElement( Reference );
 
 impl IEventTarget for ImageElement {}
 impl INode for ImageElement {}
 impl IElement for ImageElement {}
 impl IHtmlElement for ImageElement {}
-
-reference_boilerplate! {
-    ImageElement,
-    instanceof HTMLImageElement
-    convertible to EventTarget
-    convertible to Node
-    convertible to Element
-    convertible to HtmlElement
-}
 
 impl ImageElement {
     /// Constructs a new ImageElement.

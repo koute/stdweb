@@ -42,20 +42,20 @@ pub trait IProgressEvent: IEvent {
 /// interface.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ProgressEvent)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "ProgressEvent")]
+#[reference(subclass_of(Event))]
 pub struct ProgressRelatedEvent( Reference );
 
 impl IEvent for ProgressRelatedEvent {}
 impl IProgressEvent for ProgressRelatedEvent {}
 
-reference_boilerplate! {
-    ProgressRelatedEvent,
-    instanceof ProgressEvent
-    convertible to Event
-}
-
 /// The `ProgressEvent` is fired to indicate that an operation is in progress.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/progress)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "ProgressEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, ProgressRelatedEvent))]
 pub struct ProgressEvent( Reference );
 
 impl IEvent for ProgressEvent {}
@@ -64,16 +64,12 @@ impl ConcreteEvent for ProgressEvent {
     const EVENT_TYPE: &'static str = "progress";
 }
 
-reference_boilerplate! {
-    ProgressEvent,
-    instanceof ProgressEvent
-    convertible to Event
-    convertible to ProgressRelatedEvent
-}
-
 /// The `ProgressLoadEvent` is fired when progress has successful finished.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/load_(ProgressEvent))
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "ProgressEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, ProgressRelatedEvent))]
 pub struct ProgressLoadEvent( Reference );
 
 impl IEvent for ProgressLoadEvent {}
@@ -82,16 +78,12 @@ impl ConcreteEvent for ProgressLoadEvent {
     const EVENT_TYPE: &'static str = "load";
 }
 
-reference_boilerplate! {
-    ProgressLoadEvent,
-    instanceof ProgressEvent
-    convertible to Event
-    convertible to ProgressRelatedEvent
-}
-
 /// The `LoadStartEvent` is fired when progress has begun.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/loadstart)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "ProgressEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, ProgressRelatedEvent))]
 pub struct LoadStartEvent( Reference );
 
 impl IEvent for LoadStartEvent {}
@@ -100,18 +92,14 @@ impl ConcreteEvent for LoadStartEvent {
     const EVENT_TYPE: &'static str = "loadstart";
 }
 
-reference_boilerplate! {
-    LoadStartEvent,
-    instanceof ProgressEvent
-    convertible to Event
-    convertible to ProgressRelatedEvent
-}
-
 /// The `LoadEndEvent` is fired when progress has stopped,
 /// e.g. after `ProgressErrorEvent`, `ProgressAbortEvent`
 /// or `ProgressLoadEvent` have been dispatched.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/loadend)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "ProgressEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, ProgressRelatedEvent))]
 pub struct LoadEndEvent( Reference );
 
 impl IEvent for LoadEndEvent {}
@@ -120,16 +108,12 @@ impl ConcreteEvent for LoadEndEvent {
     const EVENT_TYPE: &'static str = "loadend";
 }
 
-reference_boilerplate! {
-    LoadEndEvent,
-    instanceof ProgressEvent
-    convertible to Event
-    convertible to ProgressRelatedEvent
-}
-
 /// The `ProgressAbortEvent` is fired when the progress has been aborted.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/abort_(ProgressEvent))
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "ProgressEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, ProgressRelatedEvent))]
 pub struct ProgressAbortEvent( Reference );
 
 impl IEvent for ProgressAbortEvent {}
@@ -138,29 +122,18 @@ impl ConcreteEvent for ProgressAbortEvent {
     const EVENT_TYPE: &'static str = "abort";
 }
 
-reference_boilerplate! {
-    ProgressAbortEvent,
-    instanceof ProgressEvent
-    convertible to Event
-    convertible to ProgressRelatedEvent
-}
-
 /// The `ProgressErrorEvent` is fired when the progress has failed.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/error_(ProgressEvent))
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "ProgressEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, ProgressRelatedEvent))]
 pub struct ProgressErrorEvent( Reference );
 
 impl IEvent for ProgressErrorEvent {}
 impl IProgressEvent for ProgressErrorEvent {}
 impl ConcreteEvent for ProgressErrorEvent {
     const EVENT_TYPE: &'static str = "error";
-}
-
-reference_boilerplate! {
-    ProgressErrorEvent,
-    instanceof ProgressEvent
-    convertible to Event
-    convertible to ProgressRelatedEvent
 }
 
 #[cfg(all(test, feature = "web_test"))]
