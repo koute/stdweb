@@ -33,7 +33,7 @@ impl SpawnedTask {
         } )
     }
 
-    fn poll(&self) {
+    fn poll( &self ) {
         let mut spawn = self.spawn.borrow_mut();
 
         // Take the future so that if we panic it gets dropped
