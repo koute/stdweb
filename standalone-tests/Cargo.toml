@@ -5,3 +5,4 @@ authors = ["Jan Bujak <j@exia.io>"]
 
 [dependencies]
 stdweb = { path = ".." }
+stdweb-derive = { path = "../stdweb-derive" }

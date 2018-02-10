@@ -12,6 +12,9 @@
 #[macro_use]
 extern crate stdweb;
 
+#[macro_use]
+extern crate stdweb_derive;
+
 use std::panic;
 
 #[macro_use]
