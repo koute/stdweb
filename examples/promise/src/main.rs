@@ -1,3 +1,161 @@
+/*#[cfg(target_arch = "wasm32")]
+#[macro_use]
+extern crate stdweb;
+extern crate futures;
+
+#[cfg(not(target_arch = "wasm32"))]
+extern crate tokio;
+
+use std::rc::Rc;
+use std::cell::RefCell;
+use futures::Future;
+use futures::{Poll, Async};
+use futures::task::{current, Task};
+
+#[cfg(target_arch = "wasm32")]
+fn main() {
+    use stdweb::{PromiseFuture};
+
+    struct TaskA {
+        shared_state: Rc<RefCell<u32>>,
+        task_b: Task,
+    }
+
+    impl Future for TaskA {
+        type Item = ();
+        type Error = ();
+
+        fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
+            js! { console.log("Poll TaskA"); }
+
+            let foo = self.shared_state.borrow_mut();
+
+            js! { console.log(@{format!("TaskA 1: {:#?}", foo)}); }
+
+            self.task_b.notify();
+
+            js! { console.log(@{format!("TaskA 2: {:#?}", foo)}); }
+
+            Ok(Async::NotReady)
+        }
+    }
+
+    struct TaskB {
+        shared_state: Rc<RefCell<u32>>,
+        initialized: bool,
+    }
+
+    impl Future for TaskB {
+        type Item = ();
+        type Error = ();
+
+        fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
+            js! { console.log("Poll TaskB"); }
+
+            if !self.initialized {
+                self.initialized = true;
+
+                let task_b = current();
+
+                let foo = self.shared_state.borrow();
+
+                js! { console.log(@{format!("TaskB 1: {:#?}", foo)}); }
+
+                PromiseFuture::spawn(TaskA {
+                    shared_state: self.shared_state.clone(),
+                    task_b: task_b,
+                });
+            }
+
+            let foo = self.shared_state.borrow();
+
+            js! { console.log(@{format!("TaskB 1: {:#?}", foo)}); }
+
+            Ok(Async::NotReady)
+        }
+    }
+
+    PromiseFuture::spawn(TaskB {
+        shared_state: Rc::new(RefCell::new(0)),
+        initialized: false
+    });
+}
+
+
+#[cfg(not(target_arch = "wasm32"))]
+fn main() {
+    use tokio::executor::current_thread;
+
+    struct TaskA {
+        shared_state: Rc<RefCell<u32>>,
+        task_b: Task,
+    }
+
+    impl Future for TaskA {
+        type Item = ();
+        type Error = ();
+
+        fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
+            println!("Poll TaskA");
+
+            let foo = self.shared_state.borrow_mut();
+
+            println!("TaskA 1: {:#?}", foo);
+
+            self.task_b.notify();
+
+            println!("TaskA 2: {:#?}", foo);
+
+            Ok(Async::NotReady)
+        }
+    }
+
+    struct TaskB {
+        shared_state: Rc<RefCell<u32>>,
+        initialized: bool,
+    }
+
+    impl Future for TaskB {
+        type Item = ();
+        type Error = ();
+
+        fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
+            println!("Poll TaskB");
+
+            if !self.initialized {
+                self.initialized = true;
+
+                let task_b = current();
+
+                let foo = self.shared_state.borrow();
+
+                println!("TaskB 1: {:#?}", foo);
+
+                current_thread::spawn(TaskA {
+                    shared_state: self.shared_state.clone(),
+                    task_b: task_b,
+                });
+            }
+
+            let foo = self.shared_state.borrow();
+
+            println!("TaskB 1: {:#?}", foo);
+
+            Ok(Async::NotReady)
+        }
+    }
+
+    current_thread::run(|_| {
+        current_thread::spawn(TaskB {
+            shared_state: Rc::new(RefCell::new(0)),
+            initialized: false
+        });
+    });
+}*/
+
+
+
+
 #[macro_use]
 extern crate stdweb;
 extern crate futures;
@@ -137,3 +295,4 @@ fn main() {
 
     stdweb::event_loop();
 }
+
