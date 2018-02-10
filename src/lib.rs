@@ -180,7 +180,6 @@ pub mod web {
         pub use webapi::dom_exception::{
             IDomException,
             DomException,
-            ConcreteException,
             HierarchyRequestError,
             InvalidAccessError,
             NotFoundError,

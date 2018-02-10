@@ -1,5 +1,4 @@
 use webcore::value::Reference;
-use webcore::instance_of::InstanceOf;
 use webapi::error::{IError, Error};
 
 /// The `IDomException` interface represents an abnormal event which occurs as the result of
@@ -32,15 +31,6 @@ pub trait ConcreteException: IDomException {
     const ERROR_NAME: &'static str;
 }
 
-// To safely cast from a reference to a specific DomException, we must check that the object is an
-// instance of DOMException, and that the error name matches.
-impl< T: ConcreteException > InstanceOf for T {
-    #[inline]
-    fn instance_of( reference: &Reference ) -> bool {
-        instanceof!( *reference, DOMException ) && js!( return @{reference.clone()}.name; ) == T::ERROR_NAME
-    }
-}
-
 /// Occurs when an operation would result in an incorrect node tree.
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(subclass_of(Error, DomException))]
@@ -48,11 +38,8 @@ pub struct HierarchyRequestError( Reference );
 
 impl IError for HierarchyRequestError {}
 impl IDomException for HierarchyRequestError {}
-impl ConcreteException for HierarchyRequestError {
-    const ERROR_NAME: &'static str = "HierarchyRequestError";
-}
 
-error_boilerplate! { HierarchyRequestError }
+error_boilerplate! { HierarchyRequestError, name = "HierarchyRequestError" }
 
 /// Occurs when an object does not support an operation or argument.
 #[derive(Clone, Debug, ReferenceType)]
@@ -61,11 +48,8 @@ pub struct InvalidAccessError( Reference );
 
 impl IError for InvalidAccessError {}
 impl IDomException for InvalidAccessError {}
-impl ConcreteException for InvalidAccessError {
-    const ERROR_NAME: &'static str = "InvalidAccessError";
-}
 
-error_boilerplate! { InvalidAccessError }
+error_boilerplate! { InvalidAccessError, name = "InvalidAccessError" }
 
 /// Occurs when the specified object cannot be found.
 #[derive(Clone, Debug, ReferenceType)]
@@ -74,11 +58,8 @@ pub struct NotFoundError( Reference );
 
 impl IError for NotFoundError {}
 impl IDomException for NotFoundError {}
-impl ConcreteException for NotFoundError {
-    const ERROR_NAME: &'static str = "NotFoundError";
-}
 
-error_boilerplate! { NotFoundError }
+error_boilerplate! { NotFoundError, name = "NotFoundError" }
 
 /// Occurs when the requested operation is insecure.
 #[derive(Clone, Debug, ReferenceType)]
@@ -87,11 +68,8 @@ pub struct SecurityError( Reference );
 
 impl IError for SecurityError {}
 impl IDomException for SecurityError {}
-impl ConcreteException for SecurityError {
-    const ERROR_NAME: &'static str = "SecurityError";
-}
 
-error_boilerplate! { SecurityError }
+error_boilerplate! { SecurityError, name = "SecurityError" }
 
 /// Occurs when an argument does not match the expected pattern.
 #[derive(Clone, Debug, ReferenceType)]
@@ -100,11 +78,8 @@ pub struct SyntaxError( Reference );
 
 impl IError for SyntaxError {}
 impl IDomException for SyntaxError {}
-impl ConcreteException for SyntaxError {
-    const ERROR_NAME: &'static str = "SyntaxError";
-}
 
-error_boilerplate! { SyntaxError }
+error_boilerplate! { SyntaxError, name = "SyntaxError" }
 
 #[cfg(all(test, feature = "web_test"))]
 mod test {
@@ -119,13 +94,14 @@ mod test {
 
     #[test]
     fn test_error() {
+        let name = "HierarchyRequestError";
         // Successful downcast.
-        let err: DomException = new_dom_exception("foo", HierarchyRequestError::ERROR_NAME);
+        let err: DomException = new_dom_exception("foo", name);
         let err: HierarchyRequestError = err.try_into().expect("Expected HierarchyRequestError");
-        assert_eq!(err.name(), HierarchyRequestError::ERROR_NAME);
+        assert_eq!(err.name(), name);
 
         // Failed downcast.
-        let err: DomException = new_dom_exception("foo", SecurityError::ERROR_NAME);
+        let err: DomException = new_dom_exception("foo", name);
         let err: Result<SyntaxError, _> = err.try_into();
         assert!(err.is_err());
     }

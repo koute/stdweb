@@ -527,19 +527,36 @@ macro_rules! __js_serializable_boilerplate {
 }
 
 macro_rules! error_boilerplate {
-    ($name:ident) => {
-        impl ::std::fmt::Display for $name {
+    ($type_name:ident) => {
+        impl ::std::fmt::Display for $type_name {
             fn fmt(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-                write!(formatter, "{}: {}", stringify!($name), self.message())
+                write!(formatter, "{}: {}", stringify!($type_name), self.message())
             }
         }
 
-        impl ::std::error::Error for $name {
+        impl ::std::error::Error for $type_name {
             fn description(&self) -> &str {
-                stringify!($name)
+                stringify!($type_name)
             }
         }
-    }
+    };
+
+    ($type_name:ident, name = $error_name:expr) => {
+        impl ::InstanceOf for $type_name {
+            #[inline]
+            fn instance_of( reference: &Reference ) -> bool {
+                __js_raw_asm!(
+                    concat!(
+                        "var r = Module.STDWEB_PRIVATE.acquire_js_reference( $0 );",
+                        "return (r instanceof DOMException) && (r.name === \"", $error_name, "\");"
+                    ),
+                    reference.as_raw()
+                ) == 1
+            }
+        }
+
+        error_boilerplate!( $type_name );
+    };
 }
 
 macro_rules! instanceof {
