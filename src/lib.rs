@@ -160,6 +160,7 @@ pub mod web {
     pub use webapi::history::History;
     pub use webapi::web_socket::{WebSocket, SocketCloseCode};
     pub use webapi::rendering_context::{RenderingContext, CanvasRenderingContext2d};
+    pub use webapi::webgl_rendering_context::WebGLRenderingContext;
     pub use webapi::mutation_observer::{MutationObserver, MutationObserverHandle, MutationObserverInit, MutationRecord};
     pub use webapi::xml_http_request::{XmlHttpRequest, XhrReadyState};
 
