@@ -1,14 +1,13 @@
 #[macro_use]
 extern crate stdweb;
 
-use stdweb::Reference;
 use stdweb::unstable::TryInto;
 use stdweb::web::{
     IEventTarget,
+    IParentNode,
     IHtmlElement,
     document,
     window,
-    RenderingContext,
     CanvasRenderingContext2d
 };
 
@@ -33,7 +32,7 @@ macro_rules! enclose {
 fn main() {
     stdweb::initialize();
 
-    let canvas: CanvasElement = document().query_selector( "#canvas" ).unwrap().try_into().unwrap();
+    let canvas: CanvasElement = document().query_selector( "#canvas" ).unwrap().unwrap().try_into().unwrap();
     let context: CanvasRenderingContext2d = canvas.get_context().unwrap();
 
     canvas.set_width(canvas.offset_width() as u32);
