@@ -126,3 +126,16 @@ macro_rules! console_info {
     	js_call!( console.info, $( $args ),* );
     };
 }
+
+
+/// Prints zero or more values to the console.
+///
+/// This is exactly the same as [`console_log`](macro.console_log.html), except that it prints a special "warn" message.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Console/warn)
+#[macro_export]
+macro_rules! console_warn {
+    ( $( $args:expr ),* ) => {
+    	js_call!( console.warn, $( $args ),* );
+    };
+}
