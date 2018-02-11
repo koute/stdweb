@@ -169,6 +169,9 @@ impl Promise {
 /// Convert a JavaScript `Promise` into a `PromiseFuture`:
 ///
 /// ```rust
+/// use stdweb::PromiseFuture;
+/// use stdweb::web::error::Error;
+///
 /// let future: PromiseFuture<String, Error> = js!( return Promise.resolve("foo"); ).try_into().unwrap();
 /// ```
 pub struct PromiseFuture< A, B > {
