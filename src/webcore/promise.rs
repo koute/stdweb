@@ -20,7 +20,7 @@ pub struct Promise( Reference );
 
 impl Promise {
     // https://www.ecma-international.org/ecma-262/6.0/#sec-promise-resolve-functions
-    fn is_promise_like( input: &Value ) -> bool {
+    fn is_thenable( input: &Value ) -> bool {
         (js! {
             var input = @{input};
             // This emulates the `Type(input) is Object` and `IsCallable(input.then)` ECMAScript abstract operations.
@@ -37,7 +37,7 @@ impl Promise {
     /// That situation is rare, but it can happen if you are using a Promise library such as jQuery or
     /// Bluebird.
     ///
-    /// In that situation you can use `Promise::convert(value)` to convert it into a true `Promise`.
+    /// In that situation you can use `Promise::from_thenable(value)` to convert it into a true `Promise`.
     ///
     /// If the `input` isn't a Promise-like object then it returns `None`.
     ///
@@ -47,19 +47,20 @@ impl Promise {
     ///
     /// ```rust
     /// // jQuery Promise
-    /// Promise::convert(js!( return $.get("test.php"); ))
+    /// Promise::from_thenable(js!( return $.get("test.php"); ))
     ///
     /// // Bluebird Promise
-    /// Promise::convert(js!( return bluebird_promise.timeout(1000); ))
+    /// Promise::from_thenable(js!( return bluebird_promise.timeout(1000); ))
     /// ```
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/resolve)
     // https://www.ecma-international.org/ecma-262/6.0/#sec-promise.resolve
     // https://www.ecma-international.org/ecma-262/6.0/#sec-promise-resolve-functions
     // https://www.ecma-international.org/ecma-262/6.0/#sec-promiseresolvethenablejob
-    pub fn convert( input: Value ) -> Option< Self > {
+    // TODO change this later to use &Reference
+    pub fn from_thenable( input: Value ) -> Option< Self > {
         // TODO this can probably be made more efficient
-        if Promise::is_promise_like( &input ) {
+        if Promise::is_thenable( &input ) {
             Some( js!( return Promise.resolve( @{input} ); ).try_into().unwrap() )
 
         } else {
