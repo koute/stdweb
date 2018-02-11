@@ -113,9 +113,9 @@ impl Promise {
             var callback = @{Once( callback )};
 
             // TODO don't swallow any errors thrown inside callback
-            @{self}.then( function (value) {
+            @{self}.then( function ( value ) {
                 callback( value, true );
-            }, function (value) {
+            }, function ( value ) {
                 callback( value, false );
             } );
         }
