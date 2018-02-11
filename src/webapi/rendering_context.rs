@@ -101,7 +101,7 @@ pub enum FillRule {
     EvenOdd
 }
 
-/// h=How the end points of every line are drawn.
+/// How the end points of every line are drawn.
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineCap)
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
