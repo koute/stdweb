@@ -241,7 +241,7 @@ fn test_timeout() {
                 sleep( 1000 ).inspect( |_| console_log!( "Timeout 3 done!" ) ) )
             .and_then( |_|
                 futures::future::err( Error::new( "Testing error!" ) ) )
-            .map_err( |e| e.print() )
+            .map_err( |e| console_error!( e ) )
     );
 }
 

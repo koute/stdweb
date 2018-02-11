@@ -48,16 +48,6 @@ impl Error {
     pub fn new( description: &str ) -> Self {
         js!( return new Error( @{description} ); ).try_into().unwrap()
     }
-
-    /// Prints the `Error` to the console (this prints the error's description and also its stack trace).
-    ///
-    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Console/error)
-    #[inline]
-    pub fn print( &self ) {
-        js! { @(no_return)
-            console.error( @{self} );
-        }
-    }
 }
 
 impl IError for Error {}
