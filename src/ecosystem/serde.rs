@@ -25,6 +25,9 @@ use webcore::serialization::{
 
 use webcore::number::{self, Number, Storage, get_storage};
 use webcore::try_from::{TryInto, TryFrom};
+use webcore::instance_of::InstanceOf;
+use webcore::array::Array;
+use webcore::object::Object;
 
 impl Serialize for Undefined {
     #[inline]
@@ -156,23 +159,25 @@ impl Serialize for Value {
             Value::Bool( value ) => serializer.serialize_bool( value ),
             Value::Number( ref value ) => value.serialize( serializer ),
             Value::String( ref value ) => serializer.serialize_str( value ),
-            Value::Array( ref value ) => {
-                let value: Vec< Value > = value.into();
-                value.serialize( serializer )
-            },
-            Value::Object( ref value ) => {
-                let value: BTreeMap< String, Value > = value.into();
-                let mut map = try!( serializer.serialize_map( Some( value.len() ) ) );
-                for (key, value) in value {
-                    try!( map.serialize_key( &key ) );
-                    try!( map.serialize_value( &value ) );
-                }
+            Value::Reference( ref reference ) => {
+                if Array::instance_of( reference ) {
+                    let array: Array = reference.try_into().unwrap();
+                    let value: Vec< Value > = array.into();
+                    value.serialize( serializer )
+                } else if Object::instance_of( reference ) {
+                    let object: Object = reference.try_into().unwrap();
+                    let value: BTreeMap< String, Value > = object.into();
+                    let mut map = try!( serializer.serialize_map( Some( value.len() ) ) );
+                    for (key, value) in value {
+                        try!( map.serialize_key( &key ) );
+                        try!( map.serialize_value( &value ) );
+                    }
 
-                map.end()
-            },
-            Value::Reference( _ ) => {
-                let map = try!( serializer.serialize_map( None ) );
-                map.end()
+                    map.end()
+                } else {
+                    let map = try!( serializer.serialize_map( None ) );
+                    map.end()
+                }
             }
         }
     }
@@ -475,7 +480,8 @@ impl< 'a > ser::Serializer for &'a mut Serializer {
     fn serialize_newtype_variant< T: ?Sized + Serialize >( self, _name: &'static str, _variant_index: u32, variant: &'static str, value: &T ) -> Result< Self::Ok, Self::Error > {
         let mut object = BTreeMap::new();
         object.insert( String::from( variant ), to_value( &value )? );
-        Ok( Value::Object( object.into() ) )
+        let object: Object = object.into();
+        Ok( Value::Reference( object.into() ) )
     }
 
     fn serialize_seq( self, length: Option< usize > ) -> Result< Self::SerializeSeq, Self::Error > {
@@ -614,8 +620,8 @@ impl ser::SerializeTupleVariant for SerializeTupleVariant {
 
     fn end( self ) -> Result< Self::Ok, Self::Error > {
         let mut object: BTreeMap< String, Value > = BTreeMap::new();
-        object.insert( self.name, Value::Array( self.elements.into() ) );
-        Ok( Value::Object( object.into() ) )
+        object.insert( self.name, self.elements.into() );
+        Ok( object.into() )
     }
 }
 
@@ -653,7 +659,7 @@ impl ser::SerializeMap for SerializeMap {
     }
 
     fn end( self ) -> Result< Self::Ok, Self::Error > {
-        Ok( Value::Object( self.map.into() ) )
+        Ok( self.map.into() )
     }
 }
 
@@ -681,9 +687,9 @@ impl ser::SerializeStructVariant for SerializeStructVariant {
     }
 
     fn end( self ) -> Result< Self::Ok, Self::Error > {
-        let mut object = BTreeMap::new();
-        object.insert( self.name, Value::Object( self.map.into() ) );
-        Ok( Value::Object( object.into() ) )
+        let mut object: BTreeMap< String, Value > = BTreeMap::new();
+        object.insert( self.name, self.map.into() );
+        Ok( object.into() )
     }
 }
 
@@ -721,8 +727,6 @@ impl Value {
                 }
             },
             Value::String( ref value ) => de::Unexpected::Str( value ),
-            Value::Array( _ ) => de::Unexpected::Seq,
-            Value::Object( _ ) => de::Unexpected::Map,
             Value::Reference( _ ) => de::Unexpected::Other( "reference to a JavaScript value" )
         }
     }
@@ -739,32 +743,34 @@ impl< 'de > de::Deserializer< 'de > for Value {
             Value::Bool( value ) => visitor.visit_bool( value ),
             Value::Number( value ) => de::Deserializer::deserialize_any( value, visitor ),
             Value::String( value ) => visitor.visit_string( value ),
-            Value::Array( value ) => {
-                let value: Vec< _ > = value.into();
-                let length = value.len();
-                let mut deserializer = SeqDeserializer::new( value );
-                let seq = visitor.visit_seq( &mut deserializer )?;
-                let remaining = deserializer.iter.len();
-                if remaining == 0 {
-                    Ok( seq )
+            Value::Reference( reference ) => {
+                if Array::instance_of( &reference ) {
+                    let value: Array = reference.try_into().unwrap();
+                    let value: Vec< _ > = value.into();
+                    let length = value.len();
+                    let mut deserializer = SeqDeserializer::new( value );
+                    let seq = visitor.visit_seq( &mut deserializer )?;
+                    let remaining = deserializer.iter.len();
+                    if remaining == 0 {
+                        Ok( seq )
+                    } else {
+                        Err( de::Error::invalid_length( length, &"fewer elements in the array" ) )
+                    }
+                } else if Object::instance_of( &reference ) {
+                    let value: Object = reference.try_into().unwrap();
+                    let value: BTreeMap< _, _ > = value.into();
+                    let length = value.len();
+                    let mut deserializer = MapDeserializer::new( value );
+                    let map = visitor.visit_map( &mut deserializer )?;
+                    let remaining = deserializer.iter.len();
+                    if remaining == 0 {
+                        Ok( map )
+                    } else {
+                        Err( de::Error::invalid_length( length, &"fewer elements in the object" ) )
+                    }
                 } else {
-                    Err( de::Error::invalid_length( length, &"fewer elements in the array" ) )
+                    unimplemented!(); // TODO: ?
                 }
-            },
-            Value::Object( value ) => {
-                let value: BTreeMap< _, _ > = value.into();
-                let length = value.len();
-                let mut deserializer = MapDeserializer::new( value );
-                let map = visitor.visit_map( &mut deserializer )?;
-                let remaining = deserializer.iter.len();
-                if remaining == 0 {
-                    Ok( map )
-                } else {
-                    Err( de::Error::invalid_length( length, &"fewer elements in the object" ) )
-                }
-            },
-            Value::Reference( _ ) => {
-                unimplemented!(); // TODO: ?
             }
         }
     }
@@ -781,7 +787,12 @@ impl< 'de > de::Deserializer< 'de > for Value {
     #[inline]
     fn deserialize_enum< V: Visitor< 'de > >( self, _name: &str, _variants: &'static [&'static str], visitor: V ) -> Result< V::Value, Self::Error > {
         let (variant, value) = match self {
-            Value::Object( value ) => {
+            Value::Reference( reference ) => {
+                let value: Object = match reference.try_into() {
+                    Ok( object ) => object,
+                    Err( _ ) => return Err( de::Error::invalid_value( de::Unexpected::Map, &"map with a single key" ) )
+                };
+
                 let value: BTreeMap< _, _ > = value.into();
                 let mut iter = value.into_iter();
                 let (variant, value) = match iter.next() {
@@ -861,8 +872,12 @@ impl< 'de > de::VariantAccess< 'de > for VariantDeserializer {
 
     fn tuple_variant< V: Visitor< 'de > >( self, _length: usize, visitor: V ) -> Result< V::Value, Self::Error > {
         match self.value {
-            Some( Value::Array( value ) ) => {
-                de::Deserializer::deserialize_any( SeqDeserializer::new( value.into() ), visitor )
+            Some( Value::Reference( reference ) ) => {
+                let array: Array = match reference.try_into() {
+                    Ok( array ) => array,
+                    Err( _ ) => return Err( de::Error::invalid_type( de::Unexpected::UnitVariant, &"tuple variant" ) )
+                };
+                de::Deserializer::deserialize_any( SeqDeserializer::new( array.into() ), visitor )
             },
             Some( other ) => Err( de::Error::invalid_type( other.unexpected(), &"tuple variant" ) ),
             None => Err( de::Error::invalid_type( de::Unexpected::UnitVariant, &"tuple variant" ) )
@@ -871,8 +886,12 @@ impl< 'de > de::VariantAccess< 'de > for VariantDeserializer {
 
     fn struct_variant< V: Visitor< 'de > >( self, _fields: &'static [&'static str], visitor: V ) -> Result< V::Value, Self::Error > {
         match self.value {
-            Some( Value::Object( value ) ) => {
-                de::Deserializer::deserialize_any( MapDeserializer::new( value.into() ), visitor )
+            Some( Value::Reference( reference ) ) => {
+                let object: Object = match reference.try_into() {
+                    Ok( object ) => object,
+                    Err( _ ) => return Err( de::Error::invalid_type( de::Unexpected::UnitVariant, &"struct variant" ) )
+                };
+                de::Deserializer::deserialize_any( MapDeserializer::new( object.into() ), visitor )
             },
             Some( other ) => Err( de::Error::invalid_type( other.unexpected(), &"struct variant" ) ),
             _ => Err( de::Error::invalid_type( de::Unexpected::UnitVariant, &"struct variant" ) )

@@ -82,7 +82,7 @@ Module.STDWEB_PRIVATE.to_js = function to_js( address ) {
             output[ key ] = value;
         }
         return output;
-    } else if( kind === 9 || kind === 11 || kind === 12 ) {
+    } else if( kind === 9 ) {
         return Module.STDWEB_PRIVATE.acquire_js_reference( HEAP32[ address / 4 ] );
     } else if( kind === 10 ) {
         var adapter_pointer = HEAPU32[ address / 4 ];
@@ -233,14 +233,7 @@ Module.STDWEB_PRIVATE.from_js = function from_js( address, value ) {
         HEAPU8[ address + 12 ] = 6;
     } else {
         var refid = Module.STDWEB_PRIVATE.acquire_rust_reference( value );
-        var id = 9;
-        if( kind === "[object Object]" ) {
-            id = 11;
-        } else if( kind === "[object Array]" || kind === "[object Arguments]" ) {
-            id = 12;
-        }
-
-        HEAPU8[ address + 12 ] = id;
+        HEAPU8[ address + 12 ] = 9;
         HEAP32[ address / 4 ] = refid;
     }
 };

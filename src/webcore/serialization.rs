@@ -11,8 +11,6 @@ use webcore::callfn::{CallOnce, CallMut};
 use webcore::newtype::Newtype;
 use webcore::try_from::{TryFrom, TryInto};
 use webcore::number::Number;
-use webcore::object::Object;
-use webcore::array::Array;
 use webcore::type_name::type_name;
 use webcore::unsafe_typed_array::UnsafeTypedArray;
 use webcore::once::Once;
@@ -38,8 +36,6 @@ pub enum Tag {
     Object = 8,
     Reference = 9,
     Function = 10,
-    ObjectReference = 11,
-    ArrayReference = 12,
     FunctionOnce = 13,
     UnsafeTypedArray = 14
 }
@@ -219,18 +215,6 @@ struct SerializedUntaggedFunctionOnce {
 
 #[repr(C)]
 #[derive(Debug)]
-struct SerializedUntaggedObjectReference {
-    refid: i32
-}
-
-#[repr(C)]
-#[derive(Debug)]
-struct SerializedUntaggedArrayReference {
-    refid: i32
-}
-
-#[repr(C)]
-#[derive(Debug)]
 struct SerializedUntaggedUnsafeTypedArray {
     pointer: u32,
     length: u32,
@@ -400,26 +384,6 @@ impl SerializedUntaggedReference {
     }
 }
 
-impl SerializedUntaggedObjectReference {
-    #[inline]
-    fn deserialize( &self ) -> Object {
-        unsafe {
-            let reference = Reference::from_raw_unchecked( self.refid );
-            Object( reference )
-        }
-    }
-}
-
-impl SerializedUntaggedArrayReference {
-    #[inline]
-    fn deserialize( &self ) -> Array {
-        unsafe {
-            let reference = Reference::from_raw_unchecked( self.refid );
-            Array( reference )
-        }
-    }
-}
-
 macro_rules! untagged_boilerplate {
     ($tests_namespace:ident, $reader_name:ident, $tag:expr, $untagged_type:ident) => {
         impl< 'a > SerializedValue< 'a > {
@@ -471,8 +435,6 @@ untagged_boilerplate!( test_array, as_array, Tag::Array, SerializedUntaggedArray
 untagged_boilerplate!( test_reference, as_reference, Tag::Reference, SerializedUntaggedReference );
 untagged_boilerplate!( test_function, as_function, Tag::Function, SerializedUntaggedFunction );
 untagged_boilerplate!( test_function_once, as_function_once, Tag::FunctionOnce, SerializedUntaggedFunctionOnce );
-untagged_boilerplate!( test_object_reference, as_object_reference, Tag::ObjectReference, SerializedUntaggedObjectReference );
-untagged_boilerplate!( test_array_reference, as_array_reference, Tag::ArrayReference, SerializedUntaggedArrayReference );
 untagged_boilerplate!( test_unsafe_typed_array, as_unsafe_typed_array, Tag::UnsafeTypedArray, SerializedUntaggedUnsafeTypedArray );
 
 impl< 'a > SerializedValue< 'a > {
@@ -487,8 +449,6 @@ impl< 'a > SerializedValue< 'a > {
             Tag::Str => Value::String( self.as_string().deserialize() ),
             Tag::False => Value::Bool( false ),
             Tag::True => Value::Bool( true ),
-            Tag::ObjectReference => Value::Object( self.as_object_reference().deserialize() ),
-            Tag::ArrayReference => Value::Array( self.as_array_reference().deserialize() ),
             Tag::Reference => self.as_reference().deserialize().into(),
             Tag::Function |
             Tag::FunctionOnce |
@@ -564,42 +524,6 @@ impl JsSerialize for Reference {
 }
 
 __js_serializable_boilerplate!( Reference );
-
-impl JsSerialize for Object {
-    #[doc(hidden)]
-    #[inline]
-    fn _into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
-        SerializedUntaggedObjectReference {
-            refid: self.as_reference().as_raw()
-        }.into()
-    }
-
-    #[doc(hidden)]
-    #[inline]
-    fn _memory_required( &self ) -> usize {
-        0
-    }
-}
-
-__js_serializable_boilerplate!( Object );
-
-impl JsSerialize for Array {
-    #[doc(hidden)]
-    #[inline]
-    fn _into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
-        SerializedUntaggedArrayReference {
-            refid: self.as_reference().as_raw()
-        }.into()
-    }
-
-    #[doc(hidden)]
-    #[inline]
-    fn _memory_required( &self ) -> usize {
-        0
-    }
-}
-
-__js_serializable_boilerplate!( Array );
 
 impl JsSerialize for bool {
     #[doc(hidden)]
@@ -947,8 +871,6 @@ impl JsSerialize for Value {
             Value::Bool( ref value ) => value._into_js( arena ),
             Value::Number( ref value ) => value._into_js( arena ),
             Value::String( ref value ) => value._into_js( arena ),
-            Value::Array( ref value ) => value._into_js( arena ),
-            Value::Object( ref value ) => value._into_js( arena ),
             Value::Reference( ref value ) => value._into_js( arena )
         }
     }
@@ -961,8 +883,6 @@ impl JsSerialize for Value {
             Value::Bool( value ) => value._memory_required(),
             Value::Number( value ) => value._memory_required(),
             Value::String( ref value ) => value._memory_required(),
-            Value::Array( ref value ) => value._memory_required(),
-            Value::Object( ref value ) => value._memory_required(),
             Value::Reference( ref value ) => value._memory_required()
         }
     }
@@ -1334,10 +1254,7 @@ mod test_deserialization {
             })( 1, 2 );
         };
 
-        assert_eq!( value.is_array(), true );
-
-        let value: Vec< Value > = value.try_into().unwrap();
-        assert_eq!( value, vec![ Value::Number( 1.into() ), Value::Number( 2.into() ) ] );
+        assert_eq!( value.is_array(), false );
     }
 
     #[test]
@@ -1789,6 +1706,7 @@ mod test_serialization {
 #[cfg(test)]
 mod test_reserialization {
     use super::*;
+    use webcore::array::Array;
 
     #[test]
     fn i32() {
@@ -1833,13 +1751,13 @@ mod test_reserialization {
     #[test]
     fn array() {
         let array: Array = vec![ Value::Number( 1.into() ), Value::Number( 2.into() ) ].into();
-        assert_eq!( js! { return @{&array}; }, Value::Array( array ) );
+        assert_eq!( js! { return @{&array}; }.into_reference().unwrap(), *array.as_ref() );
     }
 
     #[test]
     fn array_values_are_not_compared_by_value() {
         let array: Array = vec![ Value::Number( 1.into() ), Value::Number( 2.into() ) ].into();
-        assert_ne!( js! { return @{&[1, 2][..]}; }, Value::Array( array ) );
+        assert_ne!( js! { return @{&[1, 2][..]}; }.into_reference().unwrap(), *array.as_ref() );
     }
 
     #[test]

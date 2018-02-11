@@ -5,21 +5,11 @@ use webcore::value::{Reference, Value, ConversionError};
 use webcore::serialization::{JsSerialize, deserialize_object};
 
 /// A type representing a JavaScript object.
-#[derive(Clone, PartialEq, Debug)]
-pub struct Object( pub(crate) Reference );
-
-impl From< Object > for Reference {
-    fn from( object: Object ) -> Self {
-        object.0.clone()
-    }
-}
+#[derive(Clone, PartialEq, Debug, ReferenceType)]
+#[reference(instance_of = "Object")]
+pub struct Object( Reference );
 
 impl Object {
-    #[inline]
-    pub(crate) fn as_reference( &self ) -> &Reference {
-        &self.0
-    }
-
     /// Returns the number of elements in this particular object.
     pub fn len( &self ) -> usize {
         js!(
@@ -80,7 +70,7 @@ impl< 'a, K, V > From< &'a BTreeMap< K, V > > for Object where K: AsRef< str >, 
         };
 
         match value {
-            Value::Object( object ) => return object,
+            Value::Reference( reference ) => Object( reference ),
             _ => unreachable!()
         }
     }
@@ -110,7 +100,7 @@ impl< 'a, K, V > From< &'a HashMap< K, V > > for Object where K: AsRef< str > + 
         };
 
         match value {
-            Value::Object( object ) => return object,
+            Value::Reference( reference ) => Object( reference ),
             _ => unreachable!()
         }
     }
@@ -129,7 +119,7 @@ impl< E: Into< ConversionError >, V: TryFrom< Value, Error = E > > TryFrom< Obje
     type Error = ConversionError;
 
     fn try_from( object: Object ) -> Result< Self, Self::Error > {
-        deserialize_object( object.as_reference(), |deserializer| -> Result< BTreeMap< String, V >, E > {
+        deserialize_object( object.as_ref(), |deserializer| -> Result< BTreeMap< String, V >, E > {
             let mut output = BTreeMap::new();
             for (key, value) in deserializer {
                 output.insert( key, value.try_into()? );
@@ -143,7 +133,7 @@ impl< E: Into< ConversionError >, V: TryFrom< Value, Error = E > > TryFrom< Obje
     type Error = ConversionError;
 
     fn try_from( object: Object ) -> Result< Self, Self::Error > {
-        deserialize_object( object.as_reference(), |deserializer| -> Result< HashMap< String, V >, E > {
+        deserialize_object( object.as_ref(), |deserializer| -> Result< HashMap< String, V >, E > {
             let mut output = HashMap::with_capacity( deserializer.len() );
             for (key, value) in deserializer {
                 output.insert( key, value.try_into()? );

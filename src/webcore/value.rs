@@ -2,6 +2,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::hash::Hash;
 use std::fmt;
 use std::error;
+use std::mem;
 use webcore::void::Void;
 use webcore::try_from::{TryFrom, TryInto};
 use webcore::number::{self, Number};
@@ -9,6 +10,7 @@ use webcore::object::Object;
 use webcore::array::Array;
 use webcore::serialization::JsSerialize;
 use webcore::reference_type::ReferenceType;
+use webcore::instance_of::InstanceOf;
 
 /// A unit type representing JavaScript's `undefined`.
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Debug)]
@@ -136,8 +138,6 @@ pub enum Value {
     Bool( bool ),
     Number( Number ),
     String( String ),
-    Array( Array ),
-    Object( Object ),
     Reference( Reference )
 }
 
@@ -152,21 +152,21 @@ impl Value {
         }
     }
 
-    /// Checks whenever the Value is of the Object variant.
+    /// Checks whenever the Value is a reference to an `Object`.
     #[inline]
     pub fn is_object( &self ) -> bool {
-        if let Value::Object( _ ) = *self {
-            true
+        if let Value::Reference( ref reference ) = *self {
+            Object::instance_of( reference )
         } else {
             false
         }
     }
 
-    /// Checks whenever the Value is of the Array variant.
+    /// Checks whenever the Value is a reference to an `Array`.
     #[inline]
     pub fn is_array( &self ) -> bool {
-        if let Value::Array( _ ) = *self {
-            true
+        if let Value::Reference( ref reference ) = *self {
+            Array::instance_of( reference )
         } else {
             false
         }
@@ -185,7 +185,11 @@ impl Value {
     #[inline]
     pub fn as_object( &self ) -> Option< &Object > {
         match *self {
-            Value::Object( ref object ) => Some( object ),
+            Value::Reference( ref reference ) if Object::instance_of( reference ) => {
+                unsafe {
+                    Some( mem::transmute( reference ) )
+                }
+            },
             _ => None
         }
     }
@@ -194,7 +198,11 @@ impl Value {
     #[inline]
     pub fn as_array( &self ) -> Option< &Array > {
         match *self {
-            Value::Array( ref array ) => Some( array ),
+            Value::Reference( ref reference ) if Array::instance_of( reference ) => {
+                unsafe {
+                    Some( mem::transmute( reference ) )
+                }
+            },
             _ => None
         }
     }
@@ -212,7 +220,7 @@ impl Value {
     #[inline]
     pub fn into_object( self ) -> Option< Object > {
         match self {
-            Value::Object( object ) => Some( object ),
+            Value::Reference( reference ) => reference.try_into().ok(),
             _ => None
         }
     }
@@ -221,7 +229,7 @@ impl Value {
     #[inline]
     pub fn into_array( self ) -> Option< Array > {
         match self {
-            Value::Array( array ) => Some( array ),
+            Value::Reference( reference ) => reference.try_into().ok(),
             _ => None
         }
     }
@@ -408,7 +416,7 @@ impl< 'a, T > From< &'a [T] > for Value where T: JsSerialize {
     #[inline]
     fn from( value: &'a [T] ) -> Self {
         let array: Array = value.into();
-        Value::Array( array )
+        Value::Reference( array.into() )
     }
 }
 
@@ -423,7 +431,7 @@ impl< K, V > From< BTreeMap< K, V > > for Value where K: AsRef< str >, V: JsSeri
     #[inline]
     fn from( value: BTreeMap< K, V > ) -> Self {
         let object: Object = value.into();
-        Value::Object( object )
+        Value::Reference( object.into() )
     }
 }
 
@@ -431,7 +439,7 @@ impl< 'a, K, V > From< &'a BTreeMap< K, V > > for Value where K: AsRef< str >, V
     #[inline]
     fn from( value: &'a BTreeMap< K, V > ) -> Self {
         let object: Object = value.into();
-        Value::Object( object )
+        Value::Reference( object.into() )
     }
 }
 
@@ -439,7 +447,7 @@ impl< 'a, K, V > From< &'a mut BTreeMap< K, V > > for Value where K: AsRef< str 
     #[inline]
     fn from( value: &'a mut BTreeMap< K, V > ) -> Self {
         let object: Object = value.into();
-        Value::Object( object )
+        Value::Reference( object.into() )
     }
 }
 
@@ -447,7 +455,7 @@ impl< K, V > From< HashMap< K, V > > for Value where K: AsRef< str > + Eq + Hash
     #[inline]
     fn from( value: HashMap< K, V > ) -> Self {
         let object: Object = value.into();
-        Value::Object( object )
+        Value::Reference( object.into() )
     }
 }
 
@@ -455,7 +463,7 @@ impl< 'a, K, V > From< &'a HashMap< K, V > > for Value where K: AsRef< str > + E
     #[inline]
     fn from( value: &'a HashMap< K, V > ) -> Self {
         let object: Object = value.into();
-        Value::Object( object )
+        Value::Reference( object.into() )
     }
 }
 
@@ -463,7 +471,7 @@ impl< 'a, K, V > From< &'a mut HashMap< K, V > > for Value where K: AsRef< str >
     #[inline]
     fn from( value: &'a mut HashMap< K, V > ) -> Self {
         let object: Object = value.into();
-        Value::Object( object )
+        Value::Reference( object.into() )
     }
 }
 
@@ -776,8 +784,6 @@ fn value_type_name( value: &Value ) -> &'static str {
         Value::Bool( _ ) => "Bool",
         Value::Number( _ ) => "Number",
         Value::String( _ ) => "String",
-        Value::Array( _ ) => "Array",
-        Value::Object( _ ) => "Object",
         Value::Reference( _ ) => "Reference"
     }
 }
@@ -895,7 +901,10 @@ impl< E: Into< ConversionError >, V: TryFrom< Value, Error = E > > TryFrom< Valu
     #[inline]
     fn try_from( value: Value ) -> Result< Self, Self::Error > {
         match value {
-            Value::Object( object ) => object.try_into(),
+            Value::Reference( reference ) => {
+                let object: Object = reference.try_into()?;
+                object.try_into()
+            },
             _ => Err( ConversionError::type_mismatch( &value ) )
         }
     }
@@ -907,7 +916,10 @@ impl< E: Into< ConversionError >, V: TryFrom< Value, Error = E > > TryFrom< Valu
     #[inline]
     fn try_from( value: Value ) -> Result< Self, Self::Error > {
         match value {
-            Value::Object( object ) => object.try_into(),
+            Value::Reference( reference ) => {
+                let object: Object = reference.try_into()?;
+                object.try_into()
+            },
             _ => Err( ConversionError::type_mismatch( &value ) )
         }
     }
@@ -919,7 +931,10 @@ impl< E: Into< ConversionError >, T: TryFrom< Value, Error = E > > TryFrom< Valu
     #[inline]
     fn try_from( value: Value ) -> Result< Self, Self::Error > {
         match value {
-            Value::Array( array ) => array.try_into(),
+            Value::Reference( reference ) => {
+                let array: Array = reference.try_into()?;
+                array.try_into()
+            },
             _ => Err( ConversionError::type_mismatch( &value ) )
         }
     }
