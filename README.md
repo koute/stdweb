@@ -225,6 +225,7 @@ There is also an **experimental** [Parcel] plugin [here](https://github.com/kout
 ## Changelog
 
    * `0.4`
+      * (breaking change) Removed `Array` and `Object` variants from `Value`; these are now treated as `Reference`s
       * (breaking change) Renamed:
          * `KeydownEvent` -> `KeyDownEvent`
          * `KeyupEvent` -> `KeyUpEvent`
@@ -254,6 +255,8 @@ There is also an **experimental** [Parcel] plugin [here](https://github.com/kout
       * (breaking change) `INode::inner_text` was moved to `IHtmlElement::inner_text`
       * (breaking change) `Document::query_selector` and `Document::query_selector_all` were moved to `IParentNode`
       * (breaking change) `IElement::query_selector` and `IElement::query_selector_all` were moved to `IParentNode`
+      * (breaking change) A blanket impl for converting between arbitrary reference-like objects using
+        `TryFrom`/`TryInto` has been removed
       * When building using a recent `cargo-web` it's not necessary to call
         `stdweb::initialize` nor `stdweb::event_loop` anymore
       * Support for `cdylib` crates on `wasm32-unknown-unknown`
@@ -276,9 +279,13 @@ There is also an **experimental** [Parcel] plugin [here](https://github.com/kout
          * `SocketOpenEvent`
          * `SocketMessageEvent`
       * Initial support for the Canvas APIs
+      * New traits: `ReferenceType` and `InstanceOf`
+      * Add `#[derive(ReferenceType)]` in `stdweb-derive` crate; it's now possible
+        to define custom API bindings outside of `stdweb`
       * Add `#[js_export]` procedural attribute (`wasm32-unknown-unknown` only)
       * Add `DomException` and subtypes for passing around JavaScript exceptions
       * `IElement` now inherits from `INode`
+      * Every interface now inherits from `ReferenceType`
 
    * `0.3`
       * (breaking change) Deleted `ErrorEvent` methods
