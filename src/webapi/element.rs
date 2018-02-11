@@ -28,6 +28,9 @@ pub trait IElement: INode + IParentNode {
 /// interface.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "Element")]
+#[reference(subclass_of(EventTarget, Node))]
 pub struct Element( Reference );
 
 impl IEventTarget for Element {}
@@ -35,10 +38,3 @@ impl INode for Element {}
 impl IElement for Element {}
 
 impl< T: IElement > IParentNode for T {}
-
-reference_boilerplate! {
-    Element,
-    instanceof Element
-    convertible to EventTarget
-    convertible to Node
-}

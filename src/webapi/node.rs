@@ -1,6 +1,6 @@
 use std::mem;
 
-use webcore::value::{Reference, FromReference};
+use webcore::value::Reference;
 use webcore::try_from::{TryFrom, TryInto};
 use webapi::document::Document;
 use webapi::dom_exception::{HierarchyRequestError, NotFoundError};
@@ -24,7 +24,7 @@ pub enum CloneKind {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node)
 // https://dom.spec.whatwg.org/#node
-pub trait INode: IEventTarget + FromReference {
+pub trait INode: IEventTarget {
     /// Casts a reference to this object into a reference to a [Node](struct.Node.html).
     fn as_node( &self ) -> &Node {
         let reference: &Reference = self.as_ref();
@@ -354,16 +354,13 @@ error_enum_boilerplate! {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node)
 // https://dom.spec.whatwg.org/#interface-node
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "Node")]
+#[reference(subclass_of(EventTarget))]
 pub struct Node( Reference );
 
 impl IEventTarget for Node {}
 impl INode for Node {}
-
-reference_boilerplate! {
-    Node,
-    instanceof Node
-    convertible to EventTarget
-}
 
 /// Determines the type of a `Node`.
 ///

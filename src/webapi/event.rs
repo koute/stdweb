@@ -1,5 +1,6 @@
-use webcore::value::{Reference, Value};
-use webcore::try_from::{TryFrom, TryInto};
+use webcore::value::Reference;
+use webcore::try_from::TryInto;
+use webcore::reference_type::ReferenceType;
 use webapi::event_target::EventTarget;
 use webapi::window::Window;
 
@@ -12,7 +13,7 @@ use webapi::window::Window;
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Event)
 // https://dom.spec.whatwg.org/#event
-pub trait IEvent: AsRef< Reference > + TryFrom< Value > {
+pub trait IEvent: ReferenceType {
     /// Indicates whether this event bubbles upward through the DOM.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Event)
@@ -203,14 +204,11 @@ pub trait ConcreteEvent: IEvent {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Event)
 // https://dom.spec.whatwg.org/#event
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "Event")]
 pub struct Event( Reference );
 
 impl IEvent for Event {}
-
-reference_boilerplate! {
-    Event,
-    instanceof Event
-}
 
 /// The `IUiEvent` interface represents simple user interface events.
 ///
@@ -245,16 +243,13 @@ pub trait IUiEvent: IEvent {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/UIEvent)
 // https://w3c.github.io/uievents/#uievent
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "UIEvent")]
+#[reference(subclass_of(Event))]
 pub struct UiEvent( Reference );
 
 impl IEvent for UiEvent {}
 impl IUiEvent for UiEvent {}
-
-reference_boilerplate! {
-    UiEvent,
-    instanceof UIEvent
-    convertible to Event
-}
 
 #[cfg(all(test, feature = "web_test"))]
 mod tests {

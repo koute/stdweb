@@ -22,20 +22,6 @@ macro_rules! loop_through_identifiers {
     };
 }
 
-macro_rules! call_with_repeated_tail {
-    (($($cb:tt)*), ($($output:tt)*), foreach ($($rest:tt)*) -> $token:tt) => {
-        call_with_repeated_tail!( @loop ($($cb)*), ($($rest)*), ($($output)*), $token );
-    };
-
-    (@loop ($($cb:tt)*), ($input:tt $($rest:tt)*), ($($output:tt)*), $token:tt) => {
-        call_with_repeated_tail!( @loop ($($cb)*), ($($rest)*), ($($output)* $token), $token );
-    };
-
-    (@loop ($($cb:tt)*), (), ($($output:tt)*), $token:tt) => {
-        $($cb)*( $($output),* )
-    };
-}
-
 #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
 #[doc(hidden)]
 #[macro_export]
@@ -313,14 +299,14 @@ macro_rules! _js_impl {
     (@prepare $memory_required:ident [$arg:tt $($rest_args:tt)*] [$name:tt $($rest_names:tt)*]) => {
         let $name = $arg;
         let $name = $crate::private::IntoNewtype::into_newtype( $name );
-        $memory_required += $crate::private::JsSerializableOwned::memory_required_owned( &$name );
+        $memory_required += $crate::private::JsSerializeOwned::memory_required_owned( &$name );
         _js_impl!( @prepare $memory_required [$($rest_args)*] [$($rest_names)*] );
     };
 
     (@serialize $arena:ident [] [$($names:tt)*]) => {};
     (@serialize $arena:ident [$arg:tt $($rest_args:tt)*] [$name:tt $($rest_names:tt)*]) => {
         let mut $name = Some( $name );
-        let $name = $crate::private::JsSerializableOwned::into_js_owned( &mut $name, &$arena );
+        let $name = $crate::private::JsSerializeOwned::into_js_owned( &mut $name, &$arena );
         let $name = &$name as *const _;
         _js_impl!( @serialize $arena [$($rest_args)*] [$($rest_names)*] );
     };
@@ -514,184 +500,63 @@ macro_rules! __js_serializable_boilerplate {
     };
 
     (($($impl_arg:tt)*) ($($kind_arg:tt)*) ($($bounds:tt)*)) => {
-        impl< $($impl_arg)* > $crate::private::JsSerializableOwned for $($kind_arg)* where $($bounds)* {
+        impl< $($impl_arg)* > $crate::private::JsSerializeOwned for $($kind_arg)* where $($bounds)* {
             #[inline]
             fn into_js_owned< '_a >( value: &'_a mut Option< Self >, arena: &'_a $crate::private::PreallocatedArena ) -> $crate::private::SerializedValue< '_a > {
-                $crate::private::JsSerializable::into_js( value.as_ref().unwrap(), arena )
+                $crate::private::JsSerialize::_into_js( value.as_ref().unwrap(), arena )
             }
 
             #[inline]
             fn memory_required_owned( &self ) -> usize {
-                $crate::private::JsSerializable::memory_required( self )
+                $crate::private::JsSerialize::_memory_required( self )
             }
         }
 
-        impl< '_r, $($impl_arg)* > $crate::private::JsSerializableOwned for &'_r $($kind_arg)* where $($bounds)* {
+        impl< '_r, $($impl_arg)* > $crate::private::JsSerializeOwned for &'_r $($kind_arg)* where $($bounds)* {
             #[inline]
             fn into_js_owned< '_a >( value: &'_a mut Option< Self >, arena: &'_a $crate::private::PreallocatedArena ) -> $crate::private::SerializedValue< '_a > {
-                $crate::private::JsSerializable::into_js( value.unwrap(), arena )
+                $crate::private::JsSerialize::_into_js( value.unwrap(), arena )
             }
 
             #[inline]
             fn memory_required_owned( &self ) -> usize {
-                $crate::private::JsSerializable::memory_required( *self )
+                $crate::private::JsSerialize::_memory_required( *self )
             }
         }
-    };
-}
-
-macro_rules! __reference_boilerplate {
-    (($($impl_arg:tt)*) ($($kind_arg:tt)*) ($($bounds:tt)*), instanceof $js_name:ident $($rest:tt)*) => {
-        impl< $($impl_arg)* > $crate::private::FromReference for $($kind_arg)* where $($bounds)* {
-            #[inline]
-            fn from_reference( reference: Reference ) -> Option< Self > {
-                if instanceof!( reference, $js_name ) {
-                    Some( $($kind_arg)*( reference ) )
-                } else {
-                    None
-                }
-            }
-        }
-
-        __reference_boilerplate!( ($($impl_arg)*) ($($kind_arg)*) ($($bounds)*), $($rest)* );
-    };
-
-    (($($impl_arg:tt)*) ($($kind_arg:tt)*) ($($bounds:tt)*), convertible to $base_kind:ident $($rest:tt)*) => {
-        impl< $($impl_arg)* > From< $($kind_arg)* > for $base_kind where $($bounds)* {
-            #[inline]
-            fn from( value: $($kind_arg)* ) -> Self {
-                use $crate::private::FromReferenceUnchecked;
-                let reference: $crate::Reference = value.into();
-                unsafe {
-                    $base_kind::from_reference_unchecked( reference )
-                }
-            }
-        }
-
-        __reference_boilerplate!( ($($impl_arg)*) ($($kind_arg)*) ($($bounds)*), $($rest)* );
-    };
-
-    (($($impl_arg:tt)*) ($($kind_arg:tt)*) ($($bounds:tt)*),) => {
-        impl< $($impl_arg)* > ::std::fmt::Debug for $($kind_arg)* where $($bounds)* {
-            fn fmt( &self, formatter: &mut ::std::fmt::Formatter ) -> ::std::fmt::Result {
-                write!( formatter, concat!( "<", stringify!( $($kind_arg)* ), ":{}>" ), self.0.as_raw() )
-            }
-        }
-
-        impl< $($impl_arg)* > Clone for $($kind_arg)* where $($bounds)* {
-            #[allow(unused_parens)]
-            #[inline]
-            fn clone( &self ) -> Self {
-                call_with_repeated_tail!( ($($kind_arg)*), ((self.0.clone())), foreach ($($impl_arg)*) -> (::std::default::Default::default()) )
-            }
-        }
-
-        impl< $($impl_arg)* > AsRef< $crate::Reference > for $($kind_arg)* where $($bounds)* {
-            #[inline]
-            fn as_ref( &self ) -> &$crate::Reference {
-                &self.0
-            }
-        }
-
-        impl< $($impl_arg)* > $crate::private::FromReferenceUnchecked for $($kind_arg)* where $($bounds)* {
-            #[allow(unused_parens)]
-            #[inline]
-            unsafe fn from_reference_unchecked( reference: $crate::Reference ) -> Self {
-                call_with_repeated_tail!( ($($kind_arg)*), (reference), foreach ($($impl_arg)*) -> (::std::default::Default::default()) )
-            }
-        }
-
-        impl< $($impl_arg)* > From< $($kind_arg)* > for $crate::Reference where $($bounds)* {
-            #[inline]
-            fn from( value: $($kind_arg)* ) -> Self {
-                value.0
-            }
-        }
-
-        impl< $($impl_arg)* > $crate::unstable::TryFrom< $($kind_arg)* > for $crate::Reference where $($bounds)* {
-            type Error = $crate::unstable::Void;
-
-            #[inline]
-            fn try_from( value: $($kind_arg)* ) -> Result< Self, Self::Error > {
-                Ok( value.0 )
-            }
-        }
-
-        impl< R: $crate::unstable::TryInto< $crate::Reference >, $($impl_arg)* > $crate::unstable::TryFrom< R > for $($kind_arg)*
-            where <R as $crate::unstable::TryInto< $crate::Reference >>::Error: Into< ::webcore::value::ConversionError >, $($bounds)*
-        {
-            type Error = ::webcore::value::ConversionError;
-
-            #[inline]
-            fn try_from( value: R ) -> Result< Self, Self::Error > {
-                use webcore::value::ConversionError;
-
-                value.try_into()
-                    .map_err( |error| error.into() )
-                    .and_then( |reference: Reference| {
-                        reference.downcast()
-                            .ok_or_else( || ConversionError::Custom( "reference is of a different type".into() ) )
-                    })
-            }
-        }
-
-        impl< $($impl_arg)* > $crate::unstable::TryFrom< $crate::Value > for Option< $($kind_arg)* > where $($bounds)* {
-            type Error = ::webcore::value::ConversionError;
-
-            #[inline]
-            fn try_from( value: $crate::Value ) -> Result< Self, Self::Error > {
-                use webcore::value::ConversionError;
-                use webcore::value::Value;
-                use webcore::try_from::TryInto;
-
-                match value {
-                    Value::Undefined | Value::Null => Ok( None ),
-                    Value::Reference( reference ) => Ok( Some( reference.try_into()? ) ),
-                    value => Err( ConversionError::type_mismatch( &value ) )
-                }
-            }
-        }
-
-        impl< $($impl_arg)* > $crate::private::JsSerializable for $($kind_arg)* where $($bounds)* {
-            #[inline]
-            fn into_js< 'a >( &'a self, arena: &'a $crate::private::PreallocatedArena ) -> $crate::private::SerializedValue< 'a > {
-                self.0.into_js( arena )
-            }
-
-            #[inline]
-            fn memory_required( &self ) -> usize {
-                Reference::memory_required( &self.0 )
-            }
-        }
-
-        __js_serializable_boilerplate!( ($($impl_arg)*) ($($kind_arg)*) ($($bounds)*) );
-    };
-}
-
-macro_rules! reference_boilerplate {
-    ($kind:ident, $($rest:tt)*) => {
-        __reference_boilerplate!( () ($kind) (), $($rest)* );
-    };
-
-    (impl< $($impl_arg:tt),* > for $kind:path where ($($bounds:tt)*) $($rest:tt)*) => {
-        __reference_boilerplate!( ($($impl_arg),*) ($kind) ($($bounds)*), $($rest)* );
     };
 }
 
 macro_rules! error_boilerplate {
-    ($name:ident) => {
-        impl ::std::fmt::Display for $name {
+    ($type_name:ident) => {
+        impl ::std::fmt::Display for $type_name {
             fn fmt(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-                write!(formatter, "{}: {}", stringify!($name), self.message())
+                write!(formatter, "{}: {}", stringify!($type_name), self.message())
             }
         }
 
-        impl ::std::error::Error for $name {
+        impl ::std::error::Error for $type_name {
             fn description(&self) -> &str {
-                stringify!($name)
+                stringify!($type_name)
             }
         }
-    }
+    };
+
+    ($type_name:ident, name = $error_name:expr) => {
+        impl ::InstanceOf for $type_name {
+            #[inline]
+            fn instance_of( reference: &Reference ) -> bool {
+                __js_raw_asm!(
+                    concat!(
+                        "var r = Module.STDWEB_PRIVATE.acquire_js_reference( $0 );",
+                        "return (r instanceof DOMException) && (r.name === \"", $error_name, "\");"
+                    ),
+                    reference.as_raw()
+                ) == 1
+            }
+        }
+
+        error_boilerplate!( $type_name );
+    };
 }
 
 macro_rules! instanceof {

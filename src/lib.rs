@@ -94,10 +94,22 @@ extern crate stdweb_internal_macros;
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 pub use stdweb_internal_macros::js_export;
 
+#[cfg(feature = "futures")]
+extern crate futures;
+
+#[macro_use]
+extern crate stdweb_derive;
+
 #[macro_use]
 mod webcore;
 mod webapi;
 mod ecosystem;
+
+// This is here so that our procedural macros
+// can work within the crate.
+pub(crate) mod stdweb {
+    pub use super::*;
+}
 
 pub use webcore::initialization::{
     initialize,
@@ -115,6 +127,14 @@ pub use webcore::array::Array;
 
 pub use webcore::unsafe_typed_array::UnsafeTypedArray;
 pub use webcore::once::Once;
+pub use webcore::instance_of::InstanceOf;
+pub use webcore::reference_type::ReferenceType;
+pub use webcore::serialization::JsSerialize;
+
+pub use webcore::promise::Promise;
+
+#[cfg(feature = "futures")]
+pub use webcore::promise_future::PromiseFuture;
 
 #[cfg(feature = "serde")]
 /// A module with serde-related APIs.
@@ -162,13 +182,13 @@ pub mod web {
     pub use webapi::rendering_context::{RenderingContext, CanvasRenderingContext2d};
     pub use webapi::mutation_observer::{MutationObserver, MutationObserverHandle, MutationObserverInit, MutationRecord};
     pub use webapi::xml_http_request::{XmlHttpRequest, XhrReadyState};
+    pub use webapi::blob::{IBlob, Blob};
 
     /// A module containing error types.
     pub mod error {
         pub use webapi::dom_exception::{
             IDomException,
             DomException,
-            ConcreteException,
             HierarchyRequestError,
             InvalidAccessError,
             NotFoundError,
@@ -273,8 +293,8 @@ pub mod unstable {
 pub mod private {
     pub use webcore::ffi::exports::*;
     pub use webcore::serialization::{
-        JsSerializable,
-        JsSerializableOwned,
+        JsSerialize,
+        JsSerializeOwned,
         PreallocatedArena,
         SerializedValue
     };
@@ -282,11 +302,6 @@ pub mod private {
     pub use webcore::newtype::{
         IntoNewtype,
         Newtype
-    };
-
-    pub use webcore::value::{
-        FromReference,
-        FromReferenceUnchecked
     };
 
     #[cfg(feature = "serde")]
@@ -303,4 +318,6 @@ pub mod private {
     // TODO: Remove this.
     #[derive(Debug)]
     pub struct UnimplementedException;
+
+    pub use webcore::value::ConversionError;
 }

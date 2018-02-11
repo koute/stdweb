@@ -14,13 +14,10 @@ use private::UnimplementedException;
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XmlHttpRequest)
 // https://xhr.spec.whatwg.org/#xmlhttprequest
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "XMLHttpRequest")]
+#[reference(subclass_of(EventTarget))]
 pub struct XmlHttpRequest( Reference );
-
-reference_boilerplate! {
-    XmlHttpRequest,
-    instanceof XMLHttpRequest
-    convertible to EventTarget
-}
 
 /// An enum indicating the state of the `XmlHttpRequest`.
 ///

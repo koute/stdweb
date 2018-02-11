@@ -72,7 +72,7 @@ pub mod exports {
     }
 }
 
-pub fn run_all_tests() {
+pub fn run() {
     test( "i8_to_i8", || { js! { assert.strictEqual( Module.exports.i8_to_i8( 33 ), 34 ); }});
     test( "i16_to_i16", || { js! { assert.strictEqual( Module.exports.i16_to_i16( 33 ), 34 ); }});
     test( "i32_to_i32", || { js! { assert.strictEqual( Module.exports.i32_to_i32( 33 ), 34 ); }});

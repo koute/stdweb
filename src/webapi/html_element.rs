@@ -82,20 +82,15 @@ pub trait IHtmlElement: IElement {
 /// interface.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "HTMLElement")]
+#[reference(subclass_of(EventTarget, Node, Element))]
 pub struct HtmlElement( Reference );
 
 impl IEventTarget for HtmlElement {}
 impl INode for HtmlElement {}
 impl IElement for HtmlElement {}
 impl IHtmlElement for HtmlElement {}
-
-reference_boilerplate! {
-    HtmlElement,
-    instanceof HTMLElement
-    convertible to EventTarget
-    convertible to Node
-    convertible to Element
-}
 
 #[cfg(all(test, feature = "web_test"))]
 mod tests {

@@ -8,21 +8,15 @@ use webapi::html_element::{IHtmlElement, HtmlElement};
 /// The HTML <textarea> element represents a multi-line plain-text editing control.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en/docs/Web/HTML/Element/textarea)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "HTMLTextAreaElement")]
+#[reference(subclass_of(EventTarget, Node, Element, HtmlElement))]
 pub struct TextAreaElement( Reference );
 
 impl IEventTarget for TextAreaElement {}
 impl INode for TextAreaElement {}
 impl IElement for TextAreaElement {}
 impl IHtmlElement for TextAreaElement {}
-
-reference_boilerplate! {
-    TextAreaElement,
-    instanceof HTMLTextAreaElement
-    convertible to EventTarget
-    convertible to Node
-    convertible to Element
-    convertible to HtmlElement
-}
 
 impl TextAreaElement {
     /// The value of the control.

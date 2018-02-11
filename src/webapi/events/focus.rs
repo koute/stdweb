@@ -23,21 +23,21 @@ pub trait IFocusEvent: IEvent {
 /// interface.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/FocusEvent)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "FocusEvent")]
+#[reference(subclass_of(Event))]
 pub struct FocusRelatedEvent( Reference );
 
 impl IEvent for FocusRelatedEvent {}
 impl IFocusEvent for FocusRelatedEvent {}
 
-reference_boilerplate! {
-    FocusRelatedEvent,
-    instanceof FocusEvent
-    convertible to Event
-}
-
 /// The `FocusEvent` is fired when an element has received focus. The main
 /// difference between this event and focusin is that only the latter bubbles.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/focus)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "FocusEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, FocusRelatedEvent))]
 pub struct FocusEvent( Reference );
 
 impl IEvent for FocusEvent {}
@@ -46,30 +46,19 @@ impl ConcreteEvent for FocusEvent {
     const EVENT_TYPE: &'static str = "focus";
 }
 
-reference_boilerplate! {
-    FocusEvent,
-    instanceof FocusEvent
-    convertible to Event
-    convertible to FocusRelatedEvent
-}
-
 /// The `BlurEvent` is fired when an element has lost focus. The main difference
 /// between this event and focusout is that only the latter bubbles.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/blur)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "FocusEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, FocusRelatedEvent))]
 pub struct BlurEvent( Reference );
 
 impl IEvent for BlurEvent {}
 impl IFocusEvent for BlurEvent {}
 impl ConcreteEvent for BlurEvent {
     const EVENT_TYPE: &'static str = "blur";
-}
-
-reference_boilerplate! {
-    BlurEvent,
-    instanceof FocusEvent
-    convertible to Event
-    convertible to FocusRelatedEvent
 }
 
 #[cfg(all(test, feature = "web_test"))]

@@ -202,23 +202,22 @@ impl MouseButtonsState {
 /// interface.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "MouseEvent")]
+#[reference(subclass_of(Event, UiEvent))]
 pub struct MouseEvent( Reference );
 
 impl IEvent for MouseEvent {}
 impl IUiEvent for MouseEvent {}
 impl IMouseEvent for MouseEvent {}
 
-reference_boilerplate! {
-    MouseEvent,
-    instanceof MouseEvent
-    convertible to Event
-    convertible to UiEvent
-}
-
 /// The `ClickEvent` is fired when a pointing device button (usually a
 /// mouse's primary button) is pressed and released on a single element.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/click)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "MouseEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, UiEvent, MouseEvent))]
 pub struct ClickEvent( Reference );
 
 impl IEvent for ClickEvent {}
@@ -228,19 +227,14 @@ impl ConcreteEvent for ClickEvent {
     const EVENT_TYPE: &'static str = "click";
 }
 
-reference_boilerplate! {
-    ClickEvent,
-    instanceof MouseEvent
-    convertible to Event
-    convertible to UiEvent
-    convertible to MouseEvent
-}
-
 /// The `DoubleClickEvent` is fired when a pointing device button
 /// (usually a mouse's primary button) is clicked twice on a single
 /// element.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/dblclick)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "MouseEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, UiEvent, MouseEvent))]
 pub struct DoubleClickEvent( Reference );
 
 impl IEvent for DoubleClickEvent {}
@@ -250,18 +244,13 @@ impl ConcreteEvent for DoubleClickEvent {
     const EVENT_TYPE: &'static str = "dblclick";
 }
 
-reference_boilerplate! {
-    DoubleClickEvent,
-    instanceof MouseEvent
-    convertible to Event
-    convertible to UiEvent
-    convertible to MouseEvent
-}
-
 /// The `MouseDownEvent` is fired when a pointing device button is pressed on
 /// an element.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/mousedown)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "MouseEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, UiEvent, MouseEvent))]
 pub struct MouseDownEvent( Reference );
 
 impl IEvent for MouseDownEvent {}
@@ -271,18 +260,13 @@ impl ConcreteEvent for MouseDownEvent {
     const EVENT_TYPE: &'static str = "mousedown";
 }
 
-reference_boilerplate! {
-    MouseDownEvent,
-    instanceof MouseEvent
-    convertible to Event
-    convertible to UiEvent
-    convertible to MouseEvent
-}
-
 /// The `MouseUpEvent` is fired when a pointing device button is released
 /// over an element.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/mouseup)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "MouseEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, UiEvent, MouseEvent))]
 pub struct MouseUpEvent( Reference );
 
 impl IEvent for MouseUpEvent {}
@@ -292,18 +276,13 @@ impl ConcreteEvent for MouseUpEvent {
     const EVENT_TYPE: &'static str = "mouseup";
 }
 
-reference_boilerplate! {
-    MouseUpEvent,
-    instanceof MouseEvent
-    convertible to Event
-    convertible to UiEvent
-    convertible to MouseEvent
-}
-
 /// The `MouseMoveEvent` is fired when a pointing device (usually a mouse)
 /// is moved while over an element.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/mousemove)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "MouseEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, UiEvent, MouseEvent))]
 pub struct MouseMoveEvent( Reference );
 
 impl IEvent for MouseMoveEvent {}
@@ -311,14 +290,6 @@ impl IUiEvent for MouseMoveEvent {}
 impl IMouseEvent for MouseMoveEvent {}
 impl ConcreteEvent for MouseMoveEvent {
     const EVENT_TYPE: &'static str = "mousemove";
-}
-
-reference_boilerplate! {
-    MouseMoveEvent,
-    instanceof MouseEvent
-    convertible to Event
-    convertible to UiEvent
-    convertible to MouseEvent
 }
 
 #[cfg(all(test, feature = "web_test"))]

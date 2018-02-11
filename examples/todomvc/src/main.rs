@@ -155,7 +155,7 @@ fn update_dom( state: &StateRef ) {
     }
 
     let filter_anchor_selector = format!( ".filters a[href='{}']", filter_anchor_selector );
-    let selected_anchor: Element = document().query_selector( filter_anchor_selector.as_str() ).unwrap().unwrap().try_into().unwrap();
+    let selected_anchor: Element = document().query_selector( filter_anchor_selector.as_str() ).unwrap().unwrap();
     selected_anchor.class_list().add( "selected" ).unwrap();
 
     // Clear previous entries in the list.

@@ -16,6 +16,8 @@ pub trait RenderingContext {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D)
 // https://html.spec.whatwg.org/#canvasrenderingcontext2d
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "CanvasRenderingContext2D")]
 pub struct CanvasRenderingContext2d(Reference);
 
 /// The CanvasGradient interface represents an opaque object describing a gradient. 

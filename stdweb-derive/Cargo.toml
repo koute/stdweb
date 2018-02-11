@@ -1,0 +1,24 @@
+[package]
+name = "stdweb-derive"
+version = "0.4.0"
+authors = ["Jan Bujak <j@exia.io>"]
+repository = "https://github.com/koute/stdweb"
+homepage = "https://github.com/koute/stdweb"
+documentation = "https://docs.rs/stdweb/*/stdweb/"
+license = "MIT/Apache-2.0"
+readme = "README.md"
+keywords = ["web", "asmjs", "webasm", "javascript"]
+categories = ["api-bindings", "gui", "web-programming"]
+description = "Derive macros for the `stdweb` crate"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = "0.4"
+serde = "1"
+serde_derive = "1"
+
+[dependencies.syn]
+version = "0.12"
+features = ["full"]

@@ -12,18 +12,14 @@ use private::UnimplementedException;
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document)
 // https://dom.spec.whatwg.org/#document
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "Document")]
+#[reference(subclass_of(EventTarget, Node))]
 pub struct Document( Reference );
 
 impl IEventTarget for Document {}
 impl IParentNode for Document {}
 impl INode for Document {}
-
-reference_boilerplate! {
-    Document,
-    instanceof Document
-    convertible to EventTarget
-    convertible to Node
-}
 
 /// A global instance of [Document](struct.Document.html).
 ///

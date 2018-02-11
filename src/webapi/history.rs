@@ -1,16 +1,13 @@
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
-use webcore::serialization::JsSerializable;
+use webcore::serialization::JsSerialize;
 use private::UnimplementedException;
 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/History)
 // https://html.spec.whatwg.org/#history-3
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "History")]
 pub struct History(Reference);
-
-reference_boilerplate! {
-    History,
-    instanceof History
-}
 
 impl History {
     /// Adds a new entry to history.
@@ -36,7 +33,7 @@ impl History {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/History_API#The_pushState%28%29_method)
     // https://html.spec.whatwg.org/#the-history-interface:dom-history-pushstate
-    pub fn push_state<T: JsSerializable>(&self, state: T, title: &str, url: Option<&str>) {
+    pub fn push_state<T: JsSerialize>(&self, state: T, title: &str, url: Option<&str>) {
         js!{ @(no_return)
             @{self}.pushState(@{state}, @{title}, @{url});
         };
@@ -48,7 +45,7 @@ impl History {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/History_API#The_replaceState%28%29_method)
     // https://html.spec.whatwg.org/#the-history-interface:dom-history-replacestate
-    pub fn replace_state<T: JsSerializable>(&self, state: T, title: &str, url: Option<&str>) -> Result< (), UnimplementedException > {
+    pub fn replace_state<T: JsSerialize>(&self, state: T, title: &str, url: Option<&str>) -> Result< (), UnimplementedException > {
         js!{ @(no_return)
             @{self}.replaceState(@{state}, @{title}, @{url});
         };

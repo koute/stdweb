@@ -12,21 +12,15 @@ use webapi::rendering_context::RenderingContext;
 /// can draw (such as Canvas 2D or WebGL).
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "HTMLCanvasElement")]
+#[reference(subclass_of(EventTarget, Node, Element, HtmlElement))]
 pub struct CanvasElement( Reference );
 
 impl IEventTarget for CanvasElement {}
 impl INode for CanvasElement {}
 impl IElement for CanvasElement {}
 impl IHtmlElement for CanvasElement {}
-
-reference_boilerplate! {
-    CanvasElement,
-    instanceof HTMLCanvasElement
-    convertible to EventTarget
-    convertible to Node
-    convertible to Element
-    convertible to HtmlElement
-}
 
 impl CanvasElement {
     /// Returns a positive integer reflecting the height HTML attribute of the <canvas> element

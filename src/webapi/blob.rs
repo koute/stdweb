@@ -1,11 +1,12 @@
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
+use webcore::reference_type::ReferenceType;
 
 /// A blob object represents a file-like object of immutable, raw data.
 /// Blobs represent data that isn't necessarily in a JavaScript-native format.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Blob)
-pub trait IBlob: AsRef< Reference > {
+pub trait IBlob: ReferenceType {
     /// The size, in bytes, of the data contained in the Blob object.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Blob/size)
@@ -33,11 +34,8 @@ pub trait IBlob: AsRef< Reference > {
 /// interface.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Blob)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "Blob")]
 pub struct Blob( Reference );
 
 impl IBlob for Blob {}
-
-reference_boilerplate! {
-    Blob,
-    instanceof Blob
-}

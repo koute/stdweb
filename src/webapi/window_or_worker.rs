@@ -1,4 +1,4 @@
-use webcore::value::Reference;
+use webcore::reference_type::ReferenceType;
 
 extern fn funcall_adapter< F: FnOnce() >( callback: *mut F ) {
     let callback = unsafe {
@@ -13,7 +13,7 @@ extern fn funcall_adapter< F: FnOnce() >( callback: *mut F ) {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope)
 // https://html.spec.whatwg.org/#windoworworkerglobalscope
-pub trait IWindowOrWorker: AsRef< Reference > {
+pub trait IWindowOrWorker: ReferenceType {
     /// Sets a timer which executes a function once after the timer expires.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout)

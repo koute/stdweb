@@ -1,11 +1,12 @@
-use webcore::value::{Value, Reference};
-use webcore::try_from::{TryFrom, TryInto};
+use webcore::value::Reference;
+use webcore::try_from::TryInto;
+use webcore::reference_type::ReferenceType;
 
 /// Represents the JavaScript `Error` interface. An `Error` is thrown whenever a run-time error
 /// occurs.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error)
-pub trait IError: AsRef< Reference > + TryFrom< Value > {
+pub trait IError: ReferenceType {
     /// Returns a human-readable description of the error.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/message)
@@ -31,17 +32,35 @@ pub trait IError: AsRef< Reference > + TryFrom< Value > {
 /// occurs.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error)
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "Error")]
 pub struct Error( Reference );
+
+impl Error {
+    /// Creates a new `Error` with the specified `description`.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error)
+    #[inline]
+    pub fn new( description: &str ) -> Self {
+        js!( return new Error( @{description} ); ).try_into().unwrap()
+    }
+
+    /// Prints the `Error` to the console (this prints the error's description and also its stack trace).
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Console/error)
+    #[inline]
+    pub fn print( &self ) {
+        js! { @(no_return)
+            console.error( @{self} );
+        }
+    }
+}
 
 // Error specification:
 // https://www.ecma-international.org/ecma-262/6.0/#sec-error-objects
 
 impl IError for Error {}
 
-reference_boilerplate! {
-    Error,
-    instanceof Error
-}
 error_boilerplate! { Error }
 
 #[cfg(test)]
