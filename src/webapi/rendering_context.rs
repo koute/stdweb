@@ -26,6 +26,8 @@ pub struct CanvasRenderingContext2d(Reference);
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasGradient)
 // https://html.spec.whatwg.org/#canvasgradient
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "CanvasGradient")]
 pub struct CanvasGradient(Reference);
 
 /// The CanvasPattern interface represents an opaque object describing a pattern, based on an image, 
@@ -34,6 +36,8 @@ pub struct CanvasGradient(Reference);
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasPattern)
 // https://html.spec.whatwg.org/#canvaspattern
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "CanvasPattern")]
 pub struct CanvasPattern(Reference);
 
 /// The ImageData interface represents the underlying pixel data of an area of a <canvas> element. 
@@ -43,12 +47,16 @@ pub struct CanvasPattern(Reference);
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ImageData)
 // https://html.spec.whatwg.org/#imagedata
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "ImageData")]
 pub struct ImageData(Reference);
 
 /// The TextMetrics interface represents the dimension of a text in the canvas, as created by the CanvasRenderingContext2D.measureText() method.
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/TextMetrics)
 // https://html.spec.whatwg.org/#textmetrics
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "TextMetrics")]
 pub struct TextMetrics(Reference);
 
 /// The type of compositing operation to apply when drawing new shapes, where type is a string 
@@ -164,31 +172,6 @@ error_enum_boilerplate! {
 error_enum_boilerplate! {
     TypeMismatchError,
     SyntaxError
-}
-
-reference_boilerplate! {
-    CanvasRenderingContext2d,
-    instanceof CanvasRenderingContext2D
-}
-
-reference_boilerplate! {
-    CanvasGradient,
-    instanceof CanvasGradient
-}
-
-reference_boilerplate! {
-    CanvasPattern,
-    instanceof CanvasPattern
-}
-
-reference_boilerplate! {
-    ImageData,
-    instanceof ImageData
-}
-
-reference_boilerplate! {
-    TextMetrics,
-    instanceof TextMetrics
 }
 
 impl RenderingContext for CanvasRenderingContext2d {
