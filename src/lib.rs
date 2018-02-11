@@ -94,6 +94,9 @@ extern crate stdweb_internal_macros;
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 pub use stdweb_internal_macros::js_export;
 
+#[cfg(feature = "futures")]
+extern crate futures;
+
 #[macro_use]
 extern crate stdweb_derive;
 
@@ -127,6 +130,11 @@ pub use webcore::once::Once;
 pub use webcore::instance_of::InstanceOf;
 pub use webcore::reference_type::ReferenceType;
 pub use webcore::serialization::JsSerialize;
+
+pub use webcore::promise::Promise;
+
+#[cfg(feature = "futures")]
+pub use webcore::promise_future::PromiseFuture;
 
 #[cfg(feature = "serde")]
 /// A module with serde-related APIs.

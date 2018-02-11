@@ -36,6 +36,26 @@ pub trait IError: ReferenceType {
 #[reference(instance_of = "Error")]
 pub struct Error( Reference );
 
+impl Error {
+    /// Creates a new `Error` with the specified `description`.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error)
+    #[inline]
+    pub fn new( description: &str ) -> Self {
+        js!( return new Error( @{description} ); ).try_into().unwrap()
+    }
+
+    /// Prints the `Error` to the console (this prints the error's description and also its stack trace).
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Console/error)
+    #[inline]
+    pub fn print( &self ) {
+        js! { @(no_return)
+            console.error( @{self} );
+        }
+    }
+}
+
 // Error specification:
 // https://www.ecma-international.org/ecma-262/6.0/#sec-error-objects
 
