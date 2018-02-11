@@ -1,6 +1,4 @@
 use std;
-use std::error::Error as _Error;
-use std::marker::PhantomData;
 use webcore::once::Once;
 use webcore::value::{Value, Reference, ConversionError};
 use webcore::try_from::{TryInto, TryFrom};
@@ -92,18 +90,23 @@ impl Promise {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then)
     // https://www.ecma-international.org/ecma-262/6.0/#sec-performpromisethen
-    pub fn done< A, B >( &self, callback: B )
+    pub fn done< A, B, F >( &self, callback: F )
         where A: TryFrom< Value >,
-              A::Error: std::error::Error,
-              B: FnOnce( Result< A, Error > ) + 'static {
+              B: TryFrom< Value >,
+              // TODO these Debug constraints are only needed because of unwrap
+              A::Error: std::fmt::Debug,
+              B::Error: std::fmt::Debug,
+              F: FnOnce( Result< A, B > ) + 'static {
 
         let callback = |value: Value, success: bool| {
-            let value: Result< A, Error > = if success {
-                let value: Result< A, A::Error > = value.try_into();
-                value.map_err( |e| Error::new( e.description() ) )
+            let value: Result< A, B > = if success {
+                // TODO figure out a way to avoid the unwrap
+                let value: A = value.try_into().unwrap();
+                Ok( value )
             } else {
-                let value: Result< Error, ConversionError > = value.try_into();
-                value.map_err( |e| Error::new( e.description() ) ).and_then( Err )
+                // TODO figure out a way to avoid the unwrap
+                let value: B = value.try_into().unwrap();
+                Err( value )
             };
 
             callback( value );
@@ -132,9 +135,12 @@ impl Promise {
     /// ```
     // We can't use the IntoFuture trait because Promise doesn't have a type argument
     // TODO explain more why we can't use the IntoFuture trait
-    pub fn to_future< A >( &self ) -> PromiseFuture< A >
+    pub fn to_future< A, B >( &self ) -> PromiseFuture< A, B >
          where A: TryFrom< Value > + 'static,
-               A::Error: std::error::Error {
+               B: TryFrom< Value > + 'static,
+               // TODO remove these later
+               A::Error: std::fmt::Debug,
+               B::Error: std::fmt::Debug {
 
         let ( sender, receiver ) = channel();
 
@@ -148,7 +154,6 @@ impl Promise {
 
         PromiseFuture {
             future: receiver,
-            phantom: PhantomData,
         }
     }
 }
@@ -163,14 +168,13 @@ impl Promise {
 /// Convert a JavaScript `Promise` into a `PromiseFuture`:
 ///
 /// ```rust
-/// let future: PromiseFuture<String> = js!( return Promise.resolve("foo"); ).try_into().unwrap();
+/// let future: PromiseFuture<String, Error> = js!( return Promise.resolve("foo"); ).try_into().unwrap();
 /// ```
-pub struct PromiseFuture< A > {
-    future: Receiver< Result< A, Error > >,
-    phantom: PhantomData< A >,
+pub struct PromiseFuture< A, B > {
+    future: Receiver< Result< A, B > >,
 }
 
-impl PromiseFuture< () > {
+impl PromiseFuture< (), () > {
     /// Asynchronously runs the [`Future`](https://docs.rs/futures/0.1.18/futures/future/trait.Future.html) and then immediately returns.
     /// This does not block the current thread. The only way to retrieve the value of the future is to use the various
     /// [`Future`](https://docs.rs/futures/0.1.18/futures/future/trait.Future.html) methods, such as
@@ -227,29 +231,32 @@ impl PromiseFuture< () > {
     }
 }
 
-impl< A > std::fmt::Debug for PromiseFuture< A > {
+impl< A, B > std::fmt::Debug for PromiseFuture< A, B > {
     fn fmt( &self, formatter: &mut std::fmt::Formatter ) -> std::fmt::Result {
         write!( formatter, "PromiseFuture" )
     }
 }
 
-impl< A > Future for PromiseFuture< A > {
+impl< A, B > Future for PromiseFuture< A, B > {
     type Item = A;
-    type Error = Error;
+    type Error = B;
 
     fn poll( &mut self ) -> Poll< Self::Item, Self::Error > {
-        match self.future.poll() {
-            Ok( Async::Ready( Ok( a ) ) ) => Ok( Async::Ready( a ) ),
-            Ok( Async::Ready( Err( e ) ) ) => Err( e ),
-            Ok( Async::NotReady ) => Ok( Async::NotReady ),
-            Err( e ) => Err( Error::new( e.description() ) ),
+        // TODO maybe remove this unwrap ?
+        match self.future.poll().unwrap() {
+            Async::Ready( Ok( a ) ) => Ok( Async::Ready( a ) ),
+            Async::Ready( Err( e ) ) => Err( e ),
+            Async::NotReady => Ok( Async::NotReady ),
         }
     }
 }
 
-impl< A > TryFrom< Value > for PromiseFuture< A >
+impl< A, B > TryFrom< Value > for PromiseFuture< A, B >
     where A: TryFrom< Value > + 'static,
-          A::Error: std::error::Error {
+          B: TryFrom< Value > + 'static,
+          // TODO remove this later
+          A::Error: std::fmt::Debug,
+          B::Error: std::fmt::Debug {
 
     type Error = ConversionError;
 

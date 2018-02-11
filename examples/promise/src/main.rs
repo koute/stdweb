@@ -19,6 +19,26 @@ fn log( a: &str ) {
 }
 
 
+fn test_error_conversion() {
+    let a: PromiseFuture< Null, String > = js!( return Promise.reject( "hi!" ); ).try_into().unwrap();
+
+    PromiseFuture::spawn(
+        a.map( |_| () ).map_err( |x| {
+            log( &format!( "String error: {:#?}", x ) );
+        } )
+    );
+
+    let _a: PromiseFuture< Null, Error > = js!( return Promise.resolve( null ); ).try_into().unwrap();
+    log( "Null works" );
+
+    let _a: PromiseFuture< Null, Error > = js!( return Promise.reject( new Error( "hi!" ) ); ).try_into().unwrap();
+    log( "Error works" );
+
+    //let _a: PromiseFuture< Null, SyntaxError > = js!( return Promise.reject( new Error( "hi!" ) ); ).try_into().unwrap();
+    //log( "Error conversion fails" );
+}
+
+
 fn test_refcell() {
     struct TaskA {
         shared_state: Rc<RefCell<u32>>,
@@ -190,7 +210,7 @@ fn test_notify() {
 
 
 fn test_timeout() {
-    fn sleep( ms: u32 ) -> PromiseFuture< Null > {
+    fn sleep( ms: u32 ) -> PromiseFuture< Null, Error > {
         js!( return new Promise( function ( success, failure ) {
             setTimeout( function () {
                 success( null );
@@ -217,6 +237,7 @@ fn main() {
     test_panic();
     test_notify();
     test_timeout();
+    test_error_conversion();
 
     stdweb::event_loop();
 }
