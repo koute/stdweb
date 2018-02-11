@@ -2,6 +2,8 @@
 extern crate stdweb;
 #[macro_use]
 extern crate serde_derive;
+#[macro_use]
+extern crate stdweb_derive;
 
 use std::rc::Rc;
 use std::cell::RefCell;
@@ -12,6 +14,7 @@ use stdweb::unstable::TryInto;
 use stdweb::web::{
     IEventTarget,
     IHtmlElement,
+    IParentNode,
     document,
     window,
     TypedArray,
@@ -134,7 +137,7 @@ impl State {
 fn main() {
     stdweb::initialize();
 
-    let canvas: CanvasElement = document().query_selector( "#canvas" ).unwrap().try_into().unwrap();
+    let canvas: CanvasElement = document().query_selector( "#canvas" ).unwrap().unwrap().try_into().unwrap();
     let context: gl = canvas.get_context().unwrap();
 
     canvas.set_width(canvas.offset_width() as u32);
