@@ -1,6 +1,6 @@
 use webcore::try_from::{TryFrom, TryInto};
 use webcore::value::{Reference, Value, ConversionError};
-use webcore::serialization::{JsSerializable, deserialize_array};
+use webcore::serialization::{JsSerialize, deserialize_array};
 
 /// A type representing a JavaScript array.
 #[derive(Clone, PartialEq, Debug)]
@@ -44,7 +44,7 @@ impl< 'a > From< &'a mut Array > for Vec< Value > {
     }
 }
 
-impl< V > From< Vec< V > > for Array where V: JsSerializable {
+impl< V > From< Vec< V > > for Array where V: JsSerialize {
     #[inline]
     fn from( value: Vec< V > ) -> Self {
         let value: &[V] = &value;
@@ -52,7 +52,7 @@ impl< V > From< Vec< V > > for Array where V: JsSerializable {
     }
 }
 
-impl< 'a, V > From< &'a Vec< V > > for Array where V: JsSerializable {
+impl< 'a, V > From< &'a Vec< V > > for Array where V: JsSerialize {
     #[inline]
     fn from( value: &'a Vec< V > ) -> Self {
         let value: &[V] = &value;
@@ -60,7 +60,7 @@ impl< 'a, V > From< &'a Vec< V > > for Array where V: JsSerializable {
     }
 }
 
-impl< 'a, V > From< &'a mut Vec< V > > for Array where V: JsSerializable {
+impl< 'a, V > From< &'a mut Vec< V > > for Array where V: JsSerialize {
     #[inline]
     fn from( value: &'a mut Vec< V > ) -> Self {
         let value: &[V] = &value;
@@ -68,7 +68,7 @@ impl< 'a, V > From< &'a mut Vec< V > > for Array where V: JsSerializable {
     }
 }
 
-impl< 'a, V > From< &'a [V] > for Array where V: JsSerializable {
+impl< 'a, V > From< &'a [V] > for Array where V: JsSerialize {
     #[inline]
     fn from( value: &'a [V] ) -> Self {
         // TODO: Do something more efficient here?
@@ -83,7 +83,7 @@ impl< 'a, V > From< &'a [V] > for Array where V: JsSerializable {
     }
 }
 
-impl< 'a, V > From< &'a mut [V] > for Array where V: JsSerializable {
+impl< 'a, V > From< &'a mut [V] > for Array where V: JsSerialize {
     #[inline]
     fn from( value: &'a mut [V] ) -> Self {
         let value: &[V] = value;

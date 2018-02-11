@@ -112,15 +112,21 @@ impl PreallocatedArena {
 }
 
 #[doc(hidden)]
-pub trait JsSerializableOwned: Sized {
+pub trait JsSerializeOwned: Sized {
     fn into_js_owned< 'a >( value: &'a mut Option< Self >, arena: &'a PreallocatedArena ) -> SerializedValue< 'a >;
     fn memory_required_owned( &self ) -> usize;
 }
 
-#[doc(hidden)]
-pub trait JsSerializable {
-    fn into_js< 'a >( &'a self, arena: &'a PreallocatedArena ) -> SerializedValue< 'a >;
-    fn memory_required( &self ) -> usize;
+/// A trait for types which can be serialized through the `js!` macro.
+///
+/// Do **not** try to implement this trait yourself! It's only meant
+/// to be used inside generic code for specifying trait bounds.
+pub trait JsSerialize {
+    #[doc(hidden)]
+    fn _into_js< 'a >( &'a self, arena: &'a PreallocatedArena ) -> SerializedValue< 'a >;
+
+    #[doc(hidden)]
+    fn _memory_required( &self ) -> usize;
 }
 
 // This is a generic structure for serializing every JavaScript value.
@@ -493,99 +499,112 @@ impl< 'a > SerializedValue< 'a > {
     }
 }
 
-impl JsSerializable for () {
+impl JsSerialize for () {
+    #[doc(hidden)]
     #[inline]
-    fn into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+    fn _into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
         SerializedUntaggedUndefined.into()
     }
 
+    #[doc(hidden)]
     #[inline]
-    fn memory_required( &self ) -> usize {
+    fn _memory_required( &self ) -> usize {
         0
     }
 }
 
 __js_serializable_boilerplate!( () );
 
-impl JsSerializable for Undefined {
+impl JsSerialize for Undefined {
+    #[doc(hidden)]
     #[inline]
-    fn into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+    fn _into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
         SerializedUntaggedUndefined.into()
     }
 
+    #[doc(hidden)]
     #[inline]
-    fn memory_required( &self ) -> usize {
+    fn _memory_required( &self ) -> usize {
         0
     }
 }
 
 __js_serializable_boilerplate!( Undefined );
 
-impl JsSerializable for Null {
+impl JsSerialize for Null {
+    #[doc(hidden)]
     #[inline]
-    fn into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+    fn _into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
         SerializedUntaggedNull.into()
     }
 
+    #[doc(hidden)]
     #[inline]
-    fn memory_required( &self ) -> usize {
+    fn _memory_required( &self ) -> usize {
         0
     }
 }
 
 __js_serializable_boilerplate!( Null );
 
-impl JsSerializable for Reference {
+impl JsSerialize for Reference {
+    #[doc(hidden)]
     #[inline]
-    fn into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+    fn _into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
         SerializedUntaggedReference {
             refid: self.as_raw()
         }.into()
     }
 
+    #[doc(hidden)]
     #[inline]
-    fn memory_required( &self ) -> usize {
+    fn _memory_required( &self ) -> usize {
         0
     }
 }
 
 __js_serializable_boilerplate!( Reference );
 
-impl JsSerializable for Object {
+impl JsSerialize for Object {
+    #[doc(hidden)]
     #[inline]
-    fn into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+    fn _into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
         SerializedUntaggedObjectReference {
             refid: self.as_reference().as_raw()
         }.into()
     }
 
+    #[doc(hidden)]
     #[inline]
-    fn memory_required( &self ) -> usize {
+    fn _memory_required( &self ) -> usize {
         0
     }
 }
 
 __js_serializable_boilerplate!( Object );
 
-impl JsSerializable for Array {
+impl JsSerialize for Array {
+    #[doc(hidden)]
     #[inline]
-    fn into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+    fn _into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
         SerializedUntaggedArrayReference {
             refid: self.as_reference().as_raw()
         }.into()
     }
 
+    #[doc(hidden)]
     #[inline]
-    fn memory_required( &self ) -> usize {
+    fn _memory_required( &self ) -> usize {
         0
     }
 }
 
 __js_serializable_boilerplate!( Array );
 
-impl JsSerializable for bool {
+impl JsSerialize for bool {
+    #[doc(hidden)]
     #[inline]
-    fn into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+    fn _into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
         if *self {
             SerializedUntaggedTrue {}.into()
         } else {
@@ -593,219 +612,245 @@ impl JsSerializable for bool {
         }
     }
 
+    #[doc(hidden)]
     #[inline]
-    fn memory_required( &self ) -> usize {
+    fn _memory_required( &self ) -> usize {
         0
     }
 }
 
 __js_serializable_boilerplate!( bool );
 
-impl JsSerializable for str {
+impl JsSerialize for str {
+    #[doc(hidden)]
     #[inline]
-    fn into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+    fn _into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
         SerializedUntaggedString {
             pointer: self.as_ptr() as u32,
             length: self.len() as u32
         }.into()
     }
 
+    #[doc(hidden)]
     #[inline]
-    fn memory_required( &self ) -> usize {
+    fn _memory_required( &self ) -> usize {
         0
     }
 }
 
 __js_serializable_boilerplate!( impl< 'a > for &'a str );
 
-impl JsSerializable for String {
+impl JsSerialize for String {
+    #[doc(hidden)]
     #[inline]
-    fn into_js< 'a >( &'a self, arena: &'a PreallocatedArena ) -> SerializedValue< 'a > {
-        self.as_str().into_js( arena )
+    fn _into_js< 'a >( &'a self, arena: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+        self.as_str()._into_js( arena )
     }
 
+    #[doc(hidden)]
     #[inline]
-    fn memory_required( &self ) -> usize {
-        self.as_str().memory_required()
+    fn _memory_required( &self ) -> usize {
+        self.as_str()._memory_required()
     }
 }
 
 __js_serializable_boilerplate!( String );
 
-impl JsSerializable for i8 {
+impl JsSerialize for i8 {
+    #[doc(hidden)]
     #[inline]
-    fn into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+    fn _into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
         SerializedUntaggedI32 {
             value: *self as i32
         }.into()
     }
 
+    #[doc(hidden)]
     #[inline]
-    fn memory_required( &self ) -> usize {
-        (*self as i32).memory_required()
+    fn _memory_required( &self ) -> usize {
+        (*self as i32)._memory_required()
     }
 }
 
 __js_serializable_boilerplate!( i8 );
 
-impl JsSerializable for i16 {
+impl JsSerialize for i16 {
+    #[doc(hidden)]
     #[inline]
-    fn into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+    fn _into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
         SerializedUntaggedI32 {
             value: *self as i32
         }.into()
     }
 
+    #[doc(hidden)]
     #[inline]
-    fn memory_required( &self ) -> usize {
-        (*self as i32).memory_required()
+    fn _memory_required( &self ) -> usize {
+        (*self as i32)._memory_required()
     }
 }
 
 __js_serializable_boilerplate!( i16 );
 
-impl JsSerializable for i32 {
+impl JsSerialize for i32 {
+    #[doc(hidden)]
     #[inline]
-    fn into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+    fn _into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
         SerializedUntaggedI32 {
             value: *self
         }.into()
     }
 
+    #[doc(hidden)]
     #[inline]
-    fn memory_required( &self ) -> usize {
+    fn _memory_required( &self ) -> usize {
         0
     }
 }
 
 __js_serializable_boilerplate!( i32 );
 
-impl JsSerializable for u8 {
+impl JsSerialize for u8 {
+    #[doc(hidden)]
     #[inline]
-    fn into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+    fn _into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
         SerializedUntaggedI32 {
             value: *self as i32
         }.into()
     }
 
+    #[doc(hidden)]
     #[inline]
-    fn memory_required( &self ) -> usize {
-        (*self as i32).memory_required()
+    fn _memory_required( &self ) -> usize {
+        (*self as i32)._memory_required()
     }
 }
 
 __js_serializable_boilerplate!( u8 );
 
-impl JsSerializable for u16 {
+impl JsSerialize for u16 {
+    #[doc(hidden)]
     #[inline]
-    fn into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+    fn _into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
         SerializedUntaggedI32 {
             value: *self as i32
         }.into()
     }
 
+    #[doc(hidden)]
     #[inline]
-    fn memory_required( &self ) -> usize {
-        (*self as i32).memory_required()
+    fn _memory_required( &self ) -> usize {
+        (*self as i32)._memory_required()
     }
 }
 
 __js_serializable_boilerplate!( u16 );
 
-impl JsSerializable for u32 {
+impl JsSerialize for u32 {
+    #[doc(hidden)]
     #[inline]
-    fn into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+    fn _into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
         SerializedUntaggedF64 {
             value: *self as f64
         }.into()
     }
 
+    #[doc(hidden)]
     #[inline]
-    fn memory_required( &self ) -> usize {
-        (*self as f64).memory_required()
+    fn _memory_required( &self ) -> usize {
+        (*self as f64)._memory_required()
     }
 }
 
 __js_serializable_boilerplate!( u32 );
 
-impl JsSerializable for f32 {
+impl JsSerialize for f32 {
+    #[doc(hidden)]
     #[inline]
-    fn into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+    fn _into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
         SerializedUntaggedF64 {
             value: *self as f64
         }.into()
     }
 
+    #[doc(hidden)]
     #[inline]
-    fn memory_required( &self ) -> usize {
-        (*self as f64).memory_required()
+    fn _memory_required( &self ) -> usize {
+        (*self as f64)._memory_required()
     }
 }
 
 __js_serializable_boilerplate!( f32 );
 
-impl JsSerializable for f64 {
+impl JsSerialize for f64 {
+    #[doc(hidden)]
     #[inline]
-    fn into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+    fn _into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
         SerializedUntaggedF64 {
             value: *self
         }.into()
     }
 
+    #[doc(hidden)]
     #[inline]
-    fn memory_required( &self ) -> usize {
+    fn _memory_required( &self ) -> usize {
         0
     }
 }
 
 __js_serializable_boilerplate!( f64 );
 
-impl JsSerializable for Number {
+impl JsSerialize for Number {
+    #[doc(hidden)]
     #[inline]
-    fn into_js< 'a >( &'a self, arena: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+    fn _into_js< 'a >( &'a self, arena: &'a PreallocatedArena ) -> SerializedValue< 'a > {
         use webcore::number::{Storage, get_storage};
         match *get_storage( self ) {
-            Storage::I32( ref value ) => value.into_js( arena ),
-            Storage::F64( ref value ) => value.into_js( arena )
+            Storage::I32( ref value ) => value._into_js( arena ),
+            Storage::F64( ref value ) => value._into_js( arena )
         }
     }
 
+    #[doc(hidden)]
     #[inline]
-    fn memory_required( &self ) -> usize {
+    fn _memory_required( &self ) -> usize {
         0
     }
 }
 
 __js_serializable_boilerplate!( Number );
 
-impl< T: JsSerializable > JsSerializable for Option< T > {
+impl< T: JsSerialize > JsSerialize for Option< T > {
+    #[doc(hidden)]
     #[inline]
-    fn into_js< 'a >( &'a self, arena: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+    fn _into_js< 'a >( &'a self, arena: &'a PreallocatedArena ) -> SerializedValue< 'a > {
         if let Some( value ) = self.as_ref() {
-            value.into_js( arena )
+            value._into_js( arena )
         } else {
             SerializedUntaggedNull.into()
         }
     }
 
+    #[doc(hidden)]
     #[inline]
-    fn memory_required( &self ) -> usize {
+    fn _memory_required( &self ) -> usize {
         if let Some( value ) = self.as_ref() {
-            value.memory_required()
+            value._memory_required()
         } else {
             0
         }
     }
 }
 
-__js_serializable_boilerplate!( impl< T > for Option< T > where T: JsSerializable );
+__js_serializable_boilerplate!( impl< T > for Option< T > where T: JsSerialize );
 
-impl< T: JsSerializable > JsSerializable for [T] {
+impl< T: JsSerialize > JsSerialize for [T] {
+    #[doc(hidden)]
     #[inline]
-    fn into_js< 'a >( &'a self, arena: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+    fn _into_js< 'a >( &'a self, arena: &'a PreallocatedArena ) -> SerializedValue< 'a > {
         let output = arena.reserve( self.len() );
         for (value, output_value) in self.iter().zip( output.iter_mut() ) {
-            *output_value = value.into_js( arena );
+            *output_value = value._into_js( arena );
         }
 
         SerializedUntaggedArray {
@@ -814,35 +859,38 @@ impl< T: JsSerializable > JsSerializable for [T] {
         }.into()
     }
 
+    #[doc(hidden)]
     #[inline]
-    fn memory_required( &self ) -> usize {
+    fn _memory_required( &self ) -> usize {
         mem::size_of::< SerializedValue >() * self.len() +
-        self.iter().fold( 0, |sum, value| sum + value.memory_required() )
+        self.iter().fold( 0, |sum, value| sum + value._memory_required() )
     }
 }
 
-__js_serializable_boilerplate!( impl< 'a, T > for &'a [T] where T: JsSerializable );
+__js_serializable_boilerplate!( impl< 'a, T > for &'a [T] where T: JsSerialize );
 
-impl< T: JsSerializable > JsSerializable for Vec< T > {
+impl< T: JsSerialize > JsSerialize for Vec< T > {
+    #[doc(hidden)]
     #[inline]
-    fn into_js< 'a >( &'a self, arena: &'a PreallocatedArena ) -> SerializedValue< 'a > {
-        self.as_slice().into_js( arena )
+    fn _into_js< 'a >( &'a self, arena: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+        self.as_slice()._into_js( arena )
     }
 
+    #[doc(hidden)]
     #[inline]
-    fn memory_required( &self ) -> usize {
-        self.as_slice().memory_required()
+    fn _memory_required( &self ) -> usize {
+        self.as_slice()._memory_required()
     }
 }
 
-__js_serializable_boilerplate!( impl< T > for Vec< T > where T: JsSerializable );
+__js_serializable_boilerplate!( impl< T > for Vec< T > where T: JsSerialize );
 
-fn object_into_js< 'a, K: AsRef< str >, V: 'a + JsSerializable, I: Iterator< Item = (K, &'a V) > + ExactSizeIterator >( iter: I, arena: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+fn object_into_js< 'a, K: AsRef< str >, V: 'a + JsSerialize, I: Iterator< Item = (K, &'a V) > + ExactSizeIterator >( iter: I, arena: &'a PreallocatedArena ) -> SerializedValue< 'a > {
     let keys = arena.reserve( iter.len() );
     let values = arena.reserve( iter.len() );
     for (((key, value), output_key), output_value) in iter.zip( keys.iter_mut() ).zip( values.iter_mut() ) {
-        *output_key = key.as_ref().into_js( arena ).as_string().clone();
-        *output_value = value.into_js( arena );
+        *output_key = key.as_ref()._into_js( arena ).as_string().clone();
+        *output_value = value._into_js( arena );
     }
 
     SerializedUntaggedObject {
@@ -852,64 +900,70 @@ fn object_into_js< 'a, K: AsRef< str >, V: 'a + JsSerializable, I: Iterator< Ite
     }.into()
 }
 
-fn object_memory_required< K: AsRef< str >, V: JsSerializable, I: Iterator< Item = (K, V) > + ExactSizeIterator >( iter: I ) -> usize {
+fn object_memory_required< K: AsRef< str >, V: JsSerialize, I: Iterator< Item = (K, V) > + ExactSizeIterator >( iter: I ) -> usize {
     mem::size_of::< SerializedValue >() * iter.len() +
     mem::size_of::< SerializedUntaggedString >() * iter.len() +
-    iter.fold( 0, |sum, (key, value)| sum + key.as_ref().memory_required() + value.memory_required() )
+    iter.fold( 0, |sum, (key, value)| sum + key.as_ref()._memory_required() + value._memory_required() )
 }
 
-impl< K: AsRef< str >, V: JsSerializable > JsSerializable for BTreeMap< K, V > {
+impl< K: AsRef< str >, V: JsSerialize > JsSerialize for BTreeMap< K, V > {
+    #[doc(hidden)]
     #[inline]
-    fn into_js< 'a >( &'a self, arena: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+    fn _into_js< 'a >( &'a self, arena: &'a PreallocatedArena ) -> SerializedValue< 'a > {
         object_into_js( self.iter(), arena )
     }
 
+    #[doc(hidden)]
     #[inline]
-    fn memory_required( &self ) -> usize {
+    fn _memory_required( &self ) -> usize {
         object_memory_required( self.iter() )
     }
 }
 
-__js_serializable_boilerplate!( impl< K, V > for BTreeMap< K, V > where K: AsRef< str >, V: JsSerializable );
+__js_serializable_boilerplate!( impl< K, V > for BTreeMap< K, V > where K: AsRef< str >, V: JsSerialize );
 
-impl< K: AsRef< str > + Eq + Hash, V: JsSerializable > JsSerializable for HashMap< K, V > {
+impl< K: AsRef< str > + Eq + Hash, V: JsSerialize > JsSerialize for HashMap< K, V > {
+    #[doc(hidden)]
     #[inline]
-    fn into_js< 'a >( &'a self, arena: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+    fn _into_js< 'a >( &'a self, arena: &'a PreallocatedArena ) -> SerializedValue< 'a > {
         object_into_js( self.iter(), arena )
     }
 
+    #[doc(hidden)]
     #[inline]
-    fn memory_required( &self ) -> usize {
+    fn _memory_required( &self ) -> usize {
         object_memory_required( self.iter() )
     }
 }
 
-__js_serializable_boilerplate!( impl< K, V > for HashMap< K, V > where K: AsRef< str > + Eq + Hash, V: JsSerializable );
+__js_serializable_boilerplate!( impl< K, V > for HashMap< K, V > where K: AsRef< str > + Eq + Hash, V: JsSerialize );
 
-impl JsSerializable for Value {
-    fn into_js< 'a >( &'a self, arena: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+impl JsSerialize for Value {
+    #[doc(hidden)]
+    fn _into_js< 'a >( &'a self, arena: &'a PreallocatedArena ) -> SerializedValue< 'a > {
         match *self {
             Value::Undefined => SerializedUntaggedUndefined.into(),
             Value::Null => SerializedUntaggedNull.into(),
-            Value::Bool( ref value ) => value.into_js( arena ),
-            Value::Number( ref value ) => value.into_js( arena ),
-            Value::String( ref value ) => value.into_js( arena ),
-            Value::Array( ref value ) => value.into_js( arena ),
-            Value::Object( ref value ) => value.into_js( arena ),
-            Value::Reference( ref value ) => value.into_js( arena )
+            Value::Bool( ref value ) => value._into_js( arena ),
+            Value::Number( ref value ) => value._into_js( arena ),
+            Value::String( ref value ) => value._into_js( arena ),
+            Value::Array( ref value ) => value._into_js( arena ),
+            Value::Object( ref value ) => value._into_js( arena ),
+            Value::Reference( ref value ) => value._into_js( arena )
         }
     }
 
-    fn memory_required( &self ) -> usize {
+    #[doc(hidden)]
+    fn _memory_required( &self ) -> usize {
         match *self {
-            Value::Undefined => Undefined.memory_required(),
-            Value::Null => Null.memory_required(),
-            Value::Bool( value ) => value.memory_required(),
-            Value::Number( value ) => value.memory_required(),
-            Value::String( ref value ) => value.memory_required(),
-            Value::Array( ref value ) => value.memory_required(),
-            Value::Object( ref value ) => value.memory_required(),
-            Value::Reference( ref value ) => value.memory_required()
+            Value::Undefined => Undefined._memory_required(),
+            Value::Null => Null._memory_required(),
+            Value::Bool( value ) => value._memory_required(),
+            Value::Number( value ) => value._memory_required(),
+            Value::String( ref value ) => value._memory_required(),
+            Value::Array( ref value ) => value._memory_required(),
+            Value::Object( ref value ) => value._memory_required(),
+            Value::Reference( ref value ) => value._memory_required()
         }
     }
 }
@@ -918,9 +972,10 @@ __js_serializable_boilerplate!( Value );
 
 macro_rules! impl_for_unsafe_typed_array {
     ($ty:ty, $kind:expr) => {
-        impl< 'r > JsSerializable for UnsafeTypedArray< 'r, $ty > {
+        impl< 'r > JsSerialize for UnsafeTypedArray< 'r, $ty > {
+            #[doc(hidden)]
             #[inline]
-            fn into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+            fn _into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
                 SerializedUntaggedUnsafeTypedArray {
                     pointer: self.0.as_ptr() as u32 / mem::size_of::< $ty >() as u32,
                     length: self.0.len() as u32,
@@ -928,8 +983,9 @@ macro_rules! impl_for_unsafe_typed_array {
                 }.into()
             }
 
+            #[doc(hidden)]
             #[inline]
-            fn memory_required( &self ) -> usize {
+            fn _memory_required( &self ) -> usize {
                 0
             }
         }
@@ -953,15 +1009,15 @@ pub struct FunctionTag;
 #[derive(Debug)]
 pub struct NonFunctionTag;
 
-impl< T: JsSerializable > JsSerializableOwned for Newtype< (NonFunctionTag, ()), T > {
+impl< T: JsSerialize > JsSerializeOwned for Newtype< (NonFunctionTag, ()), T > {
     #[inline]
     fn into_js_owned< 'x >( value: &'x mut Option< Self >, arena: &'x PreallocatedArena ) -> SerializedValue< 'x > {
-        JsSerializable::into_js( value.as_ref().unwrap().as_ref(), arena )
+        JsSerialize::_into_js( value.as_ref().unwrap().as_ref(), arena )
     }
 
     #[inline]
     fn memory_required_owned( &self ) -> usize {
-        JsSerializable::memory_required( &**self )
+        JsSerialize::_memory_required( &**self )
     }
 }
 
@@ -973,7 +1029,7 @@ trait FuncallAdapter< F > {
 macro_rules! impl_for_fn {
     ($next:tt => $($kind:ident),*) => {
         impl< $($kind: TryFrom< Value >,)* F > FuncallAdapter< F > for Newtype< (FunctionTag, ($($kind,)*)), F >
-            where F: CallMut< ($($kind,)*) > + 'static, F::Output: JsSerializableOwned
+            where F: CallMut< ($($kind,)*) > + 'static, F::Output: JsSerializeOwned
         {
             #[allow(unused_mut, unused_variables, non_snake_case)]
             extern fn funcall_adapter(
@@ -1016,7 +1072,7 @@ macro_rules! impl_for_fn {
                 let mut arena = PreallocatedArena::new( result.memory_required_owned() );
 
                 let mut result = Some( result );
-                let result = JsSerializableOwned::into_js_owned( &mut result, &mut arena );
+                let result = JsSerializeOwned::into_js_owned( &mut result, &mut arena );
                 let result = &result as *const _;
 
                 // This is kinda hacky but I'm not sure how else to do it at the moment.
@@ -1033,7 +1089,7 @@ macro_rules! impl_for_fn {
         }
 
         impl< $($kind: TryFrom< Value >,)* F > FuncallAdapter< F > for Newtype< (FunctionTag, ($($kind,)*)), Once< F > >
-            where F: CallOnce< ($($kind,)*) > + 'static, F::Output: JsSerializableOwned
+            where F: CallOnce< ($($kind,)*) > + 'static, F::Output: JsSerializeOwned
         {
             #[allow(unused_mut, unused_variables, non_snake_case)]
             extern fn funcall_adapter(
@@ -1080,7 +1136,7 @@ macro_rules! impl_for_fn {
                 let mut arena = PreallocatedArena::new( result.memory_required_owned() );
 
                 let mut result = Some( result );
-                let result = JsSerializableOwned::into_js_owned( &mut result, &mut arena );
+                let result = JsSerializeOwned::into_js_owned( &mut result, &mut arena );
                 let result = &result as *const _;
 
                 // This is kinda hacky but I'm not sure how else to do it at the moment.
@@ -1096,8 +1152,8 @@ macro_rules! impl_for_fn {
             }
         }
 
-        impl< $($kind: TryFrom< Value >,)* F > JsSerializableOwned for Newtype< (FunctionTag, ($($kind,)*)), Once< F > >
-            where F: CallOnce< ($($kind,)*) > + 'static, F::Output: JsSerializableOwned
+        impl< $($kind: TryFrom< Value >,)* F > JsSerializeOwned for Newtype< (FunctionTag, ($($kind,)*)), Once< F > >
+            where F: CallOnce< ($($kind,)*) > + 'static, F::Output: JsSerializeOwned
         {
             #[inline]
             fn into_js_owned< 'a >( value: &'a mut Option< Self >, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
@@ -1116,8 +1172,8 @@ macro_rules! impl_for_fn {
             }
         }
 
-        impl< $($kind: TryFrom< Value >,)* F > JsSerializableOwned for Newtype< (FunctionTag, ($($kind,)*)), F >
-            where F: CallMut< ($($kind,)*) > + 'static, F::Output: JsSerializableOwned
+        impl< $($kind: TryFrom< Value >,)* F > JsSerializeOwned for Newtype< (FunctionTag, ($($kind,)*)), F >
+            where F: CallMut< ($($kind,)*) > + 'static, F::Output: JsSerializeOwned
         {
             #[inline]
             fn into_js_owned< 'a >( value: &'a mut Option< Self >, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
@@ -1136,8 +1192,8 @@ macro_rules! impl_for_fn {
             }
         }
 
-        impl< $($kind: TryFrom< Value >,)* F > JsSerializableOwned for Newtype< (FunctionTag, ($($kind,)*)), Option< F > >
-            where F: CallMut< ($($kind,)*) > + 'static, F::Output: JsSerializableOwned
+        impl< $($kind: TryFrom< Value >,)* F > JsSerializeOwned for Newtype< (FunctionTag, ($($kind,)*)), Option< F > >
+            where F: CallMut< ($($kind,)*) > + 'static, F::Output: JsSerializeOwned
         {
             #[inline]
             fn into_js_owned< 'a >( value: &'a mut Option< Self >, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
@@ -1165,15 +1221,17 @@ macro_rules! impl_for_fn {
 
 loop_through_identifiers!( impl_for_fn );
 
-impl< 'a, T: ?Sized + JsSerializable > JsSerializable for &'a T {
+impl< 'a, T: ?Sized + JsSerialize > JsSerialize for &'a T {
+    #[doc(hidden)]
     #[inline]
-    fn into_js< 'x >( &'x self, arena: &'x PreallocatedArena ) -> SerializedValue< 'x > {
-        T::into_js( *self, arena )
+    fn _into_js< 'x >( &'x self, arena: &'x PreallocatedArena ) -> SerializedValue< 'x > {
+        T::_into_js( *self, arena )
     }
 
+    #[doc(hidden)]
     #[inline]
-    fn memory_required( &self ) -> usize {
-        T::memory_required( *self )
+    fn _memory_required( &self ) -> usize {
+        T::_memory_required( *self )
     }
 }
 

@@ -126,6 +126,7 @@ pub use webcore::unsafe_typed_array::UnsafeTypedArray;
 pub use webcore::once::Once;
 pub use webcore::instance_of::InstanceOf;
 pub use webcore::reference_type::ReferenceType;
+pub use webcore::serialization::JsSerialize;
 
 #[cfg(feature = "serde")]
 /// A module with serde-related APIs.
@@ -284,8 +285,8 @@ pub mod unstable {
 pub mod private {
     pub use webcore::ffi::exports::*;
     pub use webcore::serialization::{
-        JsSerializable,
-        JsSerializableOwned,
+        JsSerialize,
+        JsSerializeOwned,
         PreallocatedArena,
         SerializedValue
     };

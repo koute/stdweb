@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::hash::Hash;
 use webcore::try_from::{TryFrom, TryInto};
 use webcore::value::{Reference, Value, ConversionError};
-use webcore::serialization::{JsSerializable, deserialize_object};
+use webcore::serialization::{JsSerialize, deserialize_object};
 
 /// A type representing a JavaScript object.
 #[derive(Clone, PartialEq, Debug)]
@@ -64,14 +64,14 @@ impl< 'a > From< &'a mut Object > for HashMap< String, Value > {
     }
 }
 
-impl< K: AsRef< str >, V: JsSerializable > From< BTreeMap< K, V > > for Object {
+impl< K: AsRef< str >, V: JsSerialize > From< BTreeMap< K, V > > for Object {
     #[inline]
     fn from( value: BTreeMap< K, V > ) -> Self {
         (&value).into()
     }
 }
 
-impl< 'a, K, V > From< &'a BTreeMap< K, V > > for Object where K: AsRef< str >, V: JsSerializable {
+impl< 'a, K, V > From< &'a BTreeMap< K, V > > for Object where K: AsRef< str >, V: JsSerialize {
     #[inline]
     fn from( value: &'a BTreeMap< K, V > ) -> Self {
         // TODO: Do something more efficient here?
@@ -86,7 +86,7 @@ impl< 'a, K, V > From< &'a BTreeMap< K, V > > for Object where K: AsRef< str >, 
     }
 }
 
-impl< 'a, K, V > From< &'a mut BTreeMap< K, V > > for Object where K: AsRef< str >, V: JsSerializable {
+impl< 'a, K, V > From< &'a mut BTreeMap< K, V > > for Object where K: AsRef< str >, V: JsSerialize {
     #[inline]
     fn from( value: &'a mut BTreeMap< K, V > ) -> Self {
         let value: &BTreeMap< K, V > = value;
@@ -94,14 +94,14 @@ impl< 'a, K, V > From< &'a mut BTreeMap< K, V > > for Object where K: AsRef< str
     }
 }
 
-impl< K, V > From< HashMap< K, V > > for Object where K: AsRef< str > + Hash + Eq, V: JsSerializable {
+impl< K, V > From< HashMap< K, V > > for Object where K: AsRef< str > + Hash + Eq, V: JsSerialize {
     #[inline]
     fn from( value: HashMap< K, V > ) -> Self {
         (&value).into()
     }
 }
 
-impl< 'a, K, V > From< &'a HashMap< K, V > > for Object where K: AsRef< str > + Hash + Eq, V: JsSerializable {
+impl< 'a, K, V > From< &'a HashMap< K, V > > for Object where K: AsRef< str > + Hash + Eq, V: JsSerialize {
     #[inline]
     fn from( value: &'a HashMap< K, V > ) -> Self {
         // TODO: Do something more efficient here?
@@ -116,7 +116,7 @@ impl< 'a, K, V > From< &'a HashMap< K, V > > for Object where K: AsRef< str > + 
     }
 }
 
-impl< 'a, K: Hash + Eq, V > From< &'a mut HashMap< K, V > > for Object where K: AsRef< str >, V: JsSerializable {
+impl< 'a, K: Hash + Eq, V > From< &'a mut HashMap< K, V > > for Object where K: AsRef< str >, V: JsSerialize {
     #[inline]
     fn from( value: &'a mut HashMap< K, V > ) -> Self {
         let value: &HashMap< K, V > = value;

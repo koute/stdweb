@@ -299,14 +299,14 @@ macro_rules! _js_impl {
     (@prepare $memory_required:ident [$arg:tt $($rest_args:tt)*] [$name:tt $($rest_names:tt)*]) => {
         let $name = $arg;
         let $name = $crate::private::IntoNewtype::into_newtype( $name );
-        $memory_required += $crate::private::JsSerializableOwned::memory_required_owned( &$name );
+        $memory_required += $crate::private::JsSerializeOwned::memory_required_owned( &$name );
         _js_impl!( @prepare $memory_required [$($rest_args)*] [$($rest_names)*] );
     };
 
     (@serialize $arena:ident [] [$($names:tt)*]) => {};
     (@serialize $arena:ident [$arg:tt $($rest_args:tt)*] [$name:tt $($rest_names:tt)*]) => {
         let mut $name = Some( $name );
-        let $name = $crate::private::JsSerializableOwned::into_js_owned( &mut $name, &$arena );
+        let $name = $crate::private::JsSerializeOwned::into_js_owned( &mut $name, &$arena );
         let $name = &$name as *const _;
         _js_impl!( @serialize $arena [$($rest_args)*] [$($rest_names)*] );
     };
@@ -500,27 +500,27 @@ macro_rules! __js_serializable_boilerplate {
     };
 
     (($($impl_arg:tt)*) ($($kind_arg:tt)*) ($($bounds:tt)*)) => {
-        impl< $($impl_arg)* > $crate::private::JsSerializableOwned for $($kind_arg)* where $($bounds)* {
+        impl< $($impl_arg)* > $crate::private::JsSerializeOwned for $($kind_arg)* where $($bounds)* {
             #[inline]
             fn into_js_owned< '_a >( value: &'_a mut Option< Self >, arena: &'_a $crate::private::PreallocatedArena ) -> $crate::private::SerializedValue< '_a > {
-                $crate::private::JsSerializable::into_js( value.as_ref().unwrap(), arena )
+                $crate::private::JsSerialize::_into_js( value.as_ref().unwrap(), arena )
             }
 
             #[inline]
             fn memory_required_owned( &self ) -> usize {
-                $crate::private::JsSerializable::memory_required( self )
+                $crate::private::JsSerialize::_memory_required( self )
             }
         }
 
-        impl< '_r, $($impl_arg)* > $crate::private::JsSerializableOwned for &'_r $($kind_arg)* where $($bounds)* {
+        impl< '_r, $($impl_arg)* > $crate::private::JsSerializeOwned for &'_r $($kind_arg)* where $($bounds)* {
             #[inline]
             fn into_js_owned< '_a >( value: &'_a mut Option< Self >, arena: &'_a $crate::private::PreallocatedArena ) -> $crate::private::SerializedValue< '_a > {
-                $crate::private::JsSerializable::into_js( value.unwrap(), arena )
+                $crate::private::JsSerialize::_into_js( value.unwrap(), arena )
             }
 
             #[inline]
             fn memory_required_owned( &self ) -> usize {
-                $crate::private::JsSerializable::memory_required( *self )
+                $crate::private::JsSerialize::_memory_required( *self )
             }
         }
     };

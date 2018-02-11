@@ -7,7 +7,7 @@ use webcore::try_from::{TryFrom, TryInto};
 use webcore::number::{self, Number};
 use webcore::object::Object;
 use webcore::array::Array;
-use webcore::serialization::JsSerializable;
+use webcore::serialization::JsSerialize;
 use webcore::reference_type::ReferenceType;
 
 /// A unit type representing JavaScript's `undefined`.
@@ -383,28 +383,28 @@ impl< 'a > From< &'a mut char > for Value {
     }
 }
 
-impl< T > From< Vec< T > > for Value where T: JsSerializable {
+impl< T > From< Vec< T > > for Value where T: JsSerialize {
     #[inline]
     fn from( value: Vec< T > ) -> Self {
         value[..].into()
     }
 }
 
-impl< 'a, T > From< &'a Vec< T > > for Value where T: JsSerializable {
+impl< 'a, T > From< &'a Vec< T > > for Value where T: JsSerialize {
     #[inline]
     fn from( value: &'a Vec< T > ) -> Self {
         value[..].into()
     }
 }
 
-impl< 'a, T > From< &'a mut Vec< T > > for Value where T: JsSerializable {
+impl< 'a, T > From< &'a mut Vec< T > > for Value where T: JsSerialize {
     #[inline]
     fn from( value: &'a mut Vec< T > ) -> Self {
         value[..].into()
     }
 }
 
-impl< 'a, T > From< &'a [T] > for Value where T: JsSerializable {
+impl< 'a, T > From< &'a [T] > for Value where T: JsSerialize {
     #[inline]
     fn from( value: &'a [T] ) -> Self {
         let array: Array = value.into();
@@ -412,14 +412,14 @@ impl< 'a, T > From< &'a [T] > for Value where T: JsSerializable {
     }
 }
 
-impl< 'a, T > From< &'a mut [T] > for Value where T: JsSerializable {
+impl< 'a, T > From< &'a mut [T] > for Value where T: JsSerialize {
     #[inline]
     fn from( value: &'a mut [T] ) -> Self {
         (value as &[T]).into()
     }
 }
 
-impl< K, V > From< BTreeMap< K, V > > for Value where K: AsRef< str >, V: JsSerializable {
+impl< K, V > From< BTreeMap< K, V > > for Value where K: AsRef< str >, V: JsSerialize {
     #[inline]
     fn from( value: BTreeMap< K, V > ) -> Self {
         let object: Object = value.into();
@@ -427,7 +427,7 @@ impl< K, V > From< BTreeMap< K, V > > for Value where K: AsRef< str >, V: JsSeri
     }
 }
 
-impl< 'a, K, V > From< &'a BTreeMap< K, V > > for Value where K: AsRef< str >, V: JsSerializable {
+impl< 'a, K, V > From< &'a BTreeMap< K, V > > for Value where K: AsRef< str >, V: JsSerialize {
     #[inline]
     fn from( value: &'a BTreeMap< K, V > ) -> Self {
         let object: Object = value.into();
@@ -435,7 +435,7 @@ impl< 'a, K, V > From< &'a BTreeMap< K, V > > for Value where K: AsRef< str >, V
     }
 }
 
-impl< 'a, K, V > From< &'a mut BTreeMap< K, V > > for Value where K: AsRef< str >, V: JsSerializable {
+impl< 'a, K, V > From< &'a mut BTreeMap< K, V > > for Value where K: AsRef< str >, V: JsSerialize {
     #[inline]
     fn from( value: &'a mut BTreeMap< K, V > ) -> Self {
         let object: Object = value.into();
@@ -443,7 +443,7 @@ impl< 'a, K, V > From< &'a mut BTreeMap< K, V > > for Value where K: AsRef< str 
     }
 }
 
-impl< K, V > From< HashMap< K, V > > for Value where K: AsRef< str > + Eq + Hash, V: JsSerializable {
+impl< K, V > From< HashMap< K, V > > for Value where K: AsRef< str > + Eq + Hash, V: JsSerialize {
     #[inline]
     fn from( value: HashMap< K, V > ) -> Self {
         let object: Object = value.into();
@@ -451,7 +451,7 @@ impl< K, V > From< HashMap< K, V > > for Value where K: AsRef< str > + Eq + Hash
     }
 }
 
-impl< 'a, K, V > From< &'a HashMap< K, V > > for Value where K: AsRef< str > + Eq + Hash, V: JsSerializable {
+impl< 'a, K, V > From< &'a HashMap< K, V > > for Value where K: AsRef< str > + Eq + Hash, V: JsSerialize {
     #[inline]
     fn from( value: &'a HashMap< K, V > ) -> Self {
         let object: Object = value.into();
@@ -459,7 +459,7 @@ impl< 'a, K, V > From< &'a HashMap< K, V > > for Value where K: AsRef< str > + E
     }
 }
 
-impl< 'a, K, V > From< &'a mut HashMap< K, V > > for Value where K: AsRef< str > + Eq + Hash, V: JsSerializable {
+impl< 'a, K, V > From< &'a mut HashMap< K, V > > for Value where K: AsRef< str > + Eq + Hash, V: JsSerialize {
     #[inline]
     fn from( value: &'a mut HashMap< K, V > ) -> Self {
         let object: Object = value.into();
@@ -537,35 +537,35 @@ impl_infallible_try_from! {
     char => Value;
     impl< 'a > for &'a char => Value;
     impl< 'a > for &'a mut char => Value;
-    impl< T > for Vec< T > => Value where (T: JsSerializable);
-    impl< 'a, T > for &'a Vec< T > => Value where (T: JsSerializable);
-    impl< 'a, T > for &'a mut Vec< T > => Value where (T: JsSerializable);
-    impl< 'a, T > for &'a [T] => Value where (T: JsSerializable);
-    impl< 'a, T > for &'a mut [T] => Value where (T: JsSerializable);
+    impl< T > for Vec< T > => Value where (T: JsSerialize);
+    impl< 'a, T > for &'a Vec< T > => Value where (T: JsSerialize);
+    impl< 'a, T > for &'a mut Vec< T > => Value where (T: JsSerialize);
+    impl< 'a, T > for &'a [T] => Value where (T: JsSerialize);
+    impl< 'a, T > for &'a mut [T] => Value where (T: JsSerialize);
 
-    impl< K, V > for BTreeMap< K, V > => Value where (K: AsRef< str >, V: JsSerializable);
-    impl< 'a, K, V > for &'a BTreeMap< K, V > => Value where (K: AsRef< str >, V: JsSerializable);
-    impl< 'a, K, V > for &'a mut BTreeMap< K, V > => Value where (K: AsRef< str >, V: JsSerializable);
-    impl< K, V > for HashMap< K, V > => Value where (K: AsRef< str > + Eq + Hash, V: JsSerializable);
-    impl< 'a, K, V > for &'a HashMap< K, V > => Value where (K: AsRef< str > + Eq + Hash, V: JsSerializable);
-    impl< 'a, K, V > for &'a mut HashMap< K, V > => Value where (K: AsRef< str > + Eq + Hash, V: JsSerializable);
+    impl< K, V > for BTreeMap< K, V > => Value where (K: AsRef< str >, V: JsSerialize);
+    impl< 'a, K, V > for &'a BTreeMap< K, V > => Value where (K: AsRef< str >, V: JsSerialize);
+    impl< 'a, K, V > for &'a mut BTreeMap< K, V > => Value where (K: AsRef< str >, V: JsSerialize);
+    impl< K, V > for HashMap< K, V > => Value where (K: AsRef< str > + Eq + Hash, V: JsSerialize);
+    impl< 'a, K, V > for &'a HashMap< K, V > => Value where (K: AsRef< str > + Eq + Hash, V: JsSerialize);
+    impl< 'a, K, V > for &'a mut HashMap< K, V > => Value where (K: AsRef< str > + Eq + Hash, V: JsSerialize);
 
     Reference => Value;
 
     // TODO: Move these to object.rs
-    impl< K, V > for BTreeMap< K, V > => Object where (K: AsRef< str >, V: JsSerializable);
-    impl< 'a, K, V > for &'a BTreeMap< K, V > => Object where (K: AsRef< str >, V: JsSerializable);
-    impl< 'a, K, V > for &'a mut BTreeMap< K, V > => Object where (K: AsRef< str >, V: JsSerializable);
-    impl< K, V > for HashMap< K, V > => Object where (K: AsRef< str > + Eq + Hash, V: JsSerializable);
-    impl< 'a, K, V > for &'a HashMap< K, V > => Object where (K: AsRef< str > + Eq + Hash, V: JsSerializable);
-    impl< 'a, K, V > for &'a mut HashMap< K, V > => Object where (K: AsRef< str > + Eq + Hash, V: JsSerializable);
+    impl< K, V > for BTreeMap< K, V > => Object where (K: AsRef< str >, V: JsSerialize);
+    impl< 'a, K, V > for &'a BTreeMap< K, V > => Object where (K: AsRef< str >, V: JsSerialize);
+    impl< 'a, K, V > for &'a mut BTreeMap< K, V > => Object where (K: AsRef< str >, V: JsSerialize);
+    impl< K, V > for HashMap< K, V > => Object where (K: AsRef< str > + Eq + Hash, V: JsSerialize);
+    impl< 'a, K, V > for &'a HashMap< K, V > => Object where (K: AsRef< str > + Eq + Hash, V: JsSerialize);
+    impl< 'a, K, V > for &'a mut HashMap< K, V > => Object where (K: AsRef< str > + Eq + Hash, V: JsSerialize);
 
     // TODO: Move these to array.rs
-    impl< T > for Vec< T > => Array where (T: JsSerializable);
-    impl< 'a, T > for &'a Vec< T > => Array where (T: JsSerializable);
-    impl< 'a, T > for &'a mut Vec< T > => Array where (T: JsSerializable);
-    impl< 'a, T > for &'a [T] => Array where (T: JsSerializable);
-    impl< 'a, T > for &'a mut [T] => Array where (T: JsSerializable);
+    impl< T > for Vec< T > => Array where (T: JsSerialize);
+    impl< 'a, T > for &'a Vec< T > => Array where (T: JsSerialize);
+    impl< 'a, T > for &'a mut Vec< T > => Array where (T: JsSerialize);
+    impl< 'a, T > for &'a [T] => Array where (T: JsSerialize);
+    impl< 'a, T > for &'a mut [T] => Array where (T: JsSerialize);
 }
 
 macro_rules! impl_try_from_number {

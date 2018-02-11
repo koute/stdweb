@@ -18,7 +18,7 @@ use webcore::value::{
 };
 
 use webcore::serialization::{
-    JsSerializable,
+    JsSerialize,
     SerializedValue,
     PreallocatedArena
 };
@@ -999,20 +999,20 @@ macro_rules! __js_serializable_serde_boilerplate {
     (($($impl_arg:tt)*) ($($kind_arg:tt)*) ($($bounds:tt)*)) => {
         __js_serializable_boilerplate!( ($($impl_arg)*) ($($kind_arg)*) ($($bounds)*) );
 
-        impl< $($impl_arg),* > $crate::private::JsSerializable for $($kind_arg)* where $($bounds)* {
+        impl< $($impl_arg),* > $crate::private::JsSerialize for $($kind_arg)* where $($bounds)* {
             #[inline]
-            fn into_js< 'x >( &'x self, arena: &'x $crate::private::PreallocatedArena ) -> $crate::private::SerializedValue< 'x > {
+            fn _into_js< 'x >( &'x self, arena: &'x $crate::private::PreallocatedArena ) -> $crate::private::SerializedValue< 'x > {
                 let value = $crate::private::to_value( self ).unwrap();
                 let value = arena.save( value );
-                $crate::private::JsSerializable::into_js( value, arena )
+                $crate::private::JsSerialize::_into_js( value, arena )
             }
 
             #[inline]
-            fn memory_required( &self ) -> usize {
+            fn _memory_required( &self ) -> usize {
                 // TODO: This is very inefficient. The actual conversion into
                 // the Value should be only done once.
                 let value = $crate::private::to_value( self ).unwrap();
-                $crate::private::JsSerializable::memory_required( &value )
+                $crate::private::JsSerialize::_memory_required( &value )
             }
         }
 
@@ -1189,18 +1189,18 @@ impl< T: fmt::Debug > fmt::Debug for Serde< T > {
     }
 }
 
-impl< T: Serialize > JsSerializable for Serde< T > {
+impl< T: Serialize > JsSerialize for Serde< T > {
     #[inline]
-    fn into_js< 'a >( &'a self, arena: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+    fn _into_js< 'a >( &'a self, arena: &'a PreallocatedArena ) -> SerializedValue< 'a > {
         let value = to_value( &self.0 ).unwrap();
         let value = arena.save( value );
-        value.into_js( arena )
+        value._into_js( arena )
     }
 
     #[inline]
-    fn memory_required( &self ) -> usize {
+    fn _memory_required( &self ) -> usize {
         let value = to_value( &self.0 ).unwrap();
-        value.memory_required()
+        value._memory_required()
     }
 }
 
