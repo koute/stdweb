@@ -34,7 +34,7 @@ impl PromiseFuture< (), () > {
     /// to use a [`Future`](https://docs.rs/futures/0.1.18/futures/future/trait.Future.html) method, such as
     /// [`map_err`](https://docs.rs/futures/0.1.18/futures/future/trait.Future.html#method.map_err).
     ///
-    /// It is very common to want to print the errors to the console. You can do that by using `.map_err(|e| e.print())`
+    /// It is very common to want to print the errors to the console. You can do that by using `.map_err(|e| console_error!(e))`
     ///
     /// This function is normally called once in `main`, it is usually not needed to call it multiple times.
     ///
@@ -46,7 +46,7 @@ impl PromiseFuture< (), () > {
     /// fn main() {
     ///     PromiseFuture::spawn(
     ///         create_some_future()
-    ///             .map_err(|e| e.print())
+    ///             .map_err(|e| console_error!(e))
     ///     );
     /// }
     /// ```
@@ -58,7 +58,7 @@ impl PromiseFuture< (), () > {
     ///     PromiseFuture::spawn(
     ///         create_some_future()
     ///             .inspect(|x| println!("Future finished: {:#?}", x))
-    ///             .map_err(|e| e.print())
+    ///             .map_err(|e| console_error!(e))
     ///     );
     /// }
     /// ```
