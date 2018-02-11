@@ -16,12 +16,9 @@ use webcore::promise_executor::spawn;
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)
 // https://www.ecma-international.org/ecma-262/6.0/#sec-promise-objects
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(instance_of = "Promise")]
 pub struct Promise( Reference );
-
-reference_boilerplate! {
-    Promise,
-    instanceof Promise
-}
 
 impl Promise {
     // https://www.ecma-international.org/ecma-262/6.0/#sec-promise-resolve-functions
