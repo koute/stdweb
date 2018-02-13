@@ -1076,14 +1076,14 @@ impl CanvasRenderingContext2d {
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-putimagedata
     pub fn put_image_data(&self, 
                             image_data: ImageData, 
-                            dx: f64, dy: f64, 
-                            dirty_x: Option<f64>, dirty_y: Option<f64>, 
-                            dirty_width: Option<f64>, dirty_height: Option<f64>
-                        ) -> Result<(), SyntaxError> {
-        let dirty_x = dirty_x.unwrap_or(0 as f64);
-        let dirty_y = dirty_y.unwrap_or(0 as f64);
-        let dirty_width = dirty_width.unwrap_or(image_data.get_width());
-        let dirty_height = dirty_height.unwrap_or(image_data.get_height());
+                            dx: f32, dy: f32, 
+                            dirty_x: Option<f32>, dirty_y: Option<f32>, 
+                            dirty_width: Option<f32>, dirty_height: Option<f32>
+                        ) -> Result<(), InvalidStateError> {
+        let dirty_x = dirty_x.unwrap_or(0 as f32);
+        let dirty_y = dirty_y.unwrap_or(0 as f32);
+        let dirty_width = dirty_width.unwrap_or(image_data.get_width() as f32);
+        let dirty_height = dirty_height.unwrap_or(image_data.get_height() as f32);
         js_try! ( @(no_return)
             @{&self.0}.putImageData(@{image_data}, @{dx}, @{dy}, @{dirty_x}, @{dirty_y}, @{dirty_width}, @{dirty_height});
         ).unwrap()
