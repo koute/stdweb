@@ -900,36 +900,33 @@ impl CanvasRenderingContext2d {
     }
 
     /// Provides different ways to draw an image onto the canvas.
-    /// TODO: Potentially throw more than just TypeMismatchError
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage)
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-drawimage
-    pub fn draw_image(&self, image: ImageElement, dx: f64, dy: f64) -> Result<(), TypeMismatchError> {
+    pub fn draw_image(&self, image: ImageElement, dx: f64, dy: f64) -> Result<(), DrawImageError> {
         js_try! (@(no_return)
             @{&self.0}.drawImage(@{image}, @{dx}, @{dy});
         ).unwrap()
     }
 
     /// Provides different ways to draw an image onto the canvas.
-    /// TODO: Potentially throw more than just TypeMismatchError
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage)
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-drawimage
-    pub fn draw_image_d(&self, image: ImageElement, dx: f64, dy: f64, d_width: f64, d_height: f64) -> Result<(), TypeMismatchError> {
+    pub fn draw_image_d(&self, image: ImageElement, dx: f64, dy: f64, d_width: f64, d_height: f64) -> Result<(), DrawImageError> {
         js_try! (@(no_return)
             @{&self.0}.drawImage(@{image}, @{dx}, @{dy}, @{d_width}, @{d_height});
         ).unwrap()
     }
 
     /// Provides different ways to draw an image onto the canvas.
-    /// TODO: Potentially throw more than just TypeMismatchError
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage)
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-drawimage
     pub fn draw_image_s(&self, image: ImageElement, 
                         sx: f64, sy: f64, s_width: f64, s_height: f64, 
                         dx: f64, dy: f64, d_width: f64, d_height: f64
-                    ) -> Result<(), TypeMismatchError> {
+                    ) -> Result<(), DrawImageError> {
         js_try!(@(no_return)
             @{&self.0}.drawImage(@{image}, @{sx}, @{sy}, @{s_width}, @{s_height}, @{dx}, @{dy}, @{d_width}, @{d_height});
         ).unwrap()
