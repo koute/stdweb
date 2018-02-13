@@ -6,10 +6,12 @@ use webcore::reference_type::ReferenceType;
 /// occurs.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error)
+// https://www.ecma-international.org/ecma-262/6.0/#sec-error-objects
 pub trait IError: ReferenceType {
     /// Returns a human-readable description of the error.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/message)
+    // https://www.ecma-international.org/ecma-262/6.0/#sec-error.prototype.message
     #[inline]
     fn message( &self ) -> String {
         js!(
@@ -20,6 +22,7 @@ pub trait IError: ReferenceType {
     /// Returns a name specifiying the type of error.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/name)
+    // https://www.ecma-international.org/ecma-262/6.0/#sec-error.prototype.name
     #[inline]
     fn name( &self ) -> String {
         js!(
@@ -32,6 +35,7 @@ pub trait IError: ReferenceType {
 /// occurs.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error)
+// https://www.ecma-international.org/ecma-262/6.0/#sec-error-objects
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "Error")]
 pub struct Error( Reference );
@@ -55,9 +59,6 @@ impl Error {
         }
     }
 }
-
-// Error specification:
-// https://www.ecma-international.org/ecma-262/6.0/#sec-error-objects
 
 impl IError for Error {}
 

@@ -6,10 +6,12 @@ use webapi::event::{IEvent, Event, ConcreteEvent};
 /// events.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ProgressEvent)
+// https://xhr.spec.whatwg.org/#progressevent
 pub trait IProgressEvent: IEvent {
     /// Indicates whether the progress is measureable.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ProgressEvent/lengthComputable)
+    // https://xhr.spec.whatwg.org/#ref-for-dom-progressevent-lengthcomputable
     #[inline]
     fn length_computable( &self ) -> bool {
         js!(
@@ -20,6 +22,7 @@ pub trait IProgressEvent: IEvent {
     /// Returns the amount of work already performed by the underlying process.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ProgressEvent/loaded)
+    // https://xhr.spec.whatwg.org/#ref-for-dom-progressevent-loaded
     #[inline]
     fn loaded( &self ) -> u64 {
         js!(
@@ -30,6 +33,7 @@ pub trait IProgressEvent: IEvent {
     /// Returns the total amount of work that the underlying process will perform.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ProgressEvent/total)
+    // https://xhr.spec.whatwg.org/#ref-for-dom-progressevent-total
     #[inline]
     fn total( &self ) -> u64 {
         js!(
@@ -42,6 +46,7 @@ pub trait IProgressEvent: IEvent {
 /// interface.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ProgressEvent)
+// https://xhr.spec.whatwg.org/#progressevent
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "ProgressEvent")]
 #[reference(subclass_of(Event))]
@@ -53,6 +58,7 @@ impl IProgressEvent for ProgressRelatedEvent {}
 /// The `ProgressEvent` is fired to indicate that an operation is in progress.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/progress)
+// https://xhr.spec.whatwg.org/#event-xhr-progress
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "ProgressEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, ProgressRelatedEvent))]
@@ -67,6 +73,7 @@ impl ConcreteEvent for ProgressEvent {
 /// The `ProgressLoadEvent` is fired when progress has successful finished.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/load_(ProgressEvent))
+// https://xhr.spec.whatwg.org/#event-xhr-load
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "ProgressEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, ProgressRelatedEvent))]
@@ -81,6 +88,7 @@ impl ConcreteEvent for ProgressLoadEvent {
 /// The `LoadStartEvent` is fired when progress has begun.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/loadstart)
+// https://xhr.spec.whatwg.org/#event-xhr-loadstart
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "ProgressEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, ProgressRelatedEvent))]
@@ -97,6 +105,7 @@ impl ConcreteEvent for LoadStartEvent {
 /// or `ProgressLoadEvent` have been dispatched.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/loadend)
+// https://xhr.spec.whatwg.org/#event-xhr-loadend
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "ProgressEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, ProgressRelatedEvent))]
@@ -111,6 +120,7 @@ impl ConcreteEvent for LoadEndEvent {
 /// The `ProgressAbortEvent` is fired when the progress has been aborted.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/abort_(ProgressEvent))
+// https://xhr.spec.whatwg.org/#event-xhr-abort
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "ProgressEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, ProgressRelatedEvent))]
@@ -125,6 +135,7 @@ impl ConcreteEvent for ProgressAbortEvent {
 /// The `ProgressErrorEvent` is fired when the progress has failed.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/error_(ProgressEvent))
+// https://xhr.spec.whatwg.org/#event-xhr-error
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "ProgressEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, ProgressRelatedEvent))]

@@ -5,18 +5,17 @@ use webapi::error::{IError, Error};
 /// calling a web API.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DOMException)
+// https://heycam.github.io/webidl/#idl-DOMException
 pub trait IDomException: IError {}
 
 /// A reference to a JavaScript `DOMException` object.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DOMException)
+// https://heycam.github.io/webidl/#idl-DOMException
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "DOMException")]
 #[reference(subclass_of(Error))]
 pub struct DomException( Reference );
-
-// DOMException specification:
-// https://heycam.github.io/webidl/#idl-DOMException
 
 impl IError for DomException {}
 impl IDomException for DomException {}
@@ -24,6 +23,7 @@ impl IDomException for DomException {}
 error_boilerplate! { DomException }
 
 /// Occurs when an operation would result in an incorrect node tree.
+// https://heycam.github.io/webidl/#hierarchyrequesterror
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(subclass_of(Error, DomException))]
 pub struct HierarchyRequestError( Reference );
@@ -34,6 +34,7 @@ impl IDomException for HierarchyRequestError {}
 error_boilerplate! { HierarchyRequestError, name = "HierarchyRequestError" }
 
 /// Occurs when an object does not support an operation or argument.
+// https://heycam.github.io/webidl/#invalidaccesserror
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(subclass_of(Error, DomException))]
 pub struct InvalidAccessError( Reference );
@@ -44,6 +45,7 @@ impl IDomException for InvalidAccessError {}
 error_boilerplate! { InvalidAccessError, name = "InvalidAccessError" }
 
 /// Occurs when the specified object cannot be found.
+// https://heycam.github.io/webidl/#notfounderror
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(subclass_of(Error, DomException))]
 pub struct NotFoundError( Reference );
@@ -54,6 +56,7 @@ impl IDomException for NotFoundError {}
 error_boilerplate! { NotFoundError, name = "NotFoundError" }
 
 /// Occurs when the requested operation is insecure.
+// https://heycam.github.io/webidl/#securityerror
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(subclass_of(Error, DomException))]
 pub struct SecurityError( Reference );
@@ -64,6 +67,7 @@ impl IDomException for SecurityError {}
 error_boilerplate! { SecurityError, name = "SecurityError" }
 
 /// Occurs when an argument does not match the expected pattern.
+// https://heycam.github.io/webidl/#syntaxerror
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(subclass_of(Error, DomException))]
 pub struct SyntaxError( Reference );

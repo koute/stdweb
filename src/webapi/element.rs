@@ -28,6 +28,7 @@ pub trait IElement: INode + IParentNode {
 /// interface.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element)
+// https://dom.spec.whatwg.org/#element
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "Element")]
 #[reference(subclass_of(EventTarget, Node))]

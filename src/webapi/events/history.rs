@@ -7,6 +7,8 @@ use webapi::event::{IEvent, Event, ConcreteEvent};
 /// that follows the # symbol, including the # symbol).
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/hashchange)
+// https://html.spec.whatwg.org/#event-hashchange
+// https://html.spec.whatwg.org/#hashchangeevent
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "HashChangeEvent")]
 #[reference(subclass_of(Event))]
@@ -21,6 +23,7 @@ impl HashChangeEvent {
     /// The previous URL from which the window was navigated.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HashChangeEvent)
+    // https://html.spec.whatwg.org/#the-hashchangeevent-interface:dom-hashchangeevent-oldurl
     #[inline]
     pub fn old_url( &self ) -> String {
         js!(
@@ -31,6 +34,7 @@ impl HashChangeEvent {
     /// The new URL to which the window was navigated.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HashChangeEvent)
+    // https://html.spec.whatwg.org/#the-hashchangeevent-interface:dom-hashchangeevent-newurl
     #[inline]
     pub fn new_url( &self ) -> String {
         js!(
@@ -45,6 +49,8 @@ impl HashChangeEvent {
 /// the popstate event's state property contains a copy of the history entry's state object.
 ///
 /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/PopStateEvent)
+// https://html.spec.whatwg.org/#event-popstate
+// https://html.spec.whatwg.org/#popstateevent
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "Event")] // TODO: Better type check.
 #[reference(subclass_of(Event))]
@@ -59,6 +65,7 @@ impl PopStateEvent {
     /// ```rust,ignore
     /// let state: Option<MyStruct> = event.state().try_into().ok();
     /// ```
+    // https://html.spec.whatwg.org/#dom-popstateevent-state
     #[inline]
     pub fn state(&self) -> Value {
         js!(return @{self}.state;)

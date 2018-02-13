@@ -8,10 +8,12 @@ use webapi::events::keyboard::{ModifierKey, get_event_modifier_state};
 /// interacting with a pointing device (such as a mouse).
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent)
+// https://w3c.github.io/uievents/#mouseevent
 pub trait IMouseEvent: IUiEvent {
     /// Returns whether the Alt key was down when this event was fired.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/altKey)
+    // https://w3c.github.io/uievents/#ref-for-dom-mouseevent-altkey-1
     #[inline]
     fn alt_key( &self ) -> bool {
         js!(
@@ -22,6 +24,7 @@ pub trait IMouseEvent: IUiEvent {
     /// Indicates the mouse button that fired this event.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button)
+    // https://w3c.github.io/uievents/#ref-for-dom-mouseevent-button-1
     fn button( &self ) -> MouseButton {
         match js!(
             return @{self.as_ref()}.button;
@@ -38,6 +41,7 @@ pub trait IMouseEvent: IUiEvent {
     /// Indicates which mouse buttons were down when this event was fired.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons)
+    // https://w3c.github.io/uievents/#ref-for-dom-mouseevent-buttons-1
     fn buttons( &self ) -> MouseButtonsState {
         MouseButtonsState(
             js!(
@@ -49,8 +53,9 @@ pub trait IMouseEvent: IUiEvent {
     /// Returns the X position in the application's client area where this event occured.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/clientX)
+    // https://w3c.github.io/uievents/#ref-for-dom-mouseevent-clientx-2
     #[inline]
-    fn client_x( &self ) -> f64 {
+    fn client_x( &self ) -> i32 {
         js!(
             return @{self.as_ref()}.clientX;
         ).try_into().unwrap()
@@ -59,8 +64,9 @@ pub trait IMouseEvent: IUiEvent {
     /// Returns the Y position in the application's client area where this event occured.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/clientY)
+    // https://w3c.github.io/uievents/#ref-for-dom-mouseevent-clienty-2
     #[inline]
-    fn client_y( &self ) -> f64 {
+    fn client_y( &self ) -> i32 {
         js!(
             return @{self.as_ref()}.clientY;
         ).try_into().unwrap()
@@ -69,6 +75,7 @@ pub trait IMouseEvent: IUiEvent {
     /// Indicates whether the Ctrl key was down when this event fired.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/ctrlKey)
+    // https://w3c.github.io/uievents/#ref-for-dom-mouseevent-ctrlkey-1
     #[inline]
     fn ctrl_key( &self ) -> bool {
         js!(
@@ -79,6 +86,7 @@ pub trait IMouseEvent: IUiEvent {
     /// Returns the current state of the specified modifier key.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/getModifierState)
+    // https://w3c.github.io/uievents/#ref-for-dom-mouseevent-getmodifierstate-2
     #[inline]
     fn get_modifier_state( &self, key: ModifierKey ) -> bool {
         get_event_modifier_state( self, key )
@@ -87,6 +95,7 @@ pub trait IMouseEvent: IUiEvent {
     /// Indicates whether the Meta key was down when this event fired.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/metaKey)
+    // https://w3c.github.io/uievents/#ref-for-dom-mouseevent-metakey-1
     #[inline]
     fn meta_key( &self ) -> bool {
         js!(
@@ -98,8 +107,9 @@ pub trait IMouseEvent: IUiEvent {
     /// MouseMove event.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/movementX)
+    // https://w3c.github.io/pointerlock/#extensions-to-the-mouseevent-interface
     #[inline]
-    fn movement_x( &self ) -> f64 {
+    fn movement_x( &self ) -> i32 {
         js!(
             return @{self.as_ref()}.movementX;
         ).try_into().unwrap()
@@ -109,8 +119,9 @@ pub trait IMouseEvent: IUiEvent {
     /// MouseMove event.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/movementX)
+    // https://w3c.github.io/pointerlock/#extensions-to-the-mouseevent-interface
     #[inline]
-    fn movement_y( &self ) -> f64 {
+    fn movement_y( &self ) -> i32 {
         js!(
             return @{self.as_ref()}.movementY;
         ).try_into().unwrap()
@@ -129,6 +140,7 @@ pub trait IMouseEvent: IUiEvent {
     /// Returns the secondary target of this event, if any.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/relatedTarget)
+    // https://w3c.github.io/uievents/#ref-for-dom-mouseevent-relatedtarget-1
     #[inline]
     fn related_target( &self ) -> Option< EventTarget > {
         js!(
@@ -136,11 +148,12 @@ pub trait IMouseEvent: IUiEvent {
         ).try_into().ok()
     }
 
-     /// Returns the X position of the pointer in screen coordinates.
+    /// Returns the X position of the pointer in screen coordinates.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/screenX)
+    // https://w3c.github.io/uievents/#ref-for-dom-mouseevent-screenx-1
     #[inline]
-    fn screen_x( &self ) -> f64 {
+    fn screen_x( &self ) -> i32 {
         js!(
             return @{self.as_ref()}.screenX;
         ).try_into().unwrap()
@@ -149,8 +162,9 @@ pub trait IMouseEvent: IUiEvent {
     /// Returns the Y position of the pointer in screen coordinates.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/screenY)
+    // https://w3c.github.io/uievents/#ref-for-dom-mouseevent-screeny-1
     #[inline]
-    fn screen_y( &self ) -> f64 {
+    fn screen_y( &self ) -> i32 {
         js!(
             return @{self.as_ref()}.screenY;
         ).try_into().unwrap()
@@ -159,6 +173,7 @@ pub trait IMouseEvent: IUiEvent {
     /// Indicates whether the Shift key was down when this event was fired.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/shiftKey)
+    // https://w3c.github.io/uievents/#ref-for-dom-mouseevent-shiftkey-1
     #[inline]
     fn shift_key( &self ) -> bool {
         js!(
@@ -202,6 +217,7 @@ impl MouseButtonsState {
 /// interface.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent)
+// https://w3c.github.io/uievents/#mouseevent
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "MouseEvent")]
 #[reference(subclass_of(Event, UiEvent))]
@@ -215,6 +231,7 @@ impl IMouseEvent for MouseEvent {}
 /// mouse's primary button) is pressed and released on a single element.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/click)
+// https://w3c.github.io/uievents/#event-type-click
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "MouseEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, UiEvent, MouseEvent))]
@@ -232,6 +249,7 @@ impl ConcreteEvent for ClickEvent {
 /// element.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/dblclick)
+// https://w3c.github.io/uievents/#event-type-dblclick
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "MouseEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, UiEvent, MouseEvent))]
@@ -248,6 +266,7 @@ impl ConcreteEvent for DoubleClickEvent {
 /// an element.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/mousedown)
+// https://w3c.github.io/uievents/#event-type-mousedown
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "MouseEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, UiEvent, MouseEvent))]
@@ -264,6 +283,7 @@ impl ConcreteEvent for MouseDownEvent {
 /// over an element.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/mouseup)
+// https://w3c.github.io/uievents/#event-type-mouseup
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "MouseEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, UiEvent, MouseEvent))]
@@ -280,6 +300,7 @@ impl ConcreteEvent for MouseUpEvent {
 /// is moved while over an element.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/mousemove)
+// https://w3c.github.io/uievents/#event-type-mousemove
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "MouseEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, UiEvent, MouseEvent))]
@@ -305,12 +326,12 @@ mod tests {
                     altKey: false,
                     button: 2,
                     buttons: 6,
-                    clientX: 3.0,
-                    clientY: 4.0,
+                    clientX: 3,
+                    clientY: 4,
                     ctrlKey: true,
                     metaKey: false,
-                    screenX: 1.0,
-                    screenY: 2.0,
+                    screenX: 1,
+                    screenY: 2,
                     shiftKey: true
                 }
             );
@@ -321,19 +342,19 @@ mod tests {
         assert!( !event.buttons().is_down( MouseButton::Left ) );
         assert!( event.buttons().is_down( MouseButton::Right ) );
         assert!( event.buttons().is_down( MouseButton::Wheel ) );
-        assert_eq!( event.client_x(), 3.0 );
-        assert_eq!( event.client_y(), 4.0 );
+        assert_eq!( event.client_x(), 3 );
+        assert_eq!( event.client_y(), 4 );
         assert!( event.ctrl_key() );
         assert!( !event.get_modifier_state( ModifierKey::Alt ) );
         assert!( event.get_modifier_state( ModifierKey::Ctrl ) );
         assert!( event.get_modifier_state( ModifierKey::Shift ) );
         assert!( !event.meta_key() );
-        assert_eq!( event.movement_x(), 0.0 );
-        assert_eq!( event.movement_y(), 0.0 );
+        assert_eq!( event.movement_x(), 0 );
+        assert_eq!( event.movement_y(), 0 );
         assert!( event.region().is_none() );
         assert!( event.related_target().is_none() );
-        assert_eq!( event.screen_x(), 1.0 );
-        assert_eq!( event.screen_y(), 2.0 );
+        assert_eq!( event.screen_x(), 1 );
+        assert_eq!( event.screen_y(), 2 );
         assert!( event.shift_key() );
     }
 
