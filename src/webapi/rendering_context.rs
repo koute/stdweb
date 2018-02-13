@@ -990,7 +990,7 @@ impl CanvasRenderingContext2d {
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getImageData)
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-getimagedata
-    pub fn get_image_data(&self, sx: f64, sy: f64, sw: f64, sh: f64) -> Result<ImageData, IndexSizeError> {
+    pub fn get_image_data(&self, sx: f64, sy: f64, sw: f64, sh: f64) -> Result<ImageData, GetImageDataError> {
         js_try! (
             return @{&self.0}.getImageData(@{sx}, @{sy}, @{sw}, @{sh});
         ).unwrap()
