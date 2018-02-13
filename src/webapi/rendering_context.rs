@@ -746,10 +746,11 @@ impl CanvasRenderingContext2d {
     /// the starting point is connected to the arc with a straight line segment.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/arcTo)
-    pub fn arc_to(&self, x1: f64, y1: f64, x2: f64, y2: f64, radius: f64) {
-        js! { @(no_return)
-            @{&self.0}.arcTo(@{x1}, @{y1}, @{x2}, @{y2}, @{radius});
-        }
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-arcto
+    pub fn arc_to(&self, x1: f64, y1: f64, x2: f64, y2: f64, radius: f64) -> Result<(), IndexSizeError>{
+        js_try! (
+            return @{&self.0}.arcTo(@{x1}, @{y1}, @{x2}, @{y2}, @{radius});
+        ).unwrap()
     }
 
     /// Starts a new path by emptying the list of sub-paths. Call this method when you want to create a new path.
