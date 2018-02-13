@@ -17,7 +17,7 @@ fn test_from_thenable() {
 
     a.unwrap().done( |result: Result< u32, u32 > | {
         assert_eq!( result, Ok( 5 ) );
-        console_log!( format!( "Thenable 1: {:#?}", result ) );
+        console!( log, format!( "Thenable 1: {:#?}", result ) );
     } );
 
 
@@ -25,7 +25,7 @@ fn test_from_thenable() {
 
     a.unwrap().done( |result: Result< u32, u32 > | {
         assert_eq!( result, Ok( 1 ) );
-        console_log!( format!( "Thenable 2: {:#?}", result ) );
+        console!( log, format!( "Thenable 2: {:#?}", result ) );
     } );
 
 
@@ -40,18 +40,18 @@ fn test_error_conversion() {
 
     PromiseFuture::spawn(
         a.map( |_| () ).map_err( |x| {
-            console_log!( "String error:", x );
+            console!( log, "String error:", x );
         } )
     );
 
     let _a: PromiseFuture< Null > = js!( return Promise.resolve( null ); ).try_into().unwrap();
-    console_log!( "Null works" );
+    console!( log, "Null works" );
 
     let _a: PromiseFuture< Null > = js!( return Promise.reject( new Error( "hi!" ) ); ).try_into().unwrap();
-    console_log!( "Error works" );
+    console!( log, "Error works" );
 
     //let _a: PromiseFuture< Null, SyntaxError > = js!( return Promise.reject( new Error( "hi!" ) ); ).try_into().unwrap();
-    //console_log!( "Error conversion fails" );
+    //console!( log, "Error conversion fails" );
 }
 
 
@@ -66,15 +66,15 @@ fn test_refcell() {
         type Error = ();
 
         fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
-            console_log!("Poll TaskA");
+            console!( log, "Poll TaskA" );
 
             let foo = self.shared_state.borrow_mut();
 
-            console_log!(format!("TaskA 1: {:#?}", foo));
+            console!( log, format!("TaskA 1: {:#?}", foo) );
 
             self.task_b.notify();
 
-            console_log!(format!("TaskA 2: {:#?}", foo));
+            console!( log, format!("TaskA 2: {:#?}", foo) );
 
             Ok(Async::NotReady)
         }
@@ -90,7 +90,7 @@ fn test_refcell() {
         type Error = ();
 
         fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
-            console_log!("Poll TaskB");
+            console!( log, "Poll TaskB" );
 
             if !self.initialized {
                 self.initialized = true;
@@ -99,7 +99,7 @@ fn test_refcell() {
 
                 let foo = self.shared_state.borrow();
 
-                console_log!(format!("TaskB 1: {:#?}", foo));
+                console!( log, format!("TaskB 1: {:#?}", foo) );
 
                 PromiseFuture::spawn(TaskA {
                     shared_state: self.shared_state.clone(),
@@ -109,7 +109,7 @@ fn test_refcell() {
 
             let foo = self.shared_state.borrow();
 
-            console_log!(format!("TaskB 1: {:#?}", foo));
+            console!( log, format!("TaskB 1: {:#?}", foo) );
 
             Ok(Async::NotReady)
         }
@@ -126,7 +126,7 @@ fn test_panic() {
     let promise: Promise = js!( return Promise.resolve(null); ).try_into().unwrap();
 
     promise.done( |result: Result< Null, Error >| {
-        console_log!( format!( "Promise result: {:#?}", result ) );
+        console!( log, format!( "Promise result: {:#?}", result ) );
         panic!( "Testing panic!" );
     } );
 }
@@ -145,12 +145,12 @@ fn test_notify() {
             let ( sender, receiver ) = futures::unsync::oneshot::channel();
 
             let callback = || {
-                console_log!( "setTimeout done" );
+                console!( log, "setTimeout done" );
 
-                console_log!( format!("Sending {:#?}", sender.send( () ) ) );
+                console!( log, format!("Sending {:#?}", sender.send( () ) ) );
             };
 
-            console_log!( "setTimeout started" );
+            console!( log, "setTimeout started" );
 
             js! { @(no_return)
                 setTimeout( function () {
@@ -218,7 +218,7 @@ fn test_notify() {
 
     PromiseFuture::spawn(
         MyFuture::new( 5 ).map( |x| {
-            console_log!( format!( "MyFuture count: {}", x ) );
+            console!( log, format!( "MyFuture count: {}", x ) );
             assert_eq!( x, 7 );
         } )
     );
@@ -235,13 +235,13 @@ fn test_timeout() {
     }
 
     PromiseFuture::spawn(
-        sleep( 2000 ).inspect( |_| console_log!( "Timeout 1 done!" ) ).join(
-        sleep( 2000 ).inspect( |_| console_log!( "Timeout 2 done!" ) ) )
+        sleep( 2000 ).inspect( |_| console!( log, "Timeout 1 done!" ) ).join(
+        sleep( 2000 ).inspect( |_| console!( log, "Timeout 2 done!" ) ) )
             .and_then( |_|
-                sleep( 1000 ).inspect( |_| console_log!( "Timeout 3 done!" ) ) )
+                sleep( 1000 ).inspect( |_| console!( log, "Timeout 3 done!" ) ) )
             .and_then( |_|
                 futures::future::err( Error::new( "Testing error!" ) ) )
-            .map_err( |e| console_error!( e ) )
+            .map_err( |e| console!( error, e ) )
     );
 }
 
@@ -258,4 +258,3 @@ fn main() {
 
     stdweb::event_loop();
 }
-
