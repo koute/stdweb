@@ -3,7 +3,8 @@ use webcore::try_from::{TryFrom, TryInto};
 use webcore::value::Undefined;
 use webapi::html_elements::{CanvasElement, ImageElement};
 use webapi::html_element::IHtmlElement;
-use webapi::dom_exception::SyntaxError;
+//use webapi::typed_array::TypedArray;
+use webapi::dom_exception::{SyntaxError, IndexSizeError, InvalidStateError, TypeError, SecurityError, NotSupportedError};
 /// Trait implemented by rendering contexts which can be obtained from a canvas.
 pub trait RenderingContext {
     /// Type of error which can occur whilst creating this context
@@ -160,19 +161,20 @@ pub enum TextBaseline {
 }
 
 error_enum_boilerplate! {
-    IndexSizeError,
-    SyntaxError
+    AddColorStopError,
+    SyntaxError, IndexSizeError
 }
 
 error_enum_boilerplate! {
-    NotSupportedError,
-    SyntaxError
+    DrawImageError,
+    IndexSizeError, InvalidStateError, NotSupportedError, TypeError
 }
 
 error_enum_boilerplate! {
-    TypeMismatchError,
-    SyntaxError
+    GetImageDataError,
+    IndexSizeError, SecurityError
 }
+
 
 impl RenderingContext for CanvasRenderingContext2d {
     type Error = ConversionError;

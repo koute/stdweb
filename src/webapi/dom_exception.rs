@@ -81,6 +81,50 @@ impl IDomException for SyntaxError {}
 
 error_boilerplate! { SyntaxError, name = "SyntaxError" }
 
+/// Occurs when an argument is out of range.
+// https://heycam.github.io/webidl/#indexsizeerror
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(subclass_of(Error, DomException))]
+pub struct IndexSizeError( Reference );
+
+impl IError for IndexSizeError {}
+impl IDomException for IndexSizeError {}
+
+error_boilerplate! { IndexSizeError, name = "IndexSizeError" }
+
+/// Occurs when an object is in an invalid state.
+// https://heycam.github.io/webidl/#invalidstateerror
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(subclass_of(Error, DomException))]
+pub struct InvalidStateError( Reference );
+
+impl IError for InvalidStateError {}
+impl IDomException for InvalidStateError {}
+
+error_boilerplate! { InvalidStateError, name = "InvalidStateError" }
+
+/// Used to indicate an unsuccessful operation when none of the other NativeError objects are an appropriate indication of the failure cause.
+// https://tc39.github.io/ecma262/#sec-native-error-types-used-in-this-standard-typeerror
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(subclass_of(Error, DomException))]
+pub struct TypeError( Reference );
+
+impl IError for TypeError {}
+impl IDomException for TypeError {}
+
+error_boilerplate! { TypeError, name = "TypeError" }
+
+/// Used to indicate an unsuccessful operation when none of the other NativeError objects are an appropriate indication of the failure cause.
+// https://heycam.github.io/webidl/#notsupportederror
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(subclass_of(Error, DomException))]
+pub struct NotSupportedError( Reference );
+
+impl IError for NotSupportedError {}
+impl IDomException for NotSupportedError {}
+
+error_boilerplate! { NotSupportedError, name = "NotSupportedError" }
+
 #[cfg(all(test, feature = "web_test"))]
 mod test {
     use super::*;
