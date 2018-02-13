@@ -369,7 +369,7 @@ impl CanvasRenderingContext2d {
             "saturation" => CompositeOperation::Saturation,
             "color" => CompositeOperation::Color,
             "luminosity" => CompositeOperation::Luminosity,
-            _ => panic!("Unexpected globalCompositeOperation value"),
+            _ => panic!("Unexpected globalCompositeOperation value: {:?}", composite_operation_str),
         }
     }
 
@@ -425,7 +425,7 @@ impl CanvasRenderingContext2d {
             "butt" => LineCap::Butt,
             "round" => LineCap::Round,
             "square" => LineCap::Square,
-            _ => panic!("Unexpected lineCap value"),
+            _ => panic!("Unexpected lineCap value: {:?}", line_cap_str),
         }
     }
 
@@ -476,7 +476,7 @@ impl CanvasRenderingContext2d {
             "bevel" => LineJoin::Bevel,
             "round" => LineJoin::Round,
             "miter" => LineJoin::Miter,
-            _ => panic!("Unexpected lineJoin value"),
+            _ => panic!("Unexpected lineJoin value: {:?}", line_join_str),
         }
     }
 
@@ -661,7 +661,7 @@ impl CanvasRenderingContext2d {
             "left" => TextAlign::Left,
             "right" => TextAlign::Right,
             "start" => TextAlign::Start,
-            _ => panic!("Unexpected textAlign value"),
+            _ => panic!("Unexpected textAlign value: {:?}", text_align_str),
         }
     }
 
@@ -697,7 +697,7 @@ impl CanvasRenderingContext2d {
             "ideographic" => TextBaseline::Ideographic,
             "middle" => TextBaseline::Middle,
             "top" => TextBaseline::Top,
-            _ => panic!("Unexpected textBaseLine value")
+            _ => panic!("Unexpected textBaseLine value: {:?}", text_baseline_str)
         }
     }
 
