@@ -218,7 +218,8 @@ impl ImageData {
     /// Returns the number of rows in the image data object.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ImageData/height)
-    pub fn get_height(&self) -> f64 {
+    // https://html.spec.whatwg.org/#2dcontext:dom-imagedata-height
+    pub fn get_height(&self) -> u32 {
         js! (
             return @{&self.0}.height;
         ).try_into().unwrap()
@@ -227,7 +228,8 @@ impl ImageData {
     /// Returns the number of pixels per row in the image data object.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ImageData/width)
-    pub fn get_width(&self) -> f64 {
+    // https://html.spec.whatwg.org/#2dcontext:dom-imagedata-width
+    pub fn get_width(&self) -> u32 {
         js! (
             return @{&self.0}.width;
         ).try_into().unwrap()
