@@ -1261,6 +1261,7 @@ impl TextMetrics {
     /// Contains the text's advance width (the width of that inline box) in CSS pixels.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/TextMetrics/width)
+    // https://html.spec.whatwg.org/#2dcontext:dom-textmetrics-width
     pub fn get_width(&self) -> f64 {
         js! (
             return @{&self.0}.width;
