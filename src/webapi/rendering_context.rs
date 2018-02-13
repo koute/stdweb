@@ -206,11 +206,14 @@ impl ImageData {
     /// with integer values between 0 and 255 (included).
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ImageData/data)
-    pub fn get_data(&self) -> Vec<u8> {
+    // https://html.spec.whatwg.org/#2dcontext:dom-imagedata-data
+    // TODO: Return Uint8ClampedArray reference PR 96: https://github.com/koute/stdweb/pull/96 
+    /*
+    pub fn get_data(&self) -> TypedArray<u8> {
         js! (
             return @{&self.0}.data;
         ).try_into().unwrap()
-    }
+    }*/
 
     /// Returns the number of rows in the image data object.
     /// 
