@@ -193,8 +193,7 @@ impl CanvasGradient {
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasGradient/addColorStop)
     // https://html.spec.whatwg.org/#2dcontext:dom-canvasgradient-addcolorstop
-    pub fn add_color_stop(&self, offset: f64, color: &str) -> Result<(), SyntaxError> {
-        assert!(offset > 0 as f64 && offset < 1 as f64);
+    pub fn add_color_stop(&self, offset: f64, color: &str) -> Result<(), AddColorStopError> {
         js_try! ( @(no_return)
             @{&self.0}.addColorStop(@{offset}, @{color});
         ).unwrap()
