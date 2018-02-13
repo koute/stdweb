@@ -854,7 +854,7 @@ impl CanvasRenderingContext2d {
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createPattern)
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-createpattern
-    pub fn create_pattern_image(&self, image: ImageElement, repetition: Option<Repetition>) -> CanvasPattern {
+    pub fn create_pattern_image(&self, image: ImageElement, repetition: Option<Repetition>) -> Result<CanvasPattern, SyntaxError> {
         let repetition_string = match repetition {
             Some(Repetition::Repeat) | None => {
                 "repeat"
@@ -873,9 +873,9 @@ impl CanvasRenderingContext2d {
             }
         };
 
-        js! (
+        js_try! (
             return @{&self.0}.createPattern(@{image}, @{repetition_string});
-        ).try_into().unwrap()
+        ).unwrap()
     }
 
     /// Creates a radial gradient given by the coordinates of the two circles represented by the parameters. 
