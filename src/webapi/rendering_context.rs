@@ -123,7 +123,7 @@ pub enum LineJoin {
     Miter
 }
 
-/// A DOMString indicating how to repeat the image.
+/// An enum indicating how to repeat the image.
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createPattern)
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
