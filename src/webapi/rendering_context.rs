@@ -1053,10 +1053,10 @@ impl CanvasRenderingContext2d {
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/measureText)
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-measuretext
-    pub fn measure_text(&self, text: &str) -> TextMetrics {
-        js! (
+    pub fn measure_text(&self, text: &str) -> Result<TextMetrics, SecurityError> {
+        js_try! (
             return @{&self.0}.measureText(@{text});
-        ).try_into().unwrap()
+        ).unwrap()
     }
 
     /// Moves the starting point of a new sub-path to the (x, y) coordinates.
