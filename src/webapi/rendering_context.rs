@@ -883,10 +883,10 @@ impl CanvasRenderingContext2d {
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createRadialGradient)
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-createradialgradient
-    pub fn create_radial_gradient(&self, x0: f64, y0: f64, r0: f64, x1: f64, y1: f64, r1: f64) -> CanvasGradient {
-        js! (
+    pub fn create_radial_gradient(&self, x0: f64, y0: f64, r0: f64, x1: f64, y1: f64, r1: f64) -> Result<CanvasGradient, IndexSizeError> {
+        js_try! (
             return @{&self.0}.createRadialGradient(@{x0}, @{y0}, @{r0}, @{x1}, @{y1}, @{r1});
-        ).try_into().unwrap()
+        ).unwrap()
     }
 
     /// Draws a focus ring around the current path or given path, If a given element is focused.
