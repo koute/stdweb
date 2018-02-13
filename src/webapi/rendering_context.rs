@@ -20,7 +20,7 @@ pub trait RenderingContext {
 #[reference(instance_of = "CanvasRenderingContext2D")]
 pub struct CanvasRenderingContext2d(Reference);
 
-/// The CanvasGradient interface represents an opaque object describing a gradient. 
+/// The CanvasGradient struct represents an opaque object describing a gradient. 
 /// It is returned by the methods CanvasRenderingContext2D.createLinearGradient() or 
 /// CanvasRenderingContext2D.createRadialGradient().
 /// 
@@ -30,7 +30,7 @@ pub struct CanvasRenderingContext2d(Reference);
 #[reference(instance_of = "CanvasGradient")]
 pub struct CanvasGradient(Reference);
 
-/// The CanvasPattern interface represents an opaque object describing a pattern, based on an image, 
+/// The CanvasPattern struct represents an opaque object describing a pattern, based on an image, 
 /// a canvas or a video, created by the CanvasRenderingContext2D.createPattern() method.
 /// Intentionally blank, no non-experimental properties or methods.
 /// 
@@ -40,7 +40,7 @@ pub struct CanvasGradient(Reference);
 #[reference(instance_of = "CanvasPattern")]
 pub struct CanvasPattern(Reference);
 
-/// The ImageData interface represents the underlying pixel data of an area of a <canvas> element. 
+/// The ImageData struct represents the underlying pixel data of an area of a <canvas> element. 
 /// It is created using the ImageData() constructor or creator methods on the CanvasRenderingContext2D
 ///  object associated with a canvas: createImageData() and getImageData(). It can also be used to set 
 /// a part of the canvas by using putImageData().
@@ -51,7 +51,7 @@ pub struct CanvasPattern(Reference);
 #[reference(instance_of = "ImageData")]
 pub struct ImageData(Reference);
 
-/// The TextMetrics interface represents the dimension of a text in the canvas, as created by the CanvasRenderingContext2D.measureText() method.
+/// The TextMetrics struct represents the dimension of a text in the canvas, as created by the CanvasRenderingContext2D.measureText() method.
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/TextMetrics)
 // https://html.spec.whatwg.org/#textmetrics
