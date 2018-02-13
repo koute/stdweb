@@ -756,7 +756,7 @@ impl CanvasRenderingContext2d {
     /// Starts a new path by emptying the list of sub-paths. Call this method when you want to create a new path.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/beginPath)
-    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-arcto
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-beginpath
     pub fn begin_path(&self) {
         js! { @(no_return)
             @{&self.0}.beginPath();
