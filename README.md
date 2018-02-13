@@ -226,13 +226,29 @@ There is also an **experimental** [Parcel] plugin [here](https://github.com/kout
 
    * `0.4`
       * (breaking change) Removed `Array` and `Object` variants from `Value`; these are now treated as `Reference`s
+      * (breaking change) Removed:
+         * `InputElement::set_kind`
+         * `InputElement::files`
       * (breaking change) Renamed:
          * `KeydownEvent` -> `KeyDownEvent`
          * `KeyupEvent` -> `KeyUpEvent`
          * `KeypressEvent` -> `KeyPressEvent`
          * `ReadyState` -> `FileReaderReadyState`
+         * `InputElement::value` -> `InputElement::raw_value`
+         * `InputElement::set_value` -> `InputElement::set_raw_value`
+      * (breaking change) `ArrayBuffer::new` now takes an `u64` argument
+      * (breaking change) `InputElement::set_raw_value` now takes `&str` instead of `Into< Value >`
       * (breaking change) Changed return types:
          * `INode::remove_child` now returns `Node` in the `Ok` case
+         * The following now return an `u64`:
+            * `ArrayBuffer::len`
+         * The following now return an `i32` instead of `f64`:
+            * `IMouseEvent::client_x`
+            * `IMouseEvent::client_y`
+            * `IMouseEvent::movement_x`
+            * `IMouseEvent::movement_y`
+            * `IMouseEvent::screen_x`
+            * `IMouseEvent::screen_y`
          * The following now return a `Result`:
             * `INode::insert_before`
             * `INode::replace_child`
@@ -251,7 +267,11 @@ There is also an **experimental** [Parcel] plugin [here](https://github.com/kout
             * `History::forward`
             * `Location::href`
             * `Location::hash`
+            * `CanvasElement::to_data_url`
+            * `CanvasElement::to_blob`
+            * `ArrayBuffer::new`
         * `INode::base_uri` now returns a `String` instead of `Option< String >`
+        * `InputElement::raw_value` now returns a `String` instead of `Value`
       * (breaking change) `INode::inner_text` was moved to `IHtmlElement::inner_text`
       * (breaking change) `Document::query_selector` and `Document::query_selector_all` were moved to `IParentNode`
       * (breaking change) `IElement::query_selector` and `IElement::query_selector_all` were moved to `IParentNode`
