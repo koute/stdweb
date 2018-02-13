@@ -843,10 +843,10 @@ impl CanvasRenderingContext2d {
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createImageData)
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-createimagedata
-    pub fn create_image_data_id(&self, image_data: ImageData) -> Result<ImageData, IndexSizeError> {
-        js_try! (
+    pub fn create_image_data_id(&self, image_data: ImageData) -> ImageData {
+        js! (
             return @{&self.0}.createImageData(@{image_data});
-        ).unwrap()
+        ).try_into().unwrap()
     }
 
     /// Creates a pattern using the specified image (a CanvasImageSource). It repeats the source in 
