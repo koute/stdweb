@@ -23,14 +23,6 @@ impl IDomException for DomException {}
 
 error_boilerplate! { DomException }
 
-/// A trait representing a concrete DOMException.
-pub trait ConcreteException: IDomException {
-    /// A string representing the error type.
-    ///
-    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DOMException/name)
-    const ERROR_NAME: &'static str;
-}
-
 /// Occurs when an operation would result in an incorrect node tree.
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(subclass_of(Error, DomException))]
