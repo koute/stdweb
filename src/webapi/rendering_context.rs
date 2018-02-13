@@ -273,7 +273,7 @@ impl CanvasRenderingContext2d {
     /// The default is #000 (black).
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillStyle)
-    pub fn set_fill_style_gradient(&self, gradient: CanvasGradient){
+    pub fn set_fill_style_gradient(&self, gradient: &CanvasGradient){
         js! { @(no_return)
             @{&self.0}.fillStyle = @{gradient};
         }
@@ -283,7 +283,7 @@ impl CanvasRenderingContext2d {
     /// The default is #000 (black).
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillStyle)
-    pub fn set_fill_style_pattern(&self, pattern: CanvasPattern){
+    pub fn set_fill_style_pattern(&self, pattern: &CanvasPattern){
         js! { @(no_return)
             @{&self.0}.fillStyle = @{pattern};
         }
@@ -631,7 +631,7 @@ impl CanvasRenderingContext2d {
     /// Specifies the color or style to use for the lines around shapes. The default is #000 (black).
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/strokeStyle)
-    pub fn set_stroke_style_gradient(&self, gradient: CanvasGradient){
+    pub fn set_stroke_style_gradient(&self, gradient: &CanvasGradient){
         js! { @(no_return)
             @{&self.0}.strokeStyle = @{gradient};
         }
@@ -640,7 +640,7 @@ impl CanvasRenderingContext2d {
     /// Specifies the color or style to use for the lines around shapes. The default is #000 (black).
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/strokeStyle)
-    pub fn set_stroke_style_pattern(&self, pattern: CanvasPattern){
+    pub fn set_stroke_style_pattern(&self, pattern: &CanvasPattern){
         js! { @(no_return)
             @{&self.0}.strokeStyle = @{pattern};
         }
