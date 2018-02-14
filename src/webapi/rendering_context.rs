@@ -96,6 +96,7 @@ pub enum CompositeOperation {
 /// The algorithm by which to determine if a point is inside a path or outside a path.
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fill)
+// https://html.spec.whatwg.org/#canvasfillrule
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum FillRule {
     NonZero,
@@ -105,6 +106,7 @@ pub enum FillRule {
 /// How the end points of every line are drawn.
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineCap)
+// https://html.spec.whatwg.org/#canvaslinecap
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum LineCap {
     Butt,
@@ -117,6 +119,7 @@ pub enum LineCap {
 /// exactly at the same position, are skipped).
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineJoin)
+// https://html.spec.whatwg.org/#canvaslinejoin
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum LineJoin {
     Bevel,
@@ -138,6 +141,7 @@ pub enum Repetition {
 /// Specifies text alignment
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/textAlign)
+// https://html.spec.whatwg.org/#canvastextalign
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum TextAlign {
     Left,
@@ -150,6 +154,7 @@ pub enum TextAlign {
 /// Text baseline being used when drawing text
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/textBaseline)
+// https://html.spec.whatwg.org/#canvastextbaseline
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum TextBaseline {
     Top,
@@ -243,6 +248,7 @@ impl CanvasRenderingContext2d {
     /// object that is associated with the context. It might be null if there is no association with an <canvas> element.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/canvas)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-canvas
     pub fn get_canvas(&self) -> Option<CanvasElement> {
         js! (
             @{&self.0}.canvas;
@@ -253,6 +259,7 @@ impl CanvasRenderingContext2d {
     /// The default is #000 (black).
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillStyle)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-fillstyle
     pub fn get_fill_style(&self) -> String {
         js! (
             @{&self.0}.fillStyle
@@ -263,6 +270,7 @@ impl CanvasRenderingContext2d {
     /// The default is #000 (black).
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillStyle)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-fillstyle
     pub fn set_fill_style_color(&self, color: &str){
         js! { @(no_return)
             @{&self.0}.fillStyle = @{color};
@@ -273,6 +281,7 @@ impl CanvasRenderingContext2d {
     /// The default is #000 (black).
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillStyle)
+    // https://html.spec.whatwg.org/#dom-context-2d-fillstyle
     pub fn set_fill_style_gradient(&self, gradient: &CanvasGradient){
         js! { @(no_return)
             @{&self.0}.fillStyle = @{gradient};
@@ -283,6 +292,7 @@ impl CanvasRenderingContext2d {
     /// The default is #000 (black).
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillStyle)
+    // https://html.spec.whatwg.org/#dom-context-2d-fillstyle
     pub fn set_fill_style_pattern(&self, pattern: &CanvasPattern){
         js! { @(no_return)
             @{&self.0}.fillStyle = @{pattern};
@@ -294,6 +304,7 @@ impl CanvasRenderingContext2d {
     /// font specifier. The default font is 10px sans-serif.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/font)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-font
     pub fn get_font(&self) -> String {
         js! (
             return @{&self.0}.font
@@ -305,6 +316,7 @@ impl CanvasRenderingContext2d {
     /// font specifier. The default font is 10px sans-serif.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/font)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-font
     pub fn set_font(&self, font: &str) {
         js! { @(no_return)
             @{&self.0}.font = @{font};
@@ -316,6 +328,7 @@ impl CanvasRenderingContext2d {
     /// The value is in the range from 0.0 (fully transparent) to 1.0 (fully opaque).
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalAlpha)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-globalalpha
     pub fn get_global_alpha(&self) -> f64 {
         js! (
             return @{&self.0}.globalAlpha
@@ -327,8 +340,8 @@ impl CanvasRenderingContext2d {
     /// The value is in the range from 0.0 (fully transparent) to 1.0 (fully opaque).
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalAlpha)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-globalalpha
     pub fn set_global_alpha(&self, global_alpha: f64) {
-        assert!(global_alpha > 0 as f64 && global_alpha < 1 as f64);
         js! { @(no_return)
             @{&self.0}.globalAlpha = @{global_alpha};
         }
@@ -339,6 +352,7 @@ impl CanvasRenderingContext2d {
     /// which of the compositing or blending mode operations to use.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-globalcompositeoperation
     pub fn get_global_composite_operation(&self) -> CompositeOperation {
         let composite_operation_str: String = js! (
             return @{&self.0}.globalCompositeOperation
@@ -378,6 +392,7 @@ impl CanvasRenderingContext2d {
     /// which of the compositing or blending mode operations to use.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-globalcompositeoperation
     pub fn set_global_composite_operation(&self, composite_operation: CompositeOperation) {
         let composite_string = match composite_operation {
             CompositeOperation::SourceOver => "source-over",
@@ -416,6 +431,7 @@ impl CanvasRenderingContext2d {
     /// By default this property is set to butt.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineCap)
+    // https://html.spec.whatwg.org/#dom-context-2d-linecap
     pub fn get_line_cap(&self) -> LineCap {
         let line_cap_str: String = js! (
             return @{&self.0}.lineCap
@@ -434,6 +450,7 @@ impl CanvasRenderingContext2d {
     /// By default this property is set to butt.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineCap)
+    // https://html.spec.whatwg.org/#dom-context-2d-linecap
     pub fn set_line_cap(&self, line_cap: LineCap) {
         let line_cap_string = match line_cap {
             LineCap::Butt => "butt",
@@ -448,6 +465,7 @@ impl CanvasRenderingContext2d {
     /// Sets the line dash pattern offset or "phase" to achieve a "marching ants" effect, for example.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineDashOffset)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-linedashoffset
     pub fn get_line_dash_offset(&self) -> f64 {
         js! (
             return @{&self.0}.lineDashOffset;
@@ -457,6 +475,7 @@ impl CanvasRenderingContext2d {
     /// Sets the line dash pattern offset or "phase" to achieve a "marching ants" effect, for example.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineDashOffset)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-linedashoffset
     pub fn set_line_dash_offset(&self, line_dash_offset: f64) {
         js! { @(no_return)
             @{&self.0}.lineDashOffset = @{line_dash_offset};
@@ -468,6 +487,7 @@ impl CanvasRenderingContext2d {
     /// exactly at the same position, are skipped).
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineJoin)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-linejoin
     pub fn get_line_join(&self) -> LineJoin {
         let line_join_str: String = js! (
             return @{&self.0}.lineJoin;
@@ -485,6 +505,7 @@ impl CanvasRenderingContext2d {
     /// exactly at the same position, are skipped).
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineJoin)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-linejoin
     pub fn set_line_join(&self, line_join: LineJoin) {
         let line_join_str = match line_join {
             LineJoin::Bevel => "bevel",
@@ -500,6 +521,7 @@ impl CanvasRenderingContext2d {
     /// When setting, zero, negative, Infinity and NaN values are ignored; otherwise the current value is set to the new value.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineWidth)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-linewidth
     pub fn get_line_width(&self) -> f64 {
         js! (
             return @{&self.0}.lineWidth;
@@ -510,6 +532,7 @@ impl CanvasRenderingContext2d {
     /// When setting, zero, negative, Infinity and NaN values are ignored; otherwise the current value is set to the new value.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineWidth)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-linewidth
     pub fn set_line_width(&self, line_width: f64) {
         js! { @(no_return)
             @{&self.0}.lineWidth = @{line_width};
@@ -520,6 +543,7 @@ impl CanvasRenderingContext2d {
     /// When setting, zero, negative, Infinity and NaN values are ignored; otherwise the current value is set to the new value.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/miterLimit)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-miterlimit
     pub fn get_miter_limit(&self) -> f64 {
         js! (
             return @{&self.0}.miterLimit;
@@ -530,6 +554,7 @@ impl CanvasRenderingContext2d {
     /// When setting, zero, negative, Infinity and NaN values are ignored; otherwise the current value is set to the new value.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/miterLimit)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-miterlimit
     pub fn set_miter_limit(&self, miter_limit: f64) {
         js! { @(no_return)
             @{&self.0}.miterLimit = @{miter_limit};
@@ -540,6 +565,7 @@ impl CanvasRenderingContext2d {
     /// affected by the current transformation matrix. The default value is 0.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/shadowBlur)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-shadowblur
     pub fn get_shadow_blur(&self) -> f64 {
         js! (
             return @{&self.0}.shadowBlur;
@@ -550,6 +576,7 @@ impl CanvasRenderingContext2d {
     /// affected by the current transformation matrix. The default value is 0.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/shadowBlur)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-shadowblur
     pub fn set_shadow_blur(&self, shadow_blur: f64) {
         js! { @(no_return)
             @{&self.0}.shadowBlur = @{shadow_blur};
@@ -559,6 +586,7 @@ impl CanvasRenderingContext2d {
     /// Specifies the color of the shadow.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/shadowColor)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-shadowcolor
     pub fn get_shadow_color(&self) -> String {
         js! (
             return @{&self.0}.shadowColor;
@@ -568,6 +596,7 @@ impl CanvasRenderingContext2d {
     /// Specifies the color of the shadow.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/shadowColor)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-shadowcolor
     pub fn set_shadow_color(&self, shadow_color: &str) {
         js! { @(no_return)
             @{&self.0}.shadowColor = @{shadow_color};
@@ -577,6 +606,7 @@ impl CanvasRenderingContext2d {
     /// Specifies the distance that the shadow will be offset in horizontal distance.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/shadowOffsetX)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-shadowoffsetx
     pub fn get_shadow_offset_x(&self) -> f64 {
         js! (
             return @{&self.0}.shadowOffsetX;
@@ -586,6 +616,7 @@ impl CanvasRenderingContext2d {
     /// Specifies the distance that the shadow will be offset in horizontal distance.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/shadowOffsetX)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-shadowoffsetx
     pub fn set_shadow_offset_x(&self, shadow_offset_x: f64) {
         js! { @(no_return)
             @{&self.0}.shadowOffsetX = @{shadow_offset_x};
@@ -595,6 +626,7 @@ impl CanvasRenderingContext2d {
     /// Specifies the distance that the shadow will be offset in vertical distance.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/shadowOffsetY)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-shadowoffsetx
     pub fn get_shadow_offset_y(&self) -> f64 {
         js! (
             return @{&self.0}.shadowOffsetY;
@@ -604,6 +636,7 @@ impl CanvasRenderingContext2d {
     /// Specifies the distance that the shadow will be offset in vertical distance.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/shadowOffsetY)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-shadowoffsetx
     pub fn set_shadow_offset_y(&self, shadow_offset_y: f64) {
         js! { @(no_return)
             @{&self.0}.shadowOffsetY = @{shadow_offset_y};
@@ -613,6 +646,7 @@ impl CanvasRenderingContext2d {
     /// Specifies the color or style to use for the lines around shapes. The default is #000 (black).
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/strokeStyle)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-strokestyle
     pub fn get_stroke_style(&self) -> String {
         js! (
             return @{&self.0}.strokeStyle;
@@ -622,6 +656,7 @@ impl CanvasRenderingContext2d {
     /// Specifies the color or style to use for the lines around shapes. The default is #000 (black).
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/strokeStyle)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-strokestyle
     pub fn set_stroke_style_color(&self, color: &str){
         js! { @(no_return)
             @{&self.0}.strokeStyle = @{color};
@@ -631,6 +666,7 @@ impl CanvasRenderingContext2d {
     /// Specifies the color or style to use for the lines around shapes. The default is #000 (black).
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/strokeStyle)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-strokestyle
     pub fn set_stroke_style_gradient(&self, gradient: &CanvasGradient){
         js! { @(no_return)
             @{&self.0}.strokeStyle = @{gradient};
@@ -640,6 +676,7 @@ impl CanvasRenderingContext2d {
     /// Specifies the color or style to use for the lines around shapes. The default is #000 (black).
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/strokeStyle)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-strokestyle
     pub fn set_stroke_style_pattern(&self, pattern: &CanvasPattern){
         js! { @(no_return)
             @{&self.0}.strokeStyle = @{pattern};
@@ -651,6 +688,7 @@ impl CanvasRenderingContext2d {
     /// So if textAlign is "center", then the text would be drawn at x - (width / 2).
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/textAlign)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-textalign
     pub fn get_text_align(&self) -> TextAlign {
         let text_align_str: String = js! (
             return @{&self.0}.textAlign;
@@ -670,6 +708,7 @@ impl CanvasRenderingContext2d {
     /// So if textAlign is "center", then the text would be drawn at x - (width / 2).
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/textAlign)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-textalign
     pub fn set_text_align(&self, text_align: TextAlign) {
         let text_align_str = match text_align {
             TextAlign::Center => "center",
@@ -686,6 +725,7 @@ impl CanvasRenderingContext2d {
     /// Specifies the current text baseline being used when drawing text.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/textBaseline)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-textbaseline
     pub fn get_text_baseline(&self) -> TextBaseline {
         let text_baseline_str: String = js! (
             return @{&self.0}.textBaseline;
@@ -704,6 +744,7 @@ impl CanvasRenderingContext2d {
     /// Specifies the current text baseline being used when drawing text.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/textBaseline)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-textbaseline
     pub fn set_text_baseline(&self, text_baseline: TextBaseline) {
         let text_baseline_str = match text_baseline {
             TextBaseline::Alphabetic => "alphabetic",
