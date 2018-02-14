@@ -1309,3 +1309,28 @@ impl TextMetrics {
         ).try_into().unwrap()
     }
 }
+
+#[cfg(all(test, feature = "web_test"))]
+mod test {
+    use super::*;
+    use webcore::try_from::TryInto;
+
+    fn new_canvas() -> CanvasRenderingContext2d {
+        js!(
+            var canvas = document.createElement("canvas");
+            return canvas.getContext("2d");
+        ).try_into().unwrap()
+    }
+
+    #[test]
+    fn test_canvas() {
+        let canvas = new_canvas();
+
+        canvas.set_fill_style_color("rgb(200,0,0)");
+        assert_eq!(canvas.get_fill_style(), "rgb(200,0,0)");
+
+        canvas.fill_rect(10, 10, 55, 50);
+        let res: Result<CanvasGradient, IndexSizeError> = canvas.create_radial_gradient(100, 100, -1, 100, 100, 0);
+        assert!(res.is_err());
+    }
+}
