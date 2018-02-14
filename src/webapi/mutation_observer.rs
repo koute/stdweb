@@ -161,6 +161,7 @@ impl MutationObserver {
 ///
 /// When the `MutationObserverHandle` is dropped, the [`disconnect`](#method.disconnect)
 /// method will automatically be called.
+// TODO derive PartialEq, Eq, etc. ?
 #[ derive( Debug ) ]
 pub struct MutationObserverHandle {
     mutation_observer: MutationObserver,
@@ -239,6 +240,7 @@ pub enum MutationRecord {
     },
 }
 
+// TODO create a MutationRecord Reference and use instanceof to verify it
 impl TryFrom< Value > for MutationRecord {
     type Error = ConversionError;
 

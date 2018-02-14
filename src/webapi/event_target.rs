@@ -7,6 +7,7 @@ use webapi::event::{ConcreteEvent, IEvent};
 use private::UnimplementedException;
 
 /// A handle to a particular event listener.
+// TODO derive PartialEq, Eq, etc. ?
 pub struct EventListenerHandle {
     event_type: &'static str,
     reference: Reference,
