@@ -7,10 +7,12 @@ use webapi::event::{IEvent, Event, ConcreteEvent};
 /// events.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/FocusEvent)
+// https://w3c.github.io/uievents/#focusevent
 pub trait IFocusEvent: IEvent {
     /// Returns the secondary target of this event, if any.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/FocusEvent/relatedTarget)
+    // https://w3c.github.io/uievents/#dom-focusevent-relatedtarget
     #[inline]
     fn related_target( &self ) -> Option< EventTarget > {
         js!(
@@ -23,6 +25,7 @@ pub trait IFocusEvent: IEvent {
 /// interface.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/FocusEvent)
+// https://w3c.github.io/uievents/#focusevent
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "FocusEvent")]
 #[reference(subclass_of(Event))]
@@ -35,6 +38,7 @@ impl IFocusEvent for FocusRelatedEvent {}
 /// difference between this event and focusin is that only the latter bubbles.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/focus)
+// https://w3c.github.io/uievents/#event-type-focus
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "FocusEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, FocusRelatedEvent))]
@@ -50,6 +54,7 @@ impl ConcreteEvent for FocusEvent {
 /// between this event and focusout is that only the latter bubbles.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/blur)
+// https://w3c.github.io/uievents/#event-type-blur
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "FocusEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, FocusRelatedEvent))]

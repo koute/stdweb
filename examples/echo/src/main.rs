@@ -4,6 +4,7 @@ use std::rc::Rc;
 
 use stdweb::unstable::TryInto;
 use stdweb::web::{
+    IParentNode,
     IEventTarget,
     INode,
     HtmlElement,
@@ -37,9 +38,9 @@ macro_rules! enclose {
 fn main() {
     stdweb::initialize();
 
-    let output_div: HtmlElement = document().query_selector( ".output" ).unwrap().try_into().unwrap();
+    let output_div: HtmlElement = document().query_selector( ".output" ).unwrap().unwrap().try_into().unwrap();
     let output_msg = Rc::new(move |msg: &str| {
-        let elem = document().create_element("p");
+        let elem = document().create_element("p").unwrap();
         elem.set_text_content(msg);
         if let Some(child) = output_div.first_child() {
             output_div.insert_before(&elem, &child);
@@ -68,7 +69,7 @@ fn main() {
         output_msg(&event.data().into_text().unwrap());
     }));
 
-    let text_entry: InputElement = document().query_selector( ".form input" ).unwrap().try_into().unwrap();
+    let text_entry: InputElement = document().query_selector( ".form input" ).unwrap().unwrap().try_into().unwrap();
     text_entry.add_event_listener( enclose!( (text_entry) move |event: KeyPressEvent| {
         if event.key() == "Enter" {
             event.prevent_default();

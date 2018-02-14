@@ -32,10 +32,12 @@ pub(crate) fn get_event_modifier_state< T: IEvent >( event: &T, key: ModifierKey
 /// what kind of activity was performed.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent)
+// https://w3c.github.io/uievents/#keyboardevent
 pub trait IKeyboardEvent: IEvent {
     /// Indicates whether the Alt key was down when this event was fired.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/altKey)
+    // https://w3c.github.io/uievents/#ref-for-dom-keyboardevent-altkey-3
     #[inline]
     fn alt_key( &self ) -> bool {
         js!(
@@ -46,6 +48,7 @@ pub trait IKeyboardEvent: IEvent {
     /// Returns a code value that indicates the physical key pressed on the keyboard.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code)
+    // https://w3c.github.io/uievents/#ref-for-dom-keyboardevent-code-3
     #[inline]
     fn code( &self ) -> String {
         js!(
@@ -56,6 +59,7 @@ pub trait IKeyboardEvent: IEvent {
     /// Returns whether the Ctrl key was down when this event was fired.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/ctrlKey)
+    // https://w3c.github.io/uievents/#ref-for-dom-keyboardevent-ctrlkey-3
     #[inline]
     fn ctrl_key( &self ) -> bool {
         js!(
@@ -67,6 +71,7 @@ pub trait IKeyboardEvent: IEvent {
     /// Returns whether a modifier key was down when this event was fired.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/getModifierState)
+    // https://w3c.github.io/uievents/#ref-for-dom-keyboardevent-getmodifierstate-19
     #[inline]
     fn get_modifier_state( &self, key: ModifierKey ) -> bool {
         get_event_modifier_state( self, key )
@@ -75,6 +80,7 @@ pub trait IKeyboardEvent: IEvent {
     /// Returns whether this event was fired during composition.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/isComposing)
+    // https://w3c.github.io/uievents/#ref-for-dom-keyboardevent-iscomposing-1
     #[inline]
     fn is_composing( &self ) -> bool {
         js!(
@@ -85,6 +91,7 @@ pub trait IKeyboardEvent: IEvent {
     /// Returns the location of the key on the keyboard.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/location)
+    // https://w3c.github.io/uievents/#ref-for-dom-keyboardevent-location-1
     fn location( &self ) -> KeyboardLocation {
         match js!(
             return @{self.as_ref()}.location;
@@ -102,6 +109,7 @@ pub trait IKeyboardEvent: IEvent {
     /// Returns the value of a key or keys pressed by the user.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key)
+    // https://w3c.github.io/uievents/#ref-for-dom-keyboardevent-key-4
     #[inline]
     fn key( &self ) -> String {
         js!(
@@ -112,6 +120,7 @@ pub trait IKeyboardEvent: IEvent {
     /// Indicates whether the Meta key was down when this event was fired.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/metaKey)
+    // https://w3c.github.io/uievents/#ref-for-dom-keyboardevent-metakey-3
     #[inline]
     fn meta_key( &self ) -> bool {
         js!(
@@ -122,6 +131,7 @@ pub trait IKeyboardEvent: IEvent {
     /// Indicates whether the key is held down such that it is repeating.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/repeat)
+    // https://w3c.github.io/uievents/#ref-for-dom-keyboardevent-repeat-1
     #[inline]
     fn repeat( &self ) -> bool {
         js!(
@@ -132,6 +142,7 @@ pub trait IKeyboardEvent: IEvent {
     /// Indicates whether the Shift key was down when this event was fired.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/shiftKey)
+    // https://w3c.github.io/uievents/#ref-for-dom-keyboardevent-shiftkey-3
     #[inline]
     fn shift_key( &self ) -> bool {
         js!(
@@ -182,6 +193,7 @@ pub enum KeyboardLocation {
 /// interface.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent)
+// https://w3c.github.io/uievents/#keyboardevent
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "KeyboardEvent")]
 #[reference(subclass_of(Event))]
@@ -194,6 +206,7 @@ impl IKeyboardEvent for KeyboardEvent {}
 /// fired for keys which produce a character value.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/keypress)
+// https://w3c.github.io/uievents/#keypress
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "KeyboardEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, KeyboardEvent))]
@@ -210,6 +223,7 @@ impl ConcreteEvent for KeyPressEvent {
 /// do not produce a character value.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/keydown)
+// https://w3c.github.io/uievents/#event-type-keydown
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "KeyboardEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, KeyboardEvent))]
@@ -224,6 +238,7 @@ impl ConcreteEvent for KeyDownEvent {
 /// The `KeyUpEvent` is fired when a key is released.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/keyup)
+// https://w3c.github.io/uievents/#event-type-keyup
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "KeyboardEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, KeyboardEvent))]

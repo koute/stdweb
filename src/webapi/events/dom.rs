@@ -7,6 +7,7 @@ use webapi::event::{IEvent, IUiEvent, UiEvent, Event, ConcreteEvent};
 /// necessarily fired for each change to an element's value.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/change)
+// https://html.spec.whatwg.org/#event-change
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "Event")] // TODO: Better type check.
 #[reference(subclass_of(Event))]
@@ -26,6 +27,7 @@ impl ConcreteEvent for ChangeEvent {
 /// elements of these types.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/input)
+// https://html.spec.whatwg.org/#event-input
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "Event")] // TODO: Better type check.
 #[reference(subclass_of(Event))]
@@ -39,6 +41,7 @@ impl ConcreteEvent for InputEvent {
 /// The `ResourceLoadEvent` is fired when a resource and its dependent resources have finished loading.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/load)
+// https://w3c.github.io/uievents/#load
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "UIEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, UiEvent))]
@@ -53,6 +56,7 @@ impl ConcreteEvent for ResourceLoadEvent {
 /// The `ResourceAbortEvent` is fired when the loading of a resource has been aborted.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/abort)
+// https://w3c.github.io/uievents/#event-type-abort
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "UIEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, UiEvent))]
@@ -68,6 +72,7 @@ impl ConcreteEvent for ResourceAbortEvent {
 /// since this event is used from a variety of APIs.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/error)
+// https://w3c.github.io/uievents/#event-type-error
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "UIEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, UiEvent))]
@@ -84,6 +89,7 @@ impl ConcreteEvent for ResourceErrorEvent {
 /// MDN incorrectly documents this as a UIEvent, but in browsers it is actually
 /// just an Event.
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/resize)
+// https://drafts.csswg.org/cssom-view/#eventdef-window-resize
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "Event")] // TODO: Better type check.
 #[reference(subclass_of(Event))]
@@ -97,6 +103,7 @@ impl ConcreteEvent for ResizeEvent {
 /// The readystatechange event is fired when the readyState attribute of a document has changed.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/readystatechange)
+// https://html.spec.whatwg.org/#event-readystatechange
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "Event")] // TODO: Better type check.
 #[reference(subclass_of(Event))]

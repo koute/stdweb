@@ -6,19 +6,22 @@ use webcore::reference_type::ReferenceType;
 /// Blobs represent data that isn't necessarily in a JavaScript-native format.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Blob)
+// https://w3c.github.io/FileAPI/#dfn-Blob
 pub trait IBlob: ReferenceType {
     /// The size, in bytes, of the data contained in the Blob object.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Blob/size)
-    fn len( &self ) -> usize {
+    // https://w3c.github.io/FileAPI/#ref-for-dfn-size%E2%91%A0
+    fn len( &self ) -> u64 {
         let reference = self.as_ref();
-        let length: i32 = js!( return @{reference}.size; ).try_into().unwrap();
-        length as usize
+        let length: u64 = js!( return @{reference}.size; ).try_into().unwrap();
+        length
     }
 
     /// A string indicating the MIME type of the data contained in the `Blob`.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Blob/type)
+    // https://w3c.github.io/FileAPI/#ref-for-dfn-type%E2%91%A0
     fn mime( &self ) -> Option< String > {
         let reference = self.as_ref();
         let mime: String = js!( return @{reference}.type; ).try_into().unwrap();
@@ -34,6 +37,7 @@ pub trait IBlob: ReferenceType {
 /// interface.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Blob)
+// https://w3c.github.io/FileAPI/#dfn-Blob
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(instance_of = "Blob")]
 pub struct Blob( Reference );

@@ -19,6 +19,29 @@ fn log( a: &str ) {
 }
 
 
+fn test_from_thenable() {
+    let a = Promise::from_thenable( &js!( return Promise.resolve(5); ).try_into().unwrap() );
+
+    a.unwrap().done( |result: Result< u32, u32 > | {
+        assert_eq!( result, Ok( 5 ) );
+        log( &format!( "Thenable 1: {:#?}", result ) );
+    } );
+
+
+    let a = Promise::from_thenable( &js!( return { then: function (yes, no) { yes( 1 ); } }; ).try_into().unwrap() );
+
+    a.unwrap().done( |result: Result< u32, u32 > | {
+        assert_eq!( result, Ok( 1 ) );
+        log( &format!( "Thenable 2: {:#?}", result ) );
+    } );
+
+
+    let a = Promise::from_thenable( &js!( return {}; ).try_into().unwrap() );
+
+    assert!( a.is_none() );
+}
+
+
 fn test_error_conversion() {
     let a: PromiseFuture< Null, String > = js!( return Promise.reject( "hi!" ); ).try_into().unwrap();
 
@@ -233,6 +256,7 @@ fn test_timeout() {
 fn main() {
     stdweb::initialize();
 
+    test_from_thenable();
     test_refcell();
     test_panic();
     test_notify();

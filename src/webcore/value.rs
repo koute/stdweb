@@ -860,6 +860,18 @@ impl TryFrom< Value > for Null {
     }
 }
 
+impl TryFrom< Value > for () {
+    type Error = ConversionError;
+
+    #[inline]
+    fn try_from( value: Value ) -> Result< Self, Self::Error > {
+        match value {
+            Value::Null | Value::Undefined => Ok( () ),
+            _ => Err( ConversionError::type_mismatch( &value ) )
+        }
+    }
+}
+
 impl TryFrom< Value > for bool {
     type Error = ConversionError;
 
@@ -1200,5 +1212,17 @@ mod tests {
 
         let typed_reference: Result< TypeError, _ > = reference.try_into();
         assert!( typed_reference.is_err() );
+    }
+
+    #[test]
+    fn convert_from_null_or_undefined_to_empty_tuple() {
+        let a: Result< (), _ > = js! { return null; }.try_into();
+        assert!( a.is_ok() );
+
+        let a: Result< (), _ > = js! { return undefined; }.try_into();
+        assert!( a.is_ok() );
+
+        let a: Result< (), _ > = js! { return 1; }.try_into();
+        assert!( a.is_err() );
     }
 }
