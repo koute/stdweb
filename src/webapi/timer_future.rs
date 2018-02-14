@@ -9,14 +9,14 @@ use futures::unsync::oneshot;
 ///
 // This isn't implemented as a PromiseFuture because Promises do not support cancellation
 #[derive( Debug )]
-pub struct TimerFuture {
+pub struct WaitFuture {
 	receiver: oneshot::Receiver< () >,
 	callback: Value,
 	timer_id: u32,
 }
 
 
-impl TimerFuture {
+impl WaitFuture {
 	fn new( ms: u32 ) -> Self {
 		// We accept a u32 because we don't want negative values, however setTimeout requires it to be i32
 		let ms: i32 = ms as i32;
@@ -49,7 +49,7 @@ impl TimerFuture {
 }
 
 
-impl Future for TimerFuture {
+impl Future for WaitFuture {
 	type Item = ();
 	// TODO use Void instead
 	type Error = Error;
@@ -61,7 +61,7 @@ impl Future for TimerFuture {
 }
 
 
-impl Drop for TimerFuture {
+impl Drop for WaitFuture {
 	#[inline]
 	fn drop( &mut self ) {
 		js! { @(no_return)
@@ -75,6 +75,7 @@ impl Drop for TimerFuture {
 
 ///
 #[inline]
-pub fn wait( ms: u32 ) -> TimerFuture {
-	TimerFuture::new( ms )
+pub fn wait( ms: u32 ) -> WaitFuture {
+	WaitFuture::new( ms )
 }
+

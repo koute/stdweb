@@ -205,7 +205,7 @@ pub mod serde {
 pub mod web {
     #[cfg(feature = "futures")]
     pub use webapi::timer_future::{
-        TimerFuture,
+        WaitFuture,
         wait
     };
 
