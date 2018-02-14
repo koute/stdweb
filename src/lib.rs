@@ -203,6 +203,12 @@ pub mod serde {
 
 /// A module with bindings to the Web APIs.
 pub mod web {
+    #[cfg(feature = "futures")]
+    pub use webapi::timer_future::{
+        TimerFuture,
+        wait
+    };
+
     pub use webapi::window::{
         Window,
         window
