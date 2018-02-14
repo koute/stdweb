@@ -1329,8 +1329,8 @@ mod test {
         canvas.set_fill_style_color("rgb(200,0,0)");
         assert_eq!(canvas.get_fill_style(), "rgb(200,0,0)");
 
-        canvas.fill_rect(10, 10, 55, 50);
-        let res: Result<CanvasGradient, IndexSizeError> = canvas.create_radial_gradient(100, 100, -1, 100, 100, 0);
+        canvas.fill_rect(10 as f64, 10 as f64, 55 as f64, 50 as f64);
+        let res: Result<CanvasGradient, IndexSizeError> = canvas.create_radial_gradient(100 as f64, 100 as f64, -1 as f64, 100 as f64, 100 as f64, 0 as f64);
         assert!(res.is_err());
     }
 }
