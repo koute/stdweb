@@ -36,7 +36,7 @@ pub trait IError: ReferenceType {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error)
 // https://www.ecma-international.org/ecma-262/6.0/#sec-error-objects
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Error")]
 pub struct Error( Reference );
 

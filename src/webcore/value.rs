@@ -1138,16 +1138,16 @@ mod tests {
         assert!( &reference == &value );
     }
 
-    #[derive(Clone, Debug, ReferenceType)]
+    #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
     #[reference(instance_of = "Error")]
     pub struct Error( Reference );
 
-    #[derive(Clone, Debug, ReferenceType)]
+    #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
     #[reference(instance_of = "ReferenceError")]
     #[reference(subclass_of(Error))]
     pub struct ReferenceError( Reference );
 
-    #[derive(Clone, Debug, ReferenceType)]
+    #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
     #[reference(instance_of = "TypeError")]
     #[reference(subclass_of(Error))]
     pub struct TypeError( Reference );

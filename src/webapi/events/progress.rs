@@ -47,7 +47,7 @@ pub trait IProgressEvent: IEvent {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ProgressEvent)
 // https://xhr.spec.whatwg.org/#progressevent
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "ProgressEvent")]
 #[reference(subclass_of(Event))]
 pub struct ProgressRelatedEvent( Reference );
@@ -59,7 +59,7 @@ impl IProgressEvent for ProgressRelatedEvent {}
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/progress)
 // https://xhr.spec.whatwg.org/#event-xhr-progress
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "ProgressEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, ProgressRelatedEvent))]
 pub struct ProgressEvent( Reference );
@@ -74,7 +74,7 @@ impl ConcreteEvent for ProgressEvent {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/load_(ProgressEvent))
 // https://xhr.spec.whatwg.org/#event-xhr-load
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "ProgressEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, ProgressRelatedEvent))]
 pub struct ProgressLoadEvent( Reference );
@@ -89,7 +89,7 @@ impl ConcreteEvent for ProgressLoadEvent {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/loadstart)
 // https://xhr.spec.whatwg.org/#event-xhr-loadstart
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "ProgressEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, ProgressRelatedEvent))]
 pub struct LoadStartEvent( Reference );
@@ -106,7 +106,7 @@ impl ConcreteEvent for LoadStartEvent {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/loadend)
 // https://xhr.spec.whatwg.org/#event-xhr-loadend
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "ProgressEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, ProgressRelatedEvent))]
 pub struct LoadEndEvent( Reference );
@@ -121,7 +121,7 @@ impl ConcreteEvent for LoadEndEvent {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/abort_(ProgressEvent))
 // https://xhr.spec.whatwg.org/#event-xhr-abort
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "ProgressEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, ProgressRelatedEvent))]
 pub struct ProgressAbortEvent( Reference );
@@ -136,7 +136,7 @@ impl ConcreteEvent for ProgressAbortEvent {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/error_(ProgressEvent))
 // https://xhr.spec.whatwg.org/#event-xhr-error
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "ProgressEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, ProgressRelatedEvent))]
 pub struct ProgressErrorEvent( Reference );

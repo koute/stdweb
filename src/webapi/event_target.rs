@@ -80,7 +80,7 @@ pub trait IEventTarget: ReferenceType {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget)
 // https://dom.spec.whatwg.org/#eventtarget
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "EventTarget")]
 pub struct EventTarget( Reference );
 

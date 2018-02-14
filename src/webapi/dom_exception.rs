@@ -12,7 +12,7 @@ pub trait IDomException: IError {}
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DOMException)
 // https://heycam.github.io/webidl/#idl-DOMException
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DOMException")]
 #[reference(subclass_of(Error))]
 pub struct DomException( Reference );
@@ -24,7 +24,7 @@ error_boilerplate! { DomException }
 
 /// Occurs when an operation would result in an incorrect node tree.
 // https://heycam.github.io/webidl/#hierarchyrequesterror
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(subclass_of(Error, DomException))]
 pub struct HierarchyRequestError( Reference );
 
@@ -35,7 +35,7 @@ error_boilerplate! { HierarchyRequestError, name = "HierarchyRequestError" }
 
 /// Occurs when an object does not support an operation or argument.
 // https://heycam.github.io/webidl/#invalidaccesserror
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(subclass_of(Error, DomException))]
 pub struct InvalidAccessError( Reference );
 
@@ -46,7 +46,7 @@ error_boilerplate! { InvalidAccessError, name = "InvalidAccessError" }
 
 /// Occurs when the specified object cannot be found.
 // https://heycam.github.io/webidl/#notfounderror
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(subclass_of(Error, DomException))]
 pub struct NotFoundError( Reference );
 
@@ -57,7 +57,7 @@ error_boilerplate! { NotFoundError, name = "NotFoundError" }
 
 /// Occurs when the requested operation is insecure.
 // https://heycam.github.io/webidl/#securityerror
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(subclass_of(Error, DomException))]
 pub struct SecurityError( Reference );
 
@@ -68,7 +68,7 @@ error_boilerplate! { SecurityError, name = "SecurityError" }
 
 /// Occurs when an argument does not match the expected pattern.
 // https://heycam.github.io/webidl/#syntaxerror
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(subclass_of(Error, DomException))]
 pub struct SyntaxError( Reference );
 

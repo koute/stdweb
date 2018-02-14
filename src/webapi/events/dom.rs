@@ -8,7 +8,7 @@ use webapi::event::{IEvent, IUiEvent, UiEvent, Event, ConcreteEvent};
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/change)
 // https://html.spec.whatwg.org/#event-change
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Event")] // TODO: Better type check.
 #[reference(subclass_of(Event))]
 pub struct ChangeEvent( Reference );
@@ -28,7 +28,7 @@ impl ConcreteEvent for ChangeEvent {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/input)
 // https://html.spec.whatwg.org/#event-input
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Event")] // TODO: Better type check.
 #[reference(subclass_of(Event))]
 pub struct InputEvent( Reference );
@@ -42,7 +42,7 @@ impl ConcreteEvent for InputEvent {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/load)
 // https://w3c.github.io/uievents/#load
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "UIEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, UiEvent))]
 pub struct ResourceLoadEvent( Reference );
@@ -57,7 +57,7 @@ impl ConcreteEvent for ResourceLoadEvent {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/abort)
 // https://w3c.github.io/uievents/#event-type-abort
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "UIEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, UiEvent))]
 pub struct ResourceAbortEvent( Reference );
@@ -73,7 +73,7 @@ impl ConcreteEvent for ResourceAbortEvent {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/error)
 // https://w3c.github.io/uievents/#event-type-error
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "UIEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, UiEvent))]
 pub struct ResourceErrorEvent( Reference );
@@ -90,7 +90,7 @@ impl ConcreteEvent for ResourceErrorEvent {
 /// just an Event.
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/resize)
 // https://drafts.csswg.org/cssom-view/#eventdef-window-resize
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Event")] // TODO: Better type check.
 #[reference(subclass_of(Event))]
 pub struct ResizeEvent( Reference );
@@ -104,7 +104,7 @@ impl ConcreteEvent for ResizeEvent {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/readystatechange)
 // https://html.spec.whatwg.org/#event-readystatechange
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Event")] // TODO: Better type check.
 #[reference(subclass_of(Event))]
 pub struct ReadyStateChangeEvent( Reference );

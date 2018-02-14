@@ -16,7 +16,7 @@ use super::promise_future::PromiseFuture;
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)
 // https://www.ecma-international.org/ecma-262/6.0/#sec-promise-objects
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Promise")]
 pub struct Promise( Reference );
 

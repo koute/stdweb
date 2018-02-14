@@ -11,7 +11,7 @@ use webapi::event::{IEvent, Event, ConcreteEvent};
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/close)
 // https://html.spec.whatwg.org/multipage/web-sockets.html#closeevent
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "CloseEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event))]
 pub struct SocketCloseEvent( Reference );
@@ -62,7 +62,7 @@ impl ConcreteEvent for SocketCloseEvent {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/error)
 // https://html.spec.whatwg.org/#event-error
 // https://html.spec.whatwg.org/multipage/web-sockets.html#handler-websocket-onerror
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Event")] // TODO: Better type check.
 #[reference(subclass_of(Event))]
 pub struct SocketErrorEvent( Reference );
@@ -77,7 +77,7 @@ impl ConcreteEvent for SocketErrorEvent {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/open)
 // https://html.spec.whatwg.org/#event-open
 // https://html.spec.whatwg.org/multipage/web-sockets.html#handler-websocket-onopen
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Event")] // TODO: Better type check.
 #[reference(subclass_of(Event))]
 pub struct SocketOpenEvent( Reference );
@@ -208,7 +208,7 @@ pub trait IMessageEvent: IEvent where <Self::Data as TryFrom<Value>>::Error: Deb
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/message)
 // https://html.spec.whatwg.org/#event-message
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "MessageEvent")]
 #[reference(subclass_of(Event))]
 pub struct SocketMessageEvent( Reference );

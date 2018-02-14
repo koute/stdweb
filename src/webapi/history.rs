@@ -5,7 +5,7 @@ use private::UnimplementedException;
 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/History)
 // https://html.spec.whatwg.org/#history-3
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "History")]
 pub struct History(Reference);
 

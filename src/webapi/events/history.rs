@@ -9,7 +9,7 @@ use webapi::event::{IEvent, Event, ConcreteEvent};
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/hashchange)
 // https://html.spec.whatwg.org/#event-hashchange
 // https://html.spec.whatwg.org/#hashchangeevent
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "HashChangeEvent")]
 #[reference(subclass_of(Event))]
 pub struct HashChangeEvent( Reference );
@@ -51,7 +51,7 @@ impl HashChangeEvent {
 /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/PopStateEvent)
 // https://html.spec.whatwg.org/#event-popstate
 // https://html.spec.whatwg.org/#popstateevent
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Event")] // TODO: Better type check.
 #[reference(subclass_of(Event))]
 pub struct PopStateEvent(Reference);

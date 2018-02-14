@@ -194,7 +194,7 @@ pub enum KeyboardLocation {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent)
 // https://w3c.github.io/uievents/#keyboardevent
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "KeyboardEvent")]
 #[reference(subclass_of(Event))]
 pub struct KeyboardEvent( Reference );
@@ -207,7 +207,7 @@ impl IKeyboardEvent for KeyboardEvent {}
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/keypress)
 // https://w3c.github.io/uievents/#keypress
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "KeyboardEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, KeyboardEvent))]
 pub struct KeyPressEvent( Reference );
@@ -224,7 +224,7 @@ impl ConcreteEvent for KeyPressEvent {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/keydown)
 // https://w3c.github.io/uievents/#event-type-keydown
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "KeyboardEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, KeyboardEvent))]
 pub struct KeyDownEvent( Reference );
@@ -239,7 +239,7 @@ impl ConcreteEvent for KeyDownEvent {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/keyup)
 // https://w3c.github.io/uievents/#event-type-keyup
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "KeyboardEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, KeyboardEvent))]
 pub struct KeyUpEvent( Reference );
