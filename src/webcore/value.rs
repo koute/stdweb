@@ -22,7 +22,7 @@ pub struct Null;
 
 /// A type representing a reference to a JavaScript value.
 #[repr(C)]
-#[derive(PartialEq, Eq, Debug)]
+#[derive(Debug)]
 pub struct Reference( i32 );
 
 impl Reference {
@@ -50,6 +50,15 @@ impl Reference {
         }
     }
 }
+
+impl PartialEq for Reference {
+    fn eq( &self, other: &Reference ) -> bool {
+        js!( return @{self} === @{other}; ).try_into().unwrap()
+    }
+}
+
+// TODO is this guaranteed to be true? e.g. is it possible to have an f64 that is a Reference ?
+impl Eq for Reference {}
 
 impl Clone for Reference {
     #[inline]
