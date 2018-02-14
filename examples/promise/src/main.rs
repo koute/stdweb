@@ -51,10 +51,10 @@ fn test_error_conversion() {
         } )
     );
 
-    let _a: PromiseFuture< Null, Error > = js!( return Promise.resolve( null ); ).try_into().unwrap();
+    let _a: PromiseFuture< Null > = js!( return Promise.resolve( null ); ).try_into().unwrap();
     log( "Null works" );
 
-    let _a: PromiseFuture< Null, Error > = js!( return Promise.reject( new Error( "hi!" ) ); ).try_into().unwrap();
+    let _a: PromiseFuture< Null > = js!( return Promise.reject( new Error( "hi!" ) ); ).try_into().unwrap();
     log( "Error works" );
 
     //let _a: PromiseFuture< Null, SyntaxError > = js!( return Promise.reject( new Error( "hi!" ) ); ).try_into().unwrap();
@@ -233,7 +233,7 @@ fn test_notify() {
 
 
 fn test_timeout() {
-    fn sleep( ms: u32 ) -> PromiseFuture< Null, Error > {
+    fn sleep( ms: u32 ) -> PromiseFuture< Null > {
         js!( return new Promise( function ( success, failure ) {
             setTimeout( function () {
                 success( null );

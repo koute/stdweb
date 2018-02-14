@@ -1,6 +1,7 @@
 use std;
 use webcore::value::{Value, ConversionError};
 use webcore::try_from::{TryInto, TryFrom};
+use webapi::error;
 use futures::{Future, Poll, Async};
 use futures::unsync::oneshot::Receiver;
 use webcore::promise_executor::spawn;
@@ -16,13 +17,10 @@ use super::promise::Promise;
 /// Convert a JavaScript `Promise` into a `PromiseFuture`:
 ///
 /// ```rust
-/// use stdweb::PromiseFuture;
-/// use stdweb::web::error::Error;
-///
-/// let future: PromiseFuture<String, Error> = js!( return Promise.resolve("foo"); ).try_into().unwrap();
+/// let future: PromiseFuture<String> = js!( return Promise.resolve("foo"); ).try_into().unwrap();
 /// ```
-pub struct PromiseFuture< A, B > {
-    pub(crate) future: Receiver< Result< A, B > >,
+pub struct PromiseFuture< Value, Error = error::Error > {
+    pub(crate) future: Receiver< Result< Value, Error > >,
 }
 
 impl PromiseFuture< (), () > {
