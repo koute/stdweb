@@ -16,7 +16,9 @@ use futures::future::Future;
 use super::promise_future::PromiseFuture;
 
 
+/// This is used to cleanup the [`done`](struct.Promise.html#method.done) callback.
 ///
+/// See the documentation for [`done`](struct.Promise.html#method.done) for more information.
 #[derive( Debug, Clone )]
 pub struct DoneHandle {
     callback: Value,
@@ -156,12 +158,22 @@ impl Promise {
     ///
     /// The `callback` is guaranteed to be called asynchronously even if the `Promise` is already succeeded / failed.
     ///
-    /// If the `Promise` never succeeds / fails then the `callback` will never be called, and it will leak memory.
+    /// If the `Promise` never succeeds / fails then the `callback` will never be called.
+    ///
+    /// This method returns a [`DoneHandle`](struct.DoneHandle.html). When the [`DoneHandle`](struct.DoneHandle.html)
+    /// is dropped it will drop the `callback` and the `callback` will never be called. This is useful if you are
+    /// no longer interested in the `Promise`'s result.
+    ///
+    /// But if you *are* interested in the `Promise`'s result, then you need to make sure to keep the handle alive
+    /// until after the callback is called.
+    ///
+    /// Dropping the [`DoneHandle`](struct.DoneHandle.html) does ***not*** cancel the `Promise`, because promises
+    /// do not support cancellation.
     ///
     /// # Examples
     ///
     /// ```rust
-    /// promise.done(|result| {
+    /// let handle = promise.done(|result| {
     ///     match result {
     ///         Ok(success) => { ... },
     ///         Err(error) => { ... },
