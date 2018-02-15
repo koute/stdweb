@@ -16,6 +16,22 @@ use futures::future::Future;
 use super::promise_future::PromiseFuture;
 
 
+#[derive( Debug, Clone )]
+pub struct DoneHandle {
+    callback: Value,
+    done: Value,
+}
+
+impl Drop for DoneHandle {
+    fn drop( &mut self ) {
+        js! { @(no_return)
+            @{&self.done}[0] = true;
+            @{&self.callback}.drop();
+        }
+    }
+}
+
+
 /// A `Promise` object represents the eventual completion (or failure) of an asynchronous operation, and its resulting value.
 ///
 /// In most situations you shouldn't use this, use [`PromiseFuture`](struct.PromiseFuture.html) instead.
@@ -154,7 +170,7 @@ impl Promise {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then)
     // https://www.ecma-international.org/ecma-262/6.0/#sec-performpromisethen
-    pub fn done< A, B, F >( &self, callback: F )
+    pub fn done< A, B, F >( &self, callback: F ) -> DoneHandle
         where A: TryFrom< Value >,
               B: TryFrom< Value >,
               // TODO these Debug constraints are only needed because of unwrap
@@ -167,6 +183,7 @@ impl Promise {
                 // TODO figure out a way to avoid the unwrap
                 let value: A = value.try_into().unwrap();
                 Ok( value )
+
             } else {
                 // TODO figure out a way to avoid the unwrap
                 let value: B = value.try_into().unwrap();
@@ -176,15 +193,29 @@ impl Promise {
             callback( value );
         };
 
-        js! { @(no_return)
-            var callback = @{Once( callback )};
+        let callback = js!( return @{Once( callback )}; );
+
+        let done = js!(
+            var callback = @{&callback};
+            var done = [ false ];
 
             // TODO don't swallow any errors thrown inside callback
             @{self}.then( function ( value ) {
-                callback( value, true );
+                if ( !done[0] ) {
+                    callback( value, true );
+                }
             }, function ( value ) {
-                callback( value, false );
+                if ( !done[0] ) {
+                    callback( value, false );
+                }
             } );
+
+            return done;
+        );
+
+        DoneHandle {
+            callback,
+            done
         }
     }
 
@@ -209,16 +240,15 @@ impl Promise {
 
         let ( sender, receiver ) = channel();
 
-        self.done( |value| {
-            // TODO is this correct ?
-            match sender.send( value ) {
-                Ok( _ ) => {},
-                Err( _ ) => {},
-            };
-        } );
-
         PromiseFuture {
             future: receiver,
+            _done_handle: self.done( |value| {
+                // TODO is this correct ?
+                match sender.send( value ) {
+                    Ok( _ ) => {},
+                    Err( _ ) => {},
+                };
+            } )
         }
     }
 }
