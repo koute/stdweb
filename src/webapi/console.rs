@@ -1,3 +1,22 @@
+#[doc(hidden)]
+#[macro_export]
+macro_rules! console_unsafe {
+    ( $name:ident ) => {{
+        js! { @(no_return)
+            console.$name();
+        }
+        ()
+    }};
+
+    ( $name:ident, $( $args:expr ),* ) => {{
+        js! { @(no_return)
+            console.$name( $( @{$args} ),* );
+        }
+        ()
+    }};
+}
+
+
 /// Calls methods on the JavaScript `console` object.
 ///
 /// This should **only** be used for debugging purposes, its behavior is
@@ -15,16 +34,6 @@
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/console)
 ///
 /// # Examples
-///
-/// ## clear
-///
-/// Clear the console:
-///
-/// ```rust
-/// console!(clear);
-/// ```
-///
-/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Console/clear)
 ///
 /// ## log
 ///
@@ -46,22 +55,21 @@
 /// console!(log, 1, "test", vec![2, 3]);
 /// ```
 ///
-/// All of the `log` examples also work with `error`, `debug`, `info`, and `warn`.
+/// Use [string substitution](https://developer.mozilla.org/en-US/docs/Web/API/console#Using_string_substitutions) to control how the values are printed:
+///
+/// ```rust
+/// console!(log, "foo: %s bar: %s", vec![1, 2], vec![3, 4]);
+/// ```
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Console/log)
+///
+/// ## error
+///
+/// This is exactly the same as `log`, except it prints an error message rather than a normal message.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Console/error)
 #[macro_export]
 macro_rules! console {
-    ( $name:ident ) => {{
-        js! { @(no_return)
-            console.$name();
-        }
-        ()
-    }};
-
-    ( $name:ident, $( $args:expr ),* ) => {{
-        js! { @(no_return)
-            console.$name( $( @{$args} ),* );
-        }
-        ()
-    }};
+    ( log, $( $args:expr ),+ ) => { console_unsafe!( log, $( $args ),+ ) };
+    ( error, $( $args:expr ),+ ) => { console_unsafe!( error, $( $args ),+ ) };
 }
