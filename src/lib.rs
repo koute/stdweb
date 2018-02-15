@@ -206,7 +206,9 @@ pub mod web {
     #[cfg(feature = "futures")]
     pub use webapi::timer_future::{
         Wait,
-        wait
+        wait,
+        IntervalBuffered,
+        interval_buffered
     };
 
     pub use webapi::window::{
