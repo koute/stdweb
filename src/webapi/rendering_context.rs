@@ -262,7 +262,7 @@ impl CanvasRenderingContext2d {
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-fillstyle
     pub fn get_fill_style(&self) -> String {
         js! (
-            @{&self.0}.fillStyle
+            return @{&self.0}.fillStyle
         ).try_into().unwrap()
     }
 
@@ -1327,18 +1327,14 @@ mod test {
         let canvas = new_canvas();
 
         canvas.set_fill_style_color("rgb(200,0,0)");
-        assert_eq!(canvas.get_fill_style(), "rgb(200,0,0)");
+        assert_eq!(canvas.get_fill_style(), "#c80000");
     }
 
     #[test]
-    #[should_panic]
     fn test_browser_create_radial_gradient() {
         let canvas = new_canvas();
         canvas.fill_rect(10 as f64, 10 as f64, 55 as f64, 50 as f64);
 
-        // According to the specs this should return IndexSizeError
-        // Chrome/FF return Undefined
-        // Test is tagged as should panic until browsers follow specs
         let res: Result<CanvasGradient, IndexSizeError> = canvas.create_radial_gradient(100 as f64, 100 as f64, -1 as f64, 100 as f64, 100 as f64, 0 as f64);
         assert!(res.is_err());
     }
