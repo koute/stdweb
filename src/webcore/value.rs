@@ -52,6 +52,7 @@ impl Reference {
 }
 
 impl PartialEq for Reference {
+    #[inline]
     fn eq( &self, other: &Reference ) -> bool {
         js!( return @{self} === @{other}; ).try_into().unwrap()
     }
