@@ -16,6 +16,7 @@ use futures::future::Future;
 use super::promise_future::PromiseFuture;
 
 
+///
 #[derive( Debug, Clone )]
 pub struct DoneHandle {
     callback: Value,
@@ -178,7 +179,7 @@ impl Promise {
               B::Error: std::fmt::Debug,
               F: FnOnce( Result< A, B > ) + 'static {
 
-        let callback = |value: Value, success: bool| {
+        let callback = move |value: Value, success: bool| {
             let value: Result< A, B > = if success {
                 // TODO figure out a way to avoid the unwrap
                 let value: A = value.try_into().unwrap();
@@ -215,7 +216,7 @@ impl Promise {
 
         DoneHandle {
             callback,
-            done
+            done,
         }
     }
 
@@ -248,7 +249,7 @@ impl Promise {
                     Ok( _ ) => {},
                     Err( _ ) => {},
                 };
-            } )
+            } ),
         }
     }
 }
