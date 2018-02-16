@@ -54,11 +54,17 @@ impl Reference {
 impl PartialEq for Reference {
     #[inline]
     fn eq( &self, other: &Reference ) -> bool {
-        js!( return @{self} === @{other}; ).try_into().unwrap()
+        let result = self.0 == other.0;
+
+        debug_assert_eq!( {
+            let real_result: bool = js!( return @{self} === @{other}; ).try_into().unwrap();
+            real_result
+        }, result );
+
+        result
     }
 }
 
-// TODO is this guaranteed to be true? e.g. is it possible to have an f64 that is a Reference ?
 impl Eq for Reference {}
 
 impl Clone for Reference {
