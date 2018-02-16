@@ -1,6 +1,6 @@
 #[doc(hidden)]
 #[macro_export]
-macro_rules! console_unsafe {
+macro_rules! __internal_console_unsafe {
     ( $name:ident ) => {{
         js! { @(no_return)
             console.$name();
@@ -70,6 +70,6 @@ macro_rules! console_unsafe {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Console/error)
 #[macro_export]
 macro_rules! console {
-    ( log, $( $args:expr ),+ ) => { console_unsafe!( log, $( $args ),+ ) };
-    ( error, $( $args:expr ),+ ) => { console_unsafe!( error, $( $args ),+ ) };
+    ( log, $( $args:expr ),+ ) => { __internal_console_unsafe!( log, $( $args ),+ ) };
+    ( error, $( $args:expr ),+ ) => { __internal_console_unsafe!( error, $( $args ),+ ) };
 }
