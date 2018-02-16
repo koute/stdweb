@@ -5,8 +5,9 @@
 //! Note that this implementation currently doesn't handle the failure to get position callbacks
 //! nor does it handle geo_options.
 
-use webcore::value::{Reference, Value};
+use webcore::once::Once;
 use webcore::try_from::TryInto;
+use webcore::value::{Reference, Value};
 
 /// Representation of positional coordinate information.
 #[derive(Clone, Debug, ReferenceType)]
@@ -110,7 +111,6 @@ impl ::std::default::Default for WatchId {
 #[derive(Debug)]
 pub struct Geolocation;
 
-use webcore::once::Once;
 impl Geolocation {
     /// Attempt to get current position and invoke callback on success.
     pub fn get_current_position<F: FnOnce(Position) + 'static>(callback: F) {
