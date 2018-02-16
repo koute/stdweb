@@ -10,7 +10,7 @@ use webapi::html_element::{IHtmlElement, HtmlElement};
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en/docs/Web/HTML/Element/input)
 // https://html.spec.whatwg.org/#htmlinputelement
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "HTMLInputElement")]
 #[reference(subclass_of(EventTarget, Node, Element, HtmlElement))]
 pub struct InputElement( Reference );

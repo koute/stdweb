@@ -17,7 +17,7 @@ use webapi::node::Node;
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/NodeList)
 // https://dom.spec.whatwg.org/#nodelist
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "NodeList")]
 pub struct NodeList( Reference );
 

@@ -218,7 +218,7 @@ impl MouseButtonsState {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent)
 // https://w3c.github.io/uievents/#mouseevent
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "MouseEvent")]
 #[reference(subclass_of(Event, UiEvent))]
 pub struct MouseEvent( Reference );
@@ -232,7 +232,7 @@ impl IMouseEvent for MouseEvent {}
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/click)
 // https://w3c.github.io/uievents/#event-type-click
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "MouseEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, UiEvent, MouseEvent))]
 pub struct ClickEvent( Reference );
@@ -250,7 +250,7 @@ impl ConcreteEvent for ClickEvent {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/dblclick)
 // https://w3c.github.io/uievents/#event-type-dblclick
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "MouseEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, UiEvent, MouseEvent))]
 pub struct DoubleClickEvent( Reference );
@@ -267,7 +267,7 @@ impl ConcreteEvent for DoubleClickEvent {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/mousedown)
 // https://w3c.github.io/uievents/#event-type-mousedown
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "MouseEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, UiEvent, MouseEvent))]
 pub struct MouseDownEvent( Reference );
@@ -284,7 +284,7 @@ impl ConcreteEvent for MouseDownEvent {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/mouseup)
 // https://w3c.github.io/uievents/#event-type-mouseup
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "MouseEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, UiEvent, MouseEvent))]
 pub struct MouseUpEvent( Reference );
@@ -301,7 +301,7 @@ impl ConcreteEvent for MouseUpEvent {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/mousemove)
 // https://w3c.github.io/uievents/#event-type-mousemove
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "MouseEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, UiEvent, MouseEvent))]
 pub struct MouseMoveEvent( Reference );

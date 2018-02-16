@@ -7,7 +7,7 @@ use private::UnimplementedException;
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Storage)
 // https://html.spec.whatwg.org/#storage-2
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Storage")]
 pub struct Storage( Reference );
 

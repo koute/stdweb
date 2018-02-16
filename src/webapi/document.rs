@@ -12,7 +12,7 @@ use private::UnimplementedException;
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document)
 // https://dom.spec.whatwg.org/#document
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Document")]
 #[reference(subclass_of(EventTarget, Node))]
 pub struct Document( Reference );

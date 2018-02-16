@@ -29,7 +29,7 @@ impl RequestAnimationFrameHandle {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Window)
 // https://html.spec.whatwg.org/#window
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Window")]
 #[reference(subclass_of(EventTarget))]
 pub struct Window( Reference );

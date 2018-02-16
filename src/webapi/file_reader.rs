@@ -11,7 +11,7 @@ use private::UnimplementedException;
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/FileReader)
 // https://w3c.github.io/FileAPI/#dfn-filereader
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "FileReader")]
 #[reference(subclass_of(EventTarget))]
 pub struct FileReader( Reference );

@@ -3,7 +3,7 @@ use webcore::value::{Reference, Value, ConversionError};
 use webcore::serialization::{JsSerialize, deserialize_array};
 
 /// A type representing a JavaScript array.
-#[derive(Clone, PartialEq, Debug, ReferenceType)]
+#[derive(Clone, PartialEq, Eq, Debug, ReferenceType)]
 #[reference(instance_of = "Array")]
 pub struct Array( Reference );
 

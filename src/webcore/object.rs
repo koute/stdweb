@@ -5,7 +5,7 @@ use webcore::value::{Reference, Value, ConversionError};
 use webcore::serialization::{JsSerialize, deserialize_object};
 
 /// A type representing a JavaScript object.
-#[derive(Clone, PartialEq, Debug, ReferenceType)]
+#[derive(Clone, PartialEq, Eq, Debug, ReferenceType)]
 #[reference(instance_of = "Object")]
 pub struct Object( Reference );
 

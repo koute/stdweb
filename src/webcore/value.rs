@@ -22,7 +22,7 @@ pub struct Null;
 
 /// A type representing a reference to a JavaScript value.
 #[repr(C)]
-#[derive(PartialEq, Eq, Debug)]
+#[derive(Debug)]
 pub struct Reference( i32 );
 
 impl Reference {
@@ -50,6 +50,22 @@ impl Reference {
         }
     }
 }
+
+impl PartialEq for Reference {
+    #[inline]
+    fn eq( &self, other: &Reference ) -> bool {
+        let result = self.0 == other.0;
+
+        debug_assert_eq!( {
+            let real_result: bool = js!( return @{self} === @{other}; ).try_into().unwrap();
+            real_result
+        }, result );
+
+        result
+    }
+}
+
+impl Eq for Reference {}
 
 impl Clone for Reference {
     #[inline]
@@ -1129,16 +1145,16 @@ mod tests {
         assert!( &reference == &value );
     }
 
-    #[derive(Clone, Debug, ReferenceType)]
+    #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
     #[reference(instance_of = "Error")]
     pub struct Error( Reference );
 
-    #[derive(Clone, Debug, ReferenceType)]
+    #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
     #[reference(instance_of = "ReferenceError")]
     #[reference(subclass_of(Error))]
     pub struct ReferenceError( Reference );
 
-    #[derive(Clone, Debug, ReferenceType)]
+    #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
     #[reference(instance_of = "TypeError")]
     #[reference(subclass_of(Error))]
     pub struct TypeError( Reference );

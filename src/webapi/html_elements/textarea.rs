@@ -9,7 +9,7 @@ use webapi::html_element::{IHtmlElement, HtmlElement};
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en/docs/Web/HTML/Element/textarea)
 // https://html.spec.whatwg.org/#htmltextareaelement
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "HTMLTextAreaElement")]
 #[reference(subclass_of(EventTarget, Node, Element, HtmlElement))]
 pub struct TextAreaElement( Reference );
