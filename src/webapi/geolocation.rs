@@ -107,29 +107,23 @@ impl ::std::default::Default for WatchId {
     }
 }
 
-/// API that provides interface to geographic location information.
-#[derive(Debug)]
-pub struct Geolocation;
+/// Attempt to get current position and invoke callback on success.
+pub fn get_current_position<F: FnOnce(Position) + 'static>(callback: F) {
+    js! (
+        navigator.geolocation.getCurrentPosition(@{Once(callback)})
+    );
+}
 
-impl Geolocation {
-    /// Attempt to get current position and invoke callback on success.
-    pub fn get_current_position<F: FnOnce(Position) + 'static>(callback: F) {
-        js! (
-            navigator.geolocation.getCurrentPosition(@{Once(callback)})
-            );
-    }
-
-    /// Watch for position changes and call function with updates.
-    pub fn watch_position<F: Fn(Position) + 'static>(callback: F) -> WatchId {
-        WatchId(js! (
+/// Watch for position changes and call function with updates.
+pub fn watch_position<F: Fn(Position) + 'static>(callback: F) -> WatchId {
+    WatchId(js! (
             navigator.geolocation.watchPosition(@{callback})
             ))
-    }
+}
 
-    /// Clear watch disabling callback on position updates.
-    pub fn clear_watch(watch: &WatchId) {
-        js! (
-            navigator.geolocation.clearWatch(@{&watch.0});
-            );
-    }
+/// Clear watch disabling callback on position updates.
+pub fn clear_watch(watch: &WatchId) {
+    js! (
+        navigator.geolocation.clearWatch(@{&watch.0});
+    );
 }

@@ -2,12 +2,12 @@
 extern crate stdweb;
 
 use std::sync::{Arc, Mutex};
-use stdweb::web::{Geolocation, Position, WatchId};
+use stdweb::web::{get_current_position, watch_position, clear_watch, Position, WatchId};
 
 fn main() {
     stdweb::initialize();
 
-    Geolocation::get_current_position(|x: Position| {
+    get_current_position(|x: Position| {
         js! {
             console.log("cur pos");
             console.log(@{&x});
@@ -21,7 +21,7 @@ fn main() {
     {
         let awatch_id = Arc::clone(&watch_id);
         let mut id = awatch_id.lock().unwrap();
-        *id = Geolocation::watch_position(move |x: Position| {
+        *id = watch_position(move |x: Position| {
             let iter = Arc::clone(&iter);
             let mut i = iter.lock().unwrap();
             let i_cur = *i;
@@ -42,7 +42,7 @@ fn main() {
                 // the watch and bail out of this system.
                 let watch_id = watch_id.clone();
                 let id = watch_id.lock().unwrap();
-                Geolocation::clear_watch(&*id);
+                clear_watch(&*id);
             }
         });
     }
