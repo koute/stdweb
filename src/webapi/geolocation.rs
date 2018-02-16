@@ -19,56 +19,49 @@ impl Coordinates {
     pub fn latitude(&self) -> f64 {
         js! (
             return @{self}.latitude;
-            ).try_into()
-            .unwrap()
+        ).try_into().unwrap()
     }
 
     /// Return the longitude for the coordinate.
     pub fn longitude(&self) -> f64 {
         js! (
             return @{self}.longitude;
-            ).try_into()
-            .unwrap()
+        ).try_into().unwrap()
     }
 
     /// Return the latitude of the coordinate.
     pub fn altitude(&self) -> Option<f64> {
         js! (
             return @{self}.altitude;
-            ).try_into()
-            .ok()
+        ).try_into().ok()
     }
 
     /// Return the accuracy of the coordinate reading.
     pub fn accuracy(&self) -> f64 {
         js! (
             return @{self}.accuracy;
-            ).try_into()
-            .unwrap()
+        ).try_into().unwrap()
     }
 
     /// Return the accuracy of the coordinate reading.
     pub fn altitude_accuracy(&self) -> Option<f64> {
         js! (
             return @{self}.altitudeAccuracy;
-            ).try_into()
-            .ok()
+        ).try_into().ok()
     }
 
     /// Return the heading of the coordinate.
     pub fn heading(&self) -> Option<f64> {
         js! (
             return @{self}.heading;
-            ).try_into()
-            .ok()
+        ).try_into().ok()
     }
 
     /// Return the speed of the coordinate.
     pub fn speed(&self) -> Option<f64> {
         js! (
             return @{self}.speed;
-            ).try_into()
-            .ok()
+        ).try_into().ok()
     }
 }
 
@@ -82,9 +75,8 @@ impl Position {
     pub fn coords(&self) -> Coordinates {
         Coordinates(
             js! (
-            return @{self}.coords;
-            ).try_into()
-                .unwrap(),
+                return @{self}.coords;
+            ).try_into().unwrap(),
         )
     }
 
@@ -92,8 +84,7 @@ impl Position {
     pub fn timestamp(&self) -> f64 {
         js! (
             return @{self}.timestamp;
-            ).try_into()
-            .unwrap()
+        ).try_into().unwrap()
     }
 }
 
