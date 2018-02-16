@@ -1835,7 +1835,7 @@ mod test_reserialization {
         assert_eq!( non_empty, Value::String( "死神はりんごしか食べない!".to_string() ) );
     }
 
-    #[derive(Clone, Debug, ReferenceType)]
+    #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
     #[reference(instance_of = "Error")]
     pub struct Error( Reference );
 

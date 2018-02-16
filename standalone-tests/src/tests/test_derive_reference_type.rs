@@ -1,6 +1,6 @@
 use utils::*;
 
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Error")]
 pub struct Error( ::stdweb::Reference );
 

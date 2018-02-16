@@ -82,7 +82,7 @@ pub trait IHtmlElement: IElement {
 /// interface.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement)
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "HTMLElement")]
 #[reference(subclass_of(EventTarget, Node, Element))]
 pub struct HtmlElement( Reference );

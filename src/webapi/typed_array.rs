@@ -106,7 +106,7 @@ impl< T: ArrayKind > InstanceOf for TypedArray< T > {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays)
 // https://www.ecma-international.org/ecma-262/6.0/#sec-typedarray-objects
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 pub struct TypedArray< T: ArrayKind >( Reference, PhantomData< T > );
 
 impl< T: ArrayKind > TypedArray< T > {

@@ -10,7 +10,7 @@ use private::UnimplementedException;
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Location)
 // https://html.spec.whatwg.org/#location
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Location")]
 pub struct Location( Reference );
 

@@ -38,7 +38,7 @@ pub trait IBlob: ReferenceType {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Blob)
 // https://w3c.github.io/FileAPI/#dfn-Blob
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Blob")]
 pub struct Blob( Reference );
 

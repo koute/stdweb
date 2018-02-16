@@ -11,7 +11,7 @@ use webapi::html_element::{IHtmlElement, HtmlElement};
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement)
 // https://html.spec.whatwg.org/#htmlimageelement
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "HTMLImageElement")]
 #[reference(subclass_of(EventTarget, Node, Element, HtmlElement))]
 pub struct ImageElement( Reference );

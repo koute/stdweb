@@ -9,7 +9,7 @@ use webapi::file::File;
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/FileList)
 // https://w3c.github.io/FileAPI/#dfn-filelist
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "FileList")]
 pub struct FileList( Reference );
 

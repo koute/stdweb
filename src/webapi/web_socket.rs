@@ -65,7 +65,7 @@ newtype_enum!(SocketCloseCode {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
 // https://html.spec.whatwg.org/#websocket
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "WebSocket")]
 #[reference(subclass_of(EventTarget))]
 pub struct WebSocket( Reference );
