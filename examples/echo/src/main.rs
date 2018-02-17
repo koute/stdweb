@@ -74,9 +74,9 @@ fn main() {
         if event.key() == "Enter" {
             event.prevent_default();
 
-            let text: String = text_entry.value().try_into().unwrap();
+            let text: String = text_entry.raw_value();
             if text.is_empty() == false {
-                text_entry.set_value("");
+                text_entry.set_raw_value("");
                 ws.send_text(&text);
             }
         }
