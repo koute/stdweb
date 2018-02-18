@@ -11,6 +11,7 @@ use webcore::array::Array;
 use webcore::serialization::JsSerialize;
 use webcore::reference_type::ReferenceType;
 use webcore::instance_of::InstanceOf;
+use webcore::symbol::Symbol;
 
 /// A unit type representing JavaScript's `undefined`.
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Debug)]
@@ -153,11 +154,22 @@ pub enum Value {
     Null,
     Bool( bool ),
     Number( Number ),
+    Symbol( Symbol ),
     String( String ),
     Reference( Reference )
 }
 
 impl Value {
+    /// Checks whenever the Value is of the Symbol variant.
+    #[inline]
+    pub fn is_symbol( &self ) -> bool {
+        if let Value::Symbol( _ ) = *self {
+            true
+        } else {
+            false
+        }
+    }
+
     /// Checks whenever the Value is of the Reference variant.
     #[inline]
     pub fn is_reference( &self ) -> bool {
@@ -574,6 +586,7 @@ impl_infallible_try_from! {
     impl< 'a, K, V > for &'a HashMap< K, V > => Value where (K: AsRef< str > + Eq + Hash, V: JsSerialize);
     impl< 'a, K, V > for &'a mut HashMap< K, V > => Value where (K: AsRef< str > + Eq + Hash, V: JsSerialize);
 
+    Symbol => Value;
     Reference => Value;
 
     // TODO: Move these to object.rs
@@ -664,6 +677,16 @@ impl PartialEq< Number > for Value {
     fn eq( &self, right: &Number ) -> bool {
         match *self {
             Value::Number( left ) => left == *right,
+            _ => false
+        }
+    }
+}
+
+impl PartialEq< Symbol > for Value {
+    #[inline]
+    fn eq( &self, right: &Symbol ) -> bool {
+        match *self {
+            Value::Symbol( ref left ) => *left == *right,
             _ => false
         }
     }
@@ -777,7 +800,8 @@ impl_partial_eq_boilerplate! {
     bool,
     str,
     String,
-    Number
+    Number,
+    Symbol
 }
 
 /// A structure denoting a conversion error encountered when
@@ -799,6 +823,7 @@ fn value_type_name( value: &Value ) -> &'static str {
         Value::Null => "Null",
         Value::Bool( _ ) => "Bool",
         Value::Number( _ ) => "Number",
+        Value::Symbol( _ ) => "Symbol",
         Value::String( _ ) => "String",
         Value::Reference( _ ) => "Reference"
     }
@@ -980,6 +1005,18 @@ impl TryFrom< Value > for String {
     }
 }
 
+impl TryFrom< Value > for Symbol {
+    type Error = ConversionError;
+
+    #[inline]
+    fn try_from( value: Value ) -> Result< Self, Self::Error > {
+        match value {
+            Value::Symbol( value ) => Ok( value ),
+            _ => Err( ConversionError::type_mismatch( &value ) )
+        }
+    }
+}
+
 impl TryFrom< Value > for Reference {
     type Error = ConversionError;
 
@@ -999,6 +1036,18 @@ impl< 'a > TryFrom< &'a Value > for &'a str {
     fn try_from( value: &'a Value ) -> Result< Self, Self::Error > {
         match *value {
             Value::String( ref value ) => Ok( value ),
+            _ => Err( ConversionError::type_mismatch( &value ) )
+        }
+    }
+}
+
+impl< 'a > TryFrom< &'a Value > for &'a Symbol {
+    type Error = ConversionError;
+
+    #[inline]
+    fn try_from( value: &'a Value ) -> Result< Self, Self::Error > {
+        match *value {
+            Value::Symbol( ref value ) => Ok( value ),
             _ => Err( ConversionError::type_mismatch( &value ) )
         }
     }
@@ -1068,6 +1117,7 @@ impl_nullable_try_from_value! {
     impl< V > HashMap< String, V > where (V: TryFrom< Value, Error = ConversionError >);
     impl< T > Vec< T > where (T: TryFrom< Value, Error = ConversionError >);
     String;
+    Symbol;
 }
 
 impl< 'a > TryFrom< &'a Value > for Option< &'a str > {

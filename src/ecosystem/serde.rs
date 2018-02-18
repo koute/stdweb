@@ -158,6 +158,7 @@ impl Serialize for Value {
             Value::Null => serializer.serialize_unit_struct( "null" ),
             Value::Bool( value ) => serializer.serialize_bool( value ),
             Value::Number( ref value ) => value.serialize( serializer ),
+            Value::Symbol( _ ) => unimplemented!( "Serialization of symbols is unimplemented!" ),
             Value::String( ref value ) => serializer.serialize_str( value ),
             Value::Reference( ref reference ) => {
                 if Array::instance_of( reference ) {
@@ -726,6 +727,7 @@ impl Value {
                     number::Storage::F64( value ) => de::Unexpected::Float( value )
                 }
             },
+            Value::Symbol( _ ) => de::Unexpected::Other( "Symbol" ),
             Value::String( ref value ) => de::Unexpected::Str( value ),
             Value::Reference( _ ) => de::Unexpected::Other( "reference to a JavaScript value" )
         }
@@ -742,6 +744,7 @@ impl< 'de > de::Deserializer< 'de > for Value {
             Value::Null => visitor.visit_unit(),
             Value::Bool( value ) => visitor.visit_bool( value ),
             Value::Number( value ) => de::Deserializer::deserialize_any( value, visitor ),
+            Value::Symbol( _ ) => unimplemented!( "Deserialization of symbols is unimplemented!" ),
             Value::String( value ) => visitor.visit_string( value ),
             Value::Reference( reference ) => {
                 if Array::instance_of( &reference ) {

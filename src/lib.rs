@@ -124,6 +124,7 @@ pub use webcore::value::{
 pub use webcore::number::Number;
 pub use webcore::object::Object;
 pub use webcore::array::Array;
+pub use webcore::symbol::Symbol;
 
 pub use webcore::unsafe_typed_array::UnsafeTypedArray;
 pub use webcore::once::Once;

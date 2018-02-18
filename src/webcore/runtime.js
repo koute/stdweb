@@ -166,6 +166,8 @@ Module.STDWEB_PRIVATE.to_js = function to_js( address ) {
             case 7:
                 return HEAPF64.subarray( pointer, pointer_end );
         }
+    } else if( kind === 15 ) {
+        return Module.STDWEB_PRIVATE.get_raw_value( HEAPU32[ address / 4 ] );
     }
 };
 
@@ -231,6 +233,10 @@ Module.STDWEB_PRIVATE.from_js = function from_js( address, value ) {
         HEAPU8[ address + 12 ] = 5;
     } else if( value === true ) {
         HEAPU8[ address + 12 ] = 6;
+    } else if( kind === "[object Symbol]" ) {
+        var id = Module.STDWEB_PRIVATE.register_raw_value( value );
+        HEAPU8[ address + 12 ] = 15;
+        HEAP32[ address / 4 ] = id;
     } else {
         var refid = Module.STDWEB_PRIVATE.acquire_rust_reference( value );
         HEAPU8[ address + 12 ] = 9;
@@ -281,8 +287,10 @@ Module.STDWEB_PRIVATE.to_js_string = function to_js_string( index, length ) {
 var id_to_ref_map = {};
 var id_to_refcount_map = {};
 var ref_to_id_map = new WeakMap();
-var ref_to_id_symbol_map = {};
 var last_refid = 1;
+
+var id_to_raw_value_map = {};
+var last_raw_value_id = 1;
 
 Module.STDWEB_PRIVATE.acquire_rust_reference = function( reference ) {
     if( reference === undefined || reference === null ) {
@@ -291,16 +299,8 @@ Module.STDWEB_PRIVATE.acquire_rust_reference = function( reference ) {
 
     var refid = ref_to_id_map.get( reference );
     if( refid === undefined ) {
-        refid = ref_to_id_symbol_map[ reference ];
-    }
-
-    if( refid === undefined ) {
         refid = last_refid++;
-        if( typeof reference === "symbol" ) {
-            ref_to_id_symbol_map[ reference ] = refid;
-        } else {
-            ref_to_id_map.set( reference, refid );
-        }
+        ref_to_id_map.set( reference, refid );
         id_to_ref_map[ refid ] = reference;
         id_to_refcount_map[ refid ] = 1;
     } else {
@@ -324,10 +324,20 @@ Module.STDWEB_PRIVATE.decrement_refcount = function( refid ) {
         var reference = id_to_ref_map[ refid ];
         delete id_to_ref_map[ refid ];
         delete id_to_refcount_map[ refid ];
-        if( typeof reference === "symbol" ) {
-            delete ref_to_id_symbol_map[ reference ];
-        } else {
-            ref_to_id_map.delete( reference );
-        }
+        ref_to_id_map.delete( reference );
     }
 };
+
+Module.STDWEB_PRIVATE.register_raw_value = function( value ) {
+    var id = last_raw_value_id++;
+    id_to_raw_value_map[ id ] = value;
+    return id;
+};
+
+Module.STDWEB_PRIVATE.unregister_raw_value = function( id ) {
+    delete id_to_raw_value_map[ id ];
+};
+
+Module.STDWEB_PRIVATE.get_raw_value = function( id ) {
+    return id_to_raw_value_map[ id ];
+}
