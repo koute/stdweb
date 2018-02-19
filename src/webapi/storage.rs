@@ -1,6 +1,6 @@
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
-use private::UnimplementedException;
+use private::TODO;
 
 /// The `Storage` interface of the Web Storage API provides access to
 /// the session storage or local storage for a particular domain.
@@ -33,7 +33,7 @@ impl Storage {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Storage/setItem)
     // https://html.spec.whatwg.org/#the-storage-interface:dom-storage-setitem
-    pub fn insert( &self, key: &str, value: &str ) -> Result< (), UnimplementedException > {
+    pub fn insert( &self, key: &str, value: &str ) -> Result< (), TODO > {
         js!( @(no_return)
             @{self}.setItem( @{key}, @{value} );
         );

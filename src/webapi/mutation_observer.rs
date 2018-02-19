@@ -3,7 +3,7 @@ use webcore::value::{Reference, Value, ConversionError};
 use webapi::node_list::NodeList;
 use webcore::try_from::{TryFrom, TryInto};
 use webapi::node::{INode, Node};
-use private::UnimplementedException;
+use private::TODO;
 
 /// Provides a way to receive notifications about changes to the DOM.
 ///
@@ -105,7 +105,7 @@ impl MutationObserver {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#observe())
     // https://dom.spec.whatwg.org/#ref-for-dom-mutationobserver-observe
-    pub fn observe< T: INode >( &self, target: &T, options: MutationObserverInit ) -> Result< (), UnimplementedException > {
+    pub fn observe< T: INode >( &self, target: &T, options: MutationObserverInit ) -> Result< (), TODO > {
         let attribute_filter = options.attribute_filter
             .map( |val| val.into() )
             // This must compile to JavaScript `undefined`, NOT `null`

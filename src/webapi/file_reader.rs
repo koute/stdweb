@@ -3,7 +3,7 @@ use webcore::try_from::TryInto;
 use webapi::blob::IBlob;
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::array_buffer::ArrayBuffer;
-use private::UnimplementedException;
+use private::TODO;
 
 /// The FileReader object lets web applications asynchronously read the contents of files
 /// (or raw data buffers) stored on the user's computer, using [File](struct.File.html)
@@ -52,7 +52,7 @@ impl FileReader {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsText)
     // https://w3c.github.io/FileAPI/#ref-for-dfn-readAsText
-    pub fn read_as_text< T: IBlob >( &self, blob: &T ) -> Result< (), UnimplementedException > {
+    pub fn read_as_text< T: IBlob >( &self, blob: &T ) -> Result< (), TODO > {
         js!( @{self}.readAsText( @{blob.as_ref()} ); );
         Ok(())
     }
@@ -62,7 +62,7 @@ impl FileReader {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsArrayBuffer)
     // https://w3c.github.io/FileAPI/#ref-for-dfn-readAsArrayBuffer
-    pub fn read_as_array_buffer< T: IBlob >( &self, blob: &T ) -> Result< (), UnimplementedException > {
+    pub fn read_as_array_buffer< T: IBlob >( &self, blob: &T ) -> Result< (), TODO > {
         js!( @{self}.readAsArrayBuffer( @{blob.as_ref()} ); );
         Ok(())
     }

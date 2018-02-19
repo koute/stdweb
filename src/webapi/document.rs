@@ -5,7 +5,7 @@ use webapi::element::Element;
 use webapi::text_node::TextNode;
 use webapi::location::Location;
 use webapi::parent_node::IParentNode;
-use private::UnimplementedException;
+use private::TODO;
 
 /// The `Document` interface represents any web page loaded in the browser and
 /// serves as an entry point into the web page's content, which is the DOM tree.
@@ -45,7 +45,7 @@ impl Document {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement)
     // https://dom.spec.whatwg.org/#ref-for-dom-document-createelement
-    pub fn create_element( &self, tag: &str ) -> Result< Element, UnimplementedException > {
+    pub fn create_element( &self, tag: &str ) -> Result< Element, TODO > {
         unsafe {
             Ok( js!( return @{self}.createElement( @{tag} ); ).into_reference_unchecked().unwrap() )
         }

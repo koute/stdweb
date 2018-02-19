@@ -5,7 +5,7 @@ use webcore::value::{
     Value,
 };
 use webcore::try_from::TryInto;
-use private::UnimplementedException;
+use private::TODO;
 
 /// Use XmlHttpRequest (XHR) objects to interact with servers.
 /// You can retrieve data from a URL without having to do a full page refresh.
@@ -69,7 +69,7 @@ impl XmlHttpRequest {
     ///
     ///[(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseText)
     // https://xhr.spec.whatwg.org/#ref-for-dom-xmlhttprequest-responsetext
-    pub fn response_text(&self) -> Result< Option< String >, UnimplementedException > {
+    pub fn response_text(&self) -> Result< Option< String >, TODO > {
         let response = js!(return @{self}.responseText;);
         match response {
             Value::Null => Ok( None ),
@@ -90,7 +90,7 @@ impl XmlHttpRequest {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/open)
     // https://xhr.spec.whatwg.org/#ref-for-dom-xmlhttprequest-open
-    pub fn open(&self, method: &str, url: &str) -> Result< (), UnimplementedException > {
+    pub fn open(&self, method: &str, url: &str) -> Result< (), TODO > {
         js! { @(no_return)
             @{self}.open(@{method}, @{url}, true);
         };
@@ -119,7 +119,7 @@ impl XmlHttpRequest {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/setRequestHeader)
     // https://xhr.spec.whatwg.org/#ref-for-dom-xmlhttprequest-setrequestheader
-    pub fn set_request_header(&self, header: &str, value: &str) -> Result< (), UnimplementedException > {
+    pub fn set_request_header(&self, header: &str, value: &str) -> Result< (), TODO > {
         js! { @(no_return)
             @{self}.setRequestHeader(@{header}, @{value});
         };
@@ -131,7 +131,7 @@ impl XmlHttpRequest {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/send)
     // https://xhr.spec.whatwg.org/#ref-for-dom-xmlhttprequest-send
-    pub fn send(&self) -> Result< (), UnimplementedException > {
+    pub fn send(&self) -> Result< (), TODO > {
         js! { @(no_return)
             @{self}.send();
         };
@@ -143,7 +143,7 @@ impl XmlHttpRequest {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/send)
     // https://xhr.spec.whatwg.org/#ref-for-dom-xmlhttprequest-send
-    pub fn send_with_string(&self, body: &str) -> Result< (), UnimplementedException > {
+    pub fn send_with_string(&self, body: &str) -> Result< (), TODO > {
         js! { @(no_return)
             @{self}.send(@{body});
         };
@@ -155,7 +155,7 @@ impl XmlHttpRequest {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/send)
     // https://xhr.spec.whatwg.org/#ref-for-dom-xmlhttprequest-send
-    pub fn send_with_bytes(&self, body: &[u8]) -> Result< (), UnimplementedException > {
+    pub fn send_with_bytes(&self, body: &[u8]) -> Result< (), TODO > {
         js! { @(no_return)
             @{self}.send(@{UnsafeTypedArray(body)});
         };

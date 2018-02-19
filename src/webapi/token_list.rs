@@ -1,6 +1,6 @@
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
-use private::UnimplementedException;
+use private::TODO;
 
 /// The `TokenList` represents a set of space-separated tokens.
 ///
@@ -24,7 +24,7 @@ impl TokenList {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList/add)
     // https://dom.spec.whatwg.org/#ref-for-dom-domtokenlist-add
-    pub fn add( &self, token: &str ) -> Result< (), UnimplementedException > {
+    pub fn add( &self, token: &str ) -> Result< (), TODO > {
         js! { @(no_return)
             @{self}.add( @{token} );
         }
@@ -36,7 +36,7 @@ impl TokenList {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList/remove)
     // https://dom.spec.whatwg.org/#ref-for-dom-domtokenlist-remove
-    pub fn remove( &self, token: &str ) -> Result< (), UnimplementedException > {
+    pub fn remove( &self, token: &str ) -> Result< (), TODO > {
         js! { @(no_return)
             @{self}.remove( @{token} );
         }

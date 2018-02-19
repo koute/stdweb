@@ -2,7 +2,7 @@ use webcore::value::Reference;
 use webcore::try_from::TryInto;
 use webcore::value::Value;
 use webapi::typed_array::TypedArray;
-use private::UnimplementedException;
+use private::TODO;
 
 /// The `ArrayBuffer` object is used to represent a generic, fixed-length raw binary data buffer.
 /// You cannot directly manipulate the contents of an ArrayBuffer; instead, you create an [TypedArray](struct.TypedArray.html)
@@ -17,7 +17,7 @@ pub struct ArrayBuffer( Reference );
 impl ArrayBuffer {
     /// Creates a new `ArrayBuffer` with the given length in bytes.
     // https://www.ecma-international.org/ecma-262/6.0/#sec-arraybuffer-length
-    pub fn new( length: u64 ) -> Result< Self, UnimplementedException > {
+    pub fn new( length: u64 ) -> Result< Self, TODO > {
         let length: Value = length.try_into().unwrap();
         Ok( js!( return new ArrayBuffer( @{length} ); ).try_into().unwrap() )
     }

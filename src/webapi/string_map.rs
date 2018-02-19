@@ -1,6 +1,6 @@
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
-use private::UnimplementedException;
+use private::TODO;
 
 /// Used by the `dataset` HTML attribute to represent data for custom attributes added to elements.
 ///
@@ -20,7 +20,7 @@ impl StringMap {
 
     /// Inserts a key-value pair into the map.
     // https://html.spec.whatwg.org/#dom-domstringmap-setitem
-    pub fn insert( &self, key: &str, value: &str ) -> Result< (), UnimplementedException > {
+    pub fn insert( &self, key: &str, value: &str ) -> Result< (), TODO > {
         js!( @(no_return)
             @{self}[ @{key} ] = @{value};
         );

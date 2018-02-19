@@ -351,7 +351,7 @@ pub mod private {
 
     // TODO: Remove this.
     #[derive(Debug)]
-    pub struct UnimplementedException;
+    pub struct TODO;
 
     pub use webcore::value::ConversionError;
 }
