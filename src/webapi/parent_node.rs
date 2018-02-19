@@ -7,6 +7,9 @@ use private::TODO;
 /// that are common to all types of `Node` objects that can
 /// have children.
 ///
+/// You most likely don't want to `use` this directly; instead
+/// you should `use stdweb::traits::*;`.
+///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ParentNode)
 // https://dom.spec.whatwg.org/#parentnode
 pub trait IParentNode: ReferenceType {

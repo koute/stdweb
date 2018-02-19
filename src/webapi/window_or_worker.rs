@@ -11,6 +11,9 @@ extern fn funcall_adapter< F: FnOnce() >( callback: *mut F ) {
 /// The `IWindowOrWorker` mixin describes several features common to
 /// the `Window` and the global scope of web workers.
 ///
+/// You most likely don't want to `use` this directly; instead
+/// you should `use stdweb::traits::*;`.
+///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope)
 // https://html.spec.whatwg.org/#windoworworkerglobalscope
 pub trait IWindowOrWorker: ReferenceType {

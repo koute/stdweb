@@ -59,6 +59,7 @@ impl Document {
     /// for changing that URL and loading another URL.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/location)
+    // https://html.spec.whatwg.org/#the-document-object:dom-document-location
     pub fn location( &self ) -> Option< Location > {
         unsafe {
             js!(
