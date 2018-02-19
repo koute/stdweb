@@ -11,7 +11,7 @@ use syn::DeriveInput;
 fn get_meta_items( attr: &syn::Attribute ) -> Option< Vec< syn::NestedMeta > > {
     if attr.path.segments.len() == 1 && attr.path.segments[0].ident == "reference" {
         match attr.interpret_meta() {
-            Some( syn::Meta::List( ref meta ) ) => Some( meta.nested.iter().cloned().collect() ),
+            Some( syn::Meta::List( meta ) ) => Some( meta.nested.into_iter().collect() ),
             _ => {
                 panic!( "Unrecognized meta item type!" );
             }
@@ -60,7 +60,7 @@ pub fn derive_reference( input: TokenStream ) -> TokenStream {
                         }
                     }
                 },
-                syn::NestedMeta::Meta( meta ) => {
+                syn::NestedMeta::Meta( ref meta ) => {
                     panic!( "Unrecognized attribute: '#[reference({})]'", meta.name() );
                 },
                 _ => panic!( "Unrecognized attribute!" )

@@ -23,4 +23,5 @@ serde_json = "1"
 
 [dependencies.syn]
 version = "0.12"
-features = ["full"]
+default-features = false
+features = ["full", "parsing", "printing", "clone-impls"]
