@@ -15,9 +15,8 @@ impl TokenList {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList/length)
     // https://dom.spec.whatwg.org/#ref-for-dom-domtokenlist-length
-    pub fn len( &self ) -> usize {
-        let length: i32 = js!( return @{self}.length; ).try_into().unwrap();
-        length as usize
+    pub fn len( &self ) -> u32 {
+        js!( return @{self}.length; ).try_into().unwrap()
     }
 
     /// Adds token to the underlying string.

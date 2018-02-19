@@ -18,9 +18,8 @@ impl FileList {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/FileList/length)
     // https://w3c.github.io/FileAPI/#ref-for-dfn-length
-    pub fn len( &self ) -> usize {
-        let length: i32 = js!( return @{self}.length; ).try_into().unwrap();
-        length as usize
+    pub fn len( &self ) -> u32 {
+        js!( return @{self}.length; ).try_into().unwrap()
     }
 
     /// Returns an iterator over the list.

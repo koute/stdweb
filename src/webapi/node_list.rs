@@ -26,9 +26,8 @@ impl NodeList {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/NodeList/length)
     // https://dom.spec.whatwg.org/#ref-for-dom-nodelist-length
-    pub fn len( &self ) -> usize {
-        let length: i32 = js!( return @{self}.length; ).try_into().unwrap();
-        length as usize
+    pub fn len( &self ) -> u32 {
+        js!( return @{self}.length; ).try_into().unwrap()
     }
 
     /// Returns an iterator over the list.

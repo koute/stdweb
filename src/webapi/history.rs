@@ -91,7 +91,7 @@ impl History {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/History)
     // https://html.spec.whatwg.org/#the-history-interface:dom-history-length
-    pub fn len(&self) -> usize {
+    pub fn len(&self) -> u32 {
         js!(
             return @{self}.length;
         ).try_into().unwrap()
