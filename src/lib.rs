@@ -290,6 +290,39 @@ pub mod unstable {
     pub use webcore::void::Void;
 }
 
+/// A module containing reexports of all of our interface traits.
+///
+/// You should **only** import its contents through a wildcard, e.g.: `use stdweb::traits::*`.
+pub mod traits {
+    pub use super::web::{
+        // Real interfaces.
+        IEventTarget,
+        INode,
+        IElement,
+        IHtmlElement,
+        IBlob,
+
+        // Mixins.
+        IWindowOrWorker,
+        IParentNode
+    };
+
+    pub use super::web::error::{
+        IDomException,
+        IError
+    };
+
+    pub use super::web::event::{
+        IEvent,
+        IUiEvent,
+        IMouseEvent,
+        IKeyboardEvent,
+        IProgressEvent,
+        IMessageEvent,
+        IFocusEvent
+    };
+}
+
 #[doc(hidden)]
 pub mod private {
     pub use webcore::ffi::exports::*;
