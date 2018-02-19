@@ -1,6 +1,6 @@
 use webcore::value::{Reference, ConversionError};
 use webcore::try_from::{TryFrom, TryInto};
-use webcore::value::Undefined;
+use webcore::value::{Undefined, Value};
 use webapi::html_elements::{CanvasElement, ImageElement};
 use webapi::html_element::IHtmlElement;
 use webapi::dom_exception::{SyntaxError, IndexSizeError, InvalidStateError, TypeError, SecurityError, NotSupportedError};
@@ -27,7 +27,7 @@ pub struct CanvasRenderingContext2d(Reference);
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasGradient)
 // https://html.spec.whatwg.org/#canvasgradient
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, Eq, PartialEq, ReferenceType)]
 #[reference(instance_of = "CanvasGradient")]
 pub struct CanvasGradient(Reference);
 
@@ -37,7 +37,7 @@ pub struct CanvasGradient(Reference);
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasPattern)
 // https://html.spec.whatwg.org/#canvaspattern
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, Eq, PartialEq, ReferenceType)]
 #[reference(instance_of = "CanvasPattern")]
 pub struct CanvasPattern(Reference);
 
@@ -104,11 +104,11 @@ pub enum FillRule {
 }
 
 /// Certain style functions can return multiple types
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-enum CanvasStyle {
-    String,
-    CanvasGradient,
-    CanvasPattern,
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CanvasStyle {
+    String(String),
+    CanvasGradient(CanvasGradient),
+    CanvasPattern(CanvasPattern),
 }
 
 /// How the end points of every line are drawn.
@@ -186,6 +186,24 @@ error_enum_boilerplate! {
 error_enum_boilerplate! {
     GetImageDataError,
     IndexSizeError, SecurityError
+}
+
+impl TryFrom<Value> for CanvasStyle {
+    type Error = ConversionError;
+
+    /// Performs the conversion.
+    fn try_from(value: Value) -> Result<Self, Self::Error> {
+        if let Ok(v) = String::try_from(value.clone()) {
+            return Ok(CanvasStyle::String(v));
+        }
+        if let Ok(v) = CanvasGradient::try_from(value.clone()) {
+            return Ok(CanvasStyle::CanvasGradient(v));
+        }
+        if let Ok(v) = CanvasPattern::try_from(value.clone()) {
+            return Ok(CanvasStyle::CanvasPattern(v));
+        }
+        Err(::webcore::value::ConversionError::type_mismatch( &value ))
+    }
 }
 
 impl Default for FillRule {
@@ -782,7 +800,7 @@ impl CanvasRenderingContext2d {
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-arc
     pub fn arc(&self, x: f64, y: f64, radius: f64, start_angle: f64, end_angle: f64, anticlockwise: bool) {
         js! { @(no_return)
-            @{&self.0}.arc(@{x}, @{y}, @[radius], @{start_angle}, @{end_angle}, @{anticlockwise});
+            @{&self.0}.arc(@{x}, @{y}, @{radius}, @{start_angle}, @{end_angle}, @{anticlockwise});
         }
     }
 
