@@ -353,5 +353,17 @@ pub mod private {
     #[derive(Debug)]
     pub struct TODO;
 
+    impl ::std::fmt::Display for TODO {
+        fn fmt( &self, _: &mut ::std::fmt::Formatter ) -> Result< (), ::std::fmt::Error > {
+            unreachable!();
+        }
+    }
+
+    impl ::std::error::Error for TODO {
+        fn description( &self ) -> &str {
+            unreachable!();
+        }
+    }
+
     pub use webcore::value::ConversionError;
 }
