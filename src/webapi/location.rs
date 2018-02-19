@@ -1,6 +1,6 @@
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
-use private::UnimplementedException;
+use private::TODO;
 
 /// The `Location` interface represents the location (URL) of the object it
 /// is linked to. Changes done on it are reflected on the object it relates
@@ -19,7 +19,7 @@ impl Location {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Location/href)
     // https://html.spec.whatwg.org/#dom-location-href
-    pub fn href( &self ) -> Result< String, UnimplementedException > {
+    pub fn href( &self ) -> Result< String, TODO > {
         Ok( js!(
             return @{self}.href;
         ).try_into().unwrap() )
@@ -30,7 +30,7 @@ impl Location {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Location/hash)
     // https://html.spec.whatwg.org/#the-location-interface:dom-location-hash
-    pub fn hash( &self ) -> Result< String, UnimplementedException > {
+    pub fn hash( &self ) -> Result< String, TODO > {
         Ok( js!(
             return @{self}.hash;
         ).try_into().unwrap() )

@@ -10,6 +10,7 @@ pub mod newtype;
 pub mod try_from;
 pub mod object;
 pub mod array;
+pub mod symbol;
 pub mod type_name;
 pub mod unsafe_typed_array;
 pub mod once;

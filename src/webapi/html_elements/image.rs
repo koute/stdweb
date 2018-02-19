@@ -25,6 +25,7 @@ impl ImageElement {
     /// Constructs a new ImageElement.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/Image)
+    // https://html.spec.whatwg.org/#the-img-element:dom-image
     pub fn new() -> ImageElement {
         js! (
             return new Image();

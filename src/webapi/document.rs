@@ -5,7 +5,8 @@ use webapi::element::Element;
 use webapi::text_node::TextNode;
 use webapi::location::Location;
 use webapi::parent_node::IParentNode;
-use private::UnimplementedException;
+use webapi::non_element_parent_node::INonElementParentNode;
+use private::TODO;
 
 /// The `Document` interface represents any web page loaded in the browser and
 /// serves as an entry point into the web page's content, which is the DOM tree.
@@ -21,6 +22,8 @@ impl IEventTarget for Document {}
 impl IParentNode for Document {}
 impl INode for Document {}
 
+impl INonElementParentNode for Document {}
+
 /// A global instance of [Document](struct.Document.html).
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document)
@@ -29,23 +32,13 @@ pub fn document() -> Document {
 }
 
 impl Document {
-    /// Returns a reference to the element by its ID; the ID is a string which can
-    /// be used to uniquely identify the element, found in the HTML `id` attribute.
-    ///
-    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementById)
-    pub fn get_element_by_id( &self, id: &str ) -> Option< Element > {
-        unsafe {
-            js!( return @{self}.getElementById( @{id} ); ).into_reference_unchecked()
-        }
-    }
-
     /// In an HTML document, the Document.createElement() method creates the HTML
     /// element specified by `tag`, or an HTMLUnknownElement if `tag` isn't
     /// recognized. In other documents, it creates an element with a null namespace URI.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement)
     // https://dom.spec.whatwg.org/#ref-for-dom-document-createelement
-    pub fn create_element( &self, tag: &str ) -> Result< Element, UnimplementedException > {
+    pub fn create_element( &self, tag: &str ) -> Result< Element, TODO > {
         unsafe {
             Ok( js!( return @{self}.createElement( @{tag} ); ).into_reference_unchecked().unwrap() )
         }
@@ -66,6 +59,7 @@ impl Document {
     /// for changing that URL and loading another URL.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/location)
+    // https://html.spec.whatwg.org/#the-document-object:dom-document-location
     pub fn location( &self ) -> Option< Location > {
         unsafe {
             js!(

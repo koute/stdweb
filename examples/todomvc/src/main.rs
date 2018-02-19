@@ -8,13 +8,9 @@ extern crate serde_json;
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use stdweb::traits::*;
 use stdweb::unstable::TryInto;
 use stdweb::web::{
-    IEventTarget,
-    IElement,
-    IHtmlElement,
-    INode,
-    IParentNode,
     HtmlElement,
     Element,
     document,
@@ -22,8 +18,6 @@ use stdweb::web::{
 };
 
 use stdweb::web::event::{
-    IEvent,
-    IKeyboardEvent,
     DoubleClickEvent,
     ClickEvent,
     KeyPressEvent,

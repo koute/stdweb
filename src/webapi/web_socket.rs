@@ -5,7 +5,7 @@ use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::blob::Blob;
 use webapi::array_buffer::ArrayBuffer;
 use webapi::dom_exception::{InvalidAccessError, SecurityError, SyntaxError};
-use private::UnimplementedException;
+use private::TODO;
 
 /// Wrapper type around a CloseEvent code, indicating why the WebSocket was closed
 ///
@@ -233,7 +233,7 @@ impl WebSocket {
     /// to contain the data. If the data can't be sent (for example, because it needs to
     /// be buffered but the buffer is full), the socket is closed automatically.
     // https://html.spec.whatwg.org/#the-websocket-interface:dom-websocket-send
-    pub fn send_text(&self, text: &str) -> Result< (), UnimplementedException > {
+    pub fn send_text(&self, text: &str) -> Result< (), TODO > {
         js!( @(no_return) @{self}.send(@{text}); );
         Ok(())
     }
@@ -243,7 +243,7 @@ impl WebSocket {
     /// to contain the data. If the data can't be sent (for example, because it needs to
     /// be buffered but the buffer is full), the socket is closed automatically.
     // https://html.spec.whatwg.org/#the-websocket-interface:dom-websocket-send
-    pub fn send_blob(&self, blob: &Blob) -> Result< (), UnimplementedException > {
+    pub fn send_blob(&self, blob: &Blob) -> Result< (), TODO > {
         js!( @(no_return) @{self}.send(@{blob}); );
         Ok(())
     }
@@ -253,7 +253,7 @@ impl WebSocket {
     /// to contain the data. If the data can't be sent (for example, because it needs to
     /// be buffered but the buffer is full), the socket is closed automatically.
     // https://html.spec.whatwg.org/#the-websocket-interface:dom-websocket-send
-    pub fn send_array_buffer(&self, array_buffer: &ArrayBuffer) -> Result< (), UnimplementedException > {
+    pub fn send_array_buffer(&self, array_buffer: &ArrayBuffer) -> Result< (), TODO > {
         js!( @(no_return) @{self}.send(@{array_buffer}); );
         Ok(())
     }
@@ -263,7 +263,7 @@ impl WebSocket {
     /// to contain the data. If the data can't be sent (for example, because it needs to
     /// be buffered but the buffer is full), the socket is closed automatically.
     // https://html.spec.whatwg.org/#the-websocket-interface:dom-websocket-send
-    pub fn send_bytes(&self, bytes: &[u8]) -> Result< (), UnimplementedException > {
+    pub fn send_bytes(&self, bytes: &[u8]) -> Result< (), TODO > {
         js!( @(no_return) @{self}.send(@{ UnsafeTypedArray(bytes) }); );
         Ok(())
     }

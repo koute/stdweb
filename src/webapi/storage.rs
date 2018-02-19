@@ -1,6 +1,6 @@
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
-use private::UnimplementedException;
+use private::TODO;
 
 /// The `Storage` interface of the Web Storage API provides access to
 /// the session storage or local storage for a particular domain.
@@ -16,9 +16,8 @@ impl Storage {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Storage/length)
     // https://html.spec.whatwg.org/#the-storage-interface:dom-storage-length
-    pub fn len( &self ) -> usize {
-        let length: i32 = js!( return @{self}.length; ).try_into().unwrap();
-        length as usize
+    pub fn len( &self ) -> u32 {
+        js!( return @{self}.length; ).try_into().unwrap()
     }
 
     /// Returns a value corresponding to the key.
@@ -33,7 +32,7 @@ impl Storage {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Storage/setItem)
     // https://html.spec.whatwg.org/#the-storage-interface:dom-storage-setitem
-    pub fn insert( &self, key: &str, value: &str ) -> Result< (), UnimplementedException > {
+    pub fn insert( &self, key: &str, value: &str ) -> Result< (), TODO > {
         js!( @(no_return)
             @{self}.setItem( @{key}, @{value} );
         );
@@ -65,8 +64,8 @@ impl Storage {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Storage/key)
     // https://html.spec.whatwg.org/#the-storage-interface:dom-storage-key
-    pub fn key( &self, nth: usize ) -> Option< String > {
-        js!( return @{self}.key( @{nth as u32} ); ).try_into().ok()
+    pub fn key( &self, nth: u32 ) -> Option< String > {
+        js!( return @{self}.key( @{nth} ); ).try_into().ok()
     }
 
     /// Returns true if the storage contains a value for the specified key.

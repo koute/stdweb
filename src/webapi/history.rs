@@ -1,7 +1,7 @@
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
 use webcore::serialization::JsSerialize;
-use private::UnimplementedException;
+use private::TODO;
 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/History)
 // https://html.spec.whatwg.org/#history-3
@@ -45,7 +45,7 @@ impl History {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/History_API#The_replaceState%28%29_method)
     // https://html.spec.whatwg.org/#the-history-interface:dom-history-replacestate
-    pub fn replace_state<T: JsSerialize>(&self, state: T, title: &str, url: Option<&str>) -> Result< (), UnimplementedException > {
+    pub fn replace_state<T: JsSerialize>(&self, state: T, title: &str, url: Option<&str>) -> Result< (), TODO > {
         js!{ @(no_return)
             @{self}.replaceState(@{state}, @{title}, @{url});
         };
@@ -58,7 +58,7 @@ impl History {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/History_API#Traveling_through_history)
     // https://html.spec.whatwg.org/#the-history-interface:dom-history-go
-    pub fn go(&self, offset: i32) -> Result< (), UnimplementedException > {
+    pub fn go(&self, offset: i32) -> Result< (), TODO > {
         js! { @(no_return)
             @{self}.go(@{offset});
         };
@@ -69,7 +69,7 @@ impl History {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/History_API#Traveling_through_history)
     // https://html.spec.whatwg.org/#the-history-interface:dom-history-back
-    pub fn back(&self) -> Result< (), UnimplementedException > {
+    pub fn back(&self) -> Result< (), TODO > {
         js! { @(no_return)
             @{self}.back();
         };
@@ -80,7 +80,7 @@ impl History {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/History_API#Traveling_through_history)
     // https://html.spec.whatwg.org/#the-history-interface:dom-history-forward
-    pub fn forward(&self) -> Result< (), UnimplementedException > {
+    pub fn forward(&self) -> Result< (), TODO > {
         js! { @(no_return)
             @{self}.forward();
         };
@@ -91,7 +91,7 @@ impl History {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/History)
     // https://html.spec.whatwg.org/#the-history-interface:dom-history-length
-    pub fn len(&self) -> usize {
+    pub fn len(&self) -> u32 {
         js!(
             return @{self}.length;
         ).try_into().unwrap()

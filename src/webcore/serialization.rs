@@ -12,6 +12,7 @@ use webcore::newtype::Newtype;
 use webcore::try_from::{TryFrom, TryInto};
 use webcore::number::Number;
 use webcore::type_name::type_name;
+use webcore::symbol::Symbol;
 use webcore::unsafe_typed_array::UnsafeTypedArray;
 use webcore::once::Once;
 
@@ -37,7 +38,8 @@ pub enum Tag {
     Reference = 9,
     Function = 10,
     FunctionOnce = 13,
-    UnsafeTypedArray = 14
+    UnsafeTypedArray = 14,
+    Symbol = 15
 }
 
 impl Default for Tag {
@@ -189,6 +191,12 @@ struct SerializedUntaggedObject {
     value_pointer: u32,
     length: u32,
     key_pointer: u32
+}
+
+#[repr(C)]
+#[derive(Debug)]
+struct SerializedUntaggedSymbol {
+    id: i32
 }
 
 #[repr(C)]
@@ -377,6 +385,13 @@ pub fn deserialize_array< R, F: FnOnce( &mut ArrayDeserializer ) -> R >( referen
     output
 }
 
+impl SerializedUntaggedSymbol {
+    #[inline]
+    fn deserialize( &self ) -> Symbol {
+        Symbol( self.id )
+    }
+}
+
 impl SerializedUntaggedReference {
     #[inline]
     fn deserialize( &self ) -> Reference {
@@ -432,6 +447,7 @@ untagged_boilerplate!( test_false, as_false, Tag::False, SerializedUntaggedFalse
 untagged_boilerplate!( test_object, as_object, Tag::Object, SerializedUntaggedObject );
 untagged_boilerplate!( test_string, as_string, Tag::Str, SerializedUntaggedString );
 untagged_boilerplate!( test_array, as_array, Tag::Array, SerializedUntaggedArray );
+untagged_boilerplate!( test_symbol, as_symbol, Tag::Symbol, SerializedUntaggedSymbol );
 untagged_boilerplate!( test_reference, as_reference, Tag::Reference, SerializedUntaggedReference );
 untagged_boilerplate!( test_function, as_function, Tag::Function, SerializedUntaggedFunction );
 untagged_boilerplate!( test_function_once, as_function_once, Tag::FunctionOnce, SerializedUntaggedFunctionOnce );
@@ -450,6 +466,7 @@ impl< 'a > SerializedValue< 'a > {
             Tag::False => Value::Bool( false ),
             Tag::True => Value::Bool( true ),
             Tag::Reference => self.as_reference().deserialize().into(),
+            Tag::Symbol => self.as_symbol().deserialize().into(),
             Tag::Function |
             Tag::FunctionOnce |
             Tag::Object |
@@ -506,6 +523,24 @@ impl JsSerialize for Null {
 }
 
 __js_serializable_boilerplate!( Null );
+
+impl JsSerialize for Symbol {
+    #[doc(hidden)]
+    #[inline]
+    fn _into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+        SerializedUntaggedSymbol {
+            id: self.0
+        }.into()
+    }
+
+    #[doc(hidden)]
+    #[inline]
+    fn _memory_required( &self ) -> usize {
+        0
+    }
+}
+
+__js_serializable_boilerplate!( Symbol );
 
 impl JsSerialize for Reference {
     #[doc(hidden)]
@@ -870,6 +905,7 @@ impl JsSerialize for Value {
             Value::Null => SerializedUntaggedNull.into(),
             Value::Bool( ref value ) => value._into_js( arena ),
             Value::Number( ref value ) => value._into_js( arena ),
+            Value::Symbol( ref value ) => value._into_js( arena ),
             Value::String( ref value ) => value._into_js( arena ),
             Value::Reference( ref value ) => value._into_js( arena )
         }
@@ -882,6 +918,7 @@ impl JsSerialize for Value {
             Value::Null => Null._memory_required(),
             Value::Bool( value ) => value._memory_required(),
             Value::Number( value ) => value._memory_required(),
+            Value::Symbol( ref value ) => value._memory_required(),
             Value::String( ref value ) => value._memory_required(),
             Value::Reference( ref value ) => value._memory_required()
         }
@@ -1199,6 +1236,12 @@ mod test_deserialization {
     #[test]
     fn empty_string() {
         assert_eq!( js! { return ""; }, Value::String( "".to_string() ) );
+    }
+
+    #[test]
+    fn symbol() {
+        let value = js! { return Symbol(); };
+        assert!( value.is_symbol() );
     }
 
     #[test]
@@ -1769,6 +1812,30 @@ mod test_reserialization {
 
         let object: Value = object.into();
         assert_eq!( js! { return @{&object} }, object );
+    }
+
+    #[test]
+    fn symbol() {
+        let value_1: Symbol = js! { return Symbol(); }.try_into().unwrap();
+        let value_2: Symbol = js! { return @{&value_1}; }.try_into().unwrap();
+        assert_eq!( value_1, value_2 );
+        assert_eq!( js! { return @{value_1} === @{value_2}; }, true );
+    }
+
+    #[test]
+    fn cloned_symbol() {
+        let value_1: Symbol = js! { return Symbol(); }.try_into().unwrap();
+        let value_2 = value_1.clone();
+        assert_eq!( value_1, value_2 );
+        assert_eq!( js! { return @{value_1} === @{value_2}; }, true );
+    }
+
+    #[test]
+    fn different_symbols() {
+        let value_1: Symbol = js! { return Symbol(); }.try_into().unwrap();
+        let value_2: Symbol = js! { return Symbol(); }.try_into().unwrap();
+        assert_ne!( value_1, value_2 );
+        assert_eq!( js! { return @{value_1} !== @{value_2}; }, true );
     }
 
     #[test]

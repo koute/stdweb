@@ -4,7 +4,7 @@ use webcore::value::Reference;
 use webcore::try_from::TryInto;
 use webcore::reference_type::ReferenceType;
 use webapi::event::{ConcreteEvent, IEvent};
-use private::UnimplementedException;
+use private::TODO;
 
 /// A handle to a particular event listener.
 pub struct EventListenerHandle {
@@ -68,7 +68,7 @@ pub trait IEventTarget: ReferenceType {
     /// appropriate order.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/dispatchEvent)
-    fn dispatch_event< T: IEvent >( &self, event: &T ) -> Result< bool, UnimplementedException > {
+    fn dispatch_event< T: IEvent >( &self, event: &T ) -> Result< bool, TODO > {
         Ok( js! (
             return @{self.as_ref()}.dispatchEvent( @{event.as_ref()} );
         ).try_into().unwrap() )

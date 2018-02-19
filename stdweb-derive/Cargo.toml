@@ -21,4 +21,5 @@ serde_derive = "1"
 
 [dependencies.syn]
 version = "0.12"
-features = ["full"]
+default-features = false
+features = ["derive", "parsing", "printing"]

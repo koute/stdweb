@@ -124,6 +124,7 @@ pub use webcore::value::{
 pub use webcore::number::Number;
 pub use webcore::object::Object;
 pub use webcore::array::Array;
+pub use webcore::symbol::Symbol;
 
 pub use webcore::unsafe_typed_array::UnsafeTypedArray;
 pub use webcore::once::Once;
@@ -169,6 +170,7 @@ pub mod web {
     pub use webapi::html_element::{IHtmlElement, HtmlElement};
     pub use webapi::window_or_worker::IWindowOrWorker;
     pub use webapi::parent_node::IParentNode;
+    pub use webapi::non_element_parent_node::INonElementParentNode;
     pub use webapi::token_list::TokenList;
     pub use webapi::node_list::NodeList;
     pub use webapi::string_map::StringMap;
@@ -292,6 +294,40 @@ pub mod unstable {
     pub use webcore::void::Void;
 }
 
+/// A module containing reexports of all of our interface traits.
+///
+/// You should **only** import its contents through a wildcard, e.g.: `use stdweb::traits::*`.
+pub mod traits {
+    pub use super::web::{
+        // Real interfaces.
+        IEventTarget,
+        INode,
+        IElement,
+        IHtmlElement,
+        IBlob,
+
+        // Mixins.
+        IWindowOrWorker,
+        IParentNode,
+        INonElementParentNode
+    };
+
+    pub use super::web::error::{
+        IDomException,
+        IError
+    };
+
+    pub use super::web::event::{
+        IEvent,
+        IUiEvent,
+        IMouseEvent,
+        IKeyboardEvent,
+        IProgressEvent,
+        IMessageEvent,
+        IFocusEvent
+    };
+}
+
 #[doc(hidden)]
 pub mod private {
     pub use webcore::ffi::exports::*;
@@ -320,7 +356,19 @@ pub mod private {
 
     // TODO: Remove this.
     #[derive(Debug)]
-    pub struct UnimplementedException;
+    pub struct TODO;
+
+    impl ::std::fmt::Display for TODO {
+        fn fmt( &self, _: &mut ::std::fmt::Formatter ) -> Result< (), ::std::fmt::Error > {
+            unreachable!();
+        }
+    }
+
+    impl ::std::error::Error for TODO {
+        fn description( &self ) -> &str {
+            unreachable!();
+        }
+    }
 
     pub use webcore::value::ConversionError;
 }

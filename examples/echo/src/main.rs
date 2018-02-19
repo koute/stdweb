@@ -2,20 +2,15 @@ extern crate stdweb;
 
 use std::rc::Rc;
 
+use stdweb::traits::*;
 use stdweb::unstable::TryInto;
 use stdweb::web::{
-    IParentNode,
-    IEventTarget,
-    INode,
     HtmlElement,
     document,
     WebSocket,
 };
 
 use stdweb::web::event::{
-    IEvent,
-    IKeyboardEvent,
-    IMessageEvent,
     KeyPressEvent,
     SocketOpenEvent,
     SocketCloseEvent,
@@ -74,9 +69,9 @@ fn main() {
         if event.key() == "Enter" {
             event.prevent_default();
 
-            let text: String = text_entry.value().try_into().unwrap();
+            let text: String = text_entry.raw_value();
             if text.is_empty() == false {
-                text_entry.set_value("");
+                text_entry.set_raw_value("");
                 ws.send_text(&text);
             }
         }

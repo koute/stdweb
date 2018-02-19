@@ -40,3 +40,12 @@ if [ "$IS_NIGHTLY" = "1" ]; then
     node target/wasm32-unknown-unknown/release/standalone-tests.js
     popd > /dev/null
 fi
+
+EXAMPLES=(canvas echo hasher history minimal promise todomvc)
+for EXAMPLE in "${EXAMPLES[@]}"; do
+    echo "Building example: $EXAMPLE"
+    pushd examples/$EXAMPLE > /dev/null
+    cargo web build
+    popd > /dev/null
+    echo ""
+done

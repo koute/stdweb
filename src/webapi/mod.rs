@@ -32,4 +32,5 @@ pub mod error;
 pub mod dom_exception;
 pub mod events;
 pub mod parent_node;
+pub mod non_element_parent_node;
 pub mod console;

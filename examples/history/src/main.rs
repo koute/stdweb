@@ -6,11 +6,11 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json as json;
 
+use stdweb::traits::*;
 use stdweb::unstable::TryInto;
 use stdweb::serde::Serde;
 use stdweb::web::event::PopStateEvent;
 use stdweb::web::{
-    IEventTarget,
     History,
     set_timeout,
     window,
@@ -42,14 +42,14 @@ fn main() {
     let history: History = window().history();
     let state = ExampleState { numero: 1 };
     window().add_event_listener(pop_listener);
-    let history_length = history.len();
-    js!(console.log("number of history entries: ", @{history_length}));
+    let history_length = history.len() as u32;
+    console!(log, "number of history entries: ", history_length);
     history.push_state(state, "", Some("cat_pics.html"));
-    set_timeout(|| window().history().back(), 2000);
-    set_timeout(|| window().history().forward(), 5000);
-    set_timeout(|| window().history().back(), 8000);
+    set_timeout(|| window().history().back().unwrap(), 2000);
+    set_timeout(|| window().history().forward().unwrap(), 5000);
+    set_timeout(|| window().history().back().unwrap(), 8000);
     set_timeout(move || {
-        let history_length = window().history().len();
-        js!(console.log("number of history entries: ", @{history_length}));
+        let history_length = window().history().len() as u32;
+        console!(log, "number of history entries: ", history_length);
     }, 9000);
 }

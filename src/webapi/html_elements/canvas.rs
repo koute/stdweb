@@ -7,7 +7,7 @@ use webapi::element::{IElement, Element};
 use webapi::html_element::{IHtmlElement, HtmlElement};
 use webapi::blob::Blob;
 use webapi::rendering_context::RenderingContext;
-use private::UnimplementedException;
+use private::TODO;
 
 /// The HTML `<canvas>` element provides an empty graphic zone on which specific JavaScript APIs
 /// can draw (such as Canvas 2D or WebGL).
@@ -86,7 +86,7 @@ impl CanvasElement {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toDataUrl)
     // https://html.spec.whatwg.org/#the-canvas-element:dom-canvas-todataurl
-    pub fn to_data_url( &self, mime_type: Option<&str>, quality: Option<f64> ) -> Result< String, UnimplementedException > {
+    pub fn to_data_url( &self, mime_type: Option<&str>, quality: Option<f64> ) -> Result< String, TODO > {
         Ok( js! (
             return @{self}.toDataUrl(@{mime_type}, @{quality});
         ).try_into().unwrap() )
@@ -97,7 +97,7 @@ impl CanvasElement {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob)
     // https://html.spec.whatwg.org/#the-canvas-element:dom-canvas-toblob
-    pub fn to_blob<F: FnOnce(Blob) + 'static>( &self, f: F, mime_type: Option<&str>, quality: Option<f64> ) -> Result< (), UnimplementedException > {
+    pub fn to_blob<F: FnOnce(Blob) + 'static>( &self, f: F, mime_type: Option<&str>, quality: Option<f64> ) -> Result< (), TODO > {
         js! { @(no_return)
             @{self}.toBlob(@{Once(f)}, @{mime_type}, @{quality});
         }
