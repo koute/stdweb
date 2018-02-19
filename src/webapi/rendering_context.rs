@@ -3,8 +3,8 @@ use webcore::try_from::{TryFrom, TryInto};
 use webcore::value::Undefined;
 use webapi::html_elements::{CanvasElement, ImageElement};
 use webapi::html_element::IHtmlElement;
-//use webapi::typed_array::TypedArray;
 use webapi::dom_exception::{SyntaxError, IndexSizeError, InvalidStateError, TypeError, SecurityError, NotSupportedError};
+
 /// Trait implemented by rendering contexts which can be obtained from a canvas.
 pub trait RenderingContext {
     /// Type of error which can occur whilst creating this context
@@ -103,6 +103,14 @@ pub enum FillRule {
     EvenOdd
 }
 
+/// Certain style functions can return multiple types
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+enum CanvasStyle {
+    String,
+    CanvasGradient,
+    CanvasPattern,
+}
+
 /// How the end points of every line are drawn.
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineCap)
@@ -180,6 +188,13 @@ error_enum_boilerplate! {
     IndexSizeError, SecurityError
 }
 
+impl Default for FillRule {
+    fn default() -> FillRule { FillRule::NonZero }
+}
+
+impl Default for Repetition {
+    fn default() -> Repetition { Repetition::Repeat }
+}
 
 impl RenderingContext for CanvasRenderingContext2d {
     type Error = ConversionError;
@@ -207,13 +222,14 @@ impl CanvasGradient {
 
 impl ImageData {
 
+    /*
     /// Returns a Uint8ClampedArray representing a one-dimensional array containing the data in the RGBA order, 
     /// with integer values between 0 and 255 (included).
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ImageData/data)
     // https://html.spec.whatwg.org/#2dcontext:dom-imagedata-data
     // TODO: Return Uint8ClampedArray reference PR 96: https://github.com/koute/stdweb/pull/96 
-    /*
+    
     pub fn get_data(&self) -> TypedArray<u8> {
         js! (
             return @{&self.0}.data;
@@ -242,7 +258,6 @@ impl ImageData {
 }
 
 impl CanvasRenderingContext2d {
-    /// # Properties
     
     /// The CanvasRenderingContext2D.canvas property is a read-only reference to the HTMLCanvasElement 
     /// object that is associated with the context. It might be null if there is no association with an <canvas> element.
@@ -260,7 +275,7 @@ impl CanvasRenderingContext2d {
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillStyle)
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-fillstyle
-    pub fn get_fill_style(&self) -> String {
+    pub fn get_fill_style(&self) -> CanvasStyle {
         js! (
             return @{&self.0}.fillStyle
         ).try_into().unwrap()
@@ -431,7 +446,7 @@ impl CanvasRenderingContext2d {
     /// By default this property is set to butt.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineCap)
-    // https://html.spec.whatwg.org/#dom-context-2d-linecap
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-linecap
     pub fn get_line_cap(&self) -> LineCap {
         let line_cap_str: String = js! (
             return @{&self.0}.lineCap
@@ -450,7 +465,7 @@ impl CanvasRenderingContext2d {
     /// By default this property is set to butt.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineCap)
-    // https://html.spec.whatwg.org/#dom-context-2d-linecap
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-linecap
     pub fn set_line_cap(&self, line_cap: LineCap) {
         let line_cap_string = match line_cap {
             LineCap::Butt => "butt",
@@ -647,7 +662,7 @@ impl CanvasRenderingContext2d {
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/strokeStyle)
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-strokestyle
-    pub fn get_stroke_style(&self) -> String {
+    pub fn get_stroke_style(&self) -> CanvasStyle {
         js! (
             return @{&self.0}.strokeStyle;
         ).try_into().unwrap()
@@ -758,8 +773,6 @@ impl CanvasRenderingContext2d {
             @{&self.0}.textBaseline = @{text_baseline_str};
         }
     }
-
-    /// # Methods
     
     /// Adds an arc to the path which is centered at (x, y) position with radius r starting 
     /// at startAngle and ending at endAngle going in the given direction by anticlockwise 
@@ -767,9 +780,9 @@ impl CanvasRenderingContext2d {
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/arc)
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-arc
-    pub fn arc(&self, x: f64, y: f64, start_angle: f64, end_angle: f64, anticlockwise: bool) {
+    pub fn arc(&self, x: f64, y: f64, radius: f64, start_angle: f64, end_angle: f64, anticlockwise: bool) {
         js! { @(no_return)
-            @{&self.0}.arc(@{x}, @{y}, @{start_angle}, @{end_angle}, @{anticlockwise});
+            @{&self.0}.arc(@{x}, @{y}, @[radius], @{start_angle}, @{end_angle}, @{anticlockwise});
         }
     }
 
@@ -832,17 +845,10 @@ impl CanvasRenderingContext2d {
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/clip)
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-clip
-    pub fn clip(&self, fill_rule: Option<FillRule>) {
-        if let Some(fill_rule) = fill_rule {
-            let fill_rule_str = &self.fill_rule_to_str(fill_rule);
-            js! { @(no_return)
-                @{&self.0}.clip(@{fill_rule_str});
-            }    
-        }
-        else {
-            js! { @(no_return)
-                @{&self.0}.clip();
-            }
+    pub fn clip(&self, fill_rule: FillRule) {
+        let fill_rule_str = fill_rule_to_str(fill_rule);
+        js! { @(no_return)
+            @{&self.0}.clip(@{fill_rule_str});
         }
     }
 
@@ -873,7 +879,7 @@ impl CanvasRenderingContext2d {
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createImageData)
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-createimagedata
-    pub fn create_image_data_wh(&self, width: f64, height: f64) -> Result<ImageData, IndexSizeError> {
+    pub fn create_image_data(&self, width: f64, height: f64) -> Result<ImageData, IndexSizeError> {
         js_try! (
             return @{&self.0}.createImageData(@{width}, @{height});
         ).unwrap()
@@ -884,7 +890,7 @@ impl CanvasRenderingContext2d {
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createImageData)
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-createimagedata
-    pub fn create_image_data_id(&self, image_data: ImageData) -> ImageData {
+    pub fn create_image_data_size_of(&self, image_data: ImageData) -> ImageData {
         js! (
             return @{&self.0}.createImageData(@{image_data});
         ).try_into().unwrap()
@@ -895,28 +901,28 @@ impl CanvasRenderingContext2d {
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createPattern)
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-createpattern
-    pub fn create_pattern_image(&self, image: ImageElement, repetition: Option<Repetition>) -> Result<CanvasPattern, SyntaxError> {
+    pub fn create_pattern_image(&self, image: ImageElement, repetition: Repetition) -> CanvasPattern {
         let repetition_string = match repetition {
-            Some(Repetition::Repeat) | None => {
+            Repetition::Repeat => {
                 "repeat"
             }
 
-            Some(Repetition::RepeatX) => {
+            Repetition::RepeatX => {
                 "repeat-x"
             }
 
-            Some(Repetition::RepeatY) => {
+            Repetition::RepeatY => {
                 "repeat-y"
             }
 
-            Some(Repetition::NoRepeat) => {
+            Repetition::NoRepeat => {
                 "no-repeat"
             }
         };
 
-        js_try! (
+        js! (
             return @{&self.0}.createPattern(@{image}, @{repetition_string});
-        ).unwrap()
+        ).try_into().unwrap()
     }
 
     /// Creates a radial gradient given by the coordinates of the two circles represented by the parameters. 
@@ -979,18 +985,11 @@ impl CanvasRenderingContext2d {
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fill)
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-fill
-    pub fn fill(&self, fill_rule: Option<FillRule>) {
-        if let Some(fill_rule) = fill_rule {
-            let fill_rule_str = &self.fill_rule_to_str(fill_rule);
-            js! { @(no_return)
-                @{&self.0}.fill(@{fill_rule_str});
-            }    
-        }
-        else {
-            js! { @(no_return)
-                @{&self.0}.fill();
-            }
-        }
+    pub fn fill(&self, fill_rule: FillRule) {
+        let fill_rule_str = fill_rule_to_str(fill_rule);
+        js! { @(no_return)
+            @{&self.0}.fill(@{fill_rule_str});
+        }    
     }
 
     /// Draws a filled rectangle whose starting point is at the coordinates (x, y) with the
@@ -1054,18 +1053,11 @@ impl CanvasRenderingContext2d {
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/isPointInPath)
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-ispointinpath
-    pub fn is_point_in_path(&self, x: f64, y: f64, fill_rule: Option<FillRule>) -> bool {
-        if let Some(fill_rule) = fill_rule {
-            let fill_rule_str = &self.fill_rule_to_str(fill_rule);
-            js! (
-                return @{&self.0}.isPointInPath(@{x}, @{y}, @{fill_rule_str});
-            ).try_into().unwrap()
-        }
-        else {
-            js! (
-                return @{&self.0}.isPointInPath(@{x}, @{y});
-            ).try_into().unwrap()
-        }
+    pub fn is_point_in_path(&self, x: f64, y: f64, fill_rule: FillRule) -> bool {
+        let fill_rule_str = fill_rule_to_str(fill_rule);
+        js! (
+            return @{&self.0}.isPointInPath(@{x}, @{y}, @{fill_rule_str});
+        ).try_into().unwrap()
     }
 
     /// Reports whether or not the specified point is inside the area contained by the stroking of a path.
@@ -1117,14 +1109,24 @@ impl CanvasRenderingContext2d {
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-putimagedata
     pub fn put_image_data(&self, 
                             image_data: ImageData, 
-                            dx: f32, dy: f32, 
-                            dirty_x: Option<f32>, dirty_y: Option<f32>, 
-                            dirty_width: Option<f32>, dirty_height: Option<f32>
+                            dx: f32, dy: f32
                         ) -> Result<(), InvalidStateError> {
-        let dirty_x = dirty_x.unwrap_or(0 as f32);
-        let dirty_y = dirty_y.unwrap_or(0 as f32);
-        let dirty_width = dirty_width.unwrap_or(image_data.get_width() as f32);
-        let dirty_height = dirty_height.unwrap_or(image_data.get_height() as f32);
+        js_try! ( @(no_return)
+            @{&self.0}.putImageData(@{image_data}, @{dx}, @{dy});
+        ).unwrap()
+    }
+
+    /// Paints data from the given ImageData object onto the bitmap. If a dirty rectangle is provided, only the pixels 
+    /// from that rectangle are painted. This method is not affected by the canvas transformation matrix.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/putImageData)
+    // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-putimagedata
+    pub fn put_image_data_dirty(&self, 
+                            image_data: ImageData, 
+                            dx: f32, dy: f32, 
+                            dirty_x: f32, dirty_y: f32, 
+                            dirty_width: f32, dirty_height: f32
+                        ) -> Result<(), InvalidStateError> {
         js_try! ( @(no_return)
             @{&self.0}.putImageData(@{image_data}, @{dx}, @{dy}, @{dirty_x}, @{dirty_y}, @{dirty_width}, @{dirty_height});
         ).unwrap()
@@ -1283,16 +1285,16 @@ impl CanvasRenderingContext2d {
             @{&self.0}.translate(@{x}, @{y});
         }
     }
+}
 
-    fn fill_rule_to_str(&self, fill_rule: FillRule) -> &'static str {
-        match fill_rule {
-            FillRule::NonZero => {
-                "nonzero"
-            }
+fn fill_rule_to_str(fill_rule: FillRule) -> &'static str {
+    match fill_rule {
+        FillRule::NonZero => {
+            "nonzero"
+        }
 
-            FillRule::EvenOdd => {
-                "evenodd"
-            }
+        FillRule::EvenOdd => {
+            "evenodd"
         }
     }
 }
@@ -1314,12 +1316,11 @@ impl TextMetrics {
 mod test {
     use super::*;
     use webcore::try_from::TryInto;
+    use webapi::document;
 
     fn new_canvas() -> CanvasRenderingContext2d {
-        js!(
-            var canvas = document.createElement("canvas");
-            return canvas.getContext("2d");
-        ).try_into().unwrap()
+        let canvas = document().create_element("canvas").unwrap();
+        CanvasRenderingContext2d::from_canvas(canvas)
     }
 
     #[test]
