@@ -1,18 +1,15 @@
 #[macro_use]
 extern crate stdweb;
 
+use stdweb::traits::*;
 use stdweb::unstable::TryInto;
 use stdweb::web::{
-    IEventTarget,
-    IParentNode,
-    IHtmlElement,
     document,
     window,
     CanvasRenderingContext2d
 };
 
 use stdweb::web::event::{
-    IMouseEvent,
     MouseMoveEvent,
     ResizeEvent,
 };

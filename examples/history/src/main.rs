@@ -6,11 +6,11 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json as json;
 
+use stdweb::traits::*;
 use stdweb::unstable::TryInto;
 use stdweb::serde::Serde;
 use stdweb::web::event::PopStateEvent;
 use stdweb::web::{
-    IEventTarget,
     History,
     set_timeout,
     window,

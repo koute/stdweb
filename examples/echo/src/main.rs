@@ -2,20 +2,15 @@ extern crate stdweb;
 
 use std::rc::Rc;
 
+use stdweb::traits::*;
 use stdweb::unstable::TryInto;
 use stdweb::web::{
-    IParentNode,
-    IEventTarget,
-    INode,
     HtmlElement,
     document,
     WebSocket,
 };
 
 use stdweb::web::event::{
-    IEvent,
-    IKeyboardEvent,
-    IMessageEvent,
     KeyPressEvent,
     SocketOpenEvent,
     SocketCloseEvent,
