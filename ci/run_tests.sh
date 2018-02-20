@@ -41,7 +41,14 @@ if [ "$IS_NIGHTLY" = "1" ]; then
     popd > /dev/null
 fi
 
-EXAMPLES=(canvas echo hasher minimal promise todomvc)
+NIGHTLY_EXAMPLES=(hasher)
+STABLE_EXAMPLES=(canvas echo minimal promise todomvc)
+if [ "$IS_NIGHTLY" = "1" ]; then
+    EXAMPLES=( "${NIGHTLY_EXAMPLES[@]}" "${STABLE_EXAMPLES[@]}" )
+else
+    EXAMPLES=( "${STABLE_EXAMPLES[@]}" )
+fi
+
 for EXAMPLE in "${EXAMPLES[@]}"; do
     echo "Building example: $EXAMPLE"
     pushd examples/$EXAMPLE > /dev/null
