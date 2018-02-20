@@ -1336,12 +1336,11 @@ impl TextMetrics {
 #[cfg(all(test, feature = "web_test"))]
 mod test {
     use super::*;
-    use webcore::try_from::TryInto;
-    use webapi::document;
+    use webapi::document::document;
 
     fn new_canvas() -> CanvasRenderingContext2d {
         let canvas = document().create_element("canvas").unwrap();
-        CanvasRenderingContext2d::from_canvas(canvas)
+        CanvasRenderingContext2d::from_canvas(canvas).unwrap()
     }
 
     #[test]
@@ -1351,7 +1350,7 @@ mod test {
         canvas.set_fill_style_color("rgb(200,0,0)");
         let style = canvas.get_fill_style();
         match style {
-            String(s) => assert_eq!(s, "#c80000"),
+            CanvasStyle::String(s) => assert_eq!(s, "#c80000"),
             _ => assert!(false, "Expected style to be a string \"#c80000\" was instead {:?}", style),
         }
     }
