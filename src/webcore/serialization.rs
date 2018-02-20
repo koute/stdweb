@@ -1792,6 +1792,11 @@ mod test_reserialization {
     }
 
     #[test]
+    fn string_with_non_bmp_character() {
+        assert_eq!( js! { return @{"😐"} + ", 😐"; }, Value::String( "😐, 😐".to_string() ) );
+    }
+
+    #[test]
     fn array() {
         let array: Array = vec![ Value::Number( 1.into() ), Value::Number( 2.into() ) ].into();
         assert_eq!( js! { return @{&array}; }.into_reference().unwrap(), *array.as_ref() );

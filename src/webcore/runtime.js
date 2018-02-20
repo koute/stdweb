@@ -276,6 +276,9 @@ Module.STDWEB_PRIVATE.to_js_string = function to_js_string( index, length ) {
                     w = HEAPU8[ index++ ];
                 }
                 ch = (init & 7) << 18 | ((y_z << 6) | (w & 63));
+
+                output += String.fromCharCode( 0xD7C0 + (ch >> 10) );
+                ch = 0xDC00 + (ch & 0x3FF);
             }
         }
         output += String.fromCharCode( ch );
