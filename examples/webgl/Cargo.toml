@@ -1,0 +1,7 @@
+[package]
+name = "webgl"
+version = "0.1.0"
+authors = ["Liana Pigeot <liana.pigeot@gmail.com>"]
+
+[dependencies]
+stdweb = { path = "../.." }
