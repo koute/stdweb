@@ -1339,8 +1339,9 @@ mod test {
     use webapi::document::document;
 
     fn new_canvas() -> CanvasRenderingContext2d {
-        let canvas = document().create_element("canvas").unwrap();
-        CanvasRenderingContext2d::from_canvas(canvas).unwrap()
+        let canvas: CanvasElement = document().create_element("canvas").unwrap().try_into().unwrap();
+        let ctx: CanvasRenderingContext2d = canvas.get_context().unwrap();
+        ctx
     }
 
     #[test]
