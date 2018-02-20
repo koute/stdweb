@@ -106,8 +106,11 @@ pub enum FillRule {
 /// Certain style functions can return multiple types
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CanvasStyle {
+    /// String representing the style
     String(String),
+    /// CanvasGradient representing the style
     CanvasGradient(CanvasGradient),
+    /// CanvasPattern representing the style
     CanvasPattern(CanvasPattern),
 }
 
@@ -282,7 +285,7 @@ impl CanvasRenderingContext2d {
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/canvas)
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-canvas
-    pub fn get_canvas(&self) -> Option<CanvasElement> {
+    pub fn get_canvas(&self) -> CanvasElement {
         js! (
             @{&self.0}.canvas;
         ).try_into().unwrap()
@@ -1346,7 +1349,11 @@ mod test {
         let canvas = new_canvas();
 
         canvas.set_fill_style_color("rgb(200,0,0)");
-        assert_eq!(canvas.get_fill_style(), "#c80000");
+        let style = canvas.get_fill_style();
+        match style {
+            String(s) => assert_eq!(s, "#c80000"),
+            _ => assert!(false, "Expected style to be a string \"#c80000\" was instead {:?}", style),
+        }
     }
 
     #[test]
