@@ -38,7 +38,7 @@ fn main() {
         let elem = document().create_element("p").unwrap();
         elem.set_text_content(msg);
         if let Some(child) = output_div.first_child() {
-            output_div.insert_before(&elem, &child);
+            output_div.insert_before(&elem, &child).unwrap();
         } else {
             output_div.append_child(&elem);
         }
@@ -72,7 +72,7 @@ fn main() {
             let text: String = text_entry.raw_value();
             if text.is_empty() == false {
                 text_entry.set_raw_value("");
-                ws.send_text(&text);
+                ws.send_text(&text).unwrap();
             }
         }
     }));
