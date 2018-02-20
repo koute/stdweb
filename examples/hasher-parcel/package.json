@@ -1,0 +1,14 @@
+{
+  "name": "hasher-parcel",
+  "version": "0.1.0",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "(MIT OR Apache-2.0)",
+  "dependencies": {
+    "parcel-bundler": "^1.6.2",
+    "parcel-plugin-cargo-web": "^0.1.0"
+  }
+}

@@ -92,3 +92,10 @@ console.log( "Hash of " + string + " is '" + hash + "'" );
 For the Nodejs environment the WebAssembly is compiled synchronously.
 
 [Promise]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
+
+### Integration with JavaScript bundlers
+
+You can take a look at the `hasher-parcel` example for how to integrate
+with the [Parcel] bundler.
+
+[Parcel]: https://parceljs.org/
