@@ -37,7 +37,7 @@ let result = js! {
 println!( "2 + 2 * 2 = {:?}", result );
 ```
 
-Even closures are supported:
+Closures are also supported:
 
 ```rust
 let print_hello = |name: String| {
@@ -73,13 +73,57 @@ js! {
 This crate also exposes a number of Web APIs, for example:
 
 ```rust
-let button = document().query_selector( "#hide-button" ).unwrap();
+let button = document().query_selector( "#hide-button" ).unwrap().unwrap();
 button.add_event_listener( move |_: ClickEvent| {
     for anchor in document().query_selector_all( "#main a" ) {
         js!( @{anchor}.style = "display: none;"; );
     }
 });
 ```
+
+Exposing Rust functions to JavaScript is supported too:
+
+```rust
+#[js_export]
+fn hash( string: String ) -> String {
+    let mut hasher = Sha1::new();
+    hasher.update( string.as_bytes() );
+    hasher.digest().to_string()
+}
+```
+
+Then you can do this from Node.js:
+
+```js
+var hasher = require( "hasher.js" ); // Where `hasher.js` is generated from Rust code.
+console.log( hasher.hash( "Hello world!" ) );
+```
+
+Or you can take the same `.js` file and use it in a web browser:
+
+```html
+<script src="hasher.js"></script>
+<script>
+    Rust.hasher.then( function( hasher ) {
+        console.log( hasher.hash( "Hello world!" ) );
+    });
+</script>
+```
+
+If you're using [Parcel] you can also use our [experimental Parcel plugin];
+first do this in your existing Parcel project:
+
+    $ npm install --save parcel-plugin-cargo-web
+
+And then simply:
+
+```js
+import hasher from "./hasher/Cargo.toml";
+console.log( hasher.hash( "Hello world!" ) );
+```
+
+[Parcel]: https://parceljs.org/
+[experimental Parcel plugin]: https://github.com/koute/parcel-plugin-cargo-web
 
 ## Design goals
 
@@ -142,90 +186,11 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
 [asm.js]: https://en.wikipedia.org/wiki/Asm.js
 [WebAssembly]: https://en.wikipedia.org/wiki/WebAssembly
 
-## Exposing Rust functions to JavaScript
-
-***WARNING***: This is only supported for Rust's native `wasm32-unknown-unknown` target
-and requires Rust nightly!
-
-(Note: this is based on the `examples/hasher` example)
-
-With the `stdweb` crate you can easily expose a Rust function
-to JavaScript like this:
-
-```rust
-#[macro_use]
-extern crate stdweb;
-extern crate sha1;
-
-use sha1::Sha1;
-
-fn hash( string: String ) -> String {
-    let mut hasher = Sha1::new();
-    hasher.update( string.as_bytes() );
-    hasher.digest().to_string()
-}
-
-fn main() {
-    stdweb::initialize();
-
-    js! {
-        Module.exports.sha1 = @{hash};
-    }
-}
-```
-
-If you compile this code with `cargo-web build --target=wasm32-unknown-unknown` you'll get two files:
-
-   * `target/wasm32-unknown-unknown/release/hasher.js`
-   * `target/wasm32-unknown-unknown/release/hasher.wasm`
-
-You can copy them into your JavaScript project and load like any other JavaScript file:
-
-```html
-<script src="hasher.js"></script>
-```
-
-After it's loaded you can access `Rust.hasher`, which is a [Promise] which
-will resolve once the WebAssembly module is loaded. Inside that promise
-you'll find the contents of `Module.exports` which we've set from our
-Rust code, which includes our exported function which you can now call:
-
-```html
-<script>
-    Rust.hasher.then( function( hasher ) {
-        const string = "fiddlesticks";
-        const hash = hasher.sha1( string );
-
-        console.log( "Hash of " + string + " is '" + hash + "'" );
-    });
-</script>
-```
-
-You can also use the very same `hasher.js` from Nodejs:
-
-```js
-const hasher = require( "hasher.js" );
-
-const string = "fiddlesticks";
-const hash = hasher.sha1( string );
-
-console.log( "Hash of " + string + " is '" + hash + "'" );
-```
-
-For the Nodejs environment the WebAssembly is compiled synchronously.
-
-[Promise]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
-
-## Parcel plugin
-
-There is also an **experimental** [Parcel] plugin [here](https://github.com/koute/parcel-plugin-cargo-web).
-
-[Parcel]: https://parceljs.org/
-
 ## Changelog
 
    * `0.4`
       * (breaking change) Removed `Array` and `Object` variants from `Value`; these are now treated as `Reference`s
+      * (breaking change) The `Value` has an extra variant: `Symbol`
       * (breaking change) Removed:
          * `InputElement::set_kind`
          * `InputElement::files`
@@ -239,6 +204,7 @@ There is also an **experimental** [Parcel] plugin [here](https://github.com/kout
       * (breaking change) `ArrayBuffer::new` now takes an `u64` argument
       * (breaking change) `InputElement::set_raw_value` now takes `&str` instead of `Into< Value >`
       * (breaking change) Changed return types:
+         * Every method which returned `usize` now returns `u32`
          * `INode::remove_child` now returns `Node` in the `Ok` case
          * The following now return an `u64`:
             * `ArrayBuffer::len`
@@ -275,6 +241,7 @@ There is also an **experimental** [Parcel] plugin [here](https://github.com/kout
       * (breaking change) `INode::inner_text` was moved to `IHtmlElement::inner_text`
       * (breaking change) `Document::query_selector` and `Document::query_selector_all` were moved to `IParentNode`
       * (breaking change) `IElement::query_selector` and `IElement::query_selector_all` were moved to `IParentNode`
+      * (breaking change) `Document::get_element_by_id` was moved to `INonElementParentNode`
       * (breaking change) A blanket impl for converting between arbitrary reference-like objects using
         `TryFrom`/`TryInto` has been removed
       * When building using a recent `cargo-web` it's not necessary to call
@@ -306,6 +273,9 @@ There is also an **experimental** [Parcel] plugin [here](https://github.com/kout
       * Add `DomException` and subtypes for passing around JavaScript exceptions
       * `IElement` now inherits from `INode`
       * Every interface now inherits from `ReferenceType`
+      * Add `stdweb::traits` module to act as a prelude for `use`-ing all of our interface traits
+      * Add `console!` macro
+      * Most types now implement `PartialEq` and `Eq`
 
    * `0.3`
       * (breaking change) Deleted `ErrorEvent` methods

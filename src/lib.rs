@@ -15,7 +15,7 @@
 //! println!( "2 + 2 * 2 = {:?}", result );
 //! ```
 //!
-//! Even closures are supported:
+//! Closures are also supported:
 //!
 //! ```rust
 //! let print_hello = |name: String| {
@@ -51,13 +51,57 @@
 //! This crate also exposes a number of Web APIs, for example:
 //!
 //! ```rust
-//! let button = document().query_selector( "#hide-button" ).unwrap();
+//! let button = document().query_selector( "#hide-button" ).unwrap().unwrap();
 //! button.add_event_listener( move |_: ClickEvent| {
 //!     for anchor in document().query_selector_all( "#main a" ) {
 //!         js!( @{anchor}.style = "display: none;"; );
 //!     }
 //! });
 //! ```
+//!
+//! Exposing Rust functions to JavaScript is supported too:
+//!
+//! ```rust
+//! #[js_export]
+//! fn hash( string: String ) -> String {
+//!     let mut hasher = Sha1::new();
+//!     hasher.update( string.as_bytes() );
+//!     hasher.digest().to_string()
+//! }
+//! ```
+//!
+//! Then you can do this from Node.js:
+//!
+//! ```js
+//! //! var hasher = require( "hasher.js" ); // Where `hasher.js` is generated from Rust code.
+//! console.log( hasher.hash( "Hello world!" ) );
+//! ```
+//!
+//! Or you can take the same `.js` file and use it in a web browser:
+//!
+//! ```html
+//! <script src="hasher.js"></script>
+//! <script>
+//!     Rust.hasher.then( function( hasher ) {
+//!         console.log( hasher.hash( "Hello world!" ) );
+//!     });
+//! </script>
+//! ```
+//!
+//! If you're using [Parcel] you can also use our [experimental Parcel plugin];
+//! first do this in your existing Parcel project:
+//!
+//!     $ npm install --save parcel-plugin-cargo-web
+//!
+//! And then simply:
+//!
+//! ```js
+//! import hasher from "./hasher/Cargo.toml";
+//! console.log( hasher.hash( "Hello world!" ) );
+//! ```
+//!
+//! [Parcel]: https://parceljs.org/
+//! [experimental Parcel plugin]: https://github.com/koute/parcel-plugin-cargo-web
 
 #![deny(
     missing_docs,
