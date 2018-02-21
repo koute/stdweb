@@ -28,7 +28,7 @@ serde_derive = "1"
 default = ["serde", "serde_json", "futures"]
 nightly = []
 web_test = []
-enable_experimental_features_which_may_break_on_minor_version_bumps = []
+experimental_features_which_may_break_on_minor_version_bumps = []
 
 [target.wasm32-unknown-unknown.dependencies]
 stdweb-internal-macros = { version = "0.1", path = "stdweb-internal-macros" }

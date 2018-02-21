@@ -173,12 +173,12 @@ pub use webcore::instance_of::InstanceOf;
 pub use webcore::reference_type::ReferenceType;
 pub use webcore::serialization::JsSerialize;
 
-#[cfg(feature = "enable_experimental_features_which_may_break_on_minor_version_bumps")]
+#[cfg(feature = "experimental_features_which_may_break_on_minor_version_bumps")]
 pub use webcore::promise::Promise;
 
 #[cfg(all(
     feature = "futures",
-    feature = "enable_experimental_features_which_may_break_on_minor_version_bumps"
+    feature = "experimental_features_which_may_break_on_minor_version_bumps"
 ))]
 pub use webcore::promise_future::PromiseFuture;
 
