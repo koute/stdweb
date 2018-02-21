@@ -56,3 +56,14 @@ for EXAMPLE in "${EXAMPLES[@]}"; do
     popd > /dev/null
     echo ""
 done
+
+if [ "$IS_NIGHTLY" = "1" ]; then
+    pushd examples/hasher > /dev/null
+    node example.js
+    popd > /dev/null
+
+    pushd examples/hasher-parcel > /dev/null
+    npm install
+    $(npm bin)/parcel build index.html
+    popd > /dev/null
+fi
