@@ -42,7 +42,7 @@ if [ "$IS_NIGHTLY" = "1" ]; then
 fi
 
 NIGHTLY_EXAMPLES=(hasher)
-STABLE_EXAMPLES=(canvas echo minimal promise todomvc)
+STABLE_EXAMPLES=(canvas echo minimal todomvc)
 if [ "$IS_NIGHTLY" = "1" ]; then
     EXAMPLES=( "${NIGHTLY_EXAMPLES[@]}" "${STABLE_EXAMPLES[@]}" )
 else
