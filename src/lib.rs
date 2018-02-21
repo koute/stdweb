@@ -73,7 +73,7 @@
 //! Then you can do this from Node.js:
 //!
 //! ```js
-//! //! var hasher = require( "hasher.js" ); // Where `hasher.js` is generated from Rust code.
+//! var hasher = require( "hasher.js" ); // Where `hasher.js` is generated from Rust code.
 //! console.log( hasher.hash( "Hello world!" ) );
 //! ```
 //!
