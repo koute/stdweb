@@ -328,9 +328,13 @@ fn into_export( ident: syn::Ident, decl: &syn::FnDecl ) -> Export {
 }
 
 #[proc_macro_attribute]
-pub fn js_export( _: TokenStream, input: TokenStream ) -> TokenStream {
+pub fn js_export( attrs: TokenStream, input: TokenStream ) -> TokenStream {
     let item: syn::Item = syn::parse( input ).unwrap();
     let mut exports = Vec::new();
+
+    if !attrs.is_empty() {
+        panic!( "Extra attributes are not supported in `#[js_export]`!" );
+    }
 
     match item {
         syn::Item::Fn( ref function ) => {
