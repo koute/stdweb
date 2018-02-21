@@ -1,8 +1,0 @@
-[package]
-name = "promise"
-version = "0.1.0"
-authors = ["Pauan <pcxunlimited@gmail.com>"]
-
-[dependencies]
-stdweb = { path = "../.." }
-futures = "0.1.18"
