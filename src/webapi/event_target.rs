@@ -4,34 +4,33 @@ use webcore::value::Reference;
 use webcore::try_from::TryInto;
 use webcore::reference_type::ReferenceType;
 use webapi::event::{ConcreteEvent, IEvent};
+use webcore::cancel::{Cancel, AutoCancel};
 use private::TODO;
 
 /// A handle to a particular event listener.
-pub struct EventListenerHandle {
+pub struct EventListener {
     event_type: &'static str,
     reference: Reference,
     listener_reference: Reference
 }
 
-impl fmt::Debug for EventListenerHandle {
+impl fmt::Debug for EventListener {
     fn fmt( &self, formatter: &mut fmt::Formatter ) -> fmt::Result {
-        write!( formatter, "EventListenerHandle {{ event_type: {}, reference: {:?} }}", self.event_type, self.reference )
+        write!( formatter, "EventListener {{ event_type: {}, reference: {:?} }}", self.event_type, self.reference )
     }
 }
 
-impl EventListenerHandle {
-    /// Removes the handler from the [IEventTarget](trait.IEventTarget.html) on
+impl Cancel for EventListener {
+    /// Removes the listener from the [IEventTarget](trait.IEventTarget.html) on
     /// which it was previously registered.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/removeEventListener)
     // https://dom.spec.whatwg.org/#ref-for-dom-eventtarget-removeeventlistener%E2%91%A0
-    pub fn remove( self ) {
+    fn cancel( &mut self ) {
         js! { @(no_return)
-            var self = @{self.reference};
-            var event_type = @{self.event_type};
-            var listener = @{self.listener_reference};
+            var listener = @{&self.listener_reference};
+            @{&self.reference}.removeEventListener( @{self.event_type}, listener );
             listener.drop();
-            self.removeEventListener( event_type, listener );
         }
     }
 }
@@ -42,26 +41,27 @@ impl EventListenerHandle {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget)
 // https://dom.spec.whatwg.org/#eventtarget
 pub trait IEventTarget: ReferenceType {
-    /// Adds given event handler to the list the list of event listeners for
+    /// Adds given event handler to the list of event listeners for
     /// the specified `EventTarget` on which it's called.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener)
     // https://dom.spec.whatwg.org/#ref-for-dom-eventtarget-addeventlistener%E2%91%A0
-    fn add_event_listener< T, F >( &self, listener: F ) -> EventListenerHandle
+    fn add_event_listener< T, F >( &self, listener: F ) -> AutoCancel< EventListener >
         where T: ConcreteEvent, F: FnMut( T ) + 'static
     {
         let reference = self.as_ref();
+
         let listener_reference = js! {
             var listener = @{listener};
             @{reference}.addEventListener( @{T::EVENT_TYPE}, listener );
             return listener;
         }.try_into().unwrap();
 
-        EventListenerHandle {
+        AutoCancel::new( EventListener {
             event_type: T::EVENT_TYPE,
             reference: reference.clone(),
             listener_reference: listener_reference
-        }
+        } )
     }
 
     /// Dispatches an `Event` at this `EventTarget`, invoking the affected event listeners in the

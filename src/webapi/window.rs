@@ -7,21 +7,22 @@ use webapi::location::Location;
 use webapi::history::History;
 use webcore::once::Once;
 use webcore::value::Value;
+use webcore::cancel::{Cancel, AutoCancel};
 
 /// A handle to a pending animation frame request.
 #[derive(Debug)]
 pub struct RequestAnimationFrameHandle(Value);
 
-impl RequestAnimationFrameHandle {
+impl Cancel for RequestAnimationFrameHandle {
     /// Cancels an animation frame request.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Window/cancelAnimationFrame)
-    pub fn cancel(self) {
-        js!{
-            var val = @{self.0};
+    fn cancel( &mut self ) {
+        js! { @(no_return)
+            var val = @{&self.0};
             val.window.cancelAnimationFrame(val.request);
             val.callback.drop();
-        };
+        }
     }
 }
 
@@ -123,13 +124,13 @@ impl Window {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame)
     // https://html.spec.whatwg.org/#the-window-object:dom-window-requestanimationframe
-    pub fn request_animation_frame< F: FnOnce(f64) + 'static>( &self, callback: F) -> RequestAnimationFrameHandle {
+    pub fn request_animation_frame< F: FnOnce(f64) + 'static>( &self, callback: F) -> AutoCancel< RequestAnimationFrameHandle > {
         let values: Value = js!{
             var callback = @{Once(callback)};
             var request = @{self}.requestAnimationFrame(callback);
             return { request: request, callback: callback, window: @{self} };
         };
-        RequestAnimationFrameHandle(values)
+        AutoCancel::new( RequestAnimationFrameHandle(values) )
     }
 
     /// Returns the global [History](struct.History.html) object, which provides methods to

@@ -3,6 +3,7 @@ use webcore::value::{Reference, Value, ConversionError};
 use webapi::node_list::NodeList;
 use webcore::try_from::{TryFrom, TryInto};
 use webapi::node::{INode, Node};
+use webcore::cancel::{Cancel, AutoCancel};
 use private::TODO;
 
 /// Provides a way to receive notifications about changes to the DOM.
@@ -62,17 +63,17 @@ impl MutationObserver {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#Constructor)
     // https://dom.spec.whatwg.org/#ref-for-dom-mutationobserver-mutationobserver
-    pub fn new< F >( callback: F ) -> MutationObserverHandle
+    pub fn new< F >( callback: F ) -> AutoCancel< MutationObserverHandle >
         where F: FnMut( Vec< MutationRecord >, Self ) + 'static {
         let callback_reference: Reference = js! ( return @{callback}; ).try_into().unwrap();
 
-        MutationObserverHandle {
+        AutoCancel::new( MutationObserverHandle {
             callback_reference: callback_reference.clone(),
 
             mutation_observer: js! (
                 return new MutationObserver( @{callback_reference} );
             ).try_into().unwrap(),
-        }
+        } )
     }
 
     /// Starts observing changes to the `target`.
@@ -159,7 +160,7 @@ impl MutationObserver {
 /// This is created by the [`MutationObserver::new`](struct.MutationObserver.html#method.new) method, and
 /// it can use the same methods as [`MutationObserver`](struct.MutationObserver.html).
 ///
-/// When the `MutationObserverHandle` is dropped, the [`disconnect`](#method.disconnect)
+/// When the `MutationObserverHandle` is cancelled, the [`disconnect`](#method.disconnect)
 /// method will automatically be called.
 #[ derive( Debug ) ]
 pub struct MutationObserverHandle {
@@ -171,14 +172,14 @@ impl std::ops::Deref for MutationObserverHandle {
     type Target = MutationObserver;
 
     #[inline]
-    fn deref(&self) -> &Self::Target {
+    fn deref( &self ) -> &Self::Target {
         &self.mutation_observer
     }
 }
 
-impl Drop for MutationObserverHandle {
+impl Cancel for MutationObserverHandle {
     #[inline]
-    fn drop( &mut self ) {
+    fn cancel( &mut self ) {
         self.disconnect();
 
         js! { @(no_return)

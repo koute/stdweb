@@ -2,6 +2,7 @@ use std;
 use webcore::once::Once;
 use webcore::value::{Value, Reference};
 use webcore::try_from::{TryInto, TryFrom};
+use webcore::cancel::{Cancel, AutoCancel};
 
 #[cfg(feature = "futures")]
 use webcore::serialization::JsSerialize;
@@ -25,8 +26,8 @@ pub struct DoneHandle {
     done: Value,
 }
 
-impl Drop for DoneHandle {
-    fn drop( &mut self ) {
+impl Cancel for DoneHandle {
+    fn cancel( &mut self ) {
         js! { @(no_return)
             @{&self.done}[0] = true;
             @{&self.callback}.drop();
@@ -161,13 +162,13 @@ impl Promise {
     /// If the `Promise` never succeeds / fails then the `callback` will never be called.
     ///
     /// This method returns a [`DoneHandle`](struct.DoneHandle.html). When the [`DoneHandle`](struct.DoneHandle.html)
-    /// is dropped it will drop the `callback` and the `callback` will never be called. This is useful if you are
+    /// is cancelled it will drop the `callback` and the `callback` will never be called. This is useful if you are
     /// no longer interested in the `Promise`'s result.
     ///
-    /// But if you *are* interested in the `Promise`'s result, then you need to make sure to keep the handle alive
-    /// until after the callback is called.
+    /// But if you *are* interested in the `Promise`'s result, then you either need to make sure to keep the handle
+    /// alive until after the callback is called, or you need to use the `leak` method.
     ///
-    /// Dropping the [`DoneHandle`](struct.DoneHandle.html) does ***not*** cancel the `Promise`, because promises
+    /// Cancelling the [`DoneHandle`](struct.DoneHandle.html) does ***not*** cancel the `Promise`, because promises
     /// do not support cancellation.
     ///
     /// # Examples
@@ -183,7 +184,7 @@ impl Promise {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then)
     // https://www.ecma-international.org/ecma-262/6.0/#sec-performpromisethen
-    pub fn done< A, B, F >( &self, callback: F ) -> DoneHandle
+    pub fn done< A, B, F >( &self, callback: F ) -> AutoCancel< DoneHandle >
         where A: TryFrom< Value >,
               B: TryFrom< Value >,
               // TODO these Debug constraints are only needed because of unwrap
@@ -226,10 +227,10 @@ impl Promise {
             return done;
         );
 
-        DoneHandle {
+        AutoCancel::new( DoneHandle {
             callback,
             done,
-        }
+        } )
     }
 
     /// This method should rarely be needed, instead use [`value.try_into()`](unstable/trait.TryInto.html) to convert directly from a [`Value`](enum.Value.html) into a [`PromiseFuture`](struct.PromiseFuture.html).
