@@ -3,6 +3,8 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+CARGO_WEB=${CARGO_WEB:-cargo-web}
+
 set +e
 echo "$(rustc --version)" | grep -q "nightly"
 if [ "$?" = "0" ]; then
@@ -15,24 +17,24 @@ set -e
 echo "Is Rust from nightly: $IS_NIGHTLY"
 
 echo "Testing for asmjs-unknown-emscripten..."
-cargo web test --features web_test --target=asmjs-unknown-emscripten
+$CARGO_WEB test --features web_test --target=asmjs-unknown-emscripten
 
 pushd examples/todomvc > /dev/null
-cargo web build --release --target=asmjs-unknown-emscripten
+$CARGO_WEB build --release --target=asmjs-unknown-emscripten
 popd > /dev/null
 
 echo "Testing for wasm32-unknown-emscripten..."
-cargo web test --features web_test --target=wasm32-unknown-emscripten
+$CARGO_WEB test --features web_test --target=wasm32-unknown-emscripten
 
 pushd examples/todomvc > /dev/null
-cargo web build --release --target=wasm32-unknown-emscripten
+$CARGO_WEB build --release --target=wasm32-unknown-emscripten
 popd > /dev/null
 
 if [ "$IS_NIGHTLY" = "1" ]; then
-    cargo web test --nodejs --target=wasm32-unknown-unknown
+    $CARGO_WEB test --nodejs --target=wasm32-unknown-unknown
 
     pushd examples/todomvc > /dev/null
-    cargo web build --release --target=wasm32-unknown-unknown
+    $CARGO_WEB build --release --target=wasm32-unknown-unknown
     popd > /dev/null
 
     pushd standalone-tests > /dev/null
@@ -52,7 +54,7 @@ fi
 for EXAMPLE in "${EXAMPLES[@]}"; do
     echo "Building example: $EXAMPLE"
     pushd examples/$EXAMPLE > /dev/null
-    cargo web build
+    $CARGO_WEB build
     popd > /dev/null
     echo ""
 done
