@@ -38,7 +38,7 @@ if [ "$IS_NIGHTLY" = "1" ]; then
     popd > /dev/null
 
     pushd standalone-tests > /dev/null
-    cargo-web build --release --target=wasm32-unknown-unknown
+    $CARGO_WEB build --release --target=wasm32-unknown-unknown
     node target/wasm32-unknown-unknown/release/standalone-tests.js
     popd > /dev/null
 fi
