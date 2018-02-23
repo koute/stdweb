@@ -1,11 +1,14 @@
 use std::ops::{Deref, DerefMut};
 
 
+///
 pub trait Cancel {
+    ///
     fn cancel( &mut self );
 }
 
 
+///
 #[must_use = "
 
      The AutoCancel is unused, which causes it to be immediately cancelled.
@@ -21,11 +24,13 @@ pub trait Cancel {
 pub struct AutoCancel< A: Cancel >( Option< A > );
 
 impl< A: Cancel > AutoCancel< A > {
+    ///
     #[inline]
     pub fn new( canceler: A ) -> Self {
         AutoCancel( Some( canceler ) )
     }
 
+    ///
     #[inline]
     pub fn leak( mut self ) -> A {
         self.0.take().unwrap()

@@ -166,7 +166,7 @@ impl Promise {
     /// no longer interested in the `Promise`'s result.
     ///
     /// But if you *are* interested in the `Promise`'s result, then you either need to make sure to keep the handle
-    /// alive until after the callback is called, or you need to use the `leak` method.
+    /// alive until after the callback is called, or you need to use the [`leak`](struct.AutoCancel.html#method.leak) method.
     ///
     /// Cancelling the [`DoneHandle`](struct.DoneHandle.html) does ***not*** cancel the `Promise`, because promises
     /// do not support cancellation.
