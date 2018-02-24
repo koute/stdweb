@@ -22,15 +22,15 @@ use super::promise_future::PromiseFuture;
 /// See the documentation for [`done`](struct.Promise.html#method.done) for more information.
 #[derive( Debug, Clone )]
 pub struct DoneHandle {
-    callback: Value,
-    done: Value,
+    state: Value,
 }
 
 impl Cancel for DoneHandle {
     fn cancel( &mut self ) {
         js! { @(no_return)
-            @{&self.done}[0] = true;
-            @{&self.callback}.drop();
+            var state = @{&self.state};
+            state.cancelled = true;
+            state.callback.drop();
         }
     }
 }
@@ -207,29 +207,30 @@ impl Promise {
             callback( value );
         };
 
-        let callback = js!( return @{Once( callback )}; );
+        let state = js!(
+            var callback = @{Once( callback )};
 
-        let done = js!(
-            var callback = @{&callback};
-            var done = [ false ];
+            var state = {
+                cancelled: false,
+                callback: callback
+            };
 
             // TODO don't swallow any errors thrown inside callback
             @{self}.then( function ( value ) {
-                if ( !done[0] ) {
+                if ( !state.cancelled ) {
                     callback( value, true );
                 }
             }, function ( value ) {
-                if ( !done[0] ) {
+                if ( !state.cancelled ) {
                     callback( value, false );
                 }
             } );
 
-            return done;
+            return state;
         );
 
         CancelOnDrop::new( DoneHandle {
-            callback,
-            done,
+            state,
         } )
     }
 
