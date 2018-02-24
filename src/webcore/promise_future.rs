@@ -5,7 +5,7 @@ use webapi::error;
 use futures::{Future, Poll, Async};
 use futures::unsync::oneshot::Receiver;
 use webcore::promise_executor::spawn;
-use webcore::cancel::AutoCancel;
+use webcore::cancel::CancelOnDrop;
 use super::promise::{Promise, DoneHandle};
 
 
@@ -22,7 +22,7 @@ use super::promise::{Promise, DoneHandle};
 /// ```
 pub struct PromiseFuture< Value, Error = error::Error > {
     pub(crate) future: Receiver< Result< Value, Error > >,
-    pub(crate) _done_handle: AutoCancel< DoneHandle >,
+    pub(crate) _done_handle: CancelOnDrop< DoneHandle >,
 }
 
 impl PromiseFuture< (), () > {

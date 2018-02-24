@@ -2,7 +2,7 @@ use std;
 use webcore::once::Once;
 use webcore::value::{Value, Reference};
 use webcore::try_from::{TryInto, TryFrom};
-use webcore::cancel::{Cancel, AutoCancel};
+use webcore::cancel::{Cancel, CancelOnDrop};
 
 #[cfg(feature = "futures")]
 use webcore::serialization::JsSerialize;
@@ -166,7 +166,7 @@ impl Promise {
     /// no longer interested in the `Promise`'s result.
     ///
     /// But if you *are* interested in the `Promise`'s result, then you either need to make sure to keep the handle
-    /// alive until after the callback is called, or you need to use the [`leak`](struct.AutoCancel.html#method.leak) method.
+    /// alive until after the callback is called, or you need to use the [`leak`](struct.CancelOnDrop.html#method.leak) method.
     ///
     /// Cancelling the [`DoneHandle`](struct.DoneHandle.html) does ***not*** cancel the `Promise`, because promises
     /// do not support cancellation.
@@ -184,7 +184,7 @@ impl Promise {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then)
     // https://www.ecma-international.org/ecma-262/6.0/#sec-performpromisethen
-    pub fn done< A, B, F >( &self, callback: F ) -> AutoCancel< DoneHandle >
+    pub fn done< A, B, F >( &self, callback: F ) -> CancelOnDrop< DoneHandle >
         where A: TryFrom< Value >,
               B: TryFrom< Value >,
               // TODO these Debug constraints are only needed because of unwrap
@@ -227,7 +227,7 @@ impl Promise {
             return done;
         );
 
-        AutoCancel::new( DoneHandle {
+        CancelOnDrop::new( DoneHandle {
             callback,
             done,
         } )

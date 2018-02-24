@@ -166,7 +166,7 @@ pub use webcore::number::Number;
 pub use webcore::object::Object;
 pub use webcore::array::Array;
 pub use webcore::symbol::Symbol;
-pub use webcore::cancel::{Cancel, AutoCancel};
+pub use webcore::cancel::{Cancel, CancelOnDrop};
 
 pub use webcore::unsafe_typed_array::UnsafeTypedArray;
 pub use webcore::once::Once;
@@ -208,7 +208,7 @@ pub mod web {
     };
     pub use webapi::cross_origin_setting::CrossOriginSetting;
     pub use webapi::date::Date;
-    pub use webapi::event_target::{IEventTarget, EventTarget, EventListener};
+    pub use webapi::event_target::{IEventTarget, EventTarget, EventListenerHandle};
     pub use webapi::window::RequestAnimationFrameHandle;
     pub use webapi::node::{INode, Node, CloneKind};
     pub use webapi::element::{IElement, Element};

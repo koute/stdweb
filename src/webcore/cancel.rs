@@ -11,33 +11,36 @@ pub trait Cancel {
 ///
 #[must_use = "
 
-     The AutoCancel is unused, which causes it to be immediately cancelled.
+     The CancelOnDrop is unused, which causes it to be immediately cancelled.
      You probably don't want that to happen.
 
      How to fix this:
-       1) Store the AutoCancel in a variable or data structure
-       2) Use .leak() which will cause it to not be cancelled (this *will* leak memory!)
+       1) Store the CancelOnDrop in a variable or data structure.
+       2) Use .leak() which will cause it to not be cancelled (this *will* leak memory!).
 
      See the documentation for more details.
 "]
 #[derive(Debug)]
-pub struct AutoCancel< A: Cancel >( Option< A > );
+pub struct CancelOnDrop< A: Cancel >( Option< A > );
 
-impl< A: Cancel > AutoCancel< A > {
+impl< A: Cancel > CancelOnDrop< A > {
     ///
     #[inline]
     pub fn new( canceler: A ) -> Self {
-        AutoCancel( Some( canceler ) )
+        CancelOnDrop( Some( canceler ) )
     }
 
     ///
     #[inline]
     pub fn leak( mut self ) -> A {
-        self.0.take().unwrap()
+        match self.0.take() {
+            Some(value) => value,
+            None => unreachable!(),
+        }
     }
 }
 
-impl< A: Cancel > Drop for AutoCancel< A > {
+impl< A: Cancel > Drop for CancelOnDrop< A > {
     #[inline]
     fn drop( &mut self ) {
         match self.0 {
@@ -47,7 +50,7 @@ impl< A: Cancel > Drop for AutoCancel< A > {
     }
 }
 
-impl< A: Cancel > Deref for AutoCancel< A > {
+impl< A: Cancel > Deref for CancelOnDrop< A > {
     type Target = A;
 
     #[inline]
@@ -59,7 +62,7 @@ impl< A: Cancel > Deref for AutoCancel< A > {
     }
 }
 
-impl< A: Cancel > DerefMut for AutoCancel< A > {
+impl< A: Cancel > DerefMut for CancelOnDrop< A > {
     #[inline]
     fn deref_mut( &mut self ) -> &mut Self::Target {
         match self.0 {
@@ -72,13 +75,13 @@ impl< A: Cancel > DerefMut for AutoCancel< A > {
 
 #[cfg(test)]
 mod tests {
-    use super::{Cancel, AutoCancel};
+    use super::{Cancel, CancelOnDrop};
 
     struct Foo( bool );
 
     impl Foo {
-        fn new() -> AutoCancel< Foo > {
-            AutoCancel::new( Foo( false ) )
+        fn new() -> CancelOnDrop< Foo > {
+            CancelOnDrop::new( Foo( false ) )
         }
     }
 
