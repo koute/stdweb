@@ -176,9 +176,9 @@ impl Promise {
     /// * Keep the [`DoneHandle`](struct.DoneHandle.html) alive until after the `callback` is called (by storing it in a
     ///   variable or data structure).
     ///
-    /// * Use the [`leak`](https://docs.rs/discard/1.*/discard/struct.DiscardOnDrop.html#method.leak) function to leak the
+    /// * Use the [`DiscardOnDrop::leak`](https://docs.rs/discard/1.*/discard/struct.DiscardOnDrop.html#method.leak) function to leak the
     ///   [`DoneHandle`](struct.DoneHandle.html). If the `Promise` never succeeds or fails then this ***will*** leak the
-    ///   memory of the callback, so only use [`leak`](https://docs.rs/discard/1.*/discard/struct.DiscardOnDrop.html#method.leak)
+    ///   memory of the callback, so only use [`DiscardOnDrop::leak`](https://docs.rs/discard/1.*/discard/struct.DiscardOnDrop.html#method.leak)
     ///   if you need to.
     ///
     /// # Examples
