@@ -177,8 +177,9 @@ impl Promise {
     ///   variable or data structure).
     ///
     /// * Use the [`leak`](https://docs.rs/discard/1.*/discard/struct.DiscardOnDrop.html#method.leak) function to leak the
-    ///   [`DoneHandle`](struct.DoneHandle.html). This ***will*** leak the memory of the callback, so only do that if you
-    ///   absolutely need to.
+    ///   [`DoneHandle`](struct.DoneHandle.html). If the `Promise` never succeeds or fails then this ***will*** leak the
+    ///   memory of the callback, so only use [`leak`](https://docs.rs/discard/1.*/discard/struct.DiscardOnDrop.html#method.leak)
+    ///   if you need to.
     ///
     /// # Examples
     ///
