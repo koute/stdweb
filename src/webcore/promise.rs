@@ -161,21 +161,28 @@ impl Promise {
     ///
     /// If the `Promise` never succeeds / fails then the `callback` will never be called.
     ///
-    /// This method returns a [`DoneHandle`](struct.DoneHandle.html). When the [`DoneHandle`](struct.DoneHandle.html)
-    /// is dropped it will drop the `callback` and the `callback` will never be called. This is useful if you are
-    /// no longer interested in the `Promise`'s result.
+    /// This method returns a [`DoneHandle`](struct.DoneHandle.html). The [`DoneHandle`](struct.DoneHandle.html)
+    /// *exclusively* owns the `callback`, so when the [`DoneHandle`](struct.DoneHandle.html) is dropped it will
+    /// drop the `callback` and the `callback` will never be called. This will happen even if the `Promise` is not dropped!
     ///
-    /// But if you *are* interested in the `Promise`'s result, then you either need to make sure to keep the handle
-    /// alive until after the callback is called, or you need to use the [`leak`](https://docs.rs/discard/1.*/discard/struct.DiscardOnDrop.html#method.leak)
-    /// function.
-    ///
-    /// If you choose to leak the [`DoneHandle`](struct.DoneHandle.html) then it ***will*** leak the memory for the
-    /// callback, so only do that if absolutely need to.
-    ///
-    /// Discarding the [`DoneHandle`](struct.DoneHandle.html) does ***not*** cancel the `Promise`, because promises
+    /// Dropping the [`DoneHandle`](struct.DoneHandle.html) does ***not*** cancel the `Promise`, because promises
     /// do not support cancellation.
     ///
+    /// If you are no longer interested in the `Promise`'s result you can simply drop the [`DoneHandle`](struct.DoneHandle.html)
+    /// and then the `callback` will never be called.
+    ///
+    /// But if you *are* interested in the `Promise`'s result, then you have two choices:
+    ///
+    /// * Keep the [`DoneHandle`](struct.DoneHandle.html) alive until after the `callback` is called (by storing it in a
+    ///   variable or data structure).
+    ///
+    /// * Use the [`leak`](https://docs.rs/discard/1.*/discard/struct.DiscardOnDrop.html#method.leak) function to leak the
+    ///   [`DoneHandle`](struct.DoneHandle.html). This ***will*** leak the memory of the callback, so only do that if you
+    ///   absolutely need to.
+    ///
     /// # Examples
+    ///
+    /// Normal usage:
     ///
     /// ```rust
     /// let handle = promise.done(|result| {
@@ -184,6 +191,19 @@ impl Promise {
     ///         Err(error) => { ... },
     ///     }
     /// });
+    /// ```
+    ///
+    /// Leak the [`DoneHandle`](struct.DoneHandle.html) and `callback`:
+    ///
+    /// ```rust
+    /// use discard::DiscardOnDrop;
+    ///
+    /// DiscardOnDrop::leak(promise.done(|result| {
+    ///     match result {
+    ///         Ok(success) => { ... },
+    ///         Err(error) => { ... },
+    ///     }
+    /// }));
     /// ```
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then)
