@@ -2,7 +2,7 @@ use std;
 use webcore::once::Once;
 use webcore::value::{Value, Reference};
 use webcore::try_from::{TryInto, TryFrom};
-use webcore::cancel::{Cancel, CancelOnDrop};
+use discard::{Discard, DiscardOnDrop};
 
 #[cfg(feature = "futures")]
 use webcore::serialization::JsSerialize;
@@ -25,8 +25,8 @@ pub struct DoneHandle {
     state: Value,
 }
 
-impl Cancel for DoneHandle {
-    fn cancel( &mut self ) {
+impl Discard for DoneHandle {
+    fn discard( self ) {
         js! { @(no_return)
             var state = @{&self.state};
             state.cancelled = true;
@@ -162,13 +162,17 @@ impl Promise {
     /// If the `Promise` never succeeds / fails then the `callback` will never be called.
     ///
     /// This method returns a [`DoneHandle`](struct.DoneHandle.html). When the [`DoneHandle`](struct.DoneHandle.html)
-    /// is cancelled it will drop the `callback` and the `callback` will never be called. This is useful if you are
+    /// is dropped it will drop the `callback` and the `callback` will never be called. This is useful if you are
     /// no longer interested in the `Promise`'s result.
     ///
     /// But if you *are* interested in the `Promise`'s result, then you either need to make sure to keep the handle
-    /// alive until after the callback is called, or you need to use the [`leak`](struct.CancelOnDrop.html#method.leak) method.
+    /// alive until after the callback is called, or you need to use the [`leak`](https://docs.rs/discard/1.*/discard/struct.DiscardOnDrop.html#method.leak)
+    /// function.
     ///
-    /// Cancelling the [`DoneHandle`](struct.DoneHandle.html) does ***not*** cancel the `Promise`, because promises
+    /// If you choose to leak the [`DoneHandle`](struct.DoneHandle.html) then it ***will*** leak the memory for the
+    /// callback, so only do that if absolutely need to.
+    ///
+    /// Discarding the [`DoneHandle`](struct.DoneHandle.html) does ***not*** cancel the `Promise`, because promises
     /// do not support cancellation.
     ///
     /// # Examples
@@ -184,7 +188,7 @@ impl Promise {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then)
     // https://www.ecma-international.org/ecma-262/6.0/#sec-performpromisethen
-    pub fn done< A, B, F >( &self, callback: F ) -> CancelOnDrop< DoneHandle >
+    pub fn done< A, B, F >( &self, callback: F ) -> DiscardOnDrop< DoneHandle >
         where A: TryFrom< Value >,
               B: TryFrom< Value >,
               // TODO these Debug constraints are only needed because of unwrap
@@ -229,7 +233,7 @@ impl Promise {
             return state;
         );
 
-        CancelOnDrop::new( DoneHandle {
+        DiscardOnDrop::new( DoneHandle {
             state,
         } )
     }

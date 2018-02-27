@@ -17,7 +17,6 @@ pub mod once;
 pub mod instance_of;
 pub mod reference_type;
 pub mod promise;
-pub mod cancel;
 
 #[cfg(feature = "futures")]
 pub mod promise_future;
