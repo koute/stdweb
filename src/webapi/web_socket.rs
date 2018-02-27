@@ -72,10 +72,17 @@ pub struct WebSocket( Reference );
 
 impl IEventTarget for WebSocket {}
 
+/// The type of binary data being transmitted by the WebSocket connection.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket#Attributes)
 // https://html.spec.whatwg.org/#dom-websocket-binarytype
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum BinaryType {
+    /// A Blob object represents a file-like object of immutable, raw data.
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Blob)
     Blob,
+    /// The ArrayBuffer object is used to represent a generic, fixed-length raw binary data buffer.
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer)
     ArrayBuffer
 }
 

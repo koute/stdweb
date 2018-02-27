@@ -326,6 +326,11 @@ pub mod web {
             BlurEvent
         };
     }
+
+    /// A module containing Websocket types.
+    pub mod web_socket {
+        pub use webapi::web_socket::BinaryType;
+    }
 }
 
 /// A module containing stable counterparts to currently
