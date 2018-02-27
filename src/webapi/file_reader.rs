@@ -24,7 +24,7 @@ pub enum FileReaderResult {
     /// A string; a result of calling [FileReader::read_as_text](struct.FileReader.html#method.read_as_text).
     String( String ),
 
-    /// An [ArrayBuffer](struct.ArrayBuffer.html); a result of calling [FileReader::read_as_text](struct.FileReader.html#method.read_as_array_buffer).
+    /// An [ArrayBuffer](struct.ArrayBuffer.html); a result of calling [FileReader::read_as_array_buffer](struct.FileReader.html#method.read_as_array_buffer).
     ArrayBuffer( ArrayBuffer )
 }
 
