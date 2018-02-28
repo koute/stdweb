@@ -3,7 +3,7 @@
 For concrete Javascript types, define a struct as an `instance_of` the concrete Js type.
 
 eg:
-```
+```rust
 #[derive(Clone, Debug, Eq, PartialEq, ReferenceType)]
 #[reference(instance_of = "CanvasGradient")]
 pub struct CanvasGradient(Reference);
@@ -12,7 +12,7 @@ pub struct CanvasGradient(Reference);
 Make sure to document the struct according to the documentation in MDN and provide a link.
 
 eg:
-```
+```rust
 /// The CanvasGradient struct represents an opaque object describing a gradient. 
 /// It is returned by the methods CanvasRenderingContext2D.createLinearGradient() or 
 /// CanvasRenderingContext2D.createRadialGradient().
