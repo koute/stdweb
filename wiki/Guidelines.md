@@ -35,7 +35,9 @@ eg:
 
 When implementing properties and methods, follow the HTML spec.
 
-A helpful resource for translating types from the HTML spec to Rust can be found in the `TypedArray objects` table [here](// https://html.spec.whatwg.org/#canvasgradient).
+A helpful resource for translating types from the HTML spec to Rust can be found in the `TypedArray objects` table [here](https://html.spec.whatwg.org/#canvasgradient).
 
-For functions that can't be overloaded properly with traits, define multiple functions with a changing suffix to specify their use. Try to find one "general" or "basic" function that can take the original non-suffixed name.
+Try to stay as close as possible to the original JS name while maintaining Rust naming conventions.
+
+For functions that can't be overloaded properly with traits, define multiple functions with a suffix to specify their use. Try to find one "general" or "basic" function that can take the original non-suffixed name.
 
