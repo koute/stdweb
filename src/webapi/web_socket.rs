@@ -77,7 +77,7 @@ impl IEventTarget for WebSocket {}
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket#Attributes)
 // https://html.spec.whatwg.org/#dom-websocket-binarytype
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum BinaryType {
+pub enum SocketBinaryType {
     /// A Blob object represents a file-like object of immutable, raw data.
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Blob)
     Blob,
@@ -86,17 +86,17 @@ pub enum BinaryType {
     ArrayBuffer
 }
 
-impl BinaryType {
+impl SocketBinaryType {
     fn to_str(self) -> &'static str {
         match self {
-            BinaryType::Blob => "blob",
-            BinaryType::ArrayBuffer => "arraybuffer",
+            SocketBinaryType::Blob => "blob",
+            SocketBinaryType::ArrayBuffer => "arraybuffer",
         }
     }
     fn from_str(s: &str) -> Self {
         match s {
-            "blob" => BinaryType::Blob,
-            "arraybuffer" => BinaryType::ArrayBuffer,
+            "blob" => SocketBinaryType::Blob,
+            "arraybuffer" => SocketBinaryType::ArrayBuffer,
             other => panic!("Invalid binary type: {:?}", other)
         }
     }
@@ -155,9 +155,9 @@ impl WebSocket {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
     // https://html.spec.whatwg.org/#the-websocket-interface:dom-websocket-binarytype
-    pub fn binary_type(&self) -> BinaryType {
+    pub fn binary_type(&self) -> SocketBinaryType {
         let binary_type: String = js!( return @{self}.binaryType; ).try_into().unwrap();
-        BinaryType::from_str(&binary_type)
+        SocketBinaryType::from_str(&binary_type)
     }
 
     /// Sets the binary type of the web socket. Only affects received messages.
@@ -165,7 +165,7 @@ impl WebSocket {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
     // https://html.spec.whatwg.org/#the-websocket-interface:dom-websocket-binarytype
-    pub fn set_binary_type(&self, binary_type: BinaryType) {
+    pub fn set_binary_type(&self, binary_type: SocketBinaryType) {
         js!( @(no_return) @{self}.binaryType = @{binary_type.to_str()}; );
     }
 
