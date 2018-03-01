@@ -345,4 +345,4 @@ Module.STDWEB_PRIVATE.unregister_raw_value = function( id ) {
 
 Module.STDWEB_PRIVATE.get_raw_value = function( id ) {
     return Module.STDWEB_PRIVATE.id_to_raw_value_map[ id ];
-}
+};
