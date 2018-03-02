@@ -289,7 +289,7 @@ impl CanvasRenderingContext2d {
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-canvas
     pub fn get_canvas(&self) -> CanvasElement {
         js! (
-            @{&self.0}.canvas;
+            return @{&self.0}.canvas;
         ).try_into().unwrap()
     }
 
