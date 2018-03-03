@@ -88,16 +88,6 @@ impl Position {
     }
 }
 
-/// Watch identifier.
-#[derive(Debug)]
-pub struct WatchId(Value);
-
-impl ::std::default::Default for WatchId {
-    fn default() -> Self {
-        WatchId(Value::Undefined)
-    }
-}
-
 /// Attempt to get current position and invoke callback on success.
 pub fn get_current_position<F: FnOnce(Position) + 'static>(callback: F) {
     js! (
@@ -105,16 +95,22 @@ pub fn get_current_position<F: FnOnce(Position) + 'static>(callback: F) {
     );
 }
 
+/// Handle to position watch.
+#[derive(Debug)]
+pub struct GeoWatchHandle(Value);
+
 /// Watch for position changes and call function with updates.
-pub fn watch_position<F: Fn(Position) + 'static>(callback: F) -> WatchId {
-    WatchId(js! (
+pub fn watch_position<F: FnMut(Position) + 'static>(callback: F) -> GeoWatchHandle {
+    GeoWatchHandle(js! (
             navigator.geolocation.watchPosition(@{callback})
             ))
 }
 
-/// Clear watch disabling callback on position updates.
-pub fn clear_watch(watch: &WatchId) {
-    js! (
-        navigator.geolocation.clearWatch(@{&watch.0});
-    );
+impl GeoWatchHandle {
+    /// Clear watch disabling callback on position updates.
+    pub fn clear_watch(self) {
+        js! (
+            navigator.geolocation.clearWatch(@{&self.0});
+            );
+    }
 }

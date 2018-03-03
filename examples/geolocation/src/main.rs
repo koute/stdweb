@@ -2,7 +2,9 @@
 extern crate stdweb;
 
 use std::sync::{Arc, Mutex};
-use stdweb::web::{get_current_position, watch_position, clear_watch, Position, WatchId};
+use std::cell::RefCell;
+use std::rc::Rc;
+use stdweb::web::{get_current_position, watch_position, Position, GeoWatchHandle};
 
 fn main() {
     stdweb::initialize();
@@ -14,37 +16,30 @@ fn main() {
         };
     });
 
-    // We create a watch identifier that is wrapped in a mutex / arc so that it can be used both in
-    // the creation and in the callback function for watched events.
-    let iter = Arc::new(Mutex::new(0));
-    let watch_id = Arc::new(Mutex::new(WatchId::default()));
+    let iter = Rc::new(RefCell::new(0));
+    let handle: Arc<Mutex<Option<GeoWatchHandle>>> = Arc::new(Mutex::new(None));
     {
-        let awatch_id = Arc::clone(&watch_id);
-        let mut id = awatch_id.lock().unwrap();
-        *id = watch_position(move |x: Position| {
-            let iter = Arc::clone(&iter);
-            let mut i = iter.lock().unwrap();
-            let i_cur = *i;
-
+        let h = Arc::clone(&handle);
+        *(h.lock().unwrap()) = Some(watch_position(move |x: Position| {
+            let mut i = iter.borrow_mut();
+            *i += 1;
             js! {
                 // Print watch details.
                 console.log("watch pos");
-                console.log(@{&i_cur});
+                console.log(@{&(*i)});
                 console.log(@{&x});
             };
-
-            *i += 1;
             if *i >= 5 {
                 js! {
                     console.log("stop watching");
                 };
-                // If the number of iterations greater than, equal to 5 then we're going to clear
-                // the watch and bail out of this system.
-                let watch_id = watch_id.clone();
-                let id = watch_id.lock().unwrap();
-                clear_watch(&*id);
+                let handle = Arc::clone(&handle);
+                let mut guard = handle.lock().unwrap();
+                if let Some(h) = guard.take() {
+                    h.clear_watch();
+                }
             }
-        });
+        }));
     }
 
     stdweb::event_loop();

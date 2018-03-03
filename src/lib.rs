@@ -183,7 +183,7 @@ pub mod web {
     pub use webapi::mutation_observer::{MutationObserver, MutationObserverHandle, MutationObserverInit, MutationRecord};
     pub use webapi::xml_http_request::{XmlHttpRequest, XhrReadyState};
     pub use webapi::blob::{IBlob, Blob};
-    pub use webapi::geolocation::{get_current_position, watch_position, clear_watch, Position, Coordinates, WatchId};
+    pub use webapi::geolocation::{get_current_position, watch_position, Position, Coordinates, GeoWatchHandle};
 
     /// A module containing error types.
     pub mod error {
