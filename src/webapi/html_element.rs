@@ -120,7 +120,7 @@ pub trait IHtmlElement: IElement {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect)
     fn get_bounding_client_rect( &self ) -> Rect {
         js! (
-            return @{&self.0}.getBoundingClientRect();
+            return @{self.as_ref()}.getBoundingClientRect();
         ).try_into().unwrap()
     }
 
