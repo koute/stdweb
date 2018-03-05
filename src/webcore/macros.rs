@@ -409,7 +409,7 @@ macro_rules! _js_impl {
                             [a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15]
                         );
                     } else {{
-                        let mut result: $crate::private::SerializedValue = Default::default();
+                        let mut result: $crate::private::SerializedValue = ::std::default::Default::default();
                         _js_impl!(
                             @call_emscripten
                             [concat!(
