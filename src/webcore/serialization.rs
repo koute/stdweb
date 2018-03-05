@@ -395,7 +395,7 @@ impl SerializedUntaggedSymbol {
 impl SerializedUntaggedReference {
     #[inline]
     fn deserialize( &self ) -> Reference {
-        unsafe { Reference::from_raw_unchecked( self.refid ) }
+        unsafe { Reference::from_raw_unchecked_noref( self.refid ) }
     }
 }
 

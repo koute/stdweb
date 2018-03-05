@@ -36,6 +36,12 @@ impl Reference {
 
     #[doc(hidden)]
     #[inline]
+    pub(super) unsafe fn from_raw_unchecked_noref( refid: i32 ) -> Reference {
+        Reference( refid )
+    }
+
+    #[doc(hidden)]
+    #[inline]
     pub fn as_raw( &self ) -> i32 {
         self.0
     }
@@ -1290,5 +1296,59 @@ mod tests {
 
         let a: Result< (), _ > = js! { return 1; }.try_into();
         assert!( a.is_err() );
+    }
+
+    #[test]
+    fn reference_stable() {
+        js! { Module.__test = {}; }
+        let a = js! { return Module.__test; }.as_reference().unwrap().as_raw();
+        let b = js! { return Module.__test; }.as_reference().unwrap().as_raw();
+        assert_eq!(a, b);
+
+        let c = js! { return {}; }.as_reference().unwrap().as_raw();
+        assert_ne!(a, c);
+
+        js! { delete Module.__test; }
+    }
+
+    fn is_known_reference(refid: i32) -> bool {
+        let has_refcount: bool = js! {
+            return @{refid} in Module.STDWEB_PRIVATE.id_to_refcount_map;
+        }.try_into().unwrap();
+
+        let has_ref: bool = js! {
+            return @{refid} in Module.STDWEB_PRIVATE.id_to_ref_map;
+        }.try_into().unwrap();
+
+        assert_eq!(has_refcount, has_ref);
+        has_refcount
+    }
+
+    #[test]
+    fn reference_refcount() {
+        let obj = js! { return new Object(); };
+        let refid = obj.as_reference().unwrap().as_raw();
+        assert!(is_known_reference(refid));
+
+        drop(obj);
+        assert!(!is_known_reference(refid));
+    }
+
+    #[test]
+    fn reference_refcount_clone() {
+        let obj = js! { return new Object(); };
+        let obj2 = obj.clone();
+
+        let refid = obj.as_reference().unwrap().as_raw();
+        let refid2 = obj.as_reference().unwrap().as_raw();
+
+        assert_eq!(refid, refid2);
+        assert!(is_known_reference(refid));
+
+        drop(obj);
+        assert!(is_known_reference(refid));
+
+        drop(obj2);
+        assert!(!is_known_reference(refid));
     }
 }
