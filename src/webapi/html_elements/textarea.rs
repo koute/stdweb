@@ -5,7 +5,7 @@ use webapi::node::{INode, Node};
 use webapi::element::{IElement, Element};
 use webapi::html_element::{IHtmlElement, HtmlElement};
 
-/// The HTML <textarea> element represents a multi-line plain-text editing control.
+/// The HTML `<textarea>` element represents a multi-line plain-text editing control.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en/docs/Web/HTML/Element/textarea)
 // https://html.spec.whatwg.org/#htmltextareaelement
