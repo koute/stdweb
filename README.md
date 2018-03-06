@@ -189,6 +189,13 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
 
 ## Changelog
 
+   * `0.4.1`
+      * Support for newest nightly Rust on `wasm32-unknown-unknown`
+      * Exposed `SocketBinaryType` enum
+      * New canvas APIs:
+         * Numerous new methods for `CanvasRenderingContext2d`
+         * New types: `CanvasGradient`, `CanvasPattern`, `CanvasStyle`, `ImageData`, `TextMetrics`
+      * New error types: `IndexSizeError`, `NotSupportedError`, `TypeError`
    * `0.4`
       * (breaking change) Removed `Array` and `Object` variants from `Value`; these are now treated as `Reference`s
       * (breaking change) The `Value` has an extra variant: `Symbol`
