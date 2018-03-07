@@ -99,7 +99,9 @@ pub enum CompositeOperation {
 // https://html.spec.whatwg.org/#canvasfillrule
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum FillRule {
+    /// [Non-zero winding rule](https://en.wikipedia.org/wiki/Nonzero-rule)
     NonZero,
+    /// [Even-odd winding rule](https://en.wikipedia.org/wiki/Even%E2%80%93odd_rule)
     EvenOdd
 }
 
