@@ -45,7 +45,7 @@ pub trait IElement: INode + IParentNode {
     fn get_attribute( &self, name: &str ) -> Option< String > {
         if self.has_attribute( name ) {
             let value = js!(
-                return @(self.as_ref()).getAttribute( @{name} );
+                return @{self.as_ref()}.getAttribute( @{name} );
             ).try_into().unwrap();
             Some(value)
         } else {
@@ -61,7 +61,7 @@ pub trait IElement: INode + IParentNode {
     // https://dom.spec.whatwg.org/#ref-for-dom-element-setattribute
     fn set_attribute( &self, name: &str, value: &str ) -> Result< (), InvalidCharacterError > {
         js_try!(
-            return @(self.as_ref()).setAttribute( @{name}, @{value} );
+            return @{self.as_ref()}.setAttribute( @{name}, @{value} );
         ).unwrap()
     }
 }
