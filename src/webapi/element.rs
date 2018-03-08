@@ -1,4 +1,5 @@
 use webcore::value::Reference;
+use webcore::try_from::TryInto;
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
 use webapi::token_list::TokenList;
@@ -21,6 +22,17 @@ pub trait IElement: INode + IParentNode {
         unsafe {
             js!( return @{self.as_ref()}.classList; ).into_reference_unchecked().unwrap()
         }
+    }
+
+    /// The Element.hasAttribute() method returns a Boolean value indicating whether
+    /// the specified element has the specified attribute or not.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/hasAttribute)
+    // https://dom.spec.whatwg.org/#ref-for-dom-element-getattribute
+    fn has_attribute( &self, name: &str ) -> bool {
+        js!(
+            return @{self.as_ref()}.hasAttribute( @{name} );
+        ).try_into().unwrap()
     }
 }
 
