@@ -64,6 +64,17 @@ pub trait IElement: INode + IParentNode {
             return @{self.as_ref()}.setAttribute( @{name}, @{value} );
         ).unwrap()
     }
+
+    /// Element.getAttributeNames() returns the attribute names of the element
+    /// as an Array of strings. If the element has no attributes it returns an empty array.
+    ///
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/getAttributeNames)
+    // https://dom.spec.whatwg.org/#ref-for-dom-element-getattributenames
+    fn get_attribute_names( &self ) -> Vec<String> {
+        js!(
+            return @{self.as_ref()}.getAttributeNames();
+        ).try_into().unwrap()
+    }
 }
 
 /// A reference to a JavaScript object which implements the [IElement](trait.IElement.html)
