@@ -41,3 +41,4 @@ Try to stay as close as possible to the original JS name while maintaining Rust 
 
 For functions that can't be overloaded properly with traits, define multiple functions with a suffix to specify their use. Try to find one "general" or "basic" function that can take the original non-suffixed name.
 
+You can export structs and enums by adding them to [lib.rs](https://github.com/koute/stdweb/blob/master/src/lib.rs).
