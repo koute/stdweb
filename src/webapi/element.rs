@@ -85,6 +85,17 @@ pub trait IElement: INode + IParentNode {
             @{self.as_ref()}.removeAttribute( @{name} );
         }
     }
+
+    /// The Element.hasAttributes() method returns Boolean value, indicating if
+    /// the current element has any attributes or not.
+    ///
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/hasAttributes)
+    // https://dom.spec.whatwg.org/#ref-for-dom-element-hasattributes
+    fn has_attributes( &self ) -> bool {
+        js!(
+            return @{self.as_ref()}.hasAttributes();
+        ).try_into().unwrap()
+    }
 }
 
 /// A reference to a JavaScript object which implements the [IElement](trait.IElement.html)
