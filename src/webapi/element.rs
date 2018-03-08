@@ -28,11 +28,28 @@ pub trait IElement: INode + IParentNode {
     /// the specified element has the specified attribute or not.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/hasAttribute)
-    // https://dom.spec.whatwg.org/#ref-for-dom-element-getattribute
+    // https://dom.spec.whatwg.org/#ref-for-dom-element-hasattributes
     fn has_attribute( &self, name: &str ) -> bool {
         js!(
             return @{self.as_ref()}.hasAttribute( @{name} );
         ).try_into().unwrap()
+    }
+
+    /// Element.getAttribute() returns the value of a specified attribute on the element.
+    /// If the given attribute does not exist, the value returned will either be
+    /// null or "" (the empty string);
+    ///
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/getAttribute)
+    // https://dom.spec.whatwg.org/#ref-for-dom-element-getattribute
+    fn get_attribute( &self, name: &str ) -> Option< String > {
+        if self.has_attribute( name ) {
+            let value = js!(
+                return @(self.as_ref()).getAttribute( @{name} );
+            ).try_into().unwrap();
+            Some(value)
+        } else {
+            None
+        }
     }
 }
 
