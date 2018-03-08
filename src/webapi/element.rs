@@ -1,5 +1,6 @@
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
+use webapi::dom_exception::InvalidCharacterError;
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
 use webapi::token_list::TokenList;
@@ -50,6 +51,18 @@ pub trait IElement: INode + IParentNode {
         } else {
             None
         }
+    }
+
+    /// Sets the value of an attribute on the specified element. If the attribute already
+    /// exists, the value is updated; otherwise a new attribute is added with the
+    /// specified name and value.
+    ///
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/setAttribute)
+    // https://dom.spec.whatwg.org/#ref-for-dom-element-setattribute
+    fn set_attribute( &self, name: &str, value: &str ) -> Result< (), InvalidCharacterError > {
+        js_try!(
+            return @(self.as_ref()).setAttribute( @{name}, @{value} );
+        ).unwrap()
     }
 }
 

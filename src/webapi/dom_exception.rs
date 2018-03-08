@@ -121,6 +121,17 @@ impl IDomException for NotSupportedError {}
 
 error_boilerplate! { NotSupportedError, name = "NotSupportedError" }
 
+/// Used to indicate the string contains one or more characters which are invalid.
+// https://heycam.github.io/webidl/#invalidcharactererror
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(subclass_of(Error, DomException))]
+pub struct InvalidCharacterError( Reference );
+
+impl IError for InvalidCharacterError {}
+impl IDomException for InvalidCharacterError {}
+
+error_boilerplate! { InvalidCharacterError, name = "InvalidCharacterError" }
+
 #[cfg(all(test, feature = "web_test"))]
 mod test {
     use super::*;
