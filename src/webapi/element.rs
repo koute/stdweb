@@ -75,6 +75,16 @@ pub trait IElement: INode + IParentNode {
             return @{self.as_ref()}.getAttributeNames();
         ).try_into().unwrap()
     }
+
+    /// Element.removeAttribute removes an attribute from the specified element.
+    ///
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/removeAttribute)
+    // https://dom.spec.whatwg.org/#ref-for-dom-element-removeattribute
+    fn remove_attribute( &self, name: &str ) {
+        js! { @(no_return)
+            @{self.as_ref()}.removeAttribute( @{name} );
+        }
+    }
 }
 
 /// A reference to a JavaScript object which implements the [IElement](trait.IElement.html)
