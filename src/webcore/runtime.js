@@ -300,14 +300,21 @@ Module.STDWEB_PRIVATE.acquire_rust_reference = function( reference ) {
         return 0;
     }
 
-    var refid = Module.STDWEB_PRIVATE.ref_to_id_map.get( reference );
+    var id_to_refcount_map = Module.STDWEB_PRIVATE.id_to_refcount_map;
+    var id_to_ref_map = Module.STDWEB_PRIVATE.id_to_ref_map;
+    var ref_to_id_map = Module.STDWEB_PRIVATE.ref_to_id_map;
+
+    var refid = ref_to_id_map.get( reference );
     if( refid === undefined ) {
         refid = Module.STDWEB_PRIVATE.last_refid++;
-        Module.STDWEB_PRIVATE.ref_to_id_map.set( reference, refid );
-        Module.STDWEB_PRIVATE.id_to_ref_map[ refid ] = reference;
-        Module.STDWEB_PRIVATE.id_to_refcount_map[ refid ] = 1;
+        ref_to_id_map.set( reference, refid );
+    }
+
+    if( refid in id_to_ref_map ) {
+        id_to_refcount_map[ refid ]++;
     } else {
-        Module.STDWEB_PRIVATE.id_to_refcount_map[ refid ]++;
+        id_to_ref_map[ refid ] = reference;
+        id_to_refcount_map[ refid ] = 1;
     }
 
     return refid;
@@ -329,7 +336,6 @@ Module.STDWEB_PRIVATE.decrement_refcount = function( refid ) {
         var reference = id_to_ref_map[ refid ];
         delete id_to_ref_map[ refid ];
         delete id_to_refcount_map[ refid ];
-        Module.STDWEB_PRIVATE.ref_to_id_map.delete( reference );
     }
 };
 
