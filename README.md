@@ -311,4 +311,4 @@ Snippets of documentation which come from [Mozilla Developer Network] are covere
 
 ### Contributing
 
-See [CONTRIBUTING.md](https://github.com/koute/CONTRIBUTING.md)
+See [CONTRIBUTING.md](https://github.com/koute/stdweb/blob/master/CONTRIBUTING.md)
