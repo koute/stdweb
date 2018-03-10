@@ -225,7 +225,7 @@ pub mod web {
     pub use webapi::typed_array::TypedArray;
     pub use webapi::file_reader::{FileReader, FileReaderResult};
     pub use webapi::history::History;
-    pub use webapi::web_socket::{WebSocket, SocketCloseCode, SocketBinaryType};
+    pub use webapi::web_socket::{WebSocket, SocketCloseCode, SocketBinaryType, SocketReadyState};
     pub use webapi::rendering_context::{RenderingContext, CanvasRenderingContext2d, CanvasGradient, CanvasPattern, CanvasStyle, FillRule, ImageData, TextMetrics};
     pub use webapi::mutation_observer::{MutationObserver, MutationObserverHandle, MutationObserverInit, MutationRecord};
     pub use webapi::xml_http_request::{XmlHttpRequest, XhrReadyState};

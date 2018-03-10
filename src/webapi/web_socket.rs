@@ -106,6 +106,7 @@ impl SocketBinaryType {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket#Ready_state_constants)
 // https://html.spec.whatwg.org/#dom-websocket-readystate
+#[allow(missing_docs)]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum SocketReadyState {
     Connecting = 0,
