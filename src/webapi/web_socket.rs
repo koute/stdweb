@@ -205,7 +205,7 @@ impl WebSocket {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
     // https://html.spec.whatwg.org/#the-websocket-interface:dom-websocket-readystate
     pub fn ready_state(&self) -> SocketReadyState {
-        js!( return @{self}.protocol; ).try_into().unwrap()
+        js!( return @{self}.readyState; ).try_into().unwrap()
     }
 
     /// Returns the URL as resolved by the constructor. This is always an absolute URL.
