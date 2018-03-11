@@ -29,7 +29,7 @@ pub trait IElement: INode + IParentNode {
     /// the specified element has the specified attribute or not.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/hasAttribute)
-    // https://dom.spec.whatwg.org/#ref-for-dom-element-hasattributes
+    // https://dom.spec.whatwg.org/#ref-for-dom-element-hasattribute
     fn has_attribute( &self, name: &str ) -> bool {
         js!(
             return @{self.as_ref()}.hasAttribute( @{name} );
