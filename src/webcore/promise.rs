@@ -4,7 +4,13 @@ use webcore::value::{Value, Reference};
 use webcore::try_from::{TryInto, TryFrom};
 
 #[cfg(feature = "futures")]
+use webcore::serialization::JsSerialize;
+
+#[cfg(feature = "futures")]
 use futures::unsync::oneshot::channel;
+
+#[cfg(feature = "futures")]
+use futures::future::Future;
 
 #[cfg(feature = "futures")]
 use super::promise_future::PromiseFuture;
@@ -59,7 +65,6 @@ impl Promise {
     // https://www.ecma-international.org/ecma-262/6.0/#sec-promise.resolve
     // https://www.ecma-international.org/ecma-262/6.0/#sec-promise-resolve-functions
     // https://www.ecma-international.org/ecma-262/6.0/#sec-promiseresolvethenablejob
-    // TODO change this later to use &Reference
     pub fn from_thenable( input: &Reference ) -> Option< Self > {
         // TODO this can probably be made more efficient
         if Promise::is_thenable( input ) {
@@ -68,6 +73,62 @@ impl Promise {
         } else {
             None
         }
+    }
+
+    /// This function converts a Rust Future into a JavaScript Promise.
+    ///
+    /// This is needed when you want to pass a Rust Future into JavaScript.
+    ///
+    /// If you simply want to use a JavaScript Promise inside Rust, then you
+    /// don't need to use this function: you should use
+    /// [`PromiseFuture`](struct.PromiseFuture.html) and the
+    /// [`Future`](https://docs.rs/futures/0.1.*/futures/future/trait.Future.html)
+    /// methods instead.
+    ///
+    /// # Examples
+    ///
+    /// Convert a Rust Future into a JavaScript Promise:
+    ///
+    /// ```rust
+    /// Promise::from_future(rust_future)
+    /// ```
+    ///
+    /// Export a Rust Future so that it can be used in JavaScript
+    /// (this only works with the `wasm32-unknown-unknown` target):
+    ///
+    /// ```rust
+    /// #[js_export]
+    /// fn foo() -> Promise {
+    ///     Promise::from_future(rust_future)
+    /// }
+    /// ```
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise#Syntax)
+    // https://www.ecma-international.org/ecma-262/6.0/#sec-promise-executor
+    #[cfg(feature = "futures")]
+    pub fn from_future< A >( future: A ) -> Self
+        where A: Future + 'static,
+              A::Item: JsSerialize,
+              A::Error: JsSerialize {
+
+        #[inline]
+        fn call< A: JsSerialize >( f: Reference, value: A ) {
+            js! { @(no_return) @{f}( @{value} ); }
+        }
+
+        let callback = move |success: Reference, error: Reference| {
+            PromiseFuture::spawn(
+                future.then( move |result| {
+                    match result {
+                        Ok( a ) => call( success, a ),
+                        Err( a ) => call( error, a ),
+                    }
+                    Ok( () )
+                } )
+            );
+        };
+
+        js!( return new Promise( @{Once( callback )} ); ).try_into().unwrap()
     }
 
     /// This method is usually not needed, use [`PromiseFuture`](struct.PromiseFuture.html) instead.
@@ -129,7 +190,7 @@ impl Promise {
 
     /// This method should rarely be needed, instead use [`value.try_into()`](unstable/trait.TryInto.html) to convert directly from a [`Value`](enum.Value.html) into a [`PromiseFuture`](struct.PromiseFuture.html).
     ///
-    /// This method converts the `Promise` into a [`PromiseFuture`](struct.PromiseFuture.html), so that it can be used as a Rust [`Future`](https://docs.rs/futures/0.1.18/futures/future/trait.Future.html).
+    /// This method converts the `Promise` into a [`PromiseFuture`](struct.PromiseFuture.html), so that it can be used as a Rust [`Future`](https://docs.rs/futures/0.1.*/futures/future/trait.Future.html).
     ///
     /// # Examples
     ///
