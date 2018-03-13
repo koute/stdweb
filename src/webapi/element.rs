@@ -43,14 +43,9 @@ pub trait IElement: INode + IParentNode {
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/getAttribute)
     // https://dom.spec.whatwg.org/#ref-for-dom-element-getattribute
     fn get_attribute( &self, name: &str ) -> Option< String > {
-        if self.has_attribute( name ) {
-            let value = js!(
-                return @{self.as_ref()}.getAttribute( @{name} );
-            ).try_into().unwrap();
-            Some(value)
-        } else {
-            None
-        }
+        js!(
+            return @{self.as_ref()}.getAttribute( @{name} );
+        ).try_into().unwrap()
     }
 
     /// Sets the value of an attribute on the specified element. If the attribute already
