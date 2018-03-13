@@ -190,6 +190,12 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
 
 ## Changelog
 
+   * `0.4.2`
+      * Fixed a leak when deserializing references
+      * Fixed `CanvasRenderingContext2d::get_canvas`
+      * Exposed `FillRule` and `SocketReadyState`
+      * New attribute related methods added to `IElement`
+      * New `Date` bindings
    * `0.4.1`
       * Support for newest nightly Rust on `wasm32-unknown-unknown`
       * Exposed `SocketBinaryType` enum
