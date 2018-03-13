@@ -243,7 +243,8 @@ pub mod web {
             NotSupportedError,
             SecurityError,
             SyntaxError,
-            TypeError
+            TypeError,
+            InvalidCharacterError
         };
         pub use webapi::error::{IError, Error};
     }
