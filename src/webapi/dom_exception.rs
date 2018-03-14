@@ -132,6 +132,17 @@ impl IDomException for InvalidCharacterError {}
 
 error_boilerplate! { InvalidCharacterError, name = "InvalidCharacterError" }
 
+/// Used to indicate that a pointer id passed as an argument was for some reason invalid.
+// https://w3c.github.io/pointerevents/#extensions-to-the-element-interface
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(subclass_of(Error, DomException))]
+pub struct InvalidPointerId( Reference );
+
+impl IError for InvalidPointerId {}
+impl IDomException for InvalidPointerId {}
+
+error_boilerplate! { InvalidPointerId, name = "InvalidPointerId" }
+
 #[cfg(all(test, feature = "web_test"))]
 mod test {
     use super::*;

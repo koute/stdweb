@@ -1,6 +1,6 @@
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
-use webapi::dom_exception::InvalidCharacterError;
+use webapi::dom_exception::{InvalidCharacterError, InvalidPointerId};
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
 use webapi::token_list::TokenList;
@@ -90,6 +90,37 @@ pub trait IElement: INode + IParentNode {
         js!(
             return @{self.as_ref()}.hasAttributes();
         ).try_into().unwrap()
+    }
+
+    /// Designates a specific element as the capture target of future pointer events.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/setPointerCapture)
+    // https://w3c.github.io/pointerevents/#dom-element-setpointercapture
+    #[inline]
+    fn set_pointer_capture( &self, pointer_id: i32 ) -> Result< (), InvalidPointerId > {
+        js_try!(
+            return @{self.as_ref()}.setPointerCapture( @{pointer_id} );
+        ).unwrap()
+    }
+
+    /// Releases pointer capture that was previously set for a specific pointer
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/releasePointerCapture)
+    // https://w3c.github.io/pointerevents/#dom-element-releasepointercapture
+    #[inline]
+    fn release_pointer_capture( &self, pointer_id: i32 ) -> Result< (), InvalidPointerId > {
+        js_try!(
+            return @{self.as_ref()}.releasePointerCapture( @{pointer_id} );
+        ).unwrap()
+    }
+
+    /// Returns a boolean indicating if the element has captured the specified pointer
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/hasPointerCapture)
+    // https://w3c.github.io/pointerevents/#dom-element-haspointercapture
+    #[inline]
+    fn has_pointer_capture( &self, pointer_id: i32 ) -> bool {
+        js!( return @{self.as_ref()}.hasPointerCapture( @{pointer_id} ); ).try_into().unwrap()
     }
 }
 
