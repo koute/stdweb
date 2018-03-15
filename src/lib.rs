@@ -274,7 +274,8 @@ pub mod web {
             MouseDownEvent,
             MouseUpEvent,
             MouseMoveEvent,
-
+            MouseOverEvent,
+            MouseOutEvent,
             MouseButton
         };
 

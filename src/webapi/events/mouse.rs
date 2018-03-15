@@ -313,6 +313,40 @@ impl ConcreteEvent for MouseMoveEvent {
     const EVENT_TYPE: &'static str = "mousemove";
 }
 
+/// The `MouseOverEvent` is fired when a pointing device (usually a mouse)
+/// is moved onto the element that has the listener attached or onto one of its children.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/mouseover)
+// https://w3c.github.io/uievents/#event-type-mouseover
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "MouseEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, UiEvent, MouseEvent))]
+pub struct MouseOverEvent( Reference );
+
+impl IEvent for MouseOverEvent {}
+impl IUiEvent for MouseOverEvent {}
+impl IMouseEvent for MouseOverEvent {}
+impl ConcreteEvent for MouseOverEvent {
+    const EVENT_TYPE: &'static str = "mouseover";
+}
+
+/// The `MouseOutEvent` is fired when a pointing device (usually a mouse)
+/// is moved off the element that has the listener attached or off one of its children.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/mouseout)
+// https://w3c.github.io/uievents/#event-type-mouseout
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "MouseEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, UiEvent, MouseEvent))]
+pub struct MouseOutEvent( Reference );
+
+impl IEvent for MouseOutEvent {}
+impl IUiEvent for MouseOutEvent {}
+impl IMouseEvent for MouseOutEvent {}
+impl ConcreteEvent for MouseOutEvent {
+    const EVENT_TYPE: &'static str = "mouseout";
+}
+
 #[cfg(all(test, feature = "web_test"))]
 mod tests {
     use super::*;
@@ -396,5 +430,21 @@ mod tests {
             return new MouseEvent( @{MouseMoveEvent::EVENT_TYPE} );
         ).try_into().unwrap();
         assert_eq!( event.event_type(), MouseMoveEvent::EVENT_TYPE );
+    }
+
+    #[test]
+    fn test_mouse_over_event() {
+        let event: MouseOverEvent = js!(
+            return new MouseEvent( @{MouseOverEvent::EVENT_TYPE} );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), MouseOverEvent::EVENT_TYPE );
+    }
+
+    #[test]
+    fn test_mouse_out_event() {
+        let event: MouseOutEvent = js!(
+            return new MouseEvent( @{MouseOutEvent::EVENT_TYPE} );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), MouseOutEvent::EVENT_TYPE );
     }
 }
