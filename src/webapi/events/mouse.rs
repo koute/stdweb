@@ -431,4 +431,20 @@ mod tests {
         ).try_into().unwrap();
         assert_eq!( event.event_type(), MouseMoveEvent::EVENT_TYPE );
     }
+
+    #[test]
+    fn test_mouse_over_event() {
+        let event: MouseOverEvent = js!(
+            return new MouseEvent( @{MouseOverEvent::EVENT_TYPE} );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), MouseOverEvent::EVENT_TYPE );
+    }
+
+    #[test]
+    fn test_mouse_out_event() {
+        let event: MouseOutEvent = js!(
+            return new MouseEvent( @{MouseOutEvent::EVENT_TYPE} );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), MouseOutEvent::EVENT_TYPE );
+    }
 }
