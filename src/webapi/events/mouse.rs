@@ -195,6 +195,8 @@ pub enum MouseButton {
     Button4,
     /// The fifth mouse button (browser forward).
     Button5,
+    // /// The sixth mouse button, or the Pen Eraser button
+    //TODO: Eraser,
 }
 
 /// Represents the state of mouse buttons in a `MouseEvent`.

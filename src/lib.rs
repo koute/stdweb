@@ -279,6 +279,20 @@ pub mod web {
             MouseButton
         };
 
+        pub use webapi::events::pointer::{
+            IPointerEvent,
+            PointerOverEvent,
+            PointerEnterEvent,
+            PointerDownEvent,
+            PointerMoveEvent,
+            PointerUpEvent,
+            PointerCancelEvent,
+            PointerOutEvent,
+            PointerLeaveEvent,
+            GotPointerCaptureEvent,
+            LostPointerCaptureEvent,
+        };
+
         pub use webapi::events::keyboard::{
             IKeyboardEvent,
             KeyPressEvent,
@@ -368,6 +382,7 @@ pub mod traits {
         IEvent,
         IUiEvent,
         IMouseEvent,
+        IPointerEvent,
         IKeyboardEvent,
         IProgressEvent,
         IMessageEvent,
