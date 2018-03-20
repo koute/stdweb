@@ -668,10 +668,14 @@ macro_rules! js_try {
 }
 
 macro_rules! error_enum_boilerplate {
-    ($error_name:ident, $($variant:ident),*) => {
+    ($( #[ $error_meta:meta ] )* $error_name:ident, $( $( #[ $variant_meta:meta ] )* $variant:ident),*) => {
+        $( #[ $error_meta ] )*
         #[derive(Debug, Clone)]
         pub enum $error_name {
-            $($variant($variant)),*
+            $(
+                $( #[ $variant_meta ] )*
+                $variant($variant)
+            ),*
         }
 
         impl TryFrom<::webcore::value::Value> for $error_name {
