@@ -60,36 +60,62 @@ pub struct ImageData(Reference);
 #[reference(instance_of = "TextMetrics")]
 pub struct TextMetrics(Reference);
 
-/// The type of compositing operation to apply when drawing new shapes, where type is a string 
-/// identifying which of the twelve compositing operations to use.
-/// 
+/// The type of compositing operation to apply when drawing new shapes
+///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation)
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum CompositeOperation {
+    /// Draws new shapes over existing canvas content
     SourceOver,
+    /// Draws new shapes over existing canvas content, but only where existing canvas content overlaps. Anything not in that area becomes transparent.
     SourceIn,
+    /// New shapes are drawn where there is no existing canvas content. Everything else (including old canvas content) is made transparent.
     SourceOut,
+    /// Draws new shapes only where there is existing canvas content, over existing canvas content
     SourceAtop,
+    /// Draws new shapes behind existing canvas content
     DestinationOver,
+    /// Keeps existing canvas content where it overlaps with the new shape. Everything outside the overlap is made transparent.
     DestinationIn,
+    // /// The existing content is kept where it doesn't overlap with the new shape. Everything else, including the new shape area, is made transparent.
+    //TODO: DestinationOut,
+    /// Existing content is kept only where it overlaps with the new shape. The new shape is drawn behind the existing content.
     DestinationAtop,
+    /// Where both shapes overlap, the new color is determined by adding color values
     Lighter,
+    /// Only the new shape is shown
     Copy,
+    /// Where both shapes overlap, make it transparent
     Xor,
+    /// The pixels of the new and old layer are multiplied. (Pixel values are in the range of [0,1], so this makes a darker picture)
     Multiply,
+    /// Pixels from both new and old are inverted, multiplied together, then inverted again. (Pixel values are in the range of [0,1], so this makes a lighter picture)
     Screen,
+    /// Applies Multiply to dark colors in the existing content, and Screen to bright colors in the existing content
     Overlay,
+    /// Retains the darkest pixels
     Darken,
+    /// Retains the lighest pixels
     Lighten,
+    /// Divides the bottom layer by the inverted top layer.
     ColorDodge,
+    /// Divides the inverted bottom layer by the top layer, and then inverts the result.
     ColorBurn,
+    /// A combination of multiply and screen like overlay, but with top and bottom layer swapped.
     HardLight,
+    /// A softer version of hard-light. Pure black or white does not result in pure black or white.
     SoftLight,
+    /// Subtracts the bottom layer from the top layer or the other way round to always get a positive value.
     Difference,
+    /// Like difference, but with lower contrast.
     Exclusion,
+    /// Preserves the luma and chroma of the bottom layer, while adopting the hue of the top layer.
     Hue,
+    /// Preserves the luma and hue of the bottom layer, while adopting the chroma of the top layer.
     Saturation,
+    /// Preserves the luma of the bottom layer, while adopting the hue and chroma of the top layer.
     Color,
+    /// Preserves the hue and chroma of the bottom layer, while adopting the luma of the top layer.
     Luminosity
 }
 
@@ -122,8 +148,11 @@ pub enum CanvasStyle {
 // https://html.spec.whatwg.org/#canvaslinecap
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum LineCap {
+    /// The ends of lines are squared off at the endpoints
     Butt,
+    /// The ends of lines are rounded
     Round,
+    /// The ends of lines are squared off by adding a box with an equal width and half the height of the line's thickness.
     Square
 }
 
@@ -135,8 +164,11 @@ pub enum LineCap {
 // https://html.spec.whatwg.org/#canvaslinejoin
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum LineJoin {
+    /// Fills an additional triangular area
     Bevel,
+    /// Rounds off the corners of a shape
     Round,
+    /// Connected segments are joined by extending their outside edges to connect at a single point
     Miter
 }
 
@@ -145,9 +177,13 @@ pub enum LineJoin {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createPattern)
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Repetition {
+    /// Repeat in both directions
     Repeat,
+    /// Repeat horizontally
     RepeatX,
+    /// Repeat vertically
     RepeatY,
+    /// Don't repeat
     NoRepeat
 }
 
@@ -157,10 +193,15 @@ pub enum Repetition {
 // https://html.spec.whatwg.org/#canvastextalign
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum TextAlign {
+    /// Text is left-aligned
     Left,
+    /// Text is right-aligned
     Right,
+    /// Text is centered
     Center,
+    /// Text is aligned at the normal start of the line for the current locale
     Start,
+    /// Text is aligned at the normal end of the line for the current locale
     End
 }
 
@@ -170,27 +211,50 @@ pub enum TextAlign {
 // https://html.spec.whatwg.org/#canvastextbaseline
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum TextBaseline {
+    /// Text baseline is top of the em square
     Top,
+    /// Text baseline is the hanging baseline.
     Hanging,
+    /// Text baseline is the middle of the em square
     Middle,
+    /// Text baseline is the normal alphabetic baseline. (default)
     Alphabetic,
+    /// Text baseline is the ideographic baseline
     Ideographic,
+    /// Text baseline is the bottom of the bounding box.
     Bottom
 }
 
 error_enum_boilerplate! {
+    /// A enum of the exceptions that CanvasGradient.add_color_stop() may throw
+    // https://html.spec.whatwg.org/multipage/canvas.html#dom-canvasgradient-addcolorstop
     AddColorStopError,
-    SyntaxError, IndexSizeError
+    /// A SyntaxError if the color could not be parsed as a valid CSS color
+    SyntaxError,
+    /// An IndexSizeError if the offset was not between 0 and 1, inclusive
+    IndexSizeError
 }
 
 error_enum_boilerplate! {
+    /// A enum of the exceptions that CanvasRenderingContext2D.draw_image() and similar may throw
     DrawImageError,
-    IndexSizeError, InvalidStateError, NotSupportedError, TypeError
+    /// An IndexSizeError if the source or destination rectangle has an width or height of 0
+    IndexSizeError,
+    /// An InvalidStateError if the image has no image data
+    InvalidStateError,
+    /// A NotSupportedError
+    NotSupportedError,
+    /// A TypeError if the specified source element isn't supported
+    TypeError
 }
 
 error_enum_boilerplate! {
+    /// A enum of the exceptions that CanvasRenderingContext2D.get_image_data() may throw
     GetImageDataError,
-    IndexSizeError, SecurityError
+    /// An IndexSizeError if thw width or height is 0
+    IndexSizeError,
+    /// A SecurityError
+    SecurityError
 }
 
 impl TryFrom<Value> for CanvasStyle {
