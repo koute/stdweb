@@ -212,7 +212,7 @@ pub mod web {
     pub use webapi::node::{INode, Node, CloneKind};
     pub use webapi::element::{IElement, Element};
     pub use webapi::text_node::TextNode;
-    pub use webapi::html_element::{IHtmlElement, HtmlElement};
+    pub use webapi::html_element::{IHtmlElement, HtmlElement, Rect};
     pub use webapi::window_or_worker::IWindowOrWorker;
     pub use webapi::parent_node::IParentNode;
     pub use webapi::non_element_parent_node::INonElementParentNode;
