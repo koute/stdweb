@@ -2,6 +2,7 @@ use webcore::value::Reference;
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
 use webapi::element::Element;
+use webapi::html_element::HtmlElement;
 use webapi::text_node::TextNode;
 use webapi::location::Location;
 use webapi::parent_node::IParentNode;
@@ -65,6 +66,18 @@ impl Document {
             js!(
                 return @{self}.location;
             ).into_reference_unchecked()
+        }
+    }
+
+    /// Returns the <body> or <frameset> node of the current document, or null if no such element exists.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/body)
+    // https://html.spec.whatwg.org/#dom-document-body
+    pub fn body( &self ) -> HtmlElement {
+        unsafe {
+            js!(
+                return @{self}.body;
+            ).into_reference_unchecked().unwrap()
         }
     }
 }
