@@ -26,19 +26,16 @@ type BoxedFuture = Box< Future< Item = (), Error = () > + 'static >;
 struct SpawnedTask {
     is_queued: Cell< bool >,
     spawn: RefCell< Option< Spawn< BoxedFuture > > >,
-    // TODO maybe this should use Weak instead ?
-    inner: Rc< Inner >,
 }
 
 impl SpawnedTask {
-    fn new< F >( future: F, inner: Rc< Inner > ) -> Rc< Self >
+    fn new< F >( future: F ) -> Rc< Self >
         where F: Future< Item = (), Error = () > + 'static {
         Rc::new( Self {
             is_queued: Cell::new( false ),
             spawn: RefCell::new( Some( executor::spawn(
                 Box::new( future ) as BoxedFuture
-            ) ) ),
-            inner,
+            ) ) )
         } )
     }
 
@@ -50,7 +47,7 @@ impl SpawnedTask {
             // Clear `is_queued` flag so that it will re-queue if poll calls task.notify()
             self.is_queued.set( false );
 
-            if spawn_future.poll_future_notify( &&Notifier, self as *const _ as usize ) == Ok( Async::NotReady ) {
+            if spawn_future.poll_future_notify( &&EventLoop, self as *const _ as usize ) == Ok( Async::NotReady ) {
                 // Future was not ready, so put it back
                 *spawn = Some( spawn_future );
             }
@@ -58,154 +55,140 @@ impl SpawnedTask {
     }
 
     fn notify( task: Rc< SpawnedTask > ) {
-        let inner = &task.inner;
-
         // If not already queued
         if !task.is_queued.replace( true ) {
-            // TODO figure out a way to avoid the clone ?
-            inner.queue.queue.borrow_mut().push_back( task.clone() );
-        }
-
-        // If not already running
-        if !inner.queue.is_running.replace( true ) {
-            js! { @(no_return)
-                @{&inner.microtask}.next_tick();
-            }
+            EventLoop.push_task(task);
         }
     }
 }
 
-struct Notifier;
+// A proxy for the javascript event loop.
+struct EventLoop;
 
-struct Queue {
-    is_running: Cell< bool >,
-    // TODO maybe SpawnedTask needs to use Arc rather than Rc ?
-    queue: RefCell< VecDeque< Rc< SpawnedTask > > >,
+// There's only one thread, but this lets us tell the compiler that we
+// don't need a `Sync` bound, and also gives us lazy initialization.
+thread_local! {
+    static EVENT_LOOP_INNER: EventLoopInner = EventLoopInner::new();
 }
 
-struct Inner {
-    queue: Rc< Queue >,
-    microtask: Reference,
+impl EventLoop {
+    fn drain(&self) {
+        EVENT_LOOP_INNER.with(EventLoopInner::drain)
+    }
+    fn push_task(&self, task: Rc< SpawnedTask >) {
+        EVENT_LOOP_INNER.with(|inner| inner.push_task(task))
+    }
 }
 
-impl Drop for Inner {
+// State relating to the javascript event loop. Only one instance ever exists.
+struct EventLoopInner {
+    // Avoid unnecessary allocation and interop by keeping a local
+    // queue of pending tasks.
+    microtask_queue: RefCell< VecDeque< Rc< SpawnedTask > > >,
+    waker: Reference,
+}
+
+// Not strictly necessary, but may become relevant in the future
+impl Drop for EventLoopInner {
     #[inline]
     fn drop( &mut self ) {
         js! { @(no_return)
-            @{&self.microtask}.callback.drop();
+            @{&self.waker}.drop();
         }
     }
 }
 
-struct PromiseExecutor( Rc< Inner > );
+impl EventLoopInner {
+    // Initializes the event loop. Only called once.
+    fn new() -> Self {
+        EventLoopInner {
+            microtask_queue: RefCell::new(VecDeque::with_capacity(INITIAL_QUEUE_CAPACITY)),
+            waker: js!(
+                var callback = @{|| EventLoop.drain()};
+                var wrapper = function() { callback() };
 
-// TODO this should be generalized into a MicroTask API
-thread_local! {
-    static EXECUTOR: PromiseExecutor = {
-        let queue = Rc::new( Queue {
-            is_running: Cell::new( false ),
-            queue: RefCell::new( VecDeque::with_capacity( INITIAL_QUEUE_CAPACITY ) ),
-        } );
+                // Modern browsers can use `MutationObserver` which allows
+                // us to schedule a micro-task without allocating a promise.
+                // https://dom.spec.whatwg.org/#notify-mutation-observers
+                if ( typeof MutationObserver === "function" ) {
+                    var node = document.createTextNode( "0" );
+                    var state = false;
 
-        let inner = {
-            let clone = queue.clone();
+                    new MutationObserver( wrapper ).observe( node, { characterData: true } );
 
-            // TODO is Null the fastest type for conversion from JS ?
-            let callback = move || {
-                loop {
-                    let task = clone.queue.borrow_mut().pop_front();
-
-                    if let Some( task ) = task {
-                        task.poll();
-
-                    } else {
-                        break;
+                    function nextTick() {
+                        state = !state;
+                        node.data = ( state ? "1" : "0" );
                     }
+                    nextTick.drop = callback.drop;
+
+                    return nextTick;
+
+                // Node.js and other environments
+                } else {
+                    var promise = Promise.resolve( null );
+
+                    function nextTick( value ) {
+                        promise.then( wrapper );
+                    }
+                    nextTick.drop = callback.drop;
+
+                    return nextTick;
                 }
+            ).try_into().unwrap()
+        }
+    }
+    // Pushes a task onto the queue
+    fn push_task(&self, task: Rc< SpawnedTask >) {
+        let mut queue = self.microtask_queue.borrow_mut();
+        queue.push_back(task);
 
-                // This frees up the memory for the VecDeque
-                *clone.queue.borrow_mut() = VecDeque::with_capacity( INITIAL_QUEUE_CAPACITY );
-
-                clone.is_running.set( false );
-            };
-
-            Inner {
-                queue: queue,
-                // This causes the callback to be pushed onto the microtask queue
-                microtask: js!(
-                    var callback = @{callback};
-
-                    // Modern browsers
-                    // https://dom.spec.whatwg.org/#notify-mutation-observers
-                    if ( typeof MutationObserver === "function" ) {
-                        var node = document.createTextNode( "0" );
-                        var state = false;
-
-                        new MutationObserver( function ( changes, observer ) {
-                            callback();
-                        } ).observe( node, { characterData: true } );
-
-                        return {
-                            callback: callback,
-                            next_tick: function () {
-                                state = !state;
-                                node.data = ( state ? "1" : "0" );
-                            }
-                        };
-
-                    // Node.js and other environments
-                    } else {
-                        var promise = Promise.resolve( null );
-
-                        // TODO what if the callback has been dropped ?
-                        function next_tick( value ) {
-                            callback();
-                        }
-
-                        return {
-                            callback: callback,
-                            next_tick: function () {
-                                promise.then( next_tick );
-                            }
-                        };
-                    }
-                ).try_into().unwrap(),
-            }
-        };
-
-        PromiseExecutor( Rc::new( inner ) )
-    };
+        // If the queue was previously empty, then we need to schedule
+        // the queue to be drained.
+        if queue.len() == 1 {
+            self.wake();
+        }
+    }
+    // Invoke the javascript waker function
+    fn wake(&self) {
+        js! { @(no_return) @{&self.waker}(); }
+    }
+    // Remove and return a task from the front of the queue
+    fn pop_task(&self) -> Option< Rc< SpawnedTask > > {
+        self.microtask_queue.borrow_mut().pop_front()
+    }
+    // Poll the queue until it is empty
+    fn drain(&self) {
+        while let Some(task) = self.pop_task() {
+            task.poll();
+        }
+    }
 }
 
-impl< F > Executor< F > for PromiseExecutor where
+impl< F > Executor< F > for EventLoop where
     F: Future< Item = (), Error = () > + 'static {
     fn execute( &self, future: F ) -> StdResult< (), ExecuteError< F > > {
-        SpawnedTask::notify( SpawnedTask::new( future, self.0.clone() ) );
+        SpawnedTask::notify( SpawnedTask::new( future ) );
         Ok( () )
     }
 }
 
-impl Notify for Notifier {
+impl Notify for EventLoop {
     fn notify( &self, spawned_id: usize ) {
         SpawnedTask::notify( unsafe { clone_raw( spawned_id as *const _ ) } );
     }
 
-    // TODO does this cause memory unsafety ?
     fn clone_id( &self, id: usize ) -> usize {
         unsafe { Rc::into_raw( clone_raw( id as *const SpawnedTask ) ) as usize }
     }
 
-    // TODO does this cause memory unsafety ?
     fn drop_id( &self, id: usize ) {
         unsafe { Rc::from_raw( id as *const SpawnedTask ) };
     }
 }
 
-
 #[inline]
 pub fn spawn< F >( future: F ) where
     F: Future< Item = (), Error = () > + 'static {
-    EXECUTOR.with( |executor| {
-        executor.execute( future ).unwrap();
-    } );
+    EventLoop.execute( future ).unwrap();
 }
