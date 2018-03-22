@@ -72,12 +72,12 @@ impl Document {
     /// Returns the <body> or <frameset> node of the current document, or null if no such element exists.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/body)
-    // https://html.spec.whatwg.org/#dom-document-body
-    pub fn body( &self ) -> HtmlElement {
+    // https://html.spec.whatwg.org/#the-document-object:dom-document-body
+    pub fn body( &self ) -> Option< HtmlElement > {
         unsafe {
             js!(
                 return @{self}.body;
-            ).into_reference_unchecked().unwrap()
+            ).into_reference_unchecked()
         }
     }
 }
