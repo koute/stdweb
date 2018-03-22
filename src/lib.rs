@@ -141,6 +141,8 @@ extern crate futures;
 #[macro_use]
 extern crate stdweb_derive;
 
+extern crate discard;
+
 #[macro_use]
 mod webcore;
 mod webapi;
@@ -173,8 +175,10 @@ pub use webcore::instance_of::InstanceOf;
 pub use webcore::reference_type::ReferenceType;
 pub use webcore::serialization::JsSerialize;
 
+pub use webcore::discard::DiscardOnDrop;
+
 #[cfg(feature = "experimental_features_which_may_break_on_minor_version_bumps")]
-pub use webcore::promise::Promise;
+pub use webcore::promise::{Promise, DoneHandle};
 
 #[cfg(all(
     feature = "futures",

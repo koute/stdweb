@@ -16,12 +16,12 @@ impl RequestAnimationFrameHandle {
     /// Cancels an animation frame request.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Window/cancelAnimationFrame)
-    pub fn cancel(self) {
-        js!{
-            var val = @{self.0};
+    pub fn cancel( self ) {
+        js! { @(no_return)
+            var val = @{&self.0};
             val.window.cancelAnimationFrame(val.request);
             val.callback.drop();
-        };
+        }
     }
 }
 

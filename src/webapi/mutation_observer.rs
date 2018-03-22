@@ -171,7 +171,7 @@ impl std::ops::Deref for MutationObserverHandle {
     type Target = MutationObserver;
 
     #[inline]
-    fn deref(&self) -> &Self::Target {
+    fn deref( &self ) -> &Self::Target {
         &self.mutation_observer
     }
 }
