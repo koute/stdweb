@@ -4,7 +4,7 @@ use webcore::try_from::{TryInto, TryFrom};
 use webapi::error;
 use futures::{Future, Poll, Async};
 use futures::unsync::oneshot::Receiver;
-use webcore::promise_executor::spawn;
+use webcore::executor::spawn;
 use super::promise::Promise;
 
 
