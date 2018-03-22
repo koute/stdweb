@@ -5,7 +5,8 @@ use webapi::error;
 use futures::{Future, Poll, Async};
 use futures::unsync::oneshot::Receiver;
 use webcore::executor::spawn;
-use super::promise::Promise;
+use webcore::discard::DiscardOnDrop;
+use super::promise::{Promise, DoneHandle};
 
 
 /// This allows you to use a JavaScript [`Promise`](struct.Promise.html) as if it is a Rust [`Future`](https://docs.rs/futures/0.1.*/futures/future/trait.Future.html).
@@ -21,6 +22,7 @@ use super::promise::Promise;
 /// ```
 pub struct PromiseFuture< Value, Error = error::Error > {
     pub(crate) future: Receiver< Result< Value, Error > >,
+    pub(crate) _done_handle: DiscardOnDrop< DoneHandle >,
 }
 
 impl PromiseFuture< (), () > {
