@@ -1,8 +1,9 @@
 use std;
+use discard::Discard;
 use webcore::once::Once;
 use webcore::value::{Value, Reference};
 use webcore::try_from::{TryInto, TryFrom};
-use discard::{Discard, DiscardOnDrop};
+use webcore::discard::DiscardOnDrop;
 
 #[cfg(feature = "futures")]
 use webcore::serialization::JsSerialize;
@@ -176,10 +177,9 @@ impl Promise {
     /// * Keep the [`DoneHandle`](struct.DoneHandle.html) alive until after the `callback` is called (by storing it in a
     ///   variable or data structure).
     ///
-    /// * Use the [`DiscardOnDrop::leak`](https://docs.rs/discard/1.*/discard/struct.DiscardOnDrop.html#method.leak) function to leak the
-    ///   [`DoneHandle`](struct.DoneHandle.html). If the `Promise` never succeeds or fails then this ***will*** leak the
-    ///   memory of the callback, so only use [`DiscardOnDrop::leak`](https://docs.rs/discard/1.*/discard/struct.DiscardOnDrop.html#method.leak)
-    ///   if you need to.
+    /// * Use the [`leak`](struct.DiscardOnDrop.html#method.leak) method to leak the [`DoneHandle`](struct.DoneHandle.html).
+    ///   If the `Promise` never succeeds or fails then this ***will*** leak the memory of the callback, so only use
+    ///   [`leak`](struct.DiscardOnDrop.html#method.leak) if you need to.
     ///
     /// # Examples
     ///
@@ -197,14 +197,12 @@ impl Promise {
     /// Leak the [`DoneHandle`](struct.DoneHandle.html) and `callback`:
     ///
     /// ```rust
-    /// use discard::DiscardOnDrop;
-    ///
-    /// DiscardOnDrop::leak(promise.done(|result| {
+    /// promise.done(|result| {
     ///     match result {
     ///         Ok(success) => { ... },
     ///         Err(error) => { ... },
     ///     }
-    /// }));
+    /// }).leak();
     /// ```
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then)

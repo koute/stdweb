@@ -5,7 +5,7 @@ use webapi::error;
 use futures::{Future, Poll, Async};
 use futures::unsync::oneshot::Receiver;
 use webcore::promise_executor::spawn;
-use discard::DiscardOnDrop;
+use webcore::discard::DiscardOnDrop;
 use super::promise::{Promise, DoneHandle};
 
 
