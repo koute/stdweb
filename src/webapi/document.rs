@@ -1,4 +1,5 @@
 use webcore::value::Reference;
+use webcore::try_from::TryInto;
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
 use webapi::element::Element;
@@ -91,6 +92,31 @@ impl Document {
             js!(
                 return @{self}.head;
             ).into_reference_unchecked()
+        }
+    }
+
+    /// Gets the title of the document.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/title)
+    // https://html.spec.whatwg.org/multipage/semantics.html#the-title-element
+    pub fn get_title( &self ) -> String {
+        unsafe {
+            js!(
+                return @{self}.title;
+            ).try_into().unwrap()
+        }
+    }
+
+    /// Sets the title of the document.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/title)
+    // https://html.spec.whatwg.org/multipage/semantics.html#the-title-element
+    pub fn set_title( &self, title: &str ) -> String {
+        unsafe {
+            js!(
+                @{self}.title = @{title};
+                return @{self}.title;
+            ).try_into().unwrap()
         }
     }
 }
