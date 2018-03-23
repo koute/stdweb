@@ -80,4 +80,17 @@ impl Document {
             ).into_reference_unchecked()
         }
     }
+
+    /// Returns the <head> element of the current document. If there are more than one <head>
+    /// elements, the first one is returned.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/head)
+    // https://html.spec.whatwg.org/#the-document-object:dom-document-head
+    pub fn head( &self ) -> Option< HtmlElement > {
+        unsafe {
+            js!(
+                return @{self}.head;
+            ).into_reference_unchecked()
+        }
+    }
 }
