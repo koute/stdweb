@@ -62,7 +62,7 @@ impl SpawnedTask {
     }
 }
 
-// A proxy for the javascript event loop.
+// A proxy for the JavaScript event loop.
 struct EventLoop;
 
 // There's only one thread, but this lets us tell the compiler that we
@@ -80,7 +80,7 @@ impl EventLoop {
     }
 }
 
-// State relating to the javascript event loop. Only one instance ever exists.
+// State relating to the JavaScript event loop. Only one instance ever exists.
 struct EventLoopInner {
     // Avoid unnecessary allocation and interop by keeping a local
     // queue of pending tasks.
@@ -105,7 +105,9 @@ impl EventLoopInner {
             microtask_queue: RefCell::new(VecDeque::with_capacity(INITIAL_QUEUE_CAPACITY)),
             waker: js!(
                 var callback = @{|| EventLoop.drain()};
-                var wrapper = function() { callback() };
+                var wrapper = function() {
+                    if (!callback.dropped) { callback() }
+                };
 
                 // Modern browsers can use `MutationObserver` which allows
                 // us to schedule a micro-task without allocating a promise.
@@ -120,21 +122,22 @@ impl EventLoopInner {
                         state = !state;
                         node.data = ( state ? "1" : "0" );
                     }
-                    nextTick.drop = callback.drop;
-
-                    return nextTick;
 
                 // Node.js and other environments
                 } else {
                     var promise = Promise.resolve( null );
 
-                    function nextTick( value ) {
+                    function nextTick() {
                         promise.then( wrapper );
                     }
-                    nextTick.drop = callback.drop;
-
-                    return nextTick;
                 }
+
+                nextTick.drop = function() {
+                    callback.dropped = true;
+                    callback.drop();
+                };
+
+                return nextTick;
             ).try_into().unwrap()
         }
     }
@@ -149,7 +152,7 @@ impl EventLoopInner {
             self.wake();
         }
     }
-    // Invoke the javascript waker function
+    // Invoke the JavaScript waker function
     fn wake(&self) {
         js! { @(no_return) @{&self.waker}(); }
     }
