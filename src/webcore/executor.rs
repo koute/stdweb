@@ -1,3 +1,8 @@
+// This file implements a futures-compatible executor which schedules futures
+// onto the JavaScript event loop. This implementation assumes there is a
+// single thread and is *not* compatible with multiple WebAssembly workers sharing
+// the same address space.
+
 use futures::future::{Future, ExecuteError, Executor};
 use futures::executor::{self, Notify, Spawn};
 use futures::Async;
@@ -9,7 +14,10 @@ use webcore::try_from::TryInto;
 use webcore::value::Reference;
 
 
+// Initial capacity of the event queue
 const INITIAL_QUEUE_CAPACITY: usize = 10;
+// Iterations to wait before allowing the queue to shrink
+const QUEUE_SHRINK_DELAY: usize = 25;
 
 
 // This functionality should really be in libstd, because the implementation
@@ -86,6 +94,7 @@ struct EventLoopInner {
     // queue of pending tasks.
     microtask_queue: RefCell< VecDeque< Rc< SpawnedTask > > >,
     waker: Reference,
+    shrink_counter: Cell<usize>
 }
 
 // Not strictly necessary, but may become relevant in the future
@@ -138,7 +147,8 @@ impl EventLoopInner {
                 };
 
                 return nextTick;
-            ).try_into().unwrap()
+            ).try_into().unwrap(),
+            shrink_counter: Cell::new(0)
         }
     }
     // Pushes a task onto the queue
@@ -160,11 +170,30 @@ impl EventLoopInner {
     fn pop_task(&self) -> Option< Rc< SpawnedTask > > {
         self.microtask_queue.borrow_mut().pop_front()
     }
+    fn shrink_if_necessary(&self) {
+        let mut queue = self.microtask_queue.borrow_mut();
+        // We consider shrinking the queue if it is less than
+        // half full...
+        if queue.len() <= queue.capacity() / 2 {
+            // ...and if it's been that way for at least
+            // `QUEUE_SHRINK_DELAY` iterations.
+            let shrink_counter = self.shrink_counter.get();
+            if shrink_counter < QUEUE_SHRINK_DELAY {
+                self.shrink_counter.set(shrink_counter+1);
+            } else {
+                queue.shrink_to_fit();
+                self.shrink_counter.set(0);
+            }
+        } else {
+            self.shrink_counter.set(0);
+        }
+    }
     // Poll the queue until it is empty
     fn drain(&self) {
         while let Some(task) = self.pop_task() {
             task.poll();
         }
+        self.shrink_if_necessary();
     }
 }
 
