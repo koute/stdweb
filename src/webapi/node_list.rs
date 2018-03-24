@@ -35,9 +35,9 @@ impl NodeList {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/NodeList/item)
     // https://dom.spec.whatwg.org/#dom-nodelist-item
     pub fn item( &self, index: u32 ) -> Node {
-      js!(
-        return @{self}[ @{index} ];
-      ).try_into().unwrap()
+        js!(
+            return @{self}[ @{index} ];
+        ).try_into().unwrap()
     }
 
     /// Returns an iterator over the list.
