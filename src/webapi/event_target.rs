@@ -20,18 +20,16 @@ impl fmt::Debug for EventListenerHandle {
 }
 
 impl EventListenerHandle {
-    /// Removes the handler from the [IEventTarget](trait.IEventTarget.html) on
+    /// Removes the listener from the [IEventTarget](trait.IEventTarget.html) on
     /// which it was previously registered.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/removeEventListener)
     // https://dom.spec.whatwg.org/#ref-for-dom-eventtarget-removeeventlistener%E2%91%A0
     pub fn remove( self ) {
         js! { @(no_return)
-            var self = @{self.reference};
-            var event_type = @{self.event_type};
-            var listener = @{self.listener_reference};
+            var listener = @{&self.listener_reference};
+            @{&self.reference}.removeEventListener( @{self.event_type}, listener );
             listener.drop();
-            self.removeEventListener( event_type, listener );
         }
     }
 }
@@ -42,7 +40,7 @@ impl EventListenerHandle {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget)
 // https://dom.spec.whatwg.org/#eventtarget
 pub trait IEventTarget: ReferenceType {
-    /// Adds given event handler to the list the list of event listeners for
+    /// Adds given event handler to the list of event listeners for
     /// the specified `EventTarget` on which it's called.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener)
@@ -51,6 +49,7 @@ pub trait IEventTarget: ReferenceType {
         where T: ConcreteEvent, F: FnMut( T ) + 'static
     {
         let reference = self.as_ref();
+
         let listener_reference = js! {
             var listener = @{listener};
             @{reference}.addEventListener( @{T::EVENT_TYPE}, listener );

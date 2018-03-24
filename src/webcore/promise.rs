@@ -1,7 +1,9 @@
 use std;
+use discard::Discard;
 use webcore::once::Once;
 use webcore::value::{Value, Reference};
 use webcore::try_from::{TryInto, TryFrom};
+use webcore::discard::DiscardOnDrop;
 
 #[cfg(feature = "futures")]
 use webcore::serialization::JsSerialize;
@@ -14,6 +16,25 @@ use futures::future::Future;
 
 #[cfg(feature = "futures")]
 use super::promise_future::PromiseFuture;
+
+
+/// This is used to cleanup the [`done`](struct.Promise.html#method.done) callback.
+///
+/// See the documentation for [`done`](struct.Promise.html#method.done) for more information.
+#[derive( Debug, Clone )]
+pub struct DoneHandle {
+    state: Value,
+}
+
+impl Discard for DoneHandle {
+    fn discard( self ) {
+        js! { @(no_return)
+            var state = @{&self.state};
+            state.cancelled = true;
+            state.callback.drop();
+        }
+    }
+}
 
 
 /// A `Promise` object represents the eventual completion (or failure) of an asynchronous operation, and its resulting value.
@@ -139,12 +160,33 @@ impl Promise {
     ///
     /// The `callback` is guaranteed to be called asynchronously even if the `Promise` is already succeeded / failed.
     ///
-    /// If the `Promise` never succeeds / fails then the `callback` will never be called, and it will leak memory.
+    /// If the `Promise` never succeeds / fails then the `callback` will never be called.
+    ///
+    /// This method returns a [`DoneHandle`](struct.DoneHandle.html). The [`DoneHandle`](struct.DoneHandle.html)
+    /// *exclusively* owns the `callback`, so when the [`DoneHandle`](struct.DoneHandle.html) is dropped it will
+    /// drop the `callback` and the `callback` will never be called. This will happen even if the `Promise` is not dropped!
+    ///
+    /// Dropping the [`DoneHandle`](struct.DoneHandle.html) does ***not*** cancel the `Promise`, because promises
+    /// do not support cancellation.
+    ///
+    /// If you are no longer interested in the `Promise`'s result you can simply drop the [`DoneHandle`](struct.DoneHandle.html)
+    /// and then the `callback` will never be called.
+    ///
+    /// But if you *are* interested in the `Promise`'s result, then you have two choices:
+    ///
+    /// * Keep the [`DoneHandle`](struct.DoneHandle.html) alive until after the `callback` is called (by storing it in a
+    ///   variable or data structure).
+    ///
+    /// * Use the [`leak`](struct.DiscardOnDrop.html#method.leak) method to leak the [`DoneHandle`](struct.DoneHandle.html).
+    ///   If the `Promise` never succeeds or fails then this ***will*** leak the memory of the callback, so only use
+    ///   [`leak`](struct.DiscardOnDrop.html#method.leak) if you need to.
     ///
     /// # Examples
     ///
+    /// Normal usage:
+    ///
     /// ```rust
-    /// promise.done(|result| {
+    /// let handle = promise.done(|result| {
     ///     match result {
     ///         Ok(success) => { ... },
     ///         Err(error) => { ... },
@@ -152,9 +194,20 @@ impl Promise {
     /// });
     /// ```
     ///
+    /// Leak the [`DoneHandle`](struct.DoneHandle.html) and `callback`:
+    ///
+    /// ```rust
+    /// promise.done(|result| {
+    ///     match result {
+    ///         Ok(success) => { ... },
+    ///         Err(error) => { ... },
+    ///     }
+    /// }).leak();
+    /// ```
+    ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then)
     // https://www.ecma-international.org/ecma-262/6.0/#sec-performpromisethen
-    pub fn done< A, B, F >( &self, callback: F )
+    pub fn done< A, B, F >( &self, callback: F ) -> DiscardOnDrop< DoneHandle >
         where A: TryFrom< Value >,
               B: TryFrom< Value >,
               // TODO these Debug constraints are only needed because of unwrap
@@ -162,11 +215,12 @@ impl Promise {
               B::Error: std::fmt::Debug,
               F: FnOnce( Result< A, B > ) + 'static {
 
-        let callback = |value: Value, success: bool| {
+        let callback = move |value: Value, success: bool| {
             let value: Result< A, B > = if success {
                 // TODO figure out a way to avoid the unwrap
                 let value: A = value.try_into().unwrap();
                 Ok( value )
+
             } else {
                 // TODO figure out a way to avoid the unwrap
                 let value: B = value.try_into().unwrap();
@@ -176,16 +230,31 @@ impl Promise {
             callback( value );
         };
 
-        js! { @(no_return)
+        let state = js!(
             var callback = @{Once( callback )};
+
+            var state = {
+                cancelled: false,
+                callback: callback
+            };
 
             // TODO don't swallow any errors thrown inside callback
             @{self}.then( function ( value ) {
-                callback( value, true );
+                if ( !state.cancelled ) {
+                    callback( value, true );
+                }
             }, function ( value ) {
-                callback( value, false );
+                if ( !state.cancelled ) {
+                    callback( value, false );
+                }
             } );
-        }
+
+            return state;
+        );
+
+        DiscardOnDrop::new( DoneHandle {
+            state,
+        } )
     }
 
     /// This method should rarely be needed, instead use [`value.try_into()`](unstable/trait.TryInto.html) to convert directly from a [`Value`](enum.Value.html) into a [`PromiseFuture`](struct.PromiseFuture.html).
@@ -209,16 +278,15 @@ impl Promise {
 
         let ( sender, receiver ) = channel();
 
-        self.done( |value| {
-            // TODO is this correct ?
-            match sender.send( value ) {
-                Ok( _ ) => {},
-                Err( _ ) => {},
-            };
-        } );
-
         PromiseFuture {
             future: receiver,
+            _done_handle: self.done( |value| {
+                // TODO is this correct ?
+                match sender.send( value ) {
+                    Ok( _ ) => {},
+                    Err( _ ) => {},
+                };
+            } ),
         }
     }
 }
