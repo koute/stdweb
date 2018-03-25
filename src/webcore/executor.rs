@@ -2,6 +2,9 @@
 // onto the JavaScript event loop. This implementation assumes there is a
 // single thread and is *not* compatible with multiple WebAssembly workers sharing
 // the same address space.
+//
+// TODO: Implement support for multiple threads. This will require a mechanism to
+// wake up another thread, such as the `postMessage` API.
 
 use futures::future::{Future, ExecuteError, Executor};
 use futures::executor::{self, Notify, Spawn};
@@ -14,6 +17,7 @@ use webcore::try_from::TryInto;
 use webcore::value::Reference;
 
 
+// TODO: Determine optimal values for these constants
 // Initial capacity of the event queue
 const INITIAL_QUEUE_CAPACITY: usize = 10;
 // Iterations to wait before allowing the queue to shrink
@@ -117,6 +121,7 @@ impl EventLoopInner {
                 var wrapper = function() {
                     if (!callback.dropped) { callback() }
                 };
+                var nextTick;
 
                 // Modern browsers can use `MutationObserver` which allows
                 // us to schedule a micro-task without allocating a promise.
@@ -127,18 +132,18 @@ impl EventLoopInner {
 
                     new MutationObserver( wrapper ).observe( node, { characterData: true } );
 
-                    function nextTick() {
+                    nextTick = function() {
                         state = !state;
                         node.data = ( state ? "1" : "0" );
-                    }
+                    };
 
                 // Node.js and other environments
                 } else {
                     var promise = Promise.resolve( null );
 
-                    function nextTick() {
+                    nextTick = function() {
                         promise.then( wrapper );
-                    }
+                    };
                 }
 
                 nextTick.drop = function() {
@@ -170,6 +175,7 @@ impl EventLoopInner {
     fn pop_task(&self) -> Option< Rc< SpawnedTask > > {
         self.microtask_queue.borrow_mut().pop_front()
     }
+    // Reclaim space from the queue if it's going to waste
     fn shrink_if_necessary(&self) {
         let mut queue = self.microtask_queue.borrow_mut();
         // We consider shrinking the queue if it is less than
@@ -179,7 +185,7 @@ impl EventLoopInner {
             // `QUEUE_SHRINK_DELAY` iterations.
             let shrink_counter = self.shrink_counter.get();
             if shrink_counter < QUEUE_SHRINK_DELAY {
-                self.shrink_counter.set(shrink_counter+1);
+                self.shrink_counter.set(shrink_counter + 1);
             } else {
                 queue.shrink_to_fit();
                 self.shrink_counter.set(0);
@@ -190,10 +196,10 @@ impl EventLoopInner {
     }
     // Poll the queue until it is empty
     fn drain(&self) {
+        self.shrink_if_necessary();
         while let Some(task) = self.pop_task() {
             task.poll();
         }
-        self.shrink_if_necessary();
     }
 }
 
