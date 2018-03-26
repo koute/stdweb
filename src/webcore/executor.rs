@@ -179,10 +179,11 @@ impl EventLoopInner {
     // See if it's worth trying to reclaim some space from the queue
     fn estimate_realloc_capacity(&self) -> Option<usize> {
         let queue = self.microtask_queue.borrow();
-        let cap = queue.capacity();
+        // A VecDeque retains a `2^n-1` capacity
+        let half_cap = queue.capacity()/2;
         // We consider shrinking the queue if it is less than
         // half full...
-        if cap > queue.len()*2 && cap > INITIAL_QUEUE_CAPACITY {
+        if half_cap > queue.len() && half_cap > INITIAL_QUEUE_CAPACITY {
             // ...and if it's been that way for at least
             // `QUEUE_SHRINK_DELAY` iterations.
             let shrink_counter = self.shrink_counter.get();
