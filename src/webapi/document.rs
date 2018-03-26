@@ -98,7 +98,7 @@ impl Document {
     /// Gets the title of the document.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/title)
-    // https://html.spec.whatwg.org/multipage/semantics.html#the-title-element
+    // https://html.spec.whatwg.org/#the-document-object:document.title
     pub fn get_title( &self ) -> String {
         unsafe {
             js!(
@@ -110,7 +110,7 @@ impl Document {
     /// Sets the title of the document.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/title)
-    // https://html.spec.whatwg.org/multipage/semantics.html#the-title-element
+    // https://html.spec.whatwg.org/#the-document-object:document.title
     pub fn set_title( &self, title: &str ) -> String {
         unsafe {
             js!(
