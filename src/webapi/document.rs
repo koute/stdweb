@@ -111,12 +111,9 @@ impl Document {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/title)
     // https://html.spec.whatwg.org/#the-document-object:document.title
-    pub fn set_title( &self, title: &str ) -> String {
+    pub fn set_title( &self, title: &str ) {
         unsafe {
-            js!(
-                @{self}.title = @{title};
-                return @{self}.title;
-            ).try_into().unwrap()
+            js!( @(no_return) @{self}.title = @{title}; );
         }
     }
 }
