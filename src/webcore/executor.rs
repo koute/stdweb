@@ -13,6 +13,7 @@ use std::collections::VecDeque;
 use std::result::Result as StdResult;
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
+use std::cmp;
 use webcore::try_from::TryInto;
 use webcore::value::Reference;
 
@@ -175,34 +176,39 @@ impl EventLoopInner {
     fn pop_task(&self) -> Option< Rc< SpawnedTask > > {
         self.microtask_queue.borrow_mut().pop_front()
     }
-    // Reclaim space from the queue if it's going to waste
-    fn shrink_if_necessary(&self) {
-        let mut queue = self.microtask_queue.borrow_mut();
-        if queue.capacity() <= INITIAL_QUEUE_CAPACITY {
-            return;
-        }
-
+    // See if it's worth trying to reclaim some space from the queue
+    fn estimate_realloc_capacity(&self) -> Option<usize> {
+        let queue = self.microtask_queue.borrow();
+        let cap = queue.capacity();
         // We consider shrinking the queue if it is less than
         // half full...
-        if queue.len() <= queue.capacity() / 2 {
+        if cap > queue.len()*2 && cap > INITIAL_QUEUE_CAPACITY {
             // ...and if it's been that way for at least
             // `QUEUE_SHRINK_DELAY` iterations.
             let shrink_counter = self.shrink_counter.get();
             if shrink_counter < QUEUE_SHRINK_DELAY {
                 self.shrink_counter.set(shrink_counter + 1);
             } else {
-                queue.shrink_to_fit();
                 self.shrink_counter.set(0);
+                return Some(cmp::max(queue.len(), INITIAL_QUEUE_CAPACITY));
             }
         } else {
             self.shrink_counter.set(0);
         }
+        None
     }
     // Poll the queue until it is empty
     fn drain(&self) {
-        self.shrink_if_necessary();
+        let maybe_realloc_capacity = self.estimate_realloc_capacity();
+
+        // Poll all the pending tasks
         while let Some(task) = self.pop_task() {
             task.poll();
+        }
+
+        if let Some(realloc_capacity) = maybe_realloc_capacity {
+            // We decided to reclaim some space
+            *self.microtask_queue.borrow_mut() = VecDeque::with_capacity(realloc_capacity);
         }
     }
 }
