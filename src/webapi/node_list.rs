@@ -33,7 +33,7 @@ impl NodeList {
     /// Returns a node from a NodeList by index.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/NodeList/item)
-    // https://dom.spec.whatwg.org/#dom-nodelist-item
+    // https://dom.spec.whatwg.org/#ref-for-dom-nodelist-item
     pub fn item( &self, index: u32 ) -> Option< Node > {
         js!(
             return @{self}[ @{index} ];
