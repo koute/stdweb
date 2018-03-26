@@ -178,6 +178,10 @@ impl EventLoopInner {
     // Reclaim space from the queue if it's going to waste
     fn shrink_if_necessary(&self) {
         let mut queue = self.microtask_queue.borrow_mut();
+        if queue.capacity() <= INITIAL_QUEUE_CAPACITY {
+            return;
+        }
+
         // We consider shrinking the queue if it is less than
         // half full...
         if queue.len() <= queue.capacity() / 2 {
