@@ -1,7 +1,9 @@
 use webcore::value::Reference;
+use webcore::try_from::TryInto;
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
 use webapi::element::Element;
+use webapi::html_element::HtmlElement;
 use webapi::text_node::TextNode;
 use webapi::location::Location;
 use webapi::parent_node::IParentNode;
@@ -65,6 +67,53 @@ impl Document {
             js!(
                 return @{self}.location;
             ).into_reference_unchecked()
+        }
+    }
+
+    /// Returns the <body> or <frameset> node of the current document, or null if no such element exists.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/body)
+    // https://html.spec.whatwg.org/#the-document-object:dom-document-body
+    pub fn body( &self ) -> Option< HtmlElement > {
+        unsafe {
+            js!(
+                return @{self}.body;
+            ).into_reference_unchecked()
+        }
+    }
+
+    /// Returns the <head> element of the current document. If there are more than one <head>
+    /// elements, the first one is returned.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/head)
+    // https://html.spec.whatwg.org/#the-document-object:dom-document-head
+    pub fn head( &self ) -> Option< HtmlElement > {
+        unsafe {
+            js!(
+                return @{self}.head;
+            ).into_reference_unchecked()
+        }
+    }
+
+    /// Gets the title of the document.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/title)
+    // https://html.spec.whatwg.org/#the-document-object:document.title
+    pub fn title( &self ) -> String {
+        unsafe {
+            js!(
+                return @{self}.title;
+            ).try_into().unwrap()
+        }
+    }
+
+    /// Sets the title of the document.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/title)
+    // https://html.spec.whatwg.org/#the-document-object:document.title
+    pub fn set_title( &self, title: &str ) {
+        unsafe {
+            js!( @(no_return) @{self}.title = @{title}; );
         }
     }
 }
