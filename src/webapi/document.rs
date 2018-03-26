@@ -99,7 +99,7 @@ impl Document {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/title)
     // https://html.spec.whatwg.org/#the-document-object:document.title
-    pub fn get_title( &self ) -> String {
+    pub fn title( &self ) -> String {
         unsafe {
             js!(
                 return @{self}.title;
