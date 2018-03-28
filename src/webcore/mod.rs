@@ -23,7 +23,7 @@ pub mod discard;
 pub mod promise_future;
 
 #[cfg(feature = "futures")]
-pub mod promise_executor;
+pub mod executor;
 
 #[cfg(feature = "nightly")]
 pub mod void {
