@@ -116,4 +116,13 @@ impl Document {
             js!( @(no_return) @{self}.title = @{title}; );
         }
     }
+
+    /// documentElement
+    pub fn document_element( &self ) -> Option< HtmlElement > {
+        unsafe {
+            js!(
+                return @{self}.documentElement;
+            ).try_into().unwrap()
+        }
+    }
 }

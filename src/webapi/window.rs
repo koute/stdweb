@@ -190,4 +190,11 @@ impl Window {
             return @{self}.outerHeight;
         ).try_into().unwrap()
     }
+
+    /// pageYOffset
+    pub fn page_y_offset(&self) -> i32 {
+        js!(
+            return @{self}.pageYOffset;
+        ).try_into().unwrap()
+    }
 }

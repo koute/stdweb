@@ -60,6 +60,20 @@ pub trait IElement: INode + IParentNode {
         ).unwrap()
     }
 
+    /// scrollTop
+    fn scroll_top( &self ) -> i32 {
+        js!(
+            return @{self.as_ref()}.scrollTop;
+        ).try_into().unwrap()
+    }
+
+    /// scrollTop
+    fn set_scroll_top( &self, value: u32 ) {
+        js! { @(no_return)
+            @{self.as_ref()}.scrollTop = @{value};
+        }
+    }
+
     /// Element.getAttributeNames() returns the attribute names of the element
     /// as an Array of strings. If the element has no attributes it returns an empty array.
     ///
