@@ -72,6 +72,28 @@ pub trait IMouseEvent: IUiEvent {
         ).try_into().unwrap()
     }
 
+    /// Returns the X position on the target element where this event occured.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/offsetX)
+    // Not in w3c standard
+    #[inline]
+    fn offset_x( &self ) -> i32 {
+        js!(
+            return @{self.as_ref()}.offsetX;
+        ).try_into().unwrap()
+    }
+
+    /// Returns the Y position on the target element where this event occured.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/offsetY)
+    // Not in w3c standard
+    #[inline]
+    fn offset_y( &self ) -> i32 {
+        js!(
+            return @{self.as_ref()}.offsetY;
+        ).try_into().unwrap()
+    }
+
     /// Indicates whether the Ctrl key was down when this event fired.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/ctrlKey)
