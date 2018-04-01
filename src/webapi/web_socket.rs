@@ -5,7 +5,7 @@ use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::blob::Blob;
 use webapi::array_buffer::ArrayBuffer;
 use webapi::dom_exception::{InvalidAccessError, SecurityError, SyntaxError};
-use private::UnimplementedException;
+use private::TODO;
 
 /// Wrapper type around a CloseEvent code, indicating why the WebSocket was closed
 ///
@@ -65,31 +65,38 @@ newtype_enum!(SocketCloseCode {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
 // https://html.spec.whatwg.org/#websocket
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "WebSocket")]
 #[reference(subclass_of(EventTarget))]
 pub struct WebSocket( Reference );
 
 impl IEventTarget for WebSocket {}
 
+/// The type of binary data being transmitted by the WebSocket connection.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket#Attributes)
 // https://html.spec.whatwg.org/#dom-websocket-binarytype
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum BinaryType {
+pub enum SocketBinaryType {
+    /// A Blob object represents a file-like object of immutable, raw data.
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Blob)
     Blob,
+    /// The ArrayBuffer object is used to represent a generic, fixed-length raw binary data buffer.
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer)
     ArrayBuffer
 }
 
-impl BinaryType {
+impl SocketBinaryType {
     fn to_str(self) -> &'static str {
         match self {
-            BinaryType::Blob => "blob",
-            BinaryType::ArrayBuffer => "arraybuffer",
+            SocketBinaryType::Blob => "blob",
+            SocketBinaryType::ArrayBuffer => "arraybuffer",
         }
     }
     fn from_str(s: &str) -> Self {
         match s {
-            "blob" => BinaryType::Blob,
-            "arraybuffer" => BinaryType::ArrayBuffer,
+            "blob" => SocketBinaryType::Blob,
+            "arraybuffer" => SocketBinaryType::ArrayBuffer,
             other => panic!("Invalid binary type: {:?}", other)
         }
     }
@@ -99,6 +106,7 @@ impl BinaryType {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket#Ready_state_constants)
 // https://html.spec.whatwg.org/#dom-websocket-readystate
+#[allow(missing_docs)]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum SocketReadyState {
     Connecting = 0,
@@ -148,9 +156,9 @@ impl WebSocket {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
     // https://html.spec.whatwg.org/#the-websocket-interface:dom-websocket-binarytype
-    pub fn binary_type(&self) -> BinaryType {
+    pub fn binary_type(&self) -> SocketBinaryType {
         let binary_type: String = js!( return @{self}.binaryType; ).try_into().unwrap();
-        BinaryType::from_str(&binary_type)
+        SocketBinaryType::from_str(&binary_type)
     }
 
     /// Sets the binary type of the web socket. Only affects received messages.
@@ -158,7 +166,7 @@ impl WebSocket {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
     // https://html.spec.whatwg.org/#the-websocket-interface:dom-websocket-binarytype
-    pub fn set_binary_type(&self, binary_type: BinaryType) {
+    pub fn set_binary_type(&self, binary_type: SocketBinaryType) {
         js!( @(no_return) @{self}.binaryType = @{binary_type.to_str()}; );
     }
 
@@ -197,7 +205,7 @@ impl WebSocket {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
     // https://html.spec.whatwg.org/#the-websocket-interface:dom-websocket-readystate
     pub fn ready_state(&self) -> SocketReadyState {
-        js!( return @{self}.protocol; ).try_into().unwrap()
+        js!( return @{self}.readyState; ).try_into().unwrap()
     }
 
     /// Returns the URL as resolved by the constructor. This is always an absolute URL.
@@ -233,7 +241,7 @@ impl WebSocket {
     /// to contain the data. If the data can't be sent (for example, because it needs to
     /// be buffered but the buffer is full), the socket is closed automatically.
     // https://html.spec.whatwg.org/#the-websocket-interface:dom-websocket-send
-    pub fn send_text(&self, text: &str) -> Result< (), UnimplementedException > {
+    pub fn send_text(&self, text: &str) -> Result< (), TODO > {
         js!( @(no_return) @{self}.send(@{text}); );
         Ok(())
     }
@@ -243,7 +251,7 @@ impl WebSocket {
     /// to contain the data. If the data can't be sent (for example, because it needs to
     /// be buffered but the buffer is full), the socket is closed automatically.
     // https://html.spec.whatwg.org/#the-websocket-interface:dom-websocket-send
-    pub fn send_blob(&self, blob: &Blob) -> Result< (), UnimplementedException > {
+    pub fn send_blob(&self, blob: &Blob) -> Result< (), TODO > {
         js!( @(no_return) @{self}.send(@{blob}); );
         Ok(())
     }
@@ -253,7 +261,7 @@ impl WebSocket {
     /// to contain the data. If the data can't be sent (for example, because it needs to
     /// be buffered but the buffer is full), the socket is closed automatically.
     // https://html.spec.whatwg.org/#the-websocket-interface:dom-websocket-send
-    pub fn send_array_buffer(&self, array_buffer: &ArrayBuffer) -> Result< (), UnimplementedException > {
+    pub fn send_array_buffer(&self, array_buffer: &ArrayBuffer) -> Result< (), TODO > {
         js!( @(no_return) @{self}.send(@{array_buffer}); );
         Ok(())
     }
@@ -263,7 +271,7 @@ impl WebSocket {
     /// to contain the data. If the data can't be sent (for example, because it needs to
     /// be buffered but the buffer is full), the socket is closed automatically.
     // https://html.spec.whatwg.org/#the-websocket-interface:dom-websocket-send
-    pub fn send_bytes(&self, bytes: &[u8]) -> Result< (), UnimplementedException > {
+    pub fn send_bytes(&self, bytes: &[u8]) -> Result< (), TODO > {
         js!( @(no_return) @{self}.send(@{ UnsafeTypedArray(bytes) }); );
         Ok(())
     }

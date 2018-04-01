@@ -9,7 +9,7 @@ use webapi::file::File;
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/FileList)
 // https://w3c.github.io/FileAPI/#dfn-filelist
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "FileList")]
 pub struct FileList( Reference );
 
@@ -18,9 +18,8 @@ impl FileList {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/FileList/length)
     // https://w3c.github.io/FileAPI/#ref-for-dfn-length
-    pub fn len( &self ) -> usize {
-        let length: i32 = js!( return @{self}.length; ).try_into().unwrap();
-        length as usize
+    pub fn len( &self ) -> u32 {
+        js!( return @{self}.length; ).try_into().unwrap()
     }
 
     /// Returns an iterator over the list.

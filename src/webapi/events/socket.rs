@@ -10,16 +10,17 @@ use webapi::event::{IEvent, Event, ConcreteEvent};
 /// A SocketCloseEvent is sent to clients using WebSockets when the connection is closed.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/close)
-#[derive(Clone, Debug, ReferenceType)]
+// https://html.spec.whatwg.org/multipage/web-sockets.html#closeevent
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "CloseEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event))]
 pub struct SocketCloseEvent( Reference );
 
-// https://html.spec.whatwg.org/multipage/web-sockets.html#the-closeevent-interface
 impl SocketCloseEvent {
     /// Returns the close code sent by the server.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code)
+    // https://html.spec.whatwg.org/multipage/web-sockets.html#the-closeevent-interface:dom-closeevent-code
     #[inline]
     pub fn code( &self ) -> SocketCloseCode {
         SocketCloseCode(js!(
@@ -30,6 +31,7 @@ impl SocketCloseEvent {
     /// Returns the reason the server closed the connection. This is specific to the particular server and sub-protocol.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/reason)
+    // https://html.spec.whatwg.org/multipage/web-sockets.html#the-closeevent-interface:dom-closeevent-reason
     #[inline]
     pub fn reason( &self ) -> String {
         js!(
@@ -40,6 +42,7 @@ impl SocketCloseEvent {
     /// Returns whether or not the connection was cleanly closed.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/wasClean)
+    // https://html.spec.whatwg.org/multipage/web-sockets.html#the-closeevent-interface:dom-closeevent-wasclean
     #[inline]
     pub fn was_clean( &self ) -> bool {
         js!(
@@ -57,12 +60,13 @@ impl ConcreteEvent for SocketCloseEvent {
 /// events by this name are used from a variety of APIs.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/error)
-#[derive(Clone, Debug, ReferenceType)]
+// https://html.spec.whatwg.org/#event-error
+// https://html.spec.whatwg.org/multipage/web-sockets.html#handler-websocket-onerror
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Event")] // TODO: Better type check.
 #[reference(subclass_of(Event))]
 pub struct SocketErrorEvent( Reference );
 
-// https://html.spec.whatwg.org/multipage/web-sockets.html#handler-websocket-onerror
 impl IEvent for SocketErrorEvent {}
 impl ConcreteEvent for SocketErrorEvent {
     const EVENT_TYPE: &'static str = "error";
@@ -71,12 +75,13 @@ impl ConcreteEvent for SocketErrorEvent {
 /// An open event informs the target that a data connection, has been established.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/open)
-#[derive(Clone, Debug, ReferenceType)]
+// https://html.spec.whatwg.org/#event-open
+// https://html.spec.whatwg.org/multipage/web-sockets.html#handler-websocket-onopen
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Event")] // TODO: Better type check.
 #[reference(subclass_of(Event))]
 pub struct SocketOpenEvent( Reference );
 
-// https://html.spec.whatwg.org/multipage/web-sockets.html#handler-websocket-onopen
 impl IEvent for SocketOpenEvent {}
 impl ConcreteEvent for SocketOpenEvent {
     const EVENT_TYPE: &'static str = "open";
@@ -135,6 +140,7 @@ impl TryFrom<Value> for SocketMessageData {
 /// The MessageEvent interface represents a message received by a target object.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent)
+// https://html.spec.whatwg.org/multipage/comms.html#messageevent
 pub trait IMessageEvent: IEvent where <Self::Data as TryFrom<Value>>::Error: Debug {
     /// The type of data received with this MessageEvent
     type Data: TryFrom<Value>;
@@ -142,6 +148,7 @@ pub trait IMessageEvent: IEvent where <Self::Data as TryFrom<Value>>::Error: Deb
     /// The data sent by the message emitter.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent/data)
+    // https://html.spec.whatwg.org/multipage/comms.html#the-messageevent-interface:dom-messageevent-data
     #[inline]
     fn data( &self ) -> Self::Data {
         js!(
@@ -152,6 +159,7 @@ pub trait IMessageEvent: IEvent where <Self::Data as TryFrom<Value>>::Error: Deb
     /// A string representing the origin of the message emitter.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent/origin)
+    // https://html.spec.whatwg.org/multipage/comms.html#the-messageevent-interface:dom-messageevent-origin
     #[inline]
     fn origin( &self ) -> String {
         js!(
@@ -162,6 +170,7 @@ pub trait IMessageEvent: IEvent where <Self::Data as TryFrom<Value>>::Error: Deb
     /// A string representing a unique ID for the event.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent/lastEventId)
+    // https://html.spec.whatwg.org/multipage/comms.html#the-messageevent-interface:dom-messageevent-lasteventid
     #[inline]
     fn last_event_id( &self ) -> String {
         js!(
@@ -173,6 +182,7 @@ pub trait IMessageEvent: IEvent where <Self::Data as TryFrom<Value>>::Error: Deb
     /// representing the message emitter.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent/source)
+    // https://html.spec.whatwg.org/multipage/comms.html#the-messageevent-interface:dom-messageevent-source
     #[inline]
     fn source( &self ) -> Option<Reference> {
         js!(
@@ -185,6 +195,7 @@ pub trait IMessageEvent: IEvent where <Self::Data as TryFrom<Value>>::Error: Deb
     /// a message to a shared worker).
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent/ports)
+    // https://html.spec.whatwg.org/multipage/comms.html#the-messageevent-interface:dom-messageevent-ports
     #[inline]
     fn ports( &self ) -> Vec<Reference> {
         js!(
@@ -196,7 +207,8 @@ pub trait IMessageEvent: IEvent where <Self::Data as TryFrom<Value>>::Error: Deb
 /// A message event informs a WebSocket object that a message has been received.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/message)
-#[derive(Clone, Debug, ReferenceType)]
+// https://html.spec.whatwg.org/#event-message
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "MessageEvent")]
 #[reference(subclass_of(Event))]
 pub struct SocketMessageEvent( Reference );

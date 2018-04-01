@@ -1,4 +1,7 @@
 target
 Cargo.lock
-examples/*/target
-examples/*/Cargo.lock
+node_modules
+
+.cache
+examples/hasher-parcel/dist
+*.swp

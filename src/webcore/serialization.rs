@@ -11,9 +11,8 @@ use webcore::callfn::{CallOnce, CallMut};
 use webcore::newtype::Newtype;
 use webcore::try_from::{TryFrom, TryInto};
 use webcore::number::Number;
-use webcore::object::Object;
-use webcore::array::Array;
 use webcore::type_name::type_name;
+use webcore::symbol::Symbol;
 use webcore::unsafe_typed_array::UnsafeTypedArray;
 use webcore::once::Once;
 
@@ -38,10 +37,9 @@ pub enum Tag {
     Object = 8,
     Reference = 9,
     Function = 10,
-    ObjectReference = 11,
-    ArrayReference = 12,
     FunctionOnce = 13,
-    UnsafeTypedArray = 14
+    UnsafeTypedArray = 14,
+    Symbol = 15
 }
 
 impl Default for Tag {
@@ -197,6 +195,12 @@ struct SerializedUntaggedObject {
 
 #[repr(C)]
 #[derive(Debug)]
+struct SerializedUntaggedSymbol {
+    id: i32
+}
+
+#[repr(C)]
+#[derive(Debug)]
 struct SerializedUntaggedReference {
     refid: i32
 }
@@ -215,18 +219,6 @@ struct SerializedUntaggedFunctionOnce {
     adapter_pointer: u32,
     pointer: u32,
     deallocator_pointer: u32
-}
-
-#[repr(C)]
-#[derive(Debug)]
-struct SerializedUntaggedObjectReference {
-    refid: i32
-}
-
-#[repr(C)]
-#[derive(Debug)]
-struct SerializedUntaggedArrayReference {
-    refid: i32
 }
 
 #[repr(C)]
@@ -393,30 +385,17 @@ pub fn deserialize_array< R, F: FnOnce( &mut ArrayDeserializer ) -> R >( referen
     output
 }
 
+impl SerializedUntaggedSymbol {
+    #[inline]
+    fn deserialize( &self ) -> Symbol {
+        Symbol( self.id )
+    }
+}
+
 impl SerializedUntaggedReference {
     #[inline]
     fn deserialize( &self ) -> Reference {
-        unsafe { Reference::from_raw_unchecked( self.refid ) }
-    }
-}
-
-impl SerializedUntaggedObjectReference {
-    #[inline]
-    fn deserialize( &self ) -> Object {
-        unsafe {
-            let reference = Reference::from_raw_unchecked( self.refid );
-            Object( reference )
-        }
-    }
-}
-
-impl SerializedUntaggedArrayReference {
-    #[inline]
-    fn deserialize( &self ) -> Array {
-        unsafe {
-            let reference = Reference::from_raw_unchecked( self.refid );
-            Array( reference )
-        }
+        unsafe { Reference::from_raw_unchecked_noref( self.refid ) }
     }
 }
 
@@ -468,11 +447,10 @@ untagged_boilerplate!( test_false, as_false, Tag::False, SerializedUntaggedFalse
 untagged_boilerplate!( test_object, as_object, Tag::Object, SerializedUntaggedObject );
 untagged_boilerplate!( test_string, as_string, Tag::Str, SerializedUntaggedString );
 untagged_boilerplate!( test_array, as_array, Tag::Array, SerializedUntaggedArray );
+untagged_boilerplate!( test_symbol, as_symbol, Tag::Symbol, SerializedUntaggedSymbol );
 untagged_boilerplate!( test_reference, as_reference, Tag::Reference, SerializedUntaggedReference );
 untagged_boilerplate!( test_function, as_function, Tag::Function, SerializedUntaggedFunction );
 untagged_boilerplate!( test_function_once, as_function_once, Tag::FunctionOnce, SerializedUntaggedFunctionOnce );
-untagged_boilerplate!( test_object_reference, as_object_reference, Tag::ObjectReference, SerializedUntaggedObjectReference );
-untagged_boilerplate!( test_array_reference, as_array_reference, Tag::ArrayReference, SerializedUntaggedArrayReference );
 untagged_boilerplate!( test_unsafe_typed_array, as_unsafe_typed_array, Tag::UnsafeTypedArray, SerializedUntaggedUnsafeTypedArray );
 
 impl< 'a > SerializedValue< 'a > {
@@ -487,9 +465,8 @@ impl< 'a > SerializedValue< 'a > {
             Tag::Str => Value::String( self.as_string().deserialize() ),
             Tag::False => Value::Bool( false ),
             Tag::True => Value::Bool( true ),
-            Tag::ObjectReference => Value::Object( self.as_object_reference().deserialize() ),
-            Tag::ArrayReference => Value::Array( self.as_array_reference().deserialize() ),
             Tag::Reference => self.as_reference().deserialize().into(),
+            Tag::Symbol => self.as_symbol().deserialize().into(),
             Tag::Function |
             Tag::FunctionOnce |
             Tag::Object |
@@ -547,6 +524,24 @@ impl JsSerialize for Null {
 
 __js_serializable_boilerplate!( Null );
 
+impl JsSerialize for Symbol {
+    #[doc(hidden)]
+    #[inline]
+    fn _into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
+        SerializedUntaggedSymbol {
+            id: self.0
+        }.into()
+    }
+
+    #[doc(hidden)]
+    #[inline]
+    fn _memory_required( &self ) -> usize {
+        0
+    }
+}
+
+__js_serializable_boilerplate!( Symbol );
+
 impl JsSerialize for Reference {
     #[doc(hidden)]
     #[inline]
@@ -564,42 +559,6 @@ impl JsSerialize for Reference {
 }
 
 __js_serializable_boilerplate!( Reference );
-
-impl JsSerialize for Object {
-    #[doc(hidden)]
-    #[inline]
-    fn _into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
-        SerializedUntaggedObjectReference {
-            refid: self.as_reference().as_raw()
-        }.into()
-    }
-
-    #[doc(hidden)]
-    #[inline]
-    fn _memory_required( &self ) -> usize {
-        0
-    }
-}
-
-__js_serializable_boilerplate!( Object );
-
-impl JsSerialize for Array {
-    #[doc(hidden)]
-    #[inline]
-    fn _into_js< 'a >( &'a self, _: &'a PreallocatedArena ) -> SerializedValue< 'a > {
-        SerializedUntaggedArrayReference {
-            refid: self.as_reference().as_raw()
-        }.into()
-    }
-
-    #[doc(hidden)]
-    #[inline]
-    fn _memory_required( &self ) -> usize {
-        0
-    }
-}
-
-__js_serializable_boilerplate!( Array );
 
 impl JsSerialize for bool {
     #[doc(hidden)]
@@ -946,9 +905,8 @@ impl JsSerialize for Value {
             Value::Null => SerializedUntaggedNull.into(),
             Value::Bool( ref value ) => value._into_js( arena ),
             Value::Number( ref value ) => value._into_js( arena ),
+            Value::Symbol( ref value ) => value._into_js( arena ),
             Value::String( ref value ) => value._into_js( arena ),
-            Value::Array( ref value ) => value._into_js( arena ),
-            Value::Object( ref value ) => value._into_js( arena ),
             Value::Reference( ref value ) => value._into_js( arena )
         }
     }
@@ -960,9 +918,8 @@ impl JsSerialize for Value {
             Value::Null => Null._memory_required(),
             Value::Bool( value ) => value._memory_required(),
             Value::Number( value ) => value._memory_required(),
+            Value::Symbol( ref value ) => value._memory_required(),
             Value::String( ref value ) => value._memory_required(),
-            Value::Array( ref value ) => value._memory_required(),
-            Value::Object( ref value ) => value._memory_required(),
             Value::Reference( ref value ) => value._memory_required()
         }
     }
@@ -1282,6 +1239,12 @@ mod test_deserialization {
     }
 
     #[test]
+    fn symbol() {
+        let value = js! { return Symbol(); };
+        assert!( value.is_symbol() );
+    }
+
+    #[test]
     fn array() {
         assert_eq!( js! { return [1, 2]; }.is_array(), true );
     }
@@ -1334,10 +1297,7 @@ mod test_deserialization {
             })( 1, 2 );
         };
 
-        assert_eq!( value.is_array(), true );
-
-        let value: Vec< Value > = value.try_into().unwrap();
-        assert_eq!( value, vec![ Value::Number( 1.into() ), Value::Number( 2.into() ) ] );
+        assert_eq!( value.is_array(), false );
     }
 
     #[test]
@@ -1789,6 +1749,7 @@ mod test_serialization {
 #[cfg(test)]
 mod test_reserialization {
     use super::*;
+    use webcore::array::Array;
 
     #[test]
     fn i32() {
@@ -1831,15 +1792,20 @@ mod test_reserialization {
     }
 
     #[test]
+    fn string_with_non_bmp_character() {
+        assert_eq!( js! { return @{"😐"} + ", 😐"; }, Value::String( "😐, 😐".to_string() ) );
+    }
+
+    #[test]
     fn array() {
         let array: Array = vec![ Value::Number( 1.into() ), Value::Number( 2.into() ) ].into();
-        assert_eq!( js! { return @{&array}; }, Value::Array( array ) );
+        assert_eq!( js! { return @{&array}; }.into_reference().unwrap(), *array.as_ref() );
     }
 
     #[test]
     fn array_values_are_not_compared_by_value() {
         let array: Array = vec![ Value::Number( 1.into() ), Value::Number( 2.into() ) ].into();
-        assert_ne!( js! { return @{&[1, 2][..]}; }, Value::Array( array ) );
+        assert_ne!( js! { return @{&[1, 2][..]}; }.into_reference().unwrap(), *array.as_ref() );
     }
 
     #[test]
@@ -1851,6 +1817,30 @@ mod test_reserialization {
 
         let object: Value = object.into();
         assert_eq!( js! { return @{&object} }, object );
+    }
+
+    #[test]
+    fn symbol() {
+        let value_1: Symbol = js! { return Symbol(); }.try_into().unwrap();
+        let value_2: Symbol = js! { return @{&value_1}; }.try_into().unwrap();
+        assert_eq!( value_1, value_2 );
+        assert_eq!( js! { return @{value_1} === @{value_2}; }, true );
+    }
+
+    #[test]
+    fn cloned_symbol() {
+        let value_1: Symbol = js! { return Symbol(); }.try_into().unwrap();
+        let value_2 = value_1.clone();
+        assert_eq!( value_1, value_2 );
+        assert_eq!( js! { return @{value_1} === @{value_2}; }, true );
+    }
+
+    #[test]
+    fn different_symbols() {
+        let value_1: Symbol = js! { return Symbol(); }.try_into().unwrap();
+        let value_2: Symbol = js! { return Symbol(); }.try_into().unwrap();
+        assert_ne!( value_1, value_2 );
+        assert_eq!( js! { return @{value_1} !== @{value_2}; }, true );
     }
 
     #[test]
@@ -1917,7 +1907,7 @@ mod test_reserialization {
         assert_eq!( non_empty, Value::String( "死神はりんごしか食べない!".to_string() ) );
     }
 
-    #[derive(Clone, Debug, ReferenceType)]
+    #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
     #[reference(instance_of = "Error")]
     pub struct Error( Reference );
 

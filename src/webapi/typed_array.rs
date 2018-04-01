@@ -54,7 +54,7 @@ macro_rules! arraykind {
             }
 
             fn from_typed_array( array: &TypedArray< Self > ) -> Vec< Self > {
-                let length = array.len();
+                let length = array.len() as usize;
                 let mut vector = Vec::with_capacity( length );
                 let vec_ptr = (vector.as_ptr() as usize / size_of::<$element_type>()) as i32;
 
@@ -106,7 +106,7 @@ impl< T: ArrayKind > InstanceOf for TypedArray< T > {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays)
 // https://www.ecma-international.org/ecma-262/6.0/#sec-typedarray-objects
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 pub struct TypedArray< T: ArrayKind >( Reference, PhantomData< T > );
 
 impl< T: ArrayKind > TypedArray< T > {
@@ -121,10 +121,9 @@ impl< T: ArrayKind > TypedArray< T > {
     /// Returns the number of elements in the buffer.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray/length)
-    pub fn len( &self ) -> usize {
+    pub fn len( &self ) -> u32 {
         let reference = self.as_ref();
-        let length: i32 = js!( return @{reference}.length; ).try_into().unwrap();
-        length as usize
+        js!( return @{reference}.length; ).try_into().unwrap()
     }
 
     /// Copies `self` into a new `Vec`.

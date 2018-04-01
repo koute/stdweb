@@ -15,7 +15,7 @@
 //! println!( "2 + 2 * 2 = {:?}", result );
 //! ```
 //!
-//! Even closures are supported:
+//! Closures are also supported:
 //!
 //! ```rust
 //! let print_hello = |name: String| {
@@ -51,13 +51,57 @@
 //! This crate also exposes a number of Web APIs, for example:
 //!
 //! ```rust
-//! let button = document().query_selector( "#hide-button" ).unwrap();
+//! let button = document().query_selector( "#hide-button" ).unwrap().unwrap();
 //! button.add_event_listener( move |_: ClickEvent| {
 //!     for anchor in document().query_selector_all( "#main a" ) {
 //!         js!( @{anchor}.style = "display: none;"; );
 //!     }
 //! });
 //! ```
+//!
+//! Exposing Rust functions to JavaScript is supported too:
+//!
+//! ```rust
+//! #[js_export]
+//! fn hash( string: String ) -> String {
+//!     let mut hasher = Sha1::new();
+//!     hasher.update( string.as_bytes() );
+//!     hasher.digest().to_string()
+//! }
+//! ```
+//!
+//! Then you can do this from Node.js:
+//!
+//! ```js
+//! var hasher = require( "hasher.js" ); // Where `hasher.js` is generated from Rust code.
+//! console.log( hasher.hash( "Hello world!" ) );
+//! ```
+//!
+//! Or you can take the same `.js` file and use it in a web browser:
+//!
+//! ```html
+//! <script src="hasher.js"></script>
+//! <script>
+//!     Rust.hasher.then( function( hasher ) {
+//!         console.log( hasher.hash( "Hello world!" ) );
+//!     });
+//! </script>
+//! ```
+//!
+//! If you're using [Parcel] you can also use our [experimental Parcel plugin];
+//! first do this in your existing Parcel project:
+//!
+//!     $ npm install --save parcel-plugin-cargo-web
+//!
+//! And then simply:
+//!
+//! ```js
+//! import hasher from "./hasher/Cargo.toml";
+//! console.log( hasher.hash( "Hello world!" ) );
+//! ```
+//!
+//! [Parcel]: https://parceljs.org/
+//! [experimental Parcel plugin]: https://github.com/koute/parcel-plugin-cargo-web
 
 #![deny(
     missing_docs,
@@ -66,9 +110,6 @@
     unused_import_braces,
     unused_qualifications
 )]
-#![cfg_attr(feature = "dev", allow(unstable_features))]
-#![cfg_attr(feature = "dev", feature(plugin))]
-#![cfg_attr(feature = "dev", plugin(clippy))]
 #![cfg_attr(
     all(target_arch = "wasm32", target_os = "unknown"),
     feature(proc_macro)
@@ -94,8 +135,13 @@ extern crate stdweb_internal_macros;
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 pub use stdweb_internal_macros::js_export;
 
+#[cfg(feature = "futures")]
+extern crate futures;
+
 #[macro_use]
 extern crate stdweb_derive;
+
+extern crate discard;
 
 #[macro_use]
 mod webcore;
@@ -121,12 +167,24 @@ pub use webcore::value::{
 pub use webcore::number::Number;
 pub use webcore::object::Object;
 pub use webcore::array::Array;
+pub use webcore::symbol::Symbol;
 
 pub use webcore::unsafe_typed_array::UnsafeTypedArray;
 pub use webcore::once::Once;
 pub use webcore::instance_of::InstanceOf;
 pub use webcore::reference_type::ReferenceType;
 pub use webcore::serialization::JsSerialize;
+
+pub use webcore::discard::DiscardOnDrop;
+
+#[cfg(feature = "experimental_features_which_may_break_on_minor_version_bumps")]
+pub use webcore::promise::{Promise, DoneHandle};
+
+#[cfg(all(
+    feature = "futures",
+    feature = "experimental_features_which_may_break_on_minor_version_bumps"
+))]
+pub use webcore::promise_future::PromiseFuture;
 
 #[cfg(feature = "serde")]
 /// A module with serde-related APIs.
@@ -158,9 +216,10 @@ pub mod web {
     pub use webapi::node::{INode, Node, CloneKind};
     pub use webapi::element::{IElement, Element};
     pub use webapi::text_node::TextNode;
-    pub use webapi::html_element::{IHtmlElement, HtmlElement};
+    pub use webapi::html_element::{IHtmlElement, HtmlElement, Rect};
     pub use webapi::window_or_worker::IWindowOrWorker;
     pub use webapi::parent_node::IParentNode;
+    pub use webapi::non_element_parent_node::INonElementParentNode;
     pub use webapi::token_list::TokenList;
     pub use webapi::node_list::NodeList;
     pub use webapi::string_map::StringMap;
@@ -170,8 +229,8 @@ pub mod web {
     pub use webapi::typed_array::TypedArray;
     pub use webapi::file_reader::{FileReader, FileReaderResult};
     pub use webapi::history::History;
-    pub use webapi::web_socket::{WebSocket, SocketCloseCode};
-    pub use webapi::rendering_context::{RenderingContext, CanvasRenderingContext2d};
+    pub use webapi::web_socket::{WebSocket, SocketCloseCode, SocketBinaryType, SocketReadyState};
+    pub use webapi::rendering_context::{RenderingContext, CanvasRenderingContext2d, CanvasGradient, CanvasPattern, CanvasStyle, CompositeOperation, FillRule, ImageData, LineCap, LineJoin, Repetition, TextAlign, TextBaseline, TextMetrics};
     pub use webapi::mutation_observer::{MutationObserver, MutationObserverHandle, MutationObserverInit, MutationRecord};
     pub use webapi::xml_http_request::{XmlHttpRequest, XhrReadyState};
     pub use webapi::blob::{IBlob, Blob};
@@ -182,12 +241,18 @@ pub mod web {
             IDomException,
             DomException,
             HierarchyRequestError,
+            IndexSizeError,
             InvalidAccessError,
+            InvalidStateError,
             NotFoundError,
+            NotSupportedError,
             SecurityError,
             SyntaxError,
+            TypeError,
+            InvalidCharacterError
         };
         pub use webapi::error::{IError, Error};
+        pub use webapi::rendering_context::{AddColorStopError, DrawImageError, GetImageDataError};
     }
 
     /// A module containing HTML DOM elements.
@@ -215,8 +280,23 @@ pub mod web {
             MouseDownEvent,
             MouseUpEvent,
             MouseMoveEvent,
-
+            MouseOverEvent,
+            MouseOutEvent,
             MouseButton
+        };
+
+        pub use webapi::events::pointer::{
+            IPointerEvent,
+            PointerOverEvent,
+            PointerEnterEvent,
+            PointerDownEvent,
+            PointerMoveEvent,
+            PointerUpEvent,
+            PointerCancelEvent,
+            PointerOutEvent,
+            PointerLeaveEvent,
+            GotPointerCaptureEvent,
+            LostPointerCaptureEvent,
         };
 
         pub use webapi::events::keyboard::{
@@ -281,6 +361,41 @@ pub mod unstable {
     pub use webcore::void::Void;
 }
 
+/// A module containing reexports of all of our interface traits.
+///
+/// You should **only** import its contents through a wildcard, e.g.: `use stdweb::traits::*`.
+pub mod traits {
+    pub use super::web::{
+        // Real interfaces.
+        IEventTarget,
+        INode,
+        IElement,
+        IHtmlElement,
+        IBlob,
+
+        // Mixins.
+        IWindowOrWorker,
+        IParentNode,
+        INonElementParentNode
+    };
+
+    pub use super::web::error::{
+        IDomException,
+        IError
+    };
+
+    pub use super::web::event::{
+        IEvent,
+        IUiEvent,
+        IMouseEvent,
+        IPointerEvent,
+        IKeyboardEvent,
+        IProgressEvent,
+        IMessageEvent,
+        IFocusEvent
+    };
+}
+
 #[doc(hidden)]
 pub mod private {
     pub use webcore::ffi::exports::*;
@@ -309,7 +424,19 @@ pub mod private {
 
     // TODO: Remove this.
     #[derive(Debug)]
-    pub struct UnimplementedException;
+    pub struct TODO;
+
+    impl ::std::fmt::Display for TODO {
+        fn fmt( &self, _: &mut ::std::fmt::Formatter ) -> Result< (), ::std::fmt::Error > {
+            unreachable!();
+        }
+    }
+
+    impl ::std::error::Error for TODO {
+        fn description( &self ) -> &str {
+            unreachable!();
+        }
+    }
 
     pub use webcore::value::ConversionError;
 }

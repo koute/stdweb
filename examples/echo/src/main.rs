@@ -2,19 +2,15 @@ extern crate stdweb;
 
 use std::rc::Rc;
 
+use stdweb::traits::*;
 use stdweb::unstable::TryInto;
 use stdweb::web::{
-    IEventTarget,
-    INode,
     HtmlElement,
     document,
     WebSocket,
 };
 
 use stdweb::web::event::{
-    IEvent,
-    IKeyboardEvent,
-    IMessageEvent,
     KeyPressEvent,
     SocketOpenEvent,
     SocketCloseEvent,
@@ -37,12 +33,12 @@ macro_rules! enclose {
 fn main() {
     stdweb::initialize();
 
-    let output_div: HtmlElement = document().query_selector( ".output" ).unwrap().try_into().unwrap();
+    let output_div: HtmlElement = document().query_selector( ".output" ).unwrap().unwrap().try_into().unwrap();
     let output_msg = Rc::new(move |msg: &str| {
-        let elem = document().create_element("p");
+        let elem = document().create_element("p").unwrap();
         elem.set_text_content(msg);
         if let Some(child) = output_div.first_child() {
-            output_div.insert_before(&elem, &child);
+            output_div.insert_before(&elem, &child).unwrap();
         } else {
             output_div.append_child(&elem);
         }
@@ -68,15 +64,15 @@ fn main() {
         output_msg(&event.data().into_text().unwrap());
     }));
 
-    let text_entry: InputElement = document().query_selector( ".form input" ).unwrap().try_into().unwrap();
+    let text_entry: InputElement = document().query_selector( ".form input" ).unwrap().unwrap().try_into().unwrap();
     text_entry.add_event_listener( enclose!( (text_entry) move |event: KeyPressEvent| {
         if event.key() == "Enter" {
             event.prevent_default();
 
-            let text: String = text_entry.value().try_into().unwrap();
+            let text: String = text_entry.raw_value();
             if text.is_empty() == false {
-                text_entry.set_value("");
-                ws.send_text(&text);
+                text_entry.set_raw_value("");
+                ws.send_text(&text).unwrap();
             }
         }
     }));

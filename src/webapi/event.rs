@@ -204,7 +204,7 @@ pub trait ConcreteEvent: IEvent {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Event)
 // https://dom.spec.whatwg.org/#event
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Event")]
 pub struct Event( Reference );
 
@@ -243,7 +243,7 @@ pub trait IUiEvent: IEvent {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/UIEvent)
 // https://w3c.github.io/uievents/#uievent
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "UIEvent")]
 #[reference(subclass_of(Event))]
 pub struct UiEvent( Reference );

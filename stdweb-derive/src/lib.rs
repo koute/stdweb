@@ -11,7 +11,7 @@ use syn::DeriveInput;
 fn get_meta_items( attr: &syn::Attribute ) -> Option< Vec< syn::NestedMeta > > {
     if attr.path.segments.len() == 1 && attr.path.segments[0].ident == "reference" {
         match attr.interpret_meta() {
-            Some( syn::Meta::List( ref meta ) ) => Some( meta.nested.iter().cloned().collect() ),
+            Some( syn::Meta::List( meta ) ) => Some( meta.nested.into_iter().collect() ),
             _ => {
                 panic!( "Unrecognized meta item type!" );
             }
@@ -21,8 +21,32 @@ fn get_meta_items( attr: &syn::Attribute ) -> Option< Vec< syn::NestedMeta > > {
     }
 }
 
+/// A derive macro for defining custom reference types.
+///
+/// For example:
+///
+/// ```rust
+/// #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+/// #[reference(instance_of = "Error")]
+/// pub struct Error( Reference );
+///
+/// #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+/// #[reference(instance_of = "TypeError")]
+/// #[reference(subclass_of(Error))]
+/// pub struct TypeError( Reference );
+/// ```
+///
+/// And then you can do:
+///
+/// ```rust
+/// // You can use `try_into` to cast a `Value` to your type.
+/// let error: TypeError = js!( return new TypeError(); ).try_into().unwrap();
+///
+/// // You can also pass your type freely into the `js!` macro:
+/// js!( console.log( @{error} ); );
+/// ```
 #[proc_macro_derive(ReferenceType, attributes(reference))]
-pub fn derive_reference( input: TokenStream ) -> TokenStream {
+pub fn derive_reference_type( input: TokenStream ) -> TokenStream {
     let input: DeriveInput = syn::parse( input ).unwrap();
 
     let name = input.ident;
@@ -60,7 +84,7 @@ pub fn derive_reference( input: TokenStream ) -> TokenStream {
                         }
                     }
                 },
-                syn::NestedMeta::Meta( meta ) => {
+                syn::NestedMeta::Meta( ref meta ) => {
                     panic!( "Unrecognized attribute: '#[reference({})]'", meta.name() );
                 },
                 _ => panic!( "Unrecognized attribute!" )

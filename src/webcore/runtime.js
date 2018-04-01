@@ -82,7 +82,7 @@ Module.STDWEB_PRIVATE.to_js = function to_js( address ) {
             output[ key ] = value;
         }
         return output;
-    } else if( kind === 9 || kind === 11 || kind === 12 ) {
+    } else if( kind === 9 ) {
         return Module.STDWEB_PRIVATE.acquire_js_reference( HEAP32[ address / 4 ] );
     } else if( kind === 10 ) {
         var adapter_pointer = HEAPU32[ address / 4 ];
@@ -166,6 +166,8 @@ Module.STDWEB_PRIVATE.to_js = function to_js( address ) {
             case 7:
                 return HEAPF64.subarray( pointer, pointer_end );
         }
+    } else if( kind === 15 ) {
+        return Module.STDWEB_PRIVATE.get_raw_value( HEAPU32[ address / 4 ] );
     }
 };
 
@@ -231,16 +233,13 @@ Module.STDWEB_PRIVATE.from_js = function from_js( address, value ) {
         HEAPU8[ address + 12 ] = 5;
     } else if( value === true ) {
         HEAPU8[ address + 12 ] = 6;
+    } else if( kind === "[object Symbol]" ) {
+        var id = Module.STDWEB_PRIVATE.register_raw_value( value );
+        HEAPU8[ address + 12 ] = 15;
+        HEAP32[ address / 4 ] = id;
     } else {
         var refid = Module.STDWEB_PRIVATE.acquire_rust_reference( value );
-        var id = 9;
-        if( kind === "[object Object]" ) {
-            id = 11;
-        } else if( kind === "[object Array]" || kind === "[object Arguments]" ) {
-            id = 12;
-        }
-
-        HEAPU8[ address + 12 ] = id;
+        HEAPU8[ address + 12 ] = 9;
         HEAP32[ address / 4 ] = refid;
     }
 };
@@ -277,6 +276,9 @@ Module.STDWEB_PRIVATE.to_js_string = function to_js_string( index, length ) {
                     w = HEAPU8[ index++ ];
                 }
                 ch = (init & 7) << 18 | ((y_z << 6) | (w & 63));
+
+                output += String.fromCharCode( 0xD7C0 + (ch >> 10) );
+                ch = 0xDC00 + (ch & 0x3FF);
             }
         }
         output += String.fromCharCode( ch );
@@ -285,56 +287,68 @@ Module.STDWEB_PRIVATE.to_js_string = function to_js_string( index, length ) {
     return output;
 };
 
-var id_to_ref_map = {};
-var id_to_refcount_map = {};
-var ref_to_id_map = new WeakMap();
-var ref_to_id_symbol_map = {};
-var last_refid = 1;
+Module.STDWEB_PRIVATE.id_to_ref_map = {};
+Module.STDWEB_PRIVATE.id_to_refcount_map = {};
+Module.STDWEB_PRIVATE.ref_to_id_map = new WeakMap();
+Module.STDWEB_PRIVATE.last_refid = 1;
+
+Module.STDWEB_PRIVATE.id_to_raw_value_map = {};
+Module.STDWEB_PRIVATE.last_raw_value_id = 1;
 
 Module.STDWEB_PRIVATE.acquire_rust_reference = function( reference ) {
     if( reference === undefined || reference === null ) {
         return 0;
     }
 
+    var id_to_refcount_map = Module.STDWEB_PRIVATE.id_to_refcount_map;
+    var id_to_ref_map = Module.STDWEB_PRIVATE.id_to_ref_map;
+    var ref_to_id_map = Module.STDWEB_PRIVATE.ref_to_id_map;
+
     var refid = ref_to_id_map.get( reference );
     if( refid === undefined ) {
-        refid = ref_to_id_symbol_map[ reference ];
+        refid = Module.STDWEB_PRIVATE.last_refid++;
+        ref_to_id_map.set( reference, refid );
     }
 
-    if( refid === undefined ) {
-        refid = last_refid++;
-        if( typeof reference === "symbol" ) {
-            ref_to_id_symbol_map[ reference ] = refid;
-        } else {
-            ref_to_id_map.set( reference, refid );
-        }
+    if( refid in id_to_ref_map ) {
+        id_to_refcount_map[ refid ]++;
+    } else {
         id_to_ref_map[ refid ] = reference;
         id_to_refcount_map[ refid ] = 1;
-    } else {
-        id_to_refcount_map[ refid ]++;
     }
 
     return refid;
 };
 
 Module.STDWEB_PRIVATE.acquire_js_reference = function( refid ) {
-    return id_to_ref_map[ refid ];
+    return Module.STDWEB_PRIVATE.id_to_ref_map[ refid ];
 };
 
 Module.STDWEB_PRIVATE.increment_refcount = function( refid ) {
-    id_to_refcount_map[ refid ]++;
+    Module.STDWEB_PRIVATE.id_to_refcount_map[ refid ]++;
 };
 
 Module.STDWEB_PRIVATE.decrement_refcount = function( refid ) {
+    var id_to_refcount_map = Module.STDWEB_PRIVATE.id_to_refcount_map;
+    var id_to_ref_map = Module.STDWEB_PRIVATE.id_to_ref_map;
     id_to_refcount_map[ refid ]--;
     if( id_to_refcount_map[ refid ] === 0 ) {
         var reference = id_to_ref_map[ refid ];
         delete id_to_ref_map[ refid ];
         delete id_to_refcount_map[ refid ];
-        if( typeof reference === "symbol" ) {
-            delete ref_to_id_symbol_map[ reference ];
-        } else {
-            ref_to_id_map.delete( reference );
-        }
     }
+};
+
+Module.STDWEB_PRIVATE.register_raw_value = function( value ) {
+    var id = Module.STDWEB_PRIVATE.last_raw_value_id++;
+    Module.STDWEB_PRIVATE.id_to_raw_value_map[ id ] = value;
+    return id;
+};
+
+Module.STDWEB_PRIVATE.unregister_raw_value = function( id ) {
+    delete Module.STDWEB_PRIVATE.id_to_raw_value_map[ id ];
+};
+
+Module.STDWEB_PRIVATE.get_raw_value = function( id ) {
+    return Module.STDWEB_PRIVATE.id_to_raw_value_map[ id ];
 };

@@ -8,13 +8,9 @@ extern crate serde_json;
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use stdweb::traits::*;
 use stdweb::unstable::TryInto;
 use stdweb::web::{
-    IEventTarget,
-    IElement,
-    IHtmlElement,
-    INode,
-    IParentNode,
     HtmlElement,
     Element,
     document,
@@ -22,8 +18,6 @@ use stdweb::web::{
 };
 
 use stdweb::web::event::{
-    IEvent,
-    IKeyboardEvent,
     DoubleClickEvent,
     ClickEvent,
     KeyPressEvent,
@@ -70,7 +64,7 @@ fn start_editing( state: &StateRef, index: usize, li: &HtmlElement, label: &Html
 
     let edit: InputElement = document().create_element( "input" ).unwrap().try_into().unwrap();
     edit.class_list().add( "edit" ).unwrap();
-    edit.set_value( label.inner_text() );
+    edit.set_raw_value( &label.inner_text() );
     edit.add_event_listener( enclose!( (edit) move |event: KeyPressEvent| {
         if event.key() == "Enter" {
             edit.blur();
@@ -80,7 +74,7 @@ fn start_editing( state: &StateRef, index: usize, li: &HtmlElement, label: &Html
     edit.add_event_listener( enclose!( (state, li, edit) move |_: BlurEvent| {
         li.class_list().remove( "editing" ).unwrap();
         li.remove_child( &edit ).unwrap();
-        state.borrow_mut().todo_list[ index ].title = edit.value().into_string().unwrap();
+        state.borrow_mut().todo_list[ index ].title = edit.raw_value();
         update_dom( &state );
     }));
 
@@ -98,7 +92,7 @@ fn create_entry( state: &StateRef, index: usize, text: &str ) -> HtmlElement {
     div.class_list().add( "view" ).unwrap();
 
     checkbox.class_list().add( "toggle" ).unwrap();
-    checkbox.set_kind( "checkbox" );
+    js! { @{&checkbox}.type = "checkbox"; }
     checkbox.add_event_listener( enclose!( (state, checkbox) move |_: ChangeEvent| {
         let checked: bool = js!( return @{&checkbox}.checked; ).try_into().unwrap();
         state.borrow_mut().todo_list[ index ].completed = checked;
@@ -214,14 +208,14 @@ fn main() {
         if event.key() == "Enter" {
             event.prevent_default();
 
-            let title: String = title_entry.value().try_into().unwrap();
+            let title: String = title_entry.raw_value();
             if title.is_empty() == false {
                 state.borrow_mut().todo_list.push( Todo {
                     title: title,
                     completed: false
                 });
 
-                title_entry.set_value( "" );
+                title_entry.set_raw_value( "" );
                 update_dom( &state );
             }
         }

@@ -3,13 +3,13 @@ use webcore::value::{Reference, Value, ConversionError};
 use webapi::node_list::NodeList;
 use webcore::try_from::{TryFrom, TryInto};
 use webapi::node::{INode, Node};
-use private::UnimplementedException;
+use private::TODO;
 
 /// Provides a way to receive notifications about changes to the DOM.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver)
 // https://dom.spec.whatwg.org/#mutationobserver
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "MutationObserver")]
 pub struct MutationObserver( Reference );
 
@@ -105,7 +105,7 @@ impl MutationObserver {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#observe())
     // https://dom.spec.whatwg.org/#ref-for-dom-mutationobserver-observe
-    pub fn observe< T: INode >( &self, target: &T, options: MutationObserverInit ) -> Result< (), UnimplementedException > {
+    pub fn observe< T: INode >( &self, target: &T, options: MutationObserverInit ) -> Result< (), TODO > {
         let attribute_filter = options.attribute_filter
             .map( |val| val.into() )
             // This must compile to JavaScript `undefined`, NOT `null`
@@ -171,7 +171,7 @@ impl std::ops::Deref for MutationObserverHandle {
     type Target = MutationObserver;
 
     #[inline]
-    fn deref(&self) -> &Self::Target {
+    fn deref( &self ) -> &Self::Target {
         &self.mutation_observer
     }
 }
@@ -239,6 +239,7 @@ pub enum MutationRecord {
     },
 }
 
+// TODO create a MutationRecord Reference and use instanceof to verify it
 impl TryFrom< Value > for MutationRecord {
     type Error = ConversionError;
 

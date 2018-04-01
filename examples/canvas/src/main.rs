@@ -1,18 +1,14 @@
-#[macro_use]
 extern crate stdweb;
 
+use stdweb::traits::*;
 use stdweb::unstable::TryInto;
 use stdweb::web::{
-    IEventTarget,
-    IParentNode,
-    IHtmlElement,
     document,
     window,
     CanvasRenderingContext2d
 };
 
 use stdweb::web::event::{
-    IMouseEvent,
     MouseMoveEvent,
     ResizeEvent,
 };
@@ -44,7 +40,8 @@ fn main() {
     }));
 
     canvas.add_event_listener( enclose!( (context) move |event: MouseMoveEvent| {
-        context.fill_rect(event.client_x() - 5.0, event.client_y() - 5.0, 10.0, 10.0);
+        context.fill_rect(f64::from(event.client_x() - 5), f64::from(event.client_y() - 5)
+                          , 10.0, 10.0);
     }));
 
     stdweb::event_loop();

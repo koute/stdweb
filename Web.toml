@@ -5,4 +5,4 @@ prepend-js = ["src/webcore/runtime.js", "src/webcore/runtime_emscripten.js"]
 prepend-js = ["src/webcore/runtime.js", "src/webcore/runtime_wasm.js"]
 
 [cargo-web]
-minimum-version = "0.6.5"
+minimum-version = "0.6.8"

@@ -3,6 +3,7 @@ use utils::*;
 pub mod exports {
     use stdweb::js_export;
     use stdweb::web::TypedArray;
+    use stdweb::serde::Serde;
 
     #[js_export]
     fn i8_to_i8( value: i8 ) -> i8 { value + 1 }
@@ -70,6 +71,29 @@ pub mod exports {
         let vec: Vec< _ > = array.to_vec().into_iter().map( |value| value + 1 ).collect();
         vec.as_slice().into()
     }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct Structure {
+        field: i32
+    }
+
+    js_serializable!( Structure );
+    js_deserializable!( Structure );
+
+    #[js_export]
+    fn structure_to_structure( structure: Structure ) -> Structure {
+        Structure { field: structure.field + 1 }
+    }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct PlainStructure {
+        field: i32
+    }
+
+    #[js_export]
+    fn serde_structure_to_serde_structure( structure: Serde< PlainStructure > ) -> Serde< PlainStructure > {
+        Serde( PlainStructure { field: structure.0.field + 1 } )
+    }
 }
 
 pub fn run() {
@@ -121,5 +145,15 @@ pub fn run() {
         let array_out = Module.exports.typed_array_to_typed_array( array_in );
         assert.deepEqual( Array.from( array_in ), [ 1, 2, 3 ] );
         assert.deepEqual( Array.from( array_out ), [ 2, 3, 4 ] );
+    }});
+
+    test( "structure_to_structure", || { js! {
+        let output = Module.exports.structure_to_structure( { field: 1 } );
+        assert.deepEqual( output, { field: 2 } );
+    }});
+
+    test( "serde_structure_to_serde_structure", || { js! {
+        let output = Module.exports.serde_structure_to_serde_structure( { field: 1 } );
+        assert.deepEqual( output, { field: 2 } );
     }});
 }

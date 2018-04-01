@@ -7,7 +7,7 @@ use webapi::blob::{IBlob, Blob};
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/File)
 // https://w3c.github.io/FileAPI/#dfn-file
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "File")]
 #[reference(subclass_of(Blob))]
 pub struct File( Reference );

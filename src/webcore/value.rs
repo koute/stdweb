@@ -2,6 +2,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::hash::Hash;
 use std::fmt;
 use std::error;
+use std::mem;
 use webcore::void::Void;
 use webcore::try_from::{TryFrom, TryInto};
 use webcore::number::{self, Number};
@@ -9,6 +10,8 @@ use webcore::object::Object;
 use webcore::array::Array;
 use webcore::serialization::JsSerialize;
 use webcore::reference_type::ReferenceType;
+use webcore::instance_of::InstanceOf;
+use webcore::symbol::Symbol;
 
 /// A unit type representing JavaScript's `undefined`.
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Debug)]
@@ -20,7 +23,7 @@ pub struct Null;
 
 /// A type representing a reference to a JavaScript value.
 #[repr(C)]
-#[derive(PartialEq, Eq, Debug)]
+#[derive(Debug)]
 pub struct Reference( i32 );
 
 impl Reference {
@@ -28,6 +31,12 @@ impl Reference {
     #[inline]
     pub unsafe fn from_raw_unchecked( refid: i32 ) -> Reference {
         __js_raw_asm!( "Module.STDWEB_PRIVATE.increment_refcount( $0 );", refid );
+        Reference( refid )
+    }
+
+    #[doc(hidden)]
+    #[inline]
+    pub(super) unsafe fn from_raw_unchecked_noref( refid: i32 ) -> Reference {
         Reference( refid )
     }
 
@@ -48,6 +57,22 @@ impl Reference {
         }
     }
 }
+
+impl PartialEq for Reference {
+    #[inline]
+    fn eq( &self, other: &Reference ) -> bool {
+        let result = self.0 == other.0;
+
+        debug_assert_eq!( {
+            let real_result: bool = js!( return @{self} === @{other}; ).try_into().unwrap();
+            real_result
+        }, result );
+
+        result
+    }
+}
+
+impl Eq for Reference {}
 
 impl Clone for Reference {
     #[inline]
@@ -135,13 +160,22 @@ pub enum Value {
     Null,
     Bool( bool ),
     Number( Number ),
+    Symbol( Symbol ),
     String( String ),
-    Array( Array ),
-    Object( Object ),
     Reference( Reference )
 }
 
 impl Value {
+    /// Checks whenever the Value is of the Symbol variant.
+    #[inline]
+    pub fn is_symbol( &self ) -> bool {
+        if let Value::Symbol( _ ) = *self {
+            true
+        } else {
+            false
+        }
+    }
+
     /// Checks whenever the Value is of the Reference variant.
     #[inline]
     pub fn is_reference( &self ) -> bool {
@@ -152,21 +186,21 @@ impl Value {
         }
     }
 
-    /// Checks whenever the Value is of the Object variant.
+    /// Checks whenever the Value is a reference to an `Object`.
     #[inline]
     pub fn is_object( &self ) -> bool {
-        if let Value::Object( _ ) = *self {
-            true
+        if let Value::Reference( ref reference ) = *self {
+            Object::instance_of( reference )
         } else {
             false
         }
     }
 
-    /// Checks whenever the Value is of the Array variant.
+    /// Checks whenever the Value is a reference to an `Array`.
     #[inline]
     pub fn is_array( &self ) -> bool {
-        if let Value::Array( _ ) = *self {
-            true
+        if let Value::Reference( ref reference ) = *self {
+            Array::instance_of( reference )
         } else {
             false
         }
@@ -185,7 +219,11 @@ impl Value {
     #[inline]
     pub fn as_object( &self ) -> Option< &Object > {
         match *self {
-            Value::Object( ref object ) => Some( object ),
+            Value::Reference( ref reference ) if Object::instance_of( reference ) => {
+                unsafe {
+                    Some( mem::transmute( reference ) )
+                }
+            },
             _ => None
         }
     }
@@ -194,7 +232,11 @@ impl Value {
     #[inline]
     pub fn as_array( &self ) -> Option< &Array > {
         match *self {
-            Value::Array( ref array ) => Some( array ),
+            Value::Reference( ref reference ) if Array::instance_of( reference ) => {
+                unsafe {
+                    Some( mem::transmute( reference ) )
+                }
+            },
             _ => None
         }
     }
@@ -212,7 +254,7 @@ impl Value {
     #[inline]
     pub fn into_object( self ) -> Option< Object > {
         match self {
-            Value::Object( object ) => Some( object ),
+            Value::Reference( reference ) => reference.try_into().ok(),
             _ => None
         }
     }
@@ -221,7 +263,7 @@ impl Value {
     #[inline]
     pub fn into_array( self ) -> Option< Array > {
         match self {
-            Value::Array( array ) => Some( array ),
+            Value::Reference( reference ) => reference.try_into().ok(),
             _ => None
         }
     }
@@ -408,7 +450,7 @@ impl< 'a, T > From< &'a [T] > for Value where T: JsSerialize {
     #[inline]
     fn from( value: &'a [T] ) -> Self {
         let array: Array = value.into();
-        Value::Array( array )
+        Value::Reference( array.into() )
     }
 }
 
@@ -423,7 +465,7 @@ impl< K, V > From< BTreeMap< K, V > > for Value where K: AsRef< str >, V: JsSeri
     #[inline]
     fn from( value: BTreeMap< K, V > ) -> Self {
         let object: Object = value.into();
-        Value::Object( object )
+        Value::Reference( object.into() )
     }
 }
 
@@ -431,7 +473,7 @@ impl< 'a, K, V > From< &'a BTreeMap< K, V > > for Value where K: AsRef< str >, V
     #[inline]
     fn from( value: &'a BTreeMap< K, V > ) -> Self {
         let object: Object = value.into();
-        Value::Object( object )
+        Value::Reference( object.into() )
     }
 }
 
@@ -439,7 +481,7 @@ impl< 'a, K, V > From< &'a mut BTreeMap< K, V > > for Value where K: AsRef< str 
     #[inline]
     fn from( value: &'a mut BTreeMap< K, V > ) -> Self {
         let object: Object = value.into();
-        Value::Object( object )
+        Value::Reference( object.into() )
     }
 }
 
@@ -447,7 +489,7 @@ impl< K, V > From< HashMap< K, V > > for Value where K: AsRef< str > + Eq + Hash
     #[inline]
     fn from( value: HashMap< K, V > ) -> Self {
         let object: Object = value.into();
-        Value::Object( object )
+        Value::Reference( object.into() )
     }
 }
 
@@ -455,7 +497,7 @@ impl< 'a, K, V > From< &'a HashMap< K, V > > for Value where K: AsRef< str > + E
     #[inline]
     fn from( value: &'a HashMap< K, V > ) -> Self {
         let object: Object = value.into();
-        Value::Object( object )
+        Value::Reference( object.into() )
     }
 }
 
@@ -463,7 +505,7 @@ impl< 'a, K, V > From< &'a mut HashMap< K, V > > for Value where K: AsRef< str >
     #[inline]
     fn from( value: &'a mut HashMap< K, V > ) -> Self {
         let object: Object = value.into();
-        Value::Object( object )
+        Value::Reference( object.into() )
     }
 }
 
@@ -550,6 +592,7 @@ impl_infallible_try_from! {
     impl< 'a, K, V > for &'a HashMap< K, V > => Value where (K: AsRef< str > + Eq + Hash, V: JsSerialize);
     impl< 'a, K, V > for &'a mut HashMap< K, V > => Value where (K: AsRef< str > + Eq + Hash, V: JsSerialize);
 
+    Symbol => Value;
     Reference => Value;
 
     // TODO: Move these to object.rs
@@ -640,6 +683,16 @@ impl PartialEq< Number > for Value {
     fn eq( &self, right: &Number ) -> bool {
         match *self {
             Value::Number( left ) => left == *right,
+            _ => false
+        }
+    }
+}
+
+impl PartialEq< Symbol > for Value {
+    #[inline]
+    fn eq( &self, right: &Symbol ) -> bool {
+        match *self {
+            Value::Symbol( ref left ) => *left == *right,
             _ => false
         }
     }
@@ -753,7 +806,8 @@ impl_partial_eq_boilerplate! {
     bool,
     str,
     String,
-    Number
+    Number,
+    Symbol
 }
 
 /// A structure denoting a conversion error encountered when
@@ -775,9 +829,8 @@ fn value_type_name( value: &Value ) -> &'static str {
         Value::Null => "Null",
         Value::Bool( _ ) => "Bool",
         Value::Number( _ ) => "Number",
+        Value::Symbol( _ ) => "Symbol",
         Value::String( _ ) => "String",
-        Value::Array( _ ) => "Array",
-        Value::Object( _ ) => "Object",
         Value::Reference( _ ) => "Reference"
     }
 }
@@ -854,6 +907,18 @@ impl TryFrom< Value > for Null {
     }
 }
 
+impl TryFrom< Value > for () {
+    type Error = ConversionError;
+
+    #[inline]
+    fn try_from( value: Value ) -> Result< Self, Self::Error > {
+        match value {
+            Value::Null | Value::Undefined => Ok( () ),
+            _ => Err( ConversionError::type_mismatch( &value ) )
+        }
+    }
+}
+
 impl TryFrom< Value > for bool {
     type Error = ConversionError;
 
@@ -895,7 +960,10 @@ impl< E: Into< ConversionError >, V: TryFrom< Value, Error = E > > TryFrom< Valu
     #[inline]
     fn try_from( value: Value ) -> Result< Self, Self::Error > {
         match value {
-            Value::Object( object ) => object.try_into(),
+            Value::Reference( reference ) => {
+                let object: Object = reference.try_into()?;
+                object.try_into()
+            },
             _ => Err( ConversionError::type_mismatch( &value ) )
         }
     }
@@ -907,7 +975,10 @@ impl< E: Into< ConversionError >, V: TryFrom< Value, Error = E > > TryFrom< Valu
     #[inline]
     fn try_from( value: Value ) -> Result< Self, Self::Error > {
         match value {
-            Value::Object( object ) => object.try_into(),
+            Value::Reference( reference ) => {
+                let object: Object = reference.try_into()?;
+                object.try_into()
+            },
             _ => Err( ConversionError::type_mismatch( &value ) )
         }
     }
@@ -919,7 +990,10 @@ impl< E: Into< ConversionError >, T: TryFrom< Value, Error = E > > TryFrom< Valu
     #[inline]
     fn try_from( value: Value ) -> Result< Self, Self::Error > {
         match value {
-            Value::Array( array ) => array.try_into(),
+            Value::Reference( reference ) => {
+                let array: Array = reference.try_into()?;
+                array.try_into()
+            },
             _ => Err( ConversionError::type_mismatch( &value ) )
         }
     }
@@ -932,6 +1006,18 @@ impl TryFrom< Value > for String {
     fn try_from( value: Value ) -> Result< Self, Self::Error > {
         match value {
             Value::String( value ) => Ok( value ),
+            _ => Err( ConversionError::type_mismatch( &value ) )
+        }
+    }
+}
+
+impl TryFrom< Value > for Symbol {
+    type Error = ConversionError;
+
+    #[inline]
+    fn try_from( value: Value ) -> Result< Self, Self::Error > {
+        match value {
+            Value::Symbol( value ) => Ok( value ),
             _ => Err( ConversionError::type_mismatch( &value ) )
         }
     }
@@ -956,6 +1042,18 @@ impl< 'a > TryFrom< &'a Value > for &'a str {
     fn try_from( value: &'a Value ) -> Result< Self, Self::Error > {
         match *value {
             Value::String( ref value ) => Ok( value ),
+            _ => Err( ConversionError::type_mismatch( &value ) )
+        }
+    }
+}
+
+impl< 'a > TryFrom< &'a Value > for &'a Symbol {
+    type Error = ConversionError;
+
+    #[inline]
+    fn try_from( value: &'a Value ) -> Result< Self, Self::Error > {
+        match *value {
+            Value::Symbol( ref value ) => Ok( value ),
             _ => Err( ConversionError::type_mismatch( &value ) )
         }
     }
@@ -1025,6 +1123,7 @@ impl_nullable_try_from_value! {
     impl< V > HashMap< String, V > where (V: TryFrom< Value, Error = ConversionError >);
     impl< T > Vec< T > where (T: TryFrom< Value, Error = ConversionError >);
     String;
+    Symbol;
 }
 
 impl< 'a > TryFrom< &'a Value > for Option< &'a str > {
@@ -1102,16 +1201,16 @@ mod tests {
         assert!( &reference == &value );
     }
 
-    #[derive(Clone, Debug, ReferenceType)]
+    #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
     #[reference(instance_of = "Error")]
     pub struct Error( Reference );
 
-    #[derive(Clone, Debug, ReferenceType)]
+    #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
     #[reference(instance_of = "ReferenceError")]
     #[reference(subclass_of(Error))]
     pub struct ReferenceError( Reference );
 
-    #[derive(Clone, Debug, ReferenceType)]
+    #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
     #[reference(instance_of = "TypeError")]
     #[reference(subclass_of(Error))]
     pub struct TypeError( Reference );
@@ -1185,5 +1284,71 @@ mod tests {
 
         let typed_reference: Result< TypeError, _ > = reference.try_into();
         assert!( typed_reference.is_err() );
+    }
+
+    #[test]
+    fn convert_from_null_or_undefined_to_empty_tuple() {
+        let a: Result< (), _ > = js! { return null; }.try_into();
+        assert!( a.is_ok() );
+
+        let a: Result< (), _ > = js! { return undefined; }.try_into();
+        assert!( a.is_ok() );
+
+        let a: Result< (), _ > = js! { return 1; }.try_into();
+        assert!( a.is_err() );
+    }
+
+    #[test]
+    fn reference_stable() {
+        js! { Module.__test = {}; }
+        let a = js! { return Module.__test; }.as_reference().unwrap().as_raw();
+        let b = js! { return Module.__test; }.as_reference().unwrap().as_raw();
+        assert_eq!(a, b);
+
+        let c = js! { return {}; }.as_reference().unwrap().as_raw();
+        assert_ne!(a, c);
+
+        js! { delete Module.__test; }
+    }
+
+    fn is_known_reference(refid: i32) -> bool {
+        let has_refcount: bool = js! {
+            return @{refid} in Module.STDWEB_PRIVATE.id_to_refcount_map;
+        }.try_into().unwrap();
+
+        let has_ref: bool = js! {
+            return @{refid} in Module.STDWEB_PRIVATE.id_to_ref_map;
+        }.try_into().unwrap();
+
+        assert_eq!(has_refcount, has_ref);
+        has_refcount
+    }
+
+    #[test]
+    fn reference_refcount() {
+        let obj = js! { return new Object(); };
+        let refid = obj.as_reference().unwrap().as_raw();
+        assert!(is_known_reference(refid));
+
+        drop(obj);
+        assert!(!is_known_reference(refid));
+    }
+
+    #[test]
+    fn reference_refcount_clone() {
+        let obj = js! { return new Object(); };
+        let obj2 = obj.clone();
+
+        let refid = obj.as_reference().unwrap().as_raw();
+        let refid2 = obj.as_reference().unwrap().as_raw();
+
+        assert_eq!(refid, refid2);
+        assert!(is_known_reference(refid));
+
+        drop(obj);
+        assert!(is_known_reference(refid));
+
+        drop(obj2);
+        assert!(!is_known_reference(refid));
     }
 }

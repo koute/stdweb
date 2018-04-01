@@ -3,21 +3,11 @@ use webcore::value::{Reference, Value, ConversionError};
 use webcore::serialization::{JsSerialize, deserialize_array};
 
 /// A type representing a JavaScript array.
-#[derive(Clone, PartialEq, Debug)]
-pub struct Array( pub(crate) Reference );
-
-impl From< Array > for Reference {
-    fn from( array: Array ) -> Self {
-        array.0.clone()
-    }
-}
+#[derive(Clone, PartialEq, Eq, Debug, ReferenceType)]
+#[reference(instance_of = "Array")]
+pub struct Array( Reference );
 
 impl Array {
-    #[inline]
-    pub(crate) fn as_reference( &self ) -> &Reference {
-        &self.0
-    }
-
     /// Returns the number of elements in this particular array.
     pub fn len( &self ) -> usize {
         js!(
@@ -77,7 +67,7 @@ impl< 'a, V > From< &'a [V] > for Array where V: JsSerialize {
         };
 
         match value {
-            Value::Array( array ) => return array,
+            Value::Reference( reference ) => Array( reference ),
             _ => unreachable!()
         }
     }
@@ -95,7 +85,7 @@ impl< E: Into< ConversionError >, V: TryFrom< Value, Error = E > > TryFrom< Arra
     type Error = ConversionError;
 
     fn try_from( array: Array ) -> Result< Self, Self::Error > {
-        deserialize_array( array.as_reference(), |deserializer| {
+        deserialize_array( array.as_ref(), |deserializer| {
             let mut output = Vec::with_capacity( deserializer.len() );
             for value in deserializer {
                 let result: Result< _, E > = value.try_into();

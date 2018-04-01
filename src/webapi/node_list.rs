@@ -17,7 +17,7 @@ use webapi::node::Node;
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/NodeList)
 // https://dom.spec.whatwg.org/#nodelist
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "NodeList")]
 pub struct NodeList( Reference );
 
@@ -26,9 +26,18 @@ impl NodeList {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/NodeList/length)
     // https://dom.spec.whatwg.org/#ref-for-dom-nodelist-length
-    pub fn len( &self ) -> usize {
-        let length: i32 = js!( return @{self}.length; ).try_into().unwrap();
-        length as usize
+    pub fn len( &self ) -> u32 {
+        js!( return @{self}.length; ).try_into().unwrap()
+    }
+
+    /// Returns a node from a NodeList by index.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/NodeList/item)
+    // https://dom.spec.whatwg.org/#ref-for-dom-nodelist-item
+    pub fn item( &self, index: u32 ) -> Option< Node > {
+        js!(
+            return @{self}[ @{index} ];
+        ).try_into().unwrap()
     }
 
     /// Returns an iterator over the list.

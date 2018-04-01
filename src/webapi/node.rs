@@ -7,7 +7,7 @@ use webapi::dom_exception::{HierarchyRequestError, NotFoundError};
 use webapi::element::Element;
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node_list::NodeList;
-use private::UnimplementedException;
+use private::TODO;
 
 /// An enum which determines whenever the DOM [Node](trait.INode.html)'s children will also be cloned or not.
 ///
@@ -61,7 +61,7 @@ pub trait INode: IEventTarget {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node/cloneNode)
     // https://dom.spec.whatwg.org/#ref-for-dom-node-clonenode
-    fn clone_node( &self, kind: CloneKind ) -> Result< Self, UnimplementedException > {
+    fn clone_node( &self, kind: CloneKind ) -> Result< Self, TODO > {
         let is_deep = match kind {
             CloneKind::Deep => true,
             CloneKind::Shallow => false
@@ -354,7 +354,7 @@ error_enum_boilerplate! {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Node)
 // https://dom.spec.whatwg.org/#interface-node
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Node")]
 #[reference(subclass_of(EventTarget))]
 pub struct Node( Reference );

@@ -1,4 +1,5 @@
 use webcore::value::Reference;
+use webcore::try_from::TryInto;
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::window_or_worker::IWindowOrWorker;
 use webapi::storage::Storage;
@@ -15,12 +16,12 @@ impl RequestAnimationFrameHandle {
     /// Cancels an animation frame request.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Window/cancelAnimationFrame)
-    pub fn cancel(self) {
-        js!{
-            var val = @{self.0};
+    pub fn cancel( self ) {
+        js! { @(no_return)
+            var val = @{&self.0};
             val.window.cancelAnimationFrame(val.request);
             val.callback.drop();
-        };
+        }
     }
 }
 
@@ -28,7 +29,7 @@ impl RequestAnimationFrameHandle {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Window)
 // https://html.spec.whatwg.org/#window
-#[derive(Clone, Debug, ReferenceType)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Window")]
 #[reference(subclass_of(EventTarget))]
 pub struct Window( Reference );
@@ -142,5 +143,51 @@ impl Window {
                 return @{self}.history;
             ).into_reference_unchecked().unwrap()
         }
+    }
+
+    /// Returns the width (in pixels) of the browser window viewport including, if rendered,
+    /// the vertical scrollbar.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/window/innerWidth)
+    // https://drafts.csswg.org/cssom-view/#ref-for-dom-window-innerwidth
+    pub fn inner_width(&self) -> i32 {
+        js!(
+            return @{self}.innerWidth;
+        ).try_into().unwrap()
+    }
+
+    /// Returns the height (in pixels) of the browser window viewport including, if rendered,
+    /// the horizontal scrollbar.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/window/innerHeight)
+    // https://drafts.csswg.org/cssom-view/#ref-for-dom-window-innerheight
+    pub fn inner_height(&self) -> i32 {
+        js!(
+            return @{self}.innerHeight;
+        ).try_into().unwrap()
+    }
+
+    /// Returns the width of the outside of the browser window. It represents the width
+    /// of the whole browser window including sidebar (if expanded), window chrome
+    /// and window resizing borders/handles.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Window/outerWidth)
+    // https://drafts.csswg.org/cssom-view/#ref-for-dom-window-outerheight
+    pub fn outer_width(&self) -> i32 {
+        js!(
+            return @{self}.outerWidth;
+        ).try_into().unwrap()
+    }
+
+    /// Returns the height of the outside of the browser window. It represents the height
+    /// of the whole browser window including sidebar (if expanded), window chrome
+    /// and window resizing borders/handles.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Window/outerHeight)
+    // https://drafts.csswg.org/cssom-view/#ref-for-dom-window-outerheight
+    pub fn outer_height(&self) -> i32 {
+        js!(
+            return @{self}.outerHeight;
+        ).try_into().unwrap()
     }
 }
