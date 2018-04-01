@@ -10,4 +10,4 @@ serde = "1.0.0"
 serde_derive = "1.0.0"
 
 [build-dependencies]
-webgl_generator = { path = "../../../gl-rs/webgl_generator" }
+webgl_generator = "0.1.0"
