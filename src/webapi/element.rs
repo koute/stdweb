@@ -61,14 +61,14 @@ pub trait IElement: INode + IParentNode {
     }
 
     /// scrollTop
-    fn scroll_top( &self ) -> i32 {
+    fn scroll_top( &self ) -> f64 {
         js!(
             return @{self.as_ref()}.scrollTop;
         ).try_into().unwrap()
     }
 
     /// scrollTop
-    fn set_scroll_top( &self, value: u32 ) {
+    fn set_scroll_top( &self, value: f64 ) {
         js! { @(no_return)
             @{self.as_ref()}.scrollTop = @{value};
         }
