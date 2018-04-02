@@ -54,6 +54,7 @@ pub fn derive_reference_type( input: TokenStream ) -> TokenStream {
 
     let mut instance_of = None;
     let mut subclass_of = Vec::new();
+    let mut constraints = Vec::new();
 
     for meta_items in input.attrs.iter().filter_map( get_meta_items ) {
         for meta in meta_items {
@@ -67,6 +68,18 @@ pub fn derive_reference_type( input: TokenStream ) -> TokenStream {
                         instance_of = Some( str.value() );
                     } else {
                         panic!( "The value of '#[reference(instance_of = ...)]' is not a string!" );
+                    }
+                },
+                syn::NestedMeta::Meta( syn::Meta::NameValue( ref meta ) ) if meta.ident == "constraint" => {
+                    if let syn::Lit::Str( ref str ) = meta.lit {
+                        let val = str.value();
+                        let parts : Vec<&str> = val.splitn(2,"=").collect();
+                        if parts.len() != 2 {
+                            panic!("The value of '#[reference(..., constraint = ...)]' must be in the form of \"js_field=Ident!\"" );
+                        }
+                        constraints.push(( parts[0].to_owned(), parts[1].to_owned()) );
+                    } else {
+                        panic!( "The value of '#[reference(..., constraint = ...)]' is not a string!" );
                     }
                 },
                 syn::NestedMeta::Meta( syn::Meta::List( ref meta ) ) if meta.ident == "subclass_of" => {
@@ -165,14 +178,25 @@ pub fn derive_reference_type( input: TokenStream ) -> TokenStream {
         }
     }
     let default_args = quote! { #(#default_args),* };
+
     let instance_of_impl = match instance_of {
         Some( js_name ) => {
+            let mut js_constraints : Vec<String> = constraints.into_iter().map(|constraint|{
+                let js_field = constraint.0.replace("\"", "\\\"");
+                let js_value = constraint.1.replace("\"", "\\\"");
+                format!("_ref[\"{}\"] === \"{}\"", &js_field, &js_value)
+            }).collect();
+
+            js_constraints.insert( 0, format!("_ref instanceof {}", &js_name) );
+
+            let js_constraints = js_constraints.join(" && ");
+
             quote! {
                 impl #impl_generics ::stdweb::InstanceOf for #name #ty_generics {
                     #[inline]
                     fn instance_of( reference: &::stdweb::Reference ) -> bool {
                         __js_raw_asm!(
-                            concat!( "return (Module.STDWEB_PRIVATE.acquire_js_reference( $0 ) instanceof ", #js_name, ") | 0;" ),
+                            concat!( "var _ref = Module.STDWEB_PRIVATE.acquire_js_reference( $0 ); return ", #js_constraints, " | 0;" ),
                             reference.as_raw()
                         ) == 1
                     }
