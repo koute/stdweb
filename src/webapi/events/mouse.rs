@@ -75,7 +75,7 @@ pub trait IMouseEvent: IUiEvent {
     /// Returns the X position on the target element where this event occured.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/offsetX)
-    // Not in w3c standard
+    // https://drafts.csswg.org/cssom-view/#ref-for-dom-mouseevent-offsetx
     #[inline]
     fn offset_x( &self ) -> i32 {
         js!(
@@ -86,7 +86,7 @@ pub trait IMouseEvent: IUiEvent {
     /// Returns the Y position on the target element where this event occured.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/offsetY)
-    // Not in w3c standard
+    // https://drafts.csswg.org/cssom-view/#ref-for-dom-mouseevent-offsety
     #[inline]
     fn offset_y( &self ) -> i32 {
         js!(
