@@ -192,7 +192,7 @@ impl Window {
     }
 
     /// pageYOffset
-    pub fn page_y_offset(&self) -> i32 {
+    pub fn page_y_offset(&self) -> f64 {
         js!(
             return @{self}.pageYOffset;
         ).try_into().unwrap()
