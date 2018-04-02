@@ -77,7 +77,7 @@ pub trait IMouseEvent: IUiEvent {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/offsetX)
     // https://drafts.csswg.org/cssom-view/#ref-for-dom-mouseevent-offsetx
     #[inline]
-    fn offset_x( &self ) -> i32 {
+    fn offset_x( &self ) -> f64 {
         js!(
             return @{self.as_ref()}.offsetX;
         ).try_into().unwrap()
@@ -88,7 +88,7 @@ pub trait IMouseEvent: IUiEvent {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/offsetY)
     // https://drafts.csswg.org/cssom-view/#ref-for-dom-mouseevent-offsety
     #[inline]
-    fn offset_y( &self ) -> i32 {
+    fn offset_y( &self ) -> f64 {
         js!(
             return @{self.as_ref()}.offsetY;
         ).try_into().unwrap()
