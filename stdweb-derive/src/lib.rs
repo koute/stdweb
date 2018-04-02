@@ -75,7 +75,7 @@ pub fn derive_reference_type( input: TokenStream ) -> TokenStream {
                         let val = str.value();
                         let parts : Vec<&str> = val.splitn(2,"=").collect();
                         if parts.len() != 2 {
-                            panic!("The value of '#[reference(..., constraint = ...)]' must be in the form of \"js_field=Ident!\"" );
+                            panic!("The value of '#[reference(..., constraint = ...)]' must be in the form of \"js_field=value\"" );
                         }
                         constraints.push(( parts[0].to_owned(), parts[1].to_owned()) );
                     } else {
