@@ -191,6 +191,38 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
 
 ## Changelog
 
+   * `0.4.3`
+      * New methods:
+         * `Element::get_bounding_client_rect`
+         * `NodeList::item`
+         * `Document::body`
+         * `Document::head`
+         * `Document::title`
+         * `Document::set_title`
+         * `IMouseEvent::offset_x`
+         * `IMouseEvent::offset_y`
+      * Expose more canvas related types:
+         * `CompositeOperation`
+         * `LineCap`
+         * `LineJoin`
+         * `Repetition`
+         * `TextAlign`
+         * `TextBaseline`
+      * Expose canvas related error types: `AddColorStopError`, `DrawImageError`, `GetImageDataError`
+      * New events:
+         * `MouseOverEvent`
+         * `MouseOutEvent`
+         * `PointerOverEvent`
+         * `PointerEnterEvent`
+         * `PointerDownEvent`
+         * `PointerMoveEvent`
+         * `PointerUpEvent`
+         * `PointerCancelEvent`
+         * `PointerOutEvent`
+         * `PointerLeaveEvent`
+         * `GotPointerCaptureEvent`
+         * `LostPointerCaptureEvent`
+      * New interface for pointer events: `IPointerEvent`
    * `0.4.2`
       * Fixed a leak when deserializing references
       * Fixed `CanvasRenderingContext2d::get_canvas`
