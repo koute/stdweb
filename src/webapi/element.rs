@@ -63,7 +63,7 @@ pub trait IElement: INode + IParentNode {
     /// Gets the the number of pixels that an element's content is scrolled vertically.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTop)
-    // https://www.w3.org/TR/cssom-view-1/#dom-element-scrolltop
+    // https://drafts.csswg.org/cssom-view/#dom-element-scrolltop
     fn scroll_top( &self ) -> f64 {
         js!(
             return @{self.as_ref()}.scrollTop;
@@ -73,7 +73,7 @@ pub trait IElement: INode + IParentNode {
     /// Sets the the number of pixels that an element's content is scrolled vertically.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTop)
-    // https://www.w3.org/TR/cssom-view-1/#dom-element-scrolltop
+    // https://drafts.csswg.org/cssom-view/#dom-element-scrolltop
     fn set_scroll_top( &self, value: f64 ) {
         js! { @(no_return)
             @{self.as_ref()}.scrollTop = @{value};
@@ -83,7 +83,7 @@ pub trait IElement: INode + IParentNode {
     /// Gets the the number of pixels that an element's content is scrolled to the left.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollLeft)
-    // https://www.w3.org/TR/cssom-view-1/#dom-element-scrollleft
+    // https://drafts.csswg.org/cssom-view/#dom-element-scrollleft
     fn scroll_left( &self ) -> f64 {
         js!(
             return @{self.as_ref()}.scrollLeft;
@@ -93,7 +93,7 @@ pub trait IElement: INode + IParentNode {
     /// Sets the the number of pixels that an element's content is scrolled to the left.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollLeft)
-    // https://www.w3.org/TR/cssom-view-1/#dom-element-scrollleft
+    // https://drafts.csswg.org/cssom-view/#dom-element-scrollleft
     fn set_scroll_left( &self, value: f64 ) {
         js! { @(no_return)
             @{self.as_ref()}.scrollLeft = @{value};

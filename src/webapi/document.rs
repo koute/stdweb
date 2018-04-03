@@ -70,7 +70,7 @@ impl Document {
         }
     }
 
-    /// Returns the <body> or <frameset> node of the current document, or null if no such element exists.
+    /// Returns the `<body>` or `<frameset>` node of the current document, or null if no such element exists.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/body)
     // https://html.spec.whatwg.org/#the-document-object:dom-document-body
@@ -82,7 +82,7 @@ impl Document {
         }
     }
 
-    /// Returns the <head> element of the current document. If there are more than one <head>
+    /// Returns the `<head>` element of the current document. If there are more than one `<head>`
     /// elements, the first one is returned.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/head)
@@ -117,12 +117,12 @@ impl Document {
         }
     }
 
-    /// Returns the Element that is the root element of the document (for example, the <html>
+    /// Returns the Element that is the root element of the document (for example, the `<html>`
     /// element for HTML documents).
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/documentElement)
-    // https://www.w3.org/TR/DOM-Level-2-Core/core.html#ID-87CD092
-    pub fn document_element( &self ) -> Option< HtmlElement > {
+    // https://dom.spec.whatwg.org/#ref-for-dom-document-documentelement
+    pub fn document_element( &self ) -> Option< Element > {
         unsafe {
             js!(
                 return @{self}.documentElement;
