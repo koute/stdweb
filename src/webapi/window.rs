@@ -197,4 +197,11 @@ impl Window {
             return @{self}.pageYOffset;
         ).try_into().unwrap()
     }
+
+    /// pageXOffset
+    pub fn page_x_offset(&self) -> f64 {
+        js!(
+            return @{self}.pageXOffset;
+        ).try_into().unwrap()
+    }
 }

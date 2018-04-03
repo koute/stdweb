@@ -74,6 +74,20 @@ pub trait IElement: INode + IParentNode {
         }
     }
 
+    /// scrollLeft
+    fn scroll_left( &self ) -> f64 {
+        js!(
+            return @{self.as_ref()}.scrollLeft;
+        ).try_into().unwrap()
+    }
+
+    /// scrollLeft
+    fn set_scroll_left( &self, value: f64 ) {
+        js! { @(no_return)
+            @{self.as_ref()}.scrollLeft = @{value};
+        }
+    }
+
     /// Element.getAttributeNames() returns the attribute names of the element
     /// as an Array of strings. If the element has no attributes it returns an empty array.
     ///
