@@ -77,8 +77,8 @@ pub enum CompositeOperation {
     DestinationOver,
     /// Keeps existing canvas content where it overlaps with the new shape. Everything outside the overlap is made transparent.
     DestinationIn,
-    // /// The existing content is kept where it doesn't overlap with the new shape. Everything else, including the new shape area, is made transparent.
-    //TODO: DestinationOut,
+    /// The existing content is kept where it doesn't overlap with the new shape. Everything else, including the new shape area, is made transparent.
+    DestinationOut,
     /// Existing content is kept only where it overlaps with the new shape. The new shape is drawn behind the existing content.
     DestinationAtop,
     /// Where both shapes overlap, the new color is determined by adding color values
@@ -466,6 +466,7 @@ impl CanvasRenderingContext2d {
             "source-atop" => CompositeOperation::SourceAtop,
             "destination-over" => CompositeOperation::DestinationOver,
             "destination-in" => CompositeOperation::DestinationIn,
+            "destination-out" => CompositeOperation::DestinationOut,
             "destination-atop" => CompositeOperation::DestinationAtop,
             "lighter" => CompositeOperation::Lighter,
             "copy" => CompositeOperation::Copy,
@@ -503,6 +504,7 @@ impl CanvasRenderingContext2d {
             CompositeOperation::SourceAtop => "source-atop",
             CompositeOperation::DestinationOver => "destination-over",
             CompositeOperation::DestinationIn => "destination-in",
+            CompositeOperation::DestinationOut => "destination-out",
             CompositeOperation::DestinationAtop => "destination-atop",
             CompositeOperation::Lighter => "lighter",
             CompositeOperation::Copy => "copy",
