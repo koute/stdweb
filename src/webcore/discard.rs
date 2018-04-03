@@ -99,6 +99,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(unused_must_use)]
     fn unused_discard_on_drop() {
         DiscardOnDrop::new( Foo::new() );
     }

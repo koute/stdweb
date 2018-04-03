@@ -1290,6 +1290,25 @@ mod test_deserialization {
     }
 
     #[test]
+    fn bad_reference() {
+        assert_eq!( js! {
+            var WeakMapProto = WeakMap.prototype;
+            if (WeakMapProto.BAD_REFERENCE === undefined) {
+                WeakMapProto.BAD_REFERENCE = {};
+                WeakMapProto.oldSet = WeakMapProto.set;
+                WeakMapProto.set = function(key, value) {
+                    if (key === WeakMapProto.BAD_REFERENCE) {
+                        throw new TypeError("BAD_REFERENCE");
+                    } else {
+                        return this.oldSet(key, value);
+                    }
+                };
+            }
+            return WeakMapProto.BAD_REFERENCE;
+        }.is_reference(), true );
+    }
+
+    #[test]
     fn arguments() {
         let value = js! {
             return (function() {
