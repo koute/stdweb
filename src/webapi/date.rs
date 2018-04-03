@@ -613,7 +613,7 @@ mod tests {
         // and there is no easy way to mock the system time, so the only real thing to check
         // is that two dates return the same timezone offset.
         let t1 = Date::from_iso8601("August 19, 1975 23:15:30 GMT+07:00");
-        let t2 = Date::from_iso8601("August 19, 1982 23:15:30 GMT-02:00");
+        let t2 = Date::from_iso8601("August 19, 1975 23:15:30 GMT-02:00");
         assert_eq!(t1.get_timezone_offset(), t2.get_timezone_offset());
     }
 
