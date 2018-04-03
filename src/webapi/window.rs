@@ -191,14 +191,23 @@ impl Window {
         ).try_into().unwrap()
     }
 
-    /// pageYOffset
+    /// he read-only Window property pageYOffset is an alias for scrollY; as such, it returns
+    /// the number of pixels the document is currently scrolled along the vertical axis (that is,
+    /// up or down), with a value of 0.0 indicating that the top edge of the Document is currently
+    /// aligned with the top edge of the window's content area.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Window/pageYOffset)
+    // https://drafts.csswg.org/cssom-view/#dom-window-pageyoffset
     pub fn page_y_offset(&self) -> f64 {
         js!(
             return @{self}.pageYOffset;
         ).try_into().unwrap()
     }
 
-    /// pageXOffset
+    /// This is an alias for scrollX.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Window/pageXOffset)
+    // https://drafts.csswg.org/cssom-view/#dom-window-pagexoffset
     pub fn page_x_offset(&self) -> f64 {
         js!(
             return @{self}.pageXOffset;

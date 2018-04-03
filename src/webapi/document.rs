@@ -117,7 +117,11 @@ impl Document {
         }
     }
 
-    /// documentElement
+    /// Returns the Element that is the root element of the document (for example, the <html>
+    /// element for HTML documents).
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/documentElement)
+    // https://www.w3.org/TR/DOM-Level-2-Core/core.html#ID-87CD092
     pub fn document_element( &self ) -> Option< HtmlElement > {
         unsafe {
             js!(
