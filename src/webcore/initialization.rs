@@ -16,7 +16,7 @@ pub fn initialize() {
         INITIALIZED = true;
     }
 
-    include!( concat!( env!( "OUT_DIR" ), "/runtime.rs" ) );
+    include!( concat!( env!( "OUT_DIR" ), env!( "PATH_SEPARATOR" ), "runtime.rs" ) );
 
     if cfg!( test ) == false {
         panic::set_hook( Box::new( |info| {

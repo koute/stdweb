@@ -15,6 +15,9 @@ fn main() {
     let out_path = Path::new( &out_dir ).join( "runtime.rs" );
     let mut fp = File::create( &out_path ).expect( "cannot create a file in OUT_DIR" );
 
+    let separator = if cfg!( windows ) { "\\" } else { "/" };
+    println!( "cargo:rustc-env=PATH_SEPARATOR={}", separator );
+
     // Since cargo-web will prepend the runtime for us there is nothing we
     // have to do here.
     if let Ok( var ) = env::var( "COMPILING_UNDER_CARGO_WEB" ) {
