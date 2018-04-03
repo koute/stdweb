@@ -50,4 +50,13 @@ impl TokenList {
     pub fn contains( &self, token: &str ) -> bool {
         js!( return @{self}.contains( @{token} ); ).try_into().unwrap()
     }
+
+    /// The toggle() method of the DOMTokenList interface removes a given token from the
+    /// list and returns false. If token doesn't exist it's added and the function returns true.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList/toggle)
+    // https://dom.spec.whatwg.org/#ref-for-dom-domtokenlist-toggle
+    pub fn toggle( &self, token: &str ) -> bool {
+        js!( return @{self}.toggle( @{token} ); ).try_into().unwrap()
+    }
 }
