@@ -197,7 +197,7 @@ impl Window {
     /// aligned with the top edge of the window's content area.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Window/pageYOffset)
-    // https://drafts.csswg.org/cssom-view/#dom-window-pageyoffset
+    // https://drafts.csswg.org/cssom-view/#ref-for-dom-window-pageyoffset
     pub fn page_y_offset(&self) -> f64 {
         js!(
             return @{self}.pageYOffset;
@@ -207,7 +207,7 @@ impl Window {
     /// This is an alias for scrollX.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Window/pageXOffset)
-    // https://drafts.csswg.org/cssom-view/#dom-window-pagexoffset
+    // https://drafts.csswg.org/cssom-view/#ref-for-dom-window-pagexoffset
     pub fn page_x_offset(&self) -> f64 {
         js!(
             return @{self}.pageXOffset;
