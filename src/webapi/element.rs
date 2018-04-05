@@ -60,6 +60,46 @@ pub trait IElement: INode + IParentNode {
         ).unwrap()
     }
 
+    /// Gets the the number of pixels that an element's content is scrolled vertically.
+    ///
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTop)
+    // https://drafts.csswg.org/cssom-view/#ref-for-dom-element-scrolltop%E2%91%A0
+    fn scroll_top( &self ) -> f64 {
+        js!(
+            return @{self.as_ref()}.scrollTop;
+        ).try_into().unwrap()
+    }
+
+    /// Sets the the number of pixels that an element's content is scrolled vertically.
+    ///
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTop)
+    // https://drafts.csswg.org/cssom-view/#ref-for-dom-element-scrolltop%E2%91%A0
+    fn set_scroll_top( &self, value: f64 ) {
+        js! { @(no_return)
+            @{self.as_ref()}.scrollTop = @{value};
+        }
+    }
+
+    /// Gets the the number of pixels that an element's content is scrolled to the left.
+    ///
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollLeft)
+    // https://drafts.csswg.org/cssom-view/#ref-for-dom-element-scrollleft%E2%91%A0
+    fn scroll_left( &self ) -> f64 {
+        js!(
+            return @{self.as_ref()}.scrollLeft;
+        ).try_into().unwrap()
+    }
+
+    /// Sets the the number of pixels that an element's content is scrolled to the left.
+    ///
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollLeft)
+    // https://drafts.csswg.org/cssom-view/#ref-for-dom-element-scrollleft%E2%91%A0
+    fn set_scroll_left( &self, value: f64 ) {
+        js! { @(no_return)
+            @{self.as_ref()}.scrollLeft = @{value};
+        }
+    }
+
     /// Element.getAttributeNames() returns the attribute names of the element
     /// as an Array of strings. If the element has no attributes it returns an empty array.
     ///
