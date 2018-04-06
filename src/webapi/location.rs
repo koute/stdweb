@@ -1,5 +1,4 @@
 use webcore::value::Reference;
-use webcore::value::Value;
 use webcore::try_from::TryInto;
 use webapi::dom_exception::SecurityError;
 
@@ -8,6 +7,10 @@ use webapi::dom_exception::SecurityError;
 /// to. Both the [Document](struct.Document.html) and [Window](struct.Window.html)
 /// interface have such a linked `Location`, accessible via [Document::location](struct.Document.html#method.location)
 /// and [Window::location](struct.Window.html#method.location) respectively.
+///
+/// Note that all `Location` methods can return a `SecurityError` if the `Location` object's
+/// relevant `Document`'s origin is not same origin-domain with the entry settings object's origin.
+/// See: https://html.spec.whatwg.org/#dom-location-href
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Location)
 // https://html.spec.whatwg.org/#location
