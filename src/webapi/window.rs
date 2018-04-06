@@ -191,7 +191,7 @@ impl Window {
         ).try_into().unwrap()
     }
 
-    /// he read-only Window property pageYOffset is an alias for scrollY; as such, it returns
+    /// The read-only Window property pageYOffset is an alias for scrollY; as such, it returns
     /// the number of pixels the document is currently scrolled along the vertical axis (that is,
     /// up or down), with a value of 0.0 indicating that the top edge of the Document is currently
     /// aligned with the top edge of the window's content area.
