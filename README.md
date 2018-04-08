@@ -192,8 +192,14 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
 ## Changelog
 
    * `0.4.3`
+      * Objects which cannot be used as keys in a `WeakMap`
+        should be supported now (e.g. some of the WebGL-related objects under Firefox)
       * New methods:
          * `Element::get_bounding_client_rect`
+         * `Element::scroll_top`
+         * `Element::scroll_left`
+         * `Window::page_x_offset`
+         * `Window::page_y_offset`
          * `NodeList::item`
          * `Document::body`
          * `Document::head`
