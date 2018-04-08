@@ -43,10 +43,19 @@ impl HashChangeEvent {
     }
 }
 
-/// A popstate event is dispatched to the window every time the active history entry changes
+/// A `PopStateEvent` is dispatched to the window every time the active history entry changes
 /// between two history entries for the same document. If the history entry being activated was
-/// created by a call to history.push_state() or was affected by a call to history.replace_state(),
-/// the popstate event's state property contains a copy of the history entry's state object.
+/// created by a call to `history.push_state()` or was affected by a call to
+/// `history.replace_state()`, the `PopStateEvent`'s state property contains a copy of the history
+/// entry's state object.
+///
+/// Note that just calling `history.push_state()` or `history.replace_state()` won't trigger a
+/// `PopStateEvent`. The `PopStateEvent` is only triggered by doing a browser action such as a
+/// clicking on the back button (or calling `history.back()`). And the event is only
+/// triggered when the user navigates between two history entries for the same document.
+///
+/// Browsers tend to handle the `PopStateEvent` differently on page load. Chrome and Safari always
+/// emit a `PopStateEvent` on page load, but Firefox doesn't.
 ///
 /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/PopStateEvent)
 // https://html.spec.whatwg.org/#event-popstate
