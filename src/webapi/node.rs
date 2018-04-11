@@ -1,6 +1,6 @@
 use std::mem;
 
-use webcore::value::Reference;
+use webcore::value::{Reference, ConversionError};
 use webcore::try_from::{TryFrom, TryInto};
 use webapi::document::Document;
 use webapi::dom_exception::{HierarchyRequestError, NotFoundError};
@@ -361,6 +361,16 @@ pub struct Node( Reference );
 
 impl IEventTarget for Node {}
 impl INode for Node {}
+
+impl Node {
+    pub fn from_html(html: &str) -> Result<Node, ConversionError> {
+        Node::try_from(js! {
+            var div = document.createElement("div");
+            div.innerHTML = @{html};
+            return div;
+        })
+    }
+}
 
 /// Determines the type of a `Node`.
 ///
@@ -808,5 +818,22 @@ mod tests {
         let value: Value = 123_i32.into();
         let empty_opt_node: Result< Option< Node >, _ > = value.try_into();
         assert!( empty_opt_node.is_err() );
+    }
+
+    #[test]
+    fn from_html() {
+        let node = Node::from_html("<div>Some text, horray!</div>").unwrap();
+        let inner = node.first_child().unwrap();
+        let text = inner.first_child().unwrap();
+
+        assert_eq!(node.node_name(), "DIV");
+        assert_eq!(node.last_child().unwrap(), inner);
+
+        assert_eq!(inner.node_name(), "DIV");
+        assert_eq!(inner.last_child().unwrap(), text);
+
+        assert_eq!(text.node_name(), "#text");
+        assert_eq!(text.node_value().unwrap(), "Some text, horray!");
+        assert!(text.first_child().is_none());
     }
 }
