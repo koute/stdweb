@@ -363,11 +363,14 @@ impl IEventTarget for Node {}
 impl INode for Node {}
 
 impl Node {
+    /// Attempt to create the `Node` from raw html.
+    ///
+    /// Note that this uses a `span` node as the parent.
     pub fn from_html(html: &str) -> Result<Node, ConversionError> {
         Node::try_from(js! {
-            var div = document.createElement("div");
-            div.innerHTML = @{html};
-            return div;
+            var span = document.createElement("span");
+            span.innerHTML = @{html};
+            return span;
         })
     }
 }
@@ -826,7 +829,7 @@ mod tests {
         let inner = node.first_child().unwrap();
         let text = inner.first_child().unwrap();
 
-        assert_eq!(node.node_name(), "DIV");
+        assert_eq!(node.node_name(), "SPAN");
         assert_eq!(node.last_child().unwrap(), inner);
 
         assert_eq!(inner.node_name(), "DIV");
