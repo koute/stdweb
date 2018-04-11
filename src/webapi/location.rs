@@ -38,7 +38,7 @@ impl Location {
     ///   "blob:https://mozilla.org" will have "https://mozilla.org".
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Location/origin)
-    // https://html.spec.whatwg.org/#dom-location-origin
+    // https://html.spec.whatwg.org/#the-location-interface:dom-location-origin
     pub fn origin( &self ) -> Result< String, SecurityError > {
         js_try!( return @{self}.origin; ).unwrap()
     }
@@ -59,7 +59,7 @@ impl Location {
     /// Example: `hitchhikers.com:4242`
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Location/host)
-    // https://html.spec.whatwg.org/#dom-location-host
+    // https://html.spec.whatwg.org/#the-location-interface:dom-location-host
     pub fn host( &self ) -> Result< String, SecurityError > {
         js_try!( return @{self}.host; ).unwrap()
     }
