@@ -1,5 +1,5 @@
 use webcore::value::Reference;
-use webcore::try_from::TryInto;
+// use webcore::try_from::TryInto;
 use webapi::dom_exception::SecurityError;
 
 /// The `Location` interface represents the location (URL) of the object it
