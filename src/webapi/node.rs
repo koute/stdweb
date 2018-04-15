@@ -5,7 +5,6 @@ use webcore::try_from::{TryFrom, TryInto};
 use webapi::document::Document;
 use webapi::dom_exception::{HierarchyRequestError, NotFoundError};
 use webapi::element::Element;
-// use webapi::document_fragment::DocumentFragment;
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node_list::NodeList;
 use private::TODO;

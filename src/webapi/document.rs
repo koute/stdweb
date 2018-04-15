@@ -35,12 +35,11 @@ pub fn document() -> Document {
 }
 
 impl Document {
-    /// In an HTML document, the Document.createElement() method creates the HTML
-    /// element specified by `tag`, or an HTMLUnknownElement if `tag` isn't
-    /// recognized. In other documents, it creates an element with a null namespace URI.
+    /// In an HTML document, the Document.createDocumentFragment() method creates a
+    /// new empty DocumentFragment.
     ///
-    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement)
-    // https://dom.spec.whatwg.org/#ref-for-dom-document-createelement
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/createDocumentFragment)
+    // https://dom.spec.whatwg.org/#ref-for-dom-document-createdocumentfragment
     pub fn create_document_fragment( &self ) -> Result< DocumentFragment, TODO > {
         unsafe {
             Ok( js!( return @{self}.createDocumentFragment(); ).into_reference_unchecked().unwrap() )
