@@ -190,7 +190,19 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
 [WebAssembly]: https://en.wikipedia.org/wiki/WebAssembly
 
 ## Changelog
-
+   * `0.4.4`
+      * Fix `docs.rs` (hopefully).
+      * New methods:
+         * `Location::origin`
+         * `Location::protocol`
+         * `Location::host`
+         * `Location::hostname`
+         * `Location::port`
+         * `Location::pathname`
+         * `Location::search`
+      * These now return `SecurityError` in the error case:
+         * `Location::hash`
+         * `Location::href`
    * `0.4.3`
       * Objects which cannot be used as keys in a `WeakMap`
         should be supported now (e.g. some of the WebGL-related objects under Firefox)
