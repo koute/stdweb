@@ -16,7 +16,7 @@ pub fn initialize() {
         INITIALIZED = true;
     }
 
-    #[cfg(not(feature = "docs.rs"))]
+    #[cfg(not(feature = "docs-rs"))]
     include!( concat!( env!( "OUT_DIR" ), env!( "PATH_SEPARATOR" ), "runtime.rs" ) );
 
     if cfg!( test ) == false {
