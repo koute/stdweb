@@ -4,6 +4,7 @@ use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
 use webapi::element::Element;
 use webapi::html_element::HtmlElement;
+use webapi::document_fragment::DocumentFragment;
 use webapi::text_node::TextNode;
 use webapi::location::Location;
 use webapi::parent_node::IParentNode;
@@ -34,6 +35,18 @@ pub fn document() -> Document {
 }
 
 impl Document {
+    /// In an HTML document, the Document.createElement() method creates the HTML
+    /// element specified by `tag`, or an HTMLUnknownElement if `tag` isn't
+    /// recognized. In other documents, it creates an element with a null namespace URI.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement)
+    // https://dom.spec.whatwg.org/#ref-for-dom-document-createelement
+    pub fn create_document_fragment( &self ) -> Result< DocumentFragment, TODO > {
+        unsafe {
+            Ok( js!( return @{self}.createDocumentFragment(); ).into_reference_unchecked().unwrap() )
+        }
+    }
+
     /// In an HTML document, the Document.createElement() method creates the HTML
     /// element specified by `tag`, or an HTMLUnknownElement if `tag` isn't
     /// recognized. In other documents, it creates an element with a null namespace URI.

@@ -11,6 +11,7 @@ pub mod html_element;
 pub mod html_elements;
 pub mod window_or_worker;
 pub mod token_list;
+pub mod document_fragment;
 pub mod text_node;
 pub mod node_list;
 pub mod string_map;

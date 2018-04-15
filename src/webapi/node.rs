@@ -5,6 +5,7 @@ use webcore::try_from::{TryFrom, TryInto};
 use webapi::document::Document;
 use webapi::dom_exception::{HierarchyRequestError, NotFoundError};
 use webapi::element::Element;
+// use webapi::document_fragment::DocumentFragment;
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node_list::NodeList;
 use private::TODO;
@@ -340,6 +341,18 @@ pub trait INode: IEventTarget {
         js! { @(no_return)
             @{self.as_ref()}.normalize();
         }
+    }
+
+    /// Element.getAttribute() returns the value of a specified attribute on the element.
+    /// If the given attribute does not exist, the value returned will either be
+    /// null or "" (the empty string);
+    ///
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/getAttribute)
+    // https://dom.spec.whatwg.org/#ref-for-dom-element-getattribute
+    fn get_attribute( &self, name: &str ) -> Option< String > {
+        js!(
+            return @{self.as_ref()}.getAttribute( @{name} );
+        ).try_into().unwrap()
     }
 }
 
