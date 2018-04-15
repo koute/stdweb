@@ -464,6 +464,8 @@ macro_rules! _js_impl {
 ///
 /// # Examples
 ///
+/// ## Regular Usage
+///
 /// ```
 /// let name = "Bob";
 /// let result = js! {
@@ -472,6 +474,20 @@ macro_rules! _js_impl {
 /// };
 ///
 /// println!( "2 + 2 = {:?}", result );
+/// ```
+///
+/// Note: you **must** include the `return ...;` statement to get a value.
+///
+/// ## No Return
+///
+/// If you don't need to return a value from your snippet you can add a @(no_return) attribute to
+/// slightly improve performance.
+///
+/// ```
+/// let name = "Bob";
+/// js! { @(no_return)
+///     console.log( "Hello " + @{name} + "!" );
+/// };
 /// ```
 #[macro_export]
 macro_rules! js {
