@@ -263,9 +263,9 @@ impl Promise {
         } )
     }
 
-    /// This method should rarely be needed, instead use [`value.try_into()`](unstable/trait.TryInto.html) to convert directly from a [`Value`](enum.Value.html) into a [`PromiseFuture`](struct.PromiseFuture.html).
-    ///
     /// This method converts the `Promise` into a [`PromiseFuture`](struct.PromiseFuture.html), so that it can be used as a Rust [`Future`](https://docs.rs/futures/0.2.*/futures/future/trait.Future.html).
+    ///
+    /// This method should rarely be needed, instead use [`value.try_into()`](unstable/trait.TryInto.html) to convert directly from a [`Value`](enum.Value.html) into a [`PromiseFuture`](struct.PromiseFuture.html).
     ///
     /// # Examples
     ///
