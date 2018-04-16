@@ -40,9 +40,9 @@ impl Document {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/createDocumentFragment)
     // https://dom.spec.whatwg.org/#ref-for-dom-document-createdocumentfragment
-    pub fn create_document_fragment( &self ) -> Result< DocumentFragment, TODO > {
+    pub fn create_document_fragment( &self ) -> DocumentFragment {
         unsafe {
-            Ok( js!( return @{self}.createDocumentFragment(); ).into_reference_unchecked().unwrap() )
+            js!( return @{self}.createDocumentFragment(); ).into_reference_unchecked().unwrap()
         }
     }
 

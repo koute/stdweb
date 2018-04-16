@@ -342,17 +342,6 @@ pub trait INode: IEventTarget {
         }
     }
 
-    /// Element.getAttribute() returns the value of a specified attribute on the element.
-    /// If the given attribute does not exist, the value returned will either be
-    /// null or "" (the empty string);
-    ///
-    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/getAttribute)
-    // https://dom.spec.whatwg.org/#ref-for-dom-element-getattribute
-    fn get_attribute( &self, name: &str ) -> Option< String > {
-        js!(
-            return @{self.as_ref()}.getAttribute( @{name} );
-        ).try_into().unwrap()
-    }
 }
 
 /// Errors thrown by `Node` insertion methods.
