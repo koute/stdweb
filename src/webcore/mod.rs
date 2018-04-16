@@ -19,10 +19,10 @@ pub mod reference_type;
 pub mod promise;
 pub mod discard;
 
-#[cfg(feature = "futures")]
+#[cfg(feature = "futures-support")]
 pub mod promise_future;
 
-#[cfg(feature = "futures")]
+#[cfg(feature = "futures-support")]
 pub mod executor;
 
 #[cfg(feature = "nightly")]

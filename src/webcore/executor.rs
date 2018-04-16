@@ -1,18 +1,14 @@
 // This file implements a futures-compatible executor which schedules futures
-// onto the JavaScript event loop. This implementation assumes there is a
-// single thread and is *not* compatible with multiple WebAssembly workers sharing
-// the same address space.
+// onto the JavaScript event loop.
 //
-// TODO: Implement support for multiple threads. This will require a mechanism to
-// wake up another thread, such as the `postMessage` API.
+// TODO: Verify that this works correctly for multiple threads.
 
-use futures::future::{Future, ExecuteError, Executor};
-use futures::executor::{self, Notify, Spawn};
-use futures::Async;
+use futures_core::{Future, Async, Never};
+use futures_core::executor::{Executor, SpawnError};
+use futures_core::task::{LocalMap, Wake, Waker, Context};
+use std::sync::{Arc, Mutex};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::collections::VecDeque;
-use std::result::Result as StdResult;
-use std::cell::{Cell, RefCell};
-use std::rc::Rc;
 use std::cmp;
 use webcore::try_from::TryInto;
 use webcore::value::Reference;
@@ -21,89 +17,107 @@ use webcore::value::Reference;
 // TODO: Determine optimal values for these constants
 // Initial capacity of the event queue
 const INITIAL_QUEUE_CAPACITY: usize = 10;
+
 // Iterations to wait before allowing the queue to shrink
-const QUEUE_SHRINK_DELAY: usize = 25;
+const QUEUE_SHRINK_DELAY: usize = 10;
 
 
-// This functionality should really be in libstd, because the implementation
-// looks stupid.
-unsafe fn clone_raw< T >( ptr: *const T ) -> Rc< T > {
-    let result = Rc::from_raw( ptr );
-    ::std::mem::forget( result.clone() );
-    result
+type BoxedFuture = Box< Future< Item = (), Error = Never > + 'static + Send >;
+
+struct TaskInner {
+    map: LocalMap,
+    future: Option< BoxedFuture >,
 }
 
-// Typing this out is tedious
-type BoxedFuture = Box< Future< Item = (), Error = () > + 'static >;
-
-struct SpawnedTask {
-    is_queued: Cell< bool >,
-    spawn: RefCell< Option< Spawn< BoxedFuture > > >,
+impl ::std::fmt::Debug for TaskInner {
+    fn fmt( &self, fmt: &mut ::std::fmt::Formatter ) -> Result< (), ::std::fmt::Error > {
+        fmt.debug_struct( "TaskInner" )
+            .field( "map", &self.map )
+            .field( "future", &self.future.as_ref().map( |_| "BoxedFuture" ) )
+            .finish()
+    }
 }
 
-impl SpawnedTask {
-    fn new< F >( future: F ) -> Rc< Self >
-        where F: Future< Item = (), Error = () > + 'static {
-        Rc::new( Self {
-            is_queued: Cell::new( false ),
-            spawn: RefCell::new( Some( executor::spawn(
-                Box::new( future ) as BoxedFuture
-            ) ) )
+
+// TODO is it possible to avoid the Mutex ?
+#[derive(Debug)]
+struct Task {
+    is_queued: AtomicBool,
+    inner: Mutex< TaskInner >,
+}
+
+impl Task {
+    fn new( future: BoxedFuture ) -> Arc< Self > {
+        Arc::new( Self {
+            is_queued: AtomicBool::new( false ),
+            inner: Mutex::new( TaskInner {
+                map: LocalMap::new(),
+                future: Some( future ),
+            } ),
         } )
     }
 
-    fn poll( &self ) {
-        let mut spawn = self.spawn.borrow_mut();
+    fn poll( arc: Arc< Self > ) {
+        let mut lock = arc.inner.lock().unwrap();
 
         // Take the future so that if we panic it gets dropped
-        if let Some( mut spawn_future ) = spawn.take() {
-            // Clear `is_queued` flag so that it will re-queue if poll calls task.notify()
-            self.is_queued.set( false );
+        if let Some( mut future ) = lock.future.take() {
+            // Clear `is_queued` flag so that it will re-queue if poll calls waker.wake()
+            arc.is_queued.store( false, Ordering::SeqCst );
 
-            if spawn_future.poll_future_notify( &&EventLoop, self as *const _ as usize ) == Ok( Async::NotReady ) {
+            let poll = {
+                // TODO is there some way of saving these so they don't need to be recreated all the time ?
+                let waker = Waker::from( arc.clone() );
+
+                let mut executor = &EVENT_LOOP;
+
+                let mut cx = Context::new( &mut lock.map, &waker, &mut executor );
+
+                future.poll( &mut cx )
+            };
+
+            if let Ok( Async::Pending ) = poll {
                 // Future was not ready, so put it back
-                *spawn = Some( spawn_future );
+                lock.future = Some( future );
             }
         }
     }
 
-    fn notify( task: Rc< SpawnedTask > ) {
-        // If not already queued
-        if !task.is_queued.replace( true ) {
-            EventLoop.push_task(task);
+    #[inline]
+    fn push_task( event_loop: &EventLoop, arc: Arc< Self > ) {
+        if !arc.is_queued.swap( true, Ordering::SeqCst ) {
+            event_loop.push_task( arc );
         }
     }
 }
 
+impl Wake for Task {
+    #[inline]
+    fn wake( arc: &Arc< Self > ) {
+        // TODO maybe store the executor inside the Task ?
+        Task::push_task( &EVENT_LOOP, arc.clone() );
+    }
+}
+
+
 // A proxy for the JavaScript event loop.
-struct EventLoop;
+#[derive(Debug)]
+struct EventLoop {
+    // This avoids unnecessary allocations and interop overhead
+    // by using a Rust queue of pending tasks.
+    queue: Mutex< VecDeque< Arc< Task > > >,
+    is_draining: AtomicBool,
 
-// There's only one thread, but this lets us tell the compiler that we
-// don't need a `Sync` bound, and also gives us lazy initialization.
-thread_local! {
-    static EVENT_LOOP_INNER: EventLoopInner = EventLoopInner::new();
-}
+    past_sum: AtomicUsize,
+    past_length: AtomicUsize,
+    shrink_counter: AtomicUsize,
 
-impl EventLoop {
-    fn drain(&self) {
-        EVENT_LOOP_INNER.with(EventLoopInner::drain)
-    }
-    fn push_task(&self, task: Rc< SpawnedTask >) {
-        EVENT_LOOP_INNER.with(|inner| inner.push_task(task))
-    }
-}
-
-// State relating to the JavaScript event loop. Only one instance ever exists.
-struct EventLoopInner {
-    // Avoid unnecessary allocation and interop by keeping a local
-    // queue of pending tasks.
-    microtask_queue: RefCell< VecDeque< Rc< SpawnedTask > > >,
+    // TODO is this thread-safe ?
     waker: Reference,
-    shrink_counter: Cell<usize>
 }
 
-// Not strictly necessary, but may become relevant in the future
-impl Drop for EventLoopInner {
+// Not currently necessary, but may become relevant in the future
+impl Drop for EventLoop {
     #[inline]
     fn drop( &mut self ) {
         js! { @(no_return)
@@ -112,16 +126,124 @@ impl Drop for EventLoopInner {
     }
 }
 
-impl EventLoopInner {
-    // Initializes the event loop. Only called once.
-    fn new() -> Self {
-        EventLoopInner {
-            microtask_queue: RefCell::new(VecDeque::with_capacity(INITIAL_QUEUE_CAPACITY)),
+impl EventLoop {
+    // Waits for next microtask tick
+    fn queue_microtask( &self ) {
+        js! { @(no_return) @{&self.waker}(); }
+    }
+
+    // Pushes a task onto the queue
+    fn push_task( &self, task: Arc< Task > ) {
+        let mut queue = self.queue.lock().unwrap();
+
+        queue.push_back( task );
+
+        // If the queue was previously empty, then we need to schedule
+        // the queue to be drained.
+        //
+        // The check for `is_draining` is necessary in the situation where
+        // the `drain` method pops the last task from the queue, but that
+        // task then re-queues another task.
+        if queue.len() == 1 && !self.is_draining.load( Ordering::SeqCst ) {
+            self.queue_microtask();
+        }
+    }
+
+    // See if it's worth trying to reclaim some space from the queue
+    fn estimate_realloc_capacity( &self ) -> Option< usize > {
+        let queue = self.queue.lock().unwrap();
+
+        let cap = queue.capacity();
+
+        self.past_sum.fetch_add( queue.len(), Ordering::SeqCst );
+        self.past_length.fetch_add( 1, Ordering::SeqCst );
+
+        let sum = self.past_sum.load( Ordering::SeqCst );
+        let len = self.past_length.load( Ordering::SeqCst );
+        let average = sum / len;
+
+        // It will resize the queue if the average length is less than a quarter of the
+        // capacity.
+        //
+        // The check for INITIAL_QUEUE_CAPACITY is necessary in the situation
+        // where the queue is at its initial capacity, but the length is very low.
+        if average < cap / 4 && cap >= INITIAL_QUEUE_CAPACITY * 2 {
+            // It only resizes if the above condition is met for QUEUE_SHRINK_DELAY iterations.
+            let shrink_counter = self.shrink_counter.fetch_add( 1, Ordering::SeqCst );
+
+            if shrink_counter >= QUEUE_SHRINK_DELAY {
+                self.shrink_counter.store( 0, Ordering::SeqCst );
+                return Some( cmp::max( average * 2, INITIAL_QUEUE_CAPACITY ) );
+            }
+
+        } else {
+            self.shrink_counter.store( 0, Ordering::SeqCst );
+        }
+
+        None
+    }
+
+    // Poll the queue until it is empty
+    fn drain( &self ) {
+        if !self.is_draining.swap( true, Ordering::SeqCst ) {
+            let maybe_realloc_capacity = self.estimate_realloc_capacity();
+
+            // Poll all the pending tasks
+            loop {
+                let mut queue = self.queue.lock().unwrap();
+
+                match queue.pop_front() {
+                    Some( task ) => {
+                        // This is necessary because the polled task might queue more tasks
+                        drop( queue );
+                        Task::poll( task );
+                    },
+                    None => {
+                        // We decided to reclaim some space
+                        if let Some( realloc_capacity ) = maybe_realloc_capacity {
+                            *queue = VecDeque::with_capacity( realloc_capacity );
+                            // This is necessary because the estimate_realloc_capacity method
+                            // relies upon the behavior of the VecDeque's capacity
+                            assert!( queue.capacity() < realloc_capacity * 2 );
+                        }
+
+                        self.is_draining.store( false, Ordering::SeqCst );
+
+                        break;
+                    },
+                }
+            }
+        }
+    }
+}
+
+lazy_static! {
+    #[derive(Debug)]
+    static ref EVENT_LOOP: EventLoop = {
+        let queue = VecDeque::with_capacity( INITIAL_QUEUE_CAPACITY );
+        // This is necessary because the estimate_realloc_capacity method
+        // relies upon the behavior of the VecDeque's capacity
+        assert!( queue.capacity() < INITIAL_QUEUE_CAPACITY * 2 );
+
+        EventLoop {
+            queue: Mutex::new( queue ),
+            is_draining: AtomicBool::new( false ),
+
+            past_sum: AtomicUsize::new( 0 ),
+            past_length: AtomicUsize::new( 0 ),
+            shrink_counter: AtomicUsize::new( 0 ),
+
             waker: js!(
-                var callback = @{|| EventLoop.drain()};
-                var wrapper = function() {
-                    if (!callback.dropped) { callback() }
-                };
+                var callback = @{|| EVENT_LOOP.drain()};
+
+                var dropped = false;
+
+                function wrapper() {
+                    if ( !dropped ) {
+                        callback();
+                    }
+                }
+
                 var nextTick;
 
                 // Modern browsers can use `MutationObserver` which allows
@@ -133,7 +255,7 @@ impl EventLoopInner {
 
                     new MutationObserver( wrapper ).observe( node, { characterData: true } );
 
-                    nextTick = function() {
+                    nextTick = function () {
                         state = !state;
                         node.data = ( state ? "1" : "0" );
                     };
@@ -142,102 +264,31 @@ impl EventLoopInner {
                 } else {
                     var promise = Promise.resolve( null );
 
-                    nextTick = function() {
+                    nextTick = function () {
                         promise.then( wrapper );
                     };
                 }
 
-                nextTick.drop = function() {
-                    callback.dropped = true;
+                nextTick.drop = function () {
+                    dropped = true;
                     callback.drop();
                 };
 
                 return nextTick;
             ).try_into().unwrap(),
-            shrink_counter: Cell::new(0)
         }
-    }
-    // Pushes a task onto the queue
-    fn push_task(&self, task: Rc< SpawnedTask >) {
-        let mut queue = self.microtask_queue.borrow_mut();
-        queue.push_back(task);
-
-        // If the queue was previously empty, then we need to schedule
-        // the queue to be drained.
-        if queue.len() == 1 {
-            self.wake();
-        }
-    }
-    // Invoke the JavaScript waker function
-    fn wake(&self) {
-        js! { @(no_return) @{&self.waker}(); }
-    }
-    // Remove and return a task from the front of the queue
-    fn pop_task(&self) -> Option< Rc< SpawnedTask > > {
-        self.microtask_queue.borrow_mut().pop_front()
-    }
-    // See if it's worth trying to reclaim some space from the queue
-    fn estimate_realloc_capacity(&self) -> Option<usize> {
-        let queue = self.microtask_queue.borrow();
-        // A VecDeque retains a `2^n-1` capacity
-        let half_cap = queue.capacity()/2;
-        // We consider shrinking the queue if it is less than
-        // half full...
-        if half_cap > queue.len() && half_cap > INITIAL_QUEUE_CAPACITY {
-            // ...and if it's been that way for at least
-            // `QUEUE_SHRINK_DELAY` iterations.
-            let shrink_counter = self.shrink_counter.get();
-            if shrink_counter < QUEUE_SHRINK_DELAY {
-                self.shrink_counter.set(shrink_counter + 1);
-            } else {
-                self.shrink_counter.set(0);
-                return Some(cmp::max(queue.len(), INITIAL_QUEUE_CAPACITY));
-            }
-        } else {
-            self.shrink_counter.set(0);
-        }
-        None
-    }
-    // Poll the queue until it is empty
-    fn drain(&self) {
-        let maybe_realloc_capacity = self.estimate_realloc_capacity();
-
-        // Poll all the pending tasks
-        while let Some(task) = self.pop_task() {
-            task.poll();
-        }
-
-        if let Some(realloc_capacity) = maybe_realloc_capacity {
-            // We decided to reclaim some space
-            *self.microtask_queue.borrow_mut() = VecDeque::with_capacity(realloc_capacity);
-        }
-    }
+    };
 }
 
-impl< F > Executor< F > for EventLoop where
-    F: Future< Item = (), Error = () > + 'static {
-    fn execute( &self, future: F ) -> StdResult< (), ExecuteError< F > > {
-        SpawnedTask::notify( SpawnedTask::new( future ) );
+impl<'a> Executor for &'a EVENT_LOOP {
+    #[inline]
+    fn spawn( &mut self, f: BoxedFuture ) -> Result< (), SpawnError > {
+        Task::push_task( &self, Task::new( f ) );
         Ok( () )
     }
 }
 
-impl Notify for EventLoop {
-    fn notify( &self, spawned_id: usize ) {
-        SpawnedTask::notify( unsafe { clone_raw( spawned_id as *const _ ) } );
-    }
-
-    fn clone_id( &self, id: usize ) -> usize {
-        unsafe { Rc::into_raw( clone_raw( id as *const SpawnedTask ) ) as usize }
-    }
-
-    fn drop_id( &self, id: usize ) {
-        unsafe { Rc::from_raw( id as *const SpawnedTask ) };
-    }
-}
-
 #[inline]
-pub fn spawn< F >( future: F ) where
-    F: Future< Item = (), Error = () > + 'static {
-    EventLoop.execute( future ).unwrap();
+pub fn spawn< F >( future: F ) where F: Future< Item = (), Error = Never > + 'static + Send {
+    (&EVENT_LOOP).spawn( Box::new( future ) ).unwrap();
 }
