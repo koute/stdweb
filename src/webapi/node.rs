@@ -1,9 +1,9 @@
 use std::mem;
 
-use webcore::value::{Reference, ConversionError};
+use webcore::value::{Reference, Value};
 use webcore::try_from::{TryFrom, TryInto};
 use webapi::document::Document;
-use webapi::dom_exception::{HierarchyRequestError, NotFoundError};
+use webapi::dom_exception::{HierarchyRequestError, NotFoundError, SyntaxError};
 use webapi::element::Element;
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node_list::NodeList;
@@ -365,13 +365,52 @@ impl INode for Node {}
 impl Node {
     /// Attempt to create the `Node` from raw html.
     ///
-    /// Note that this uses a `span` node as the parent.
-    pub fn from_html(html: &str) -> Result<Node, ConversionError> {
-        Node::try_from(js! {
+    /// # Panics
+    ///
+    /// This method panics if the resulting number of nodes != 1. To ensure this
+    /// it is recommended to at _least_ have programatic control of your root
+    /// HTML node.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let node = Node::from_html("<div>Some text, horray!</div>").unwrap();
+    /// ```
+    pub fn from_html(html: &str) -> Result<Node, SyntaxError> {
+        let result = js! {
             var span = document.createElement("span");
-            span.innerHTML = @{html};
-            return span;
-        })
+            try {
+                span.innerHTML = @{html};
+            } catch( error ) {
+                return {
+                    error: error,
+                    success: false,
+                };
+            }
+
+            if( span.childNodes.length != 1 ) {
+                return {
+                    panic: "HTML had ${span.childNodes.length} nodes but must have 1",
+                    success: false,
+                };
+            }
+            return span.childNodes[0];
+        };
+
+
+        if let Value::Bool(false) = js!{ return @{&result}.success; } {
+            if let Value::String(e) = js! { return @{&result}.panic; } {
+                panic!(e);
+            };
+
+            let err = SyntaxError::try_from(result)
+                .expect("was error but not syntax error");
+            return Err(err);
+        }
+
+        let node = Node::try_from(result)
+            .expect("inner type was not a node.");
+        Ok(node)
     }
 }
 
@@ -826,17 +865,19 @@ mod tests {
     #[test]
     fn from_html() {
         let node = Node::from_html("<div>Some text, horray!</div>").unwrap();
-        let inner = node.first_child().unwrap();
-        let text = inner.first_child().unwrap();
+        let text = node.first_child().unwrap();
 
-        assert_eq!(node.node_name(), "SPAN");
-        assert_eq!(node.last_child().unwrap(), inner);
-
-        assert_eq!(inner.node_name(), "DIV");
-        assert_eq!(inner.last_child().unwrap(), text);
+        assert_eq!(node.node_name(), "DIV");
+        assert_eq!(node.last_child().unwrap(), text);
 
         assert_eq!(text.node_name(), "#text");
         assert_eq!(text.node_value().unwrap(), "Some text, horray!");
         assert!(text.first_child().is_none());
+    }
+
+    #[test]
+    #[should_panic]
+    fn from_html_panic() {
+        let _ = Node::from_html("<div>foo</div><div>bar</div>");
     }
 }
