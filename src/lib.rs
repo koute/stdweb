@@ -215,6 +215,7 @@ pub mod web {
     pub use webapi::window::RequestAnimationFrameHandle;
     pub use webapi::node::{INode, Node, CloneKind};
     pub use webapi::element::{IElement, Element};
+    pub use webapi::document_fragment::DocumentFragment;
     pub use webapi::text_node::TextNode;
     pub use webapi::html_element::{IHtmlElement, HtmlElement, Rect};
     pub use webapi::window_or_worker::IWindowOrWorker;
