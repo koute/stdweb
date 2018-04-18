@@ -213,7 +213,7 @@ pub mod web {
     pub use webapi::date::Date;
     pub use webapi::event_target::{IEventTarget, EventTarget, EventListenerHandle};
     pub use webapi::window::RequestAnimationFrameHandle;
-    pub use webapi::node::{INode, Node, CloneKind};
+    pub use webapi::node::{INode, Node, CloneKind, NodeType};
     pub use webapi::element::{IElement, Element};
     pub use webapi::document_fragment::DocumentFragment;
     pub use webapi::text_node::TextNode;
