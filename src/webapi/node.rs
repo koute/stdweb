@@ -377,40 +377,30 @@ impl Node {
     /// let node = Node::from_html("<div>Some text, horray!</div>").unwrap();
     /// ```
     pub fn from_html(html: &str) -> Result<Node, SyntaxError> {
-        let result = js! {
-            var span = document.createElement("span");
-            try {
-                span.innerHTML = @{html};
-            } catch( error ) {
-                return {
-                    error: error,
-                    success: false,
-                };
-            }
+        let result: Result<Value, Value> = js_try!(
+            var xmldoc = document.implementation.createDocument(null, null);
+            var span = xmldoc.createElement("span");
+            span.innerHTML = @{html};
 
             if( span.childNodes.length != 1 ) {
-                return {
-                    panic: "HTML had ${span.childNodes.length} nodes but must have 1",
-                    success: false,
-                };
+                throw SyntaxError("HTML had ${span.childNodes.length} nodes but must have 1");
             }
             return span.childNodes[0];
-        };
+            return "foo";
+        ).unwrap();
 
-
-        if let Value::Bool(false) = js!{ return @{&result}.success; } {
-            if let Value::String(e) = js! { return @{&result}.panic; } {
-                panic!(e);
-            };
-
-            let err = SyntaxError::try_from(result)
-                .expect("was error but not syntax error");
-            return Err(err);
+        match result {
+            Ok(v) => {
+                let node = Node::try_from(v)
+                    .expect("inner type was not a node.");
+                Ok(node)
+            }
+            Err(e) =>  {
+                let err = SyntaxError::try_from(e)
+                    .expect("was error but not syntax error");
+                Err(err)
+            }
         }
-
-        let node = Node::try_from(result)
-            .expect("inner type was not a node.");
-        Ok(node)
     }
 }
 
@@ -873,11 +863,8 @@ mod tests {
         assert_eq!(text.node_name(), "#text");
         assert_eq!(text.node_value().unwrap(), "Some text, horray!");
         assert!(text.first_child().is_none());
-    }
 
-    #[test]
-    #[should_panic]
-    fn from_html_panic() {
-        let _ = Node::from_html("<div>foo</div><div>bar</div>");
+        assert!(Node::from_html("<div>foo</div><div>bar</div>").is_err());
+        assert!(Node::from_html("<di").is_err());
     }
 }
