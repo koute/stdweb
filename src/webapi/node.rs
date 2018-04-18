@@ -857,7 +857,7 @@ mod tests {
         let node = Node::from_html("<div>Some text, horray!</div>").unwrap();
         let text = node.first_child().unwrap();
 
-        assert_eq!(node.node_name(), "DIV");
+        assert_eq!(node.node_name(), "div");
         assert_eq!(node.last_child().unwrap(), text);
 
         assert_eq!(text.node_name(), "#text");
