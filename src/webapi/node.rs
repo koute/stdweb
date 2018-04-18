@@ -341,7 +341,6 @@ pub trait INode: IEventTarget {
             @{self.as_ref()}.normalize();
         }
     }
-
 }
 
 /// Errors thrown by `Node` insertion methods.
