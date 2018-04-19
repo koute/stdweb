@@ -66,6 +66,8 @@ impl Task {
 
     fn poll( arc: Arc< Self > ) {
         let mut lock = arc.inner.borrow_mut();
+
+        // This is needed in order to borrow disjoint struct fields
         let lock = &mut *lock;
 
         // Take the future so that if we panic it gets dropped
@@ -117,6 +119,7 @@ struct EventLoopInner {
     // This avoids unnecessary allocations and interop overhead
     // by using a Rust queue of pending tasks.
     queue: VecDeque< Arc< Task > >,
+    // TODO handle overflow
     past_sum: usize,
     past_length: usize,
     shrink_counter: usize,
