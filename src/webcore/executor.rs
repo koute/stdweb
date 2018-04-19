@@ -85,6 +85,11 @@ impl Task {
             if let Ok( Async::Pending ) = poll {
                 // Future was not ready, so put it back
                 lock.future = Some( future );
+
+                // It was woken up during the poll, so we requeue it
+                if arc.is_queued.get() {
+                    lock.executor.0.push_task( arc.clone() );
+                }
             }
         }
     }
@@ -92,7 +97,9 @@ impl Task {
     #[inline]
     fn push_task( arc: &Arc< Self > ) {
         if !arc.is_queued.replace( true ) {
-            arc.inner.borrow().executor.0.push_task( arc.clone() );
+            if let Ok( lock ) = arc.inner.try_borrow() {
+                lock.executor.0.push_task( arc.clone() );
+            }
         }
     }
 }
