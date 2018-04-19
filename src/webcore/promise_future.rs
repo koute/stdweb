@@ -5,7 +5,7 @@ use webapi::error;
 use futures_core::{Future, Poll, Async, Never};
 use futures_core::task::Context;
 use futures_channel::oneshot::Receiver;
-use webcore::executor::spawn;
+use webcore::executor::spawn_local;
 use webcore::discard::DiscardOnDrop;
 use super::promise::{Promise, DoneHandle};
 
@@ -26,9 +26,9 @@ pub struct PromiseFuture< Value, Error = error::Error > {
     pub(crate) _done_handle: DiscardOnDrop< DoneHandle >,
 }
 
-impl PromiseFuture< (), () > {
-    /// Asynchronously runs the [`Future`](https://docs.rs/futures/0.2.*/futures/future/trait.Future.html) and then immediately returns.
-    /// This does *not* block the current thread.
+impl PromiseFuture< (), Never > {
+    /// Asynchronously runs the [`Future`](https://docs.rs/futures/0.2.*/futures/future/trait.Future.html) on the current thread
+    /// and then immediately returns. This does *not* block the current thread.
     ///
     /// This function is normally called once in `main`, it is usually not needed to call it multiple times.
     ///
@@ -49,7 +49,7 @@ impl PromiseFuture< (), () > {
     ///
     /// ```rust
     /// fn main() {
-    ///     PromiseFuture::spawn(
+    ///     PromiseFuture::spawn_local(
     ///         create_some_future()
     ///             .map_err(|e| console!(error, e))
     ///     );
@@ -60,7 +60,7 @@ impl PromiseFuture< (), () > {
     ///
     /// ```rust
     /// fn main() {
-    ///     PromiseFuture::spawn(
+    ///     PromiseFuture::spawn_local(
     ///         create_some_future()
     ///             .inspect(|x| println!("Future finished: {:#?}", x))
     ///             .map_err(|e| console!(error, e))
@@ -72,16 +72,16 @@ impl PromiseFuture< (), () > {
     ///
     /// ```rust
     /// fn main() {
-    ///     PromiseFuture::spawn(
+    ///     PromiseFuture::spawn_local(
     ///         create_some_future()
     ///             .map_err(|e| handle_error_somehow(e))
     ///     );
     /// }
     /// ```
     #[inline]
-    pub fn spawn< B >( future: B ) where
-        B: Future< Item = (), Error = Never > + 'static + Send {
-        spawn( future );
+    pub fn spawn_local< B >( future: B ) where
+        B: Future< Item = (), Error = Never > + 'static {
+        spawn_local( future );
     }
 }
 

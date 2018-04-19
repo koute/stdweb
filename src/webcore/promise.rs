@@ -132,7 +132,7 @@ impl Promise {
     #[cfg(feature = "futures-support")]
     pub fn from_future< A >( future: A ) -> Self
         where A: IntoFuture,
-              A::Future: Send + 'static,
+              A::Future: 'static,
               A::Item: JsSerialize,
               A::Error: JsSerialize {
 
@@ -144,7 +144,7 @@ impl Promise {
         }
 
         let callback = move |success: Reference, error: Reference| {
-            PromiseFuture::spawn(
+            PromiseFuture::spawn_local(
                 future.then( move |result| {
                     match result {
                         Ok( a ) => call( success, a ),

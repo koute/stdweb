@@ -144,10 +144,6 @@ extern crate futures_util;
 #[cfg(feature = "futures-support")]
 extern crate futures_channel;
 
-#[cfg(feature = "futures-support")]
-#[macro_use]
-extern crate lazy_static;
-
 #[macro_use]
 extern crate stdweb_derive;
 
