@@ -92,7 +92,7 @@ impl Task {
     #[inline]
     fn push_task( arc: &Arc< Self > ) {
         if !arc.is_queued.replace( true ) {
-            arc.inner.borrow().executor.push_task( arc.clone() );
+            arc.inner.borrow().executor.0.push_task( arc.clone() );
         }
     }
 }
@@ -116,12 +116,12 @@ struct EventLoopInner {
 }
 
 #[derive(Debug)]
-struct EventLoop {
+struct EventLoopQueue {
     inner: RefCell< EventLoopInner >,
     is_draining: Cell< bool >,
 }
 
-impl EventLoop {
+impl EventLoopQueue {
     // See if it's worth trying to reclaim some space from the queue
     fn estimate_realloc_capacity( &self ) -> Option< ( usize, usize ) > {
         let mut inner = self.inner.borrow_mut();
@@ -196,15 +196,14 @@ impl EventLoop {
 
 
 // A proxy for the JavaScript event loop.
-#[derive(Debug, Clone)]
-struct EventLoopExecutor {
-    event_loop: Rc< EventLoop >,
+#[derive(Debug)]
+struct EventLoop {
+    queue: Rc< EventLoopQueue >,
     // TODO is this thread-safe ?
-    // TODO faster implementation of Clone ?
     waker: Reference,
 }
 
-impl EventLoopExecutor {
+impl EventLoop {
     // Waits for next microtask tick
     fn queue_microtask( &self ) {
         js! { @(no_return) @{&self.waker}(); }
@@ -212,7 +211,7 @@ impl EventLoopExecutor {
 
     // Pushes a task onto the queue
     fn push_task( &self, task: Arc< Task > ) {
-        let mut inner = self.event_loop.inner.borrow_mut();
+        let mut inner = self.queue.inner.borrow_mut();
 
         inner.queue.push_back( task );
 
@@ -222,19 +221,15 @@ impl EventLoopExecutor {
         // The check for `is_draining` is necessary in the situation where
         // the `drain` method pops the last task from the queue, but that
         // task then re-queues another task.
-        if inner.queue.len() == 1 && !self.event_loop.is_draining.get() {
+        if inner.queue.len() == 1 && !self.queue.is_draining.get() {
             self.queue_microtask();
         }
-    }
-
-    #[inline]
-    fn spawn_local( &self, future: BoxedFuture ) {
-        self.push_task( Task::new( self.clone(), future ) );
     }
 }
 
 // Not currently necessary, but may become relevant in the future
-impl Drop for EventLoopExecutor {
+// TODO what about when the thread is killed, is this guaranteed to be called ?
+impl Drop for EventLoop {
     #[inline]
     fn drop( &mut self ) {
         js! { @(no_return)
@@ -243,23 +238,18 @@ impl Drop for EventLoopExecutor {
     }
 }
 
-impl Executor for EventLoopExecutor {
-    #[inline]
-    fn spawn( &mut self, f: Box< Future< Item = (), Error = Never > + Send + 'static > ) -> Result< (), SpawnError > {
-        self.spawn_local( f );
-        Ok( () )
-    }
-}
 
+#[derive(Debug, Clone)]
+struct EventLoopExecutor( Rc< EventLoop > );
 
-thread_local! {
-    static EVENT_LOOP: EventLoopExecutor = {
+impl EventLoopExecutor {
+    fn new() -> Self {
         let queue = VecDeque::with_capacity( INITIAL_QUEUE_CAPACITY );
         // This is necessary because the estimate_realloc_capacity method
         // relies upon the behavior of the VecDeque's capacity
         assert!( queue.capacity() < INITIAL_QUEUE_CAPACITY * 2 );
 
-        let event_loop = Rc::new( EventLoop {
+        let queue = Rc::new( EventLoopQueue {
             inner: RefCell::new( EventLoopInner {
                 queue: queue,
                 past_sum: 0,
@@ -271,10 +261,10 @@ thread_local! {
         } );
 
         let waker = {
-            let event_loop = event_loop.clone();
+            let queue = queue.clone();
 
             js!(
-                var callback = @{move || event_loop.drain()};
+                var callback = @{move || queue.drain()};
 
                 var dropped = false;
 
@@ -318,8 +308,26 @@ thread_local! {
             ).try_into().unwrap()
         };
 
-        EventLoopExecutor { event_loop, waker }
-    };
+        EventLoopExecutor( Rc::new( EventLoop { queue, waker } ) )
+    }
+
+    #[inline]
+    fn spawn_local( &self, future: BoxedFuture ) {
+        self.0.push_task( Task::new( self.clone(), future ) );
+    }
+}
+
+impl Executor for EventLoopExecutor {
+    #[inline]
+    fn spawn( &mut self, f: Box< Future< Item = (), Error = Never > + Send + 'static > ) -> Result< (), SpawnError > {
+        self.spawn_local( f );
+        Ok( () )
+    }
+}
+
+
+thread_local! {
+    static EVENT_LOOP: EventLoopExecutor = EventLoopExecutor::new();
 }
 
 #[inline]
