@@ -7,6 +7,7 @@ use futures_core::task::Context;
 use futures_channel::oneshot::Receiver;
 use webcore::executor::spawn_local;
 use webcore::discard::DiscardOnDrop;
+use webcore::serialization::JsSerialize;
 use super::promise::{Promise, DoneHandle};
 
 
@@ -41,7 +42,7 @@ impl PromiseFuture< (), Never > {
     /// to use a [`FutureExt`](https://docs.rs/futures/0.2.*/futures/future/trait.FutureExt.html) method, such as
     /// [`map_err`](https://docs.rs/futures/0.2.*/futures/future/trait.FutureExt.html#method.map_err).
     ///
-    /// It is very common to want to print the errors to the console. You can do that by using `.map_err(|e| console!(error, e))`
+    /// It is very common to want to print the errors to the console. You can do that by using `.map_err(PromiseFuture::print_error)`
     ///
     /// # Examples
     ///
@@ -51,7 +52,7 @@ impl PromiseFuture< (), Never > {
     /// fn main() {
     ///     PromiseFuture::spawn_local(
     ///         create_some_future()
-    ///             .map_err(|e| console!(error, e))
+    ///             .map_err(PromiseFuture::print_error)
     ///     );
     /// }
     /// ```
@@ -63,7 +64,7 @@ impl PromiseFuture< (), Never > {
     ///     PromiseFuture::spawn_local(
     ///         create_some_future()
     ///             .inspect(|x| println!("Future finished: {:#?}", x))
-    ///             .map_err(|e| console!(error, e))
+    ///             .map_err(PromiseFuture::print_error)
     ///     );
     /// }
     /// ```
@@ -82,6 +83,17 @@ impl PromiseFuture< (), Never > {
     pub fn spawn_local< B >( future: B ) where
         B: Future< Item = (), Error = Never > + 'static {
         spawn_local( future );
+    }
+
+    /// This is used to print an error to the console.
+    ///
+    /// See the documentation for [`spawn_local`](#method.spawn_local) for more details.
+    #[inline]
+    pub fn print_error< A: JsSerialize >( value: A ) -> Never {
+        js! { @(no_return)
+            console.error( @{value} );
+        }
+        panic!();
     }
 }
 
