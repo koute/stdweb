@@ -85,9 +85,12 @@ impl PromiseFuture< (), Never > {
         spawn_local( future );
     }
 
-    /// This is used to print an error to the console.
+    /// Prints an error to the console and then panics.
     ///
     /// See the documentation for [`spawn_local`](#method.spawn_local) for more details.
+    ///
+    /// # Panics
+    /// This function *always* panics.
     #[inline]
     pub fn print_error< A: JsSerialize >( value: A ) -> Never {
         js! { @(no_return)
