@@ -381,7 +381,10 @@ impl Node {
             var span = document.createElement("span");
             span.innerHTML = @{html};
             if( span.childNodes.length != 1 ) {
-                throw SyntaxError("HTML had ${span.childNodes.length} nodes but must have 1");
+                throw SyntaxError(
+                    "Node::from_html requires a single root node but has: "
+                    + toString(span.childNodes.length)
+                );
             }
             return span.childNodes[0];
         ).unwrap();
