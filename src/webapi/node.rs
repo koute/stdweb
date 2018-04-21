@@ -378,15 +378,12 @@ impl Node {
     /// ```
     pub fn from_html(html: &str) -> Result<Node, SyntaxError> {
         let result: Result<Value, Value> = js_try!(
-            var xmldoc = document.implementation.createDocument(null, null);
-            var span = xmldoc.createElement("span");
+            var span = document.createElement("span");
             span.innerHTML = @{html};
-
             if( span.childNodes.length != 1 ) {
                 throw SyntaxError("HTML had ${span.childNodes.length} nodes but must have 1");
             }
             return span.childNodes[0];
-            return "foo";
         ).unwrap();
 
         match result {
@@ -857,7 +854,7 @@ mod tests {
         let node = Node::from_html("<div>Some text, horray!</div>").unwrap();
         let text = node.first_child().unwrap();
 
-        assert_eq!(node.node_name(), "div");
+        assert_eq!(node.node_name(), "DIV");
         assert_eq!(node.last_child().unwrap(), text);
 
         assert_eq!(text.node_name(), "#text");
@@ -865,6 +862,6 @@ mod tests {
         assert!(text.first_child().is_none());
 
         assert!(Node::from_html("<div>foo</div><div>bar</div>").is_err());
-        assert!(Node::from_html("<di").is_err());
+        assert!(Node::from_html("<di").is_ok()); // interpreted as just text
     }
 }
