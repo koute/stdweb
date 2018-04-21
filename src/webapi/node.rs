@@ -363,19 +363,22 @@ impl IEventTarget for Node {}
 impl INode for Node {}
 
 impl Node {
-    /// Attempt to create the `Node` from raw html.
+    /// Attempt to create the `Node` from raw html. The html string must contain **exactly one**
+    /// root node.
     ///
-    /// # Panics
+    /// Returns a `SyntaxError` if:
     ///
-    /// This method panics if the resulting number of nodes != 1. To ensure this
-    /// it is recommended to at _least_ have programatic control of your root
-    /// HTML node.
+    /// - There is not **exactly one** root node.
+    /// - The html syntax is wrong. However, on most browsers the html parsing algorighm is
+    ///   _unbelievably_ forgiving and will just turn your html into text or maybe even an empty
+    ///   string.
     ///
-    /// # Examples
+    /// It is recommended to have control over the html being given to this function as not
+    /// having control is a security concern.
     ///
-    /// ```
-    /// let node = Node::from_html("<div>Some text, horray!</div>").unwrap();
-    /// ```
+    /// For more details, see information about setting `innerHTML`:
+    ///
+    /// <https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML>
     pub fn from_html(html: &str) -> Result<Node, SyntaxError> {
         js_try!(
             var span = document.createElement("span");
