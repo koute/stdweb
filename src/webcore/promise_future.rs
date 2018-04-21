@@ -57,13 +57,15 @@ impl PromiseFuture< (), Never > {
     /// }
     /// ```
     ///
-    /// Inspect the output value of the future:
+    /// Use the output value of the future:
     ///
     /// ```rust
     /// fn main() {
     ///     PromiseFuture::spawn_local(
     ///         create_some_future()
-    ///             .inspect(|x| println!("Future finished: {:#?}", x))
+    ///             .map(|x| {
+    ///                 println!("Future finished with value: {:#?}", x);
+    ///             })
     ///             .map_err(PromiseFuture::print_error)
     ///     );
     /// }
