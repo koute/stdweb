@@ -166,6 +166,16 @@ pub enum Value {
 }
 
 impl Value {
+    /// Checks whenever the Value is of the Null variant.
+    #[inline]
+    pub fn is_null( &self ) -> bool {
+        if let Value::Null = *self {
+            true
+        } else {
+            false
+        }
+    }
+
     /// Checks whenever the Value is of the Symbol variant.
     #[inline]
     pub fn is_symbol( &self ) -> bool {

@@ -1,6 +1,6 @@
 use std::mem;
 
-use webcore::value::{Reference, Value};
+use webcore::value::Reference;
 use webcore::try_from::{TryFrom, TryInto};
 use webapi::document::Document;
 use webapi::dom_exception::{HierarchyRequestError, NotFoundError, SyntaxError};
@@ -377,30 +377,17 @@ impl Node {
     /// let node = Node::from_html("<div>Some text, horray!</div>").unwrap();
     /// ```
     pub fn from_html(html: &str) -> Result<Node, SyntaxError> {
-        let result: Result<Value, Value> = js_try!(
+        js_try!(
             var span = document.createElement("span");
             span.innerHTML = @{html};
             if( span.childNodes.length != 1 ) {
-                throw SyntaxError(
+                throw new DOMException(
                     "Node::from_html requires a single root node but has: "
-                    + toString(span.childNodes.length)
-                );
+                    + span.childNodes.length,
+                    "SyntaxError");
             }
             return span.childNodes[0];
-        ).unwrap();
-
-        match result {
-            Ok(v) => {
-                let node = Node::try_from(v)
-                    .expect("inner type was not a node.");
-                Ok(node)
-            }
-            Err(e) =>  {
-                let err = SyntaxError::try_from(e)
-                    .expect("was error but not syntax error");
-                Err(err)
-            }
-        }
+        ).unwrap()
     }
 }
 
@@ -864,7 +851,8 @@ mod tests {
         assert_eq!(text.node_value().unwrap(), "Some text, horray!");
         assert!(text.first_child().is_none());
 
-        assert!(Node::from_html("<div>foo</div><div>bar</div>").is_err());
-        assert!(Node::from_html("<di").is_ok()); // interpreted as just text
+        let err = Node::from_html("<div>foo</div><div>bar</div>").unwrap_err();
+        assert!(format!("{}", err).contains("requires a single root node"));
+        assert!(Node::from_html("<di").is_err());
     }
 }
