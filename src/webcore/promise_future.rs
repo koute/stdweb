@@ -42,7 +42,7 @@ impl PromiseFuture< (), Never > {
     /// to use a [`FutureExt`](https://docs.rs/futures/0.2.*/futures/future/trait.FutureExt.html) method, such as
     /// [`map_err`](https://docs.rs/futures/0.2.*/futures/future/trait.FutureExt.html#method.map_err).
     ///
-    /// It is very common to want to print the errors to the console. You can do that by using `.map_err(PromiseFuture::print_error)`
+    /// It is very common to want to print the errors to the console. You can do that by using `.map_err(PromiseFuture::print_error_panic)`
     ///
     /// # Examples
     ///
@@ -52,7 +52,7 @@ impl PromiseFuture< (), Never > {
     /// fn main() {
     ///     PromiseFuture::spawn_local(
     ///         create_some_future()
-    ///             .map_err(PromiseFuture::print_error)
+    ///             .map_err(PromiseFuture::print_error_panic)
     ///     );
     /// }
     /// ```
@@ -66,7 +66,7 @@ impl PromiseFuture< (), Never > {
     ///             .map(|x| {
     ///                 println!("Future finished with value: {:#?}", x);
     ///             })
-    ///             .map_err(PromiseFuture::print_error)
+    ///             .map_err(PromiseFuture::print_error_panic)
     ///     );
     /// }
     /// ```
@@ -94,7 +94,7 @@ impl PromiseFuture< (), Never > {
     /// # Panics
     /// This function *always* panics.
     #[inline]
-    pub fn print_error< A: JsSerialize >( value: A ) -> Never {
+    pub fn print_error_panic< A: JsSerialize >( value: A ) -> Never {
         js! { @(no_return)
             console.error( @{value} );
         }
