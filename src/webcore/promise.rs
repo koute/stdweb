@@ -5,16 +5,19 @@ use webcore::value::{Value, Reference};
 use webcore::try_from::{TryInto, TryFrom};
 use webcore::discard::DiscardOnDrop;
 
-#[cfg(feature = "futures")]
+#[cfg(feature = "futures-support")]
 use webcore::serialization::JsSerialize;
 
-#[cfg(feature = "futures")]
-use futures::unsync::oneshot::channel;
+#[cfg(feature = "futures-support")]
+use futures_channel::oneshot::channel;
 
-#[cfg(feature = "futures")]
-use futures::future::Future;
+#[cfg(feature = "futures-support")]
+use futures_core::IntoFuture;
 
-#[cfg(feature = "futures")]
+#[cfg(feature = "futures-support")]
+use futures_util::FutureExt;
+
+#[cfg(feature = "futures-support")]
 use super::promise_future::PromiseFuture;
 
 
@@ -103,7 +106,7 @@ impl Promise {
     /// If you simply want to use a JavaScript Promise inside Rust, then you
     /// don't need to use this function: you should use
     /// [`PromiseFuture`](struct.PromiseFuture.html) and the
-    /// [`Future`](https://docs.rs/futures/0.1.*/futures/future/trait.Future.html)
+    /// [`FutureExt`](https://docs.rs/futures/0.2.*/futures/future/trait.FutureExt.html)
     /// methods instead.
     ///
     /// # Examples
@@ -126,11 +129,14 @@ impl Promise {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise#Syntax)
     // https://www.ecma-international.org/ecma-262/6.0/#sec-promise-executor
-    #[cfg(feature = "futures")]
+    #[cfg(feature = "futures-support")]
     pub fn from_future< A >( future: A ) -> Self
-        where A: Future + 'static,
+        where A: IntoFuture,
+              A::Future: 'static,
               A::Item: JsSerialize,
               A::Error: JsSerialize {
+
+        let future = future.into_future();
 
         #[inline]
         fn call< A: JsSerialize >( f: Reference, value: A ) {
@@ -138,7 +144,7 @@ impl Promise {
         }
 
         let callback = move |success: Reference, error: Reference| {
-            PromiseFuture::spawn(
+            PromiseFuture::spawn_local(
                 future.then( move |result| {
                     match result {
                         Ok( a ) => call( success, a ),
@@ -257,9 +263,9 @@ impl Promise {
         } )
     }
 
-    /// This method should rarely be needed, instead use [`value.try_into()`](unstable/trait.TryInto.html) to convert directly from a [`Value`](enum.Value.html) into a [`PromiseFuture`](struct.PromiseFuture.html).
+    /// This method converts the `Promise` into a [`PromiseFuture`](struct.PromiseFuture.html), so that it can be used as a Rust [`Future`](https://docs.rs/futures/0.2.*/futures/future/trait.Future.html).
     ///
-    /// This method converts the `Promise` into a [`PromiseFuture`](struct.PromiseFuture.html), so that it can be used as a Rust [`Future`](https://docs.rs/futures/0.1.*/futures/future/trait.Future.html).
+    /// This method should rarely be needed, instead use [`value.try_into()`](unstable/trait.TryInto.html) to convert directly from a [`Value`](enum.Value.html) into a [`PromiseFuture`](struct.PromiseFuture.html).
     ///
     /// # Examples
     ///
@@ -268,7 +274,7 @@ impl Promise {
     /// ```
     // We can't use the IntoFuture trait because Promise doesn't have a type argument
     // TODO explain more why we can't use the IntoFuture trait
-    #[cfg(feature = "futures")]
+    #[cfg(feature = "futures-support")]
     pub fn to_future< A, B >( &self ) -> PromiseFuture< A, B >
          where A: TryFrom< Value > + 'static,
                B: TryFrom< Value > + 'static,
