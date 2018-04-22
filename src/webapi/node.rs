@@ -3,7 +3,7 @@ use std::mem;
 use webcore::value::Reference;
 use webcore::try_from::{TryFrom, TryInto};
 use webapi::document::Document;
-use webapi::dom_exception::{HierarchyRequestError, NotFoundError};
+use webapi::dom_exception::{HierarchyRequestError, NotFoundError, SyntaxError};
 use webapi::element::Element;
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node_list::NodeList;
@@ -361,6 +361,38 @@ pub struct Node( Reference );
 
 impl IEventTarget for Node {}
 impl INode for Node {}
+
+impl Node {
+    /// Attempt to create the `Node` from raw html. The html string must contain **exactly one**
+    /// root node.
+    ///
+    /// Returns a `SyntaxError` if:
+    ///
+    /// - There is not **exactly one** root node.
+    /// - The html syntax is wrong. However, on most browsers the html parsing algorighm is
+    ///   _unbelievably_ forgiving and will just turn your html into text or maybe even an empty
+    ///   string.
+    ///
+    /// It is recommended to have control over the html being given to this function as not
+    /// having control is a security concern.
+    ///
+    /// For more details, see information about setting `innerHTML`:
+    ///
+    /// <https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML>
+    pub fn from_html(html: &str) -> Result<Node, SyntaxError> {
+        js_try!(
+            var span = document.createElement("span");
+            span.innerHTML = @{html};
+            if( span.childNodes.length != 1 ) {
+                throw new DOMException(
+                    "Node::from_html requires a single root node but has: "
+                    + span.childNodes.length,
+                    "SyntaxError");
+            }
+            return span.childNodes[0];
+        ).unwrap()
+    }
+}
 
 /// Determines the type of a `Node`.
 ///
@@ -808,5 +840,22 @@ mod tests {
         let value: Value = 123_i32.into();
         let empty_opt_node: Result< Option< Node >, _ > = value.try_into();
         assert!( empty_opt_node.is_err() );
+    }
+
+    #[test]
+    fn from_html() {
+        let node = Node::from_html("<div>Some text, horray!</div>").unwrap();
+        let text = node.first_child().unwrap();
+
+        assert_eq!(node.node_name(), "DIV");
+        assert_eq!(node.last_child().unwrap(), text);
+
+        assert_eq!(text.node_name(), "#text");
+        assert_eq!(text.node_value().unwrap(), "Some text, horray!");
+        assert!(text.first_child().is_none());
+
+        let err = Node::from_html("<div>foo</div><div>bar</div>").unwrap_err();
+        assert!(format!("{}", err).contains("requires a single root node"));
+        assert!(Node::from_html("<di").is_err());
     }
 }
