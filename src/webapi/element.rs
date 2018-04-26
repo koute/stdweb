@@ -172,7 +172,7 @@ pub trait IElement: INode + IParentNode {
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Element")]
 #[reference(subclass_of(EventTarget, Node))]
-pub struct Element( pub(crate) Reference );
+pub struct Element( Reference );
 
 impl IEventTarget for Element {}
 impl INode for Element {}

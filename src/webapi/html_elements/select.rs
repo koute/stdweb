@@ -6,7 +6,6 @@ use webcore::try_from::TryInto;
 use webcore::value::Reference;
 use webapi::html_collection::HtmlCollection;
 use webapi::html_elements::OptionElement;
-use webcore::reference_type::ReferenceType;
 
 /// The HTML <select> element represents a control that provides a menu of options.
 ///
@@ -90,7 +89,7 @@ impl SelectElement {
     pub fn selected_values(&self) -> Vec<String> {
         self.selected_options()
             .iter().map(|e|{
-                let e = unsafe { OptionElement::from_reference_unchecked( e.0 ) };
+                let e: OptionElement = e.try_into().unwrap();
                 e.value()
             }).collect::<Vec<String>>()
     }
@@ -99,7 +98,7 @@ impl SelectElement {
     pub fn selected_indices(&self) -> Vec<i32> {
         self.selected_options()
             .iter().map(|e|{
-                let e = unsafe { OptionElement::from_reference_unchecked( e.0 ) };
+                let e: OptionElement = e.try_into().unwrap();
                 e.index()
             }).collect::<Vec<i32>>()
     }
