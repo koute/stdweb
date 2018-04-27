@@ -1,5 +1,4 @@
-use webcore::value::{Value, Reference};
-use webcore::reference_type::ReferenceType;
+use webcore::value::Reference;
 use webcore::try_from::TryInto;
 use webapi::element::Element;
 
@@ -20,7 +19,7 @@ impl HtmlCollection {
     /// Returns the number of elements in the collection.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCollection)
-    // https://dom.spec.whatwg.org/#dom-htmlcollection-length
+    // https://dom.spec.whatwg.org/#ref-for-dom-htmlcollection-length
     pub fn len( &self ) -> u32 {
         js!( return @{self}.length; ).try_into().unwrap()
     }
@@ -28,10 +27,10 @@ impl HtmlCollection {
     /// Returns an element from an HtmlCollection by index.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCollection/item)
-    // https://dom.spec.whatwg.org/#dom-htmlcollection-item
+    // https://dom.spec.whatwg.org/#ref-for-dom-htmlcollection-item
     pub fn item( &self, index: u32 ) -> Option< Element > {
         js!(
-            return @{self}[ @{index} ];
+            return @{self}.item(@{index});
         ).try_into().unwrap()
     }
 
@@ -74,23 +73,14 @@ impl< 'a > IntoIterator for &'a HtmlCollection {
 #[derive(Debug)]
 pub struct ElementIter {
     list: HtmlCollection,
-    index: i32
+    index: u32
 }
 
 impl Iterator for ElementIter {
     type Item = Element;
     fn next( &mut self ) -> Option< Self::Item > {
-        let value = js!(
-            return @{&self.list}[ @{self.index} ];
-        );
-
-        let element = match value {
-            Value::Undefined => return None,
-            Value::Reference( reference ) => unsafe { Element::from_reference_unchecked( reference ) },
-            _ => unreachable!()
-        };
-
+        let item = self.list.item(self.index);
         self.index += 1;
-        Some( element )
+        item
     }
 }
