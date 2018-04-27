@@ -241,6 +241,7 @@ pub mod web {
     pub use webapi::mutation_observer::{MutationObserver, MutationObserverHandle, MutationObserverInit, MutationRecord};
     pub use webapi::xml_http_request::{XmlHttpRequest, XhrReadyState};
     pub use webapi::blob::{IBlob, Blob};
+    pub use webapi::html_collection::HtmlCollection;
 
     /// A module containing error types.
     pub mod error {
