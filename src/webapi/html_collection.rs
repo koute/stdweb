@@ -2,11 +2,11 @@ use webcore::value::Reference;
 use webcore::try_from::TryInto;
 use webapi::element::Element;
 
-/// The HTMLCollection interface represents a generic collection
+/// The `HtmlCollection` interface represents a generic collection
 /// (array-like object similar to arguments) of elements (in document order)
 /// and offers methods and properties for selecting from the list.
 /// 
-/// An HTMLCollection in the HTML DOM is live; it is automatically
+/// An `HtmlCollection` in the HTML DOM is live; it is automatically
 /// updated when the underlying document is changed.
 /// 
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCollection)
@@ -24,7 +24,7 @@ impl HtmlCollection {
         js!( return @{self}.length; ).try_into().unwrap()
     }
 
-    /// Returns an element from an HtmlCollection by index.
+    /// Returns an element from an `HtmlCollection` by index.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCollection/item)
     // https://dom.spec.whatwg.org/#ref-for-dom-htmlcollection-item
@@ -34,7 +34,7 @@ impl HtmlCollection {
         ).try_into().unwrap()
     }
 
-    /// Returns an iterator over the list.
+    /// Returns an iterator over the collection.
     pub fn iter( &self ) -> ElementIter {
         ElementIter {
             list: self.clone(),

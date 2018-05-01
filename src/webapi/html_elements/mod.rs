@@ -11,3 +11,5 @@ pub use self::input::InputElement;
 pub use self::textarea::TextAreaElement;
 pub use self::select::SelectElement;
 pub use self::option::OptionElement;
+
+pub use self::select::UnknownValueError;

@@ -7,7 +7,24 @@ use webcore::value::Reference;
 use webapi::html_collection::HtmlCollection;
 use webapi::html_elements::OptionElement;
 
-/// The HTML <select> element represents a control that provides a menu of options.
+/// Indicates that an invalid value is setted to an `SelectElement`.
+/// It means there is no `<option>` element that has the given value.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct UnknownValueError(String);
+
+impl ::std::fmt::Display for UnknownValueError {
+    fn fmt(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        write!(formatter, "There is no `<option>` element that has value='{}'", self.0)
+    }
+}
+
+impl ::std::error::Error for UnknownValueError {
+    fn description(&self) -> &str {
+        "There is no `<option>` element that has the given value"
+    }
+}
+
+/// The HTML `<select>` element represents a control that provides a menu of options.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/select)
 // https://html.spec.whatwg.org/#htmlselectelement
@@ -22,55 +39,80 @@ impl IElement for SelectElement {}
 impl IHtmlElement for SelectElement {}
 
 impl SelectElement {
-    /// Returns the `Some(index)` of the first selected item, if any, or `None` if there is no selected item.
-    // https://html.spec.whatwg.org/#the-select-element:dom-select-selectedindex
-    pub fn selected_index(&self) -> Option<i32> {
-        let si = js! (
-            return @{self}.selectedIndex;
-        ).try_into().unwrap();
-        if si < 0 {
-            None
-        } else {
-            Some(si)
-        }
+    /// Returns the value attribute of the first selected `<option>` element or
+    /// if it is missing, the text attribute. If there is no selection, return empty string.
+    /// This method is just a wrapper for getting `HTMLSelectElement.value` directly
+    // https://html.spec.whatwg.org/#the-select-element:dom-select-value
+    pub fn raw_value(&self) -> String {
+        js!(
+            return @{self}.value
+        ).try_into().unwrap()
     }
 
-    /// Change selected index to the given value.
-    // https://html.spec.whatwg.org/#the-select-element:dom-select-selectedindex
-    pub fn set_selected_index(&self, selected_index: Option<i32>) {
-        let selected_index = selected_index.unwrap_or(-1);
+    /// Set the given value to `HTMLSelectElement.value` directly.
+    // https://html.spec.whatwg.org/#the-select-element:dom-select-value
+    pub fn set_raw_value(&self, value: &str) {
         js!{
             @(no_return)
-            @{self}.selectedIndex = @{selected_index};
+            @{self}.value = @{value};
         }
     }
-
-    /// Returns the `Some(value)` of the first selected item, if any, or `None` if there is no selected item.
-    // https://html.spec.whatwg.org/#the-select-element:dom-select-value
-    pub fn value(&self) -> Option<String> {
-        js!(
+    
+    /// Returns the `Some(index)` of the first selected item, if any, or `None` if there is no selected item.
+    // https://html.spec.whatwg.org/#the-select-element:dom-select-selectedindex
+    pub fn selected_index(&self) -> Option<u32> {
+        js! (
             var self = @{self};
             if (self.selectedIndex < 0) {
                 return null;
-            } else {
-                return self.value;
+            }else{
+                return self.selectedIndex;
             }
         ).try_into().unwrap()
     }
 
-    /// Change the selected value to the given value.
-    // https://html.spec.whatwg.org/#the-select-element:dom-select-value
-    pub fn set_value(&self, value: Option<String>) {
-        match value{
-            Some(value) => js!{
+    /// Change selected index to the given value.
+    // https://html.spec.whatwg.org/#the-select-element:dom-select-selectedindex
+    pub fn set_selected_index(&self, selected_index: &Option<u32>) {
+        match *selected_index {
+            Some(si) => js!{
                 @(no_return)
-                @{self}.value = @{value};
+                @{self}.selectedIndex = @{si};
             },
             None => js!{
                 @(no_return)
                 @{self}.selectedIndex = -1;
             }
         };
+    }
+
+    /// Returns the `Some(value)` of the first selected item, if any, or `None` if there is no selected item.
+    // https://html.spec.whatwg.org/#the-select-element:dom-select-value
+    pub fn value(&self) -> Option<String> {
+        match self.selected_index(){
+            None => None,
+            Some(_) => Some(self.raw_value())
+        }
+    }
+
+    /// Change the selected value to the given value. If you provide an invalid value,
+    /// the `<select>` element will have no item selected, and an `UnknownValueError` is returned.
+    // https://html.spec.whatwg.org/#the-select-element:dom-select-value
+    pub fn set_value(&self, value: &Option<String>) -> Result<(), UnknownValueError> {
+        match *value{
+            Some(ref value) => {
+                self.set_raw_value(&value);
+                if self.selected_index().is_none(){
+                    Err(UnknownValueError(value.clone()))
+                }else{
+                    Ok(())
+                }
+            },
+            None => {
+                self.set_selected_index(&None);
+                Ok(())
+            }
+        }
     }
 
     /// Indicates whether multiple items can be selected
@@ -81,8 +123,8 @@ impl SelectElement {
         ).try_into().unwrap()
     }
 
-    /// An [HtmlCollection](struct.HtmlCollection.html) representing
-    /// the set of <option> elements that are selected.
+    /// An `HtmlCollection` representing
+    /// the set of `<option>` elements that are selected.
     // https://html.spec.whatwg.org/#the-select-element:dom-select-selectedoptions
     pub fn selected_options(&self) -> HtmlCollection {
         js!(
@@ -90,7 +132,7 @@ impl SelectElement {
         ).try_into().unwrap()
     }
 
-    /// A convenient method to get values of all selected <option> elements
+    /// A convenience method to get values of all selected `<option>` elements
     pub fn selected_values(&self) -> Vec<String> {
         self.selected_options()
             .iter().map(|e|{
@@ -99,7 +141,7 @@ impl SelectElement {
             }).collect::<Vec<String>>()
     }
 
-    /// A convenient method to get indices of all selected <option> elements
+    /// A convenience method to get indices of all selected `<option>` elements
     pub fn selected_indices(&self) -> Vec<i32> {
         self.selected_options()
             .iter().map(|e|{
@@ -111,7 +153,7 @@ impl SelectElement {
 
 #[cfg(all(test, feature = "web_test"))]
 mod tests{
-    use super::SelectElement;
+    use super::{SelectElement, UnknownValueError};
     use webapi::node::Node;
     use webcore::try_from::TryInto;
     #[test]
@@ -127,25 +169,33 @@ mod tests{
         assert_eq!(se.selected_index(), Some(2));
         assert_eq!(se.value(), Some("third".to_string()));
 
-        se.set_selected_index(Some(1));
+        se.set_selected_index(&Some(1));
         assert_eq!(se.selected_index(), Some(1));
         assert_eq!(se.value(), Some("second".to_string()));
 
-        se.set_selected_index(None);
+        se.set_selected_index(&None);
         assert_eq!(se.selected_index(), None);
         assert_eq!(se.value(), None);
 
-        se.set_value(Some("first".to_string()));
+        let rs = se.set_value(&Some("first".to_string()));
+        assert_eq!(rs, Ok(()));
         assert_eq!(se.selected_index(), Some(0));
         assert_eq!(se.value(), Some("first".to_string()));
 
-        se.set_value(None);
+        let rs = se.set_value(&None);
+        assert_eq!(rs, Ok(()));
         assert_eq!(se.selected_index(), None);
         assert_eq!(se.value(), None);
 
-        se.set_value(Some("".to_string()));
+        let rs = se.set_value(&Some("".to_string()));
+        assert_eq!(rs, Ok(()));
         assert_eq!(se.selected_index(), Some(3));
         assert_eq!(se.value(), Some("".to_string()));
+
+        let rs = se.set_value(&Some("invalid_option".to_string()));
+        assert_eq!(rs, Err(UnknownValueError("invalid_option".to_string())));
+        assert_eq!(se.selected_index(), None);
+        assert_eq!(se.value(), None);
     }
 
     #[test]
