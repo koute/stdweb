@@ -6,7 +6,7 @@ dual licensed as above, without any additional terms or conditions.
 
 1. **When implementing properties and methods, follow the HTML spec**
 
-    * A helpful resource for translating types from the HTML spec to Rust can be found in the `TypedArray objects` table [here](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray)
+    * A helpful resource for translating types from the HTML spec to Rust can be found in the `TypedArray objects` table [here](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray#TypedArray_objects)
 
     * Try to stay as close as possible to the original JS name while maintaining Rust naming conventions
 
