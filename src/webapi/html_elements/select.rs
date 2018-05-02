@@ -73,8 +73,8 @@ impl SelectElement {
 
     /// Change selected index to the given value.
     // https://html.spec.whatwg.org/#the-select-element:dom-select-selectedindex
-    pub fn set_selected_index(&self, selected_index: &Option<u32>) {
-        match *selected_index {
+    pub fn set_selected_index(&self, selected_index: Option<u32>) {
+        match selected_index {
             Some(si) => js!{
                 @(no_return)
                 @{self}.selectedIndex = @{si};
@@ -98,18 +98,18 @@ impl SelectElement {
     /// Change the selected value to the given value. If you provide an invalid value,
     /// the `<select>` element will have no item selected, and an `UnknownValueError` is returned.
     // https://html.spec.whatwg.org/#the-select-element:dom-select-value
-    pub fn set_value(&self, value: &Option<String>) -> Result<(), UnknownValueError> {
-        match *value{
-            Some(ref value) => {
-                self.set_raw_value(&value);
+    pub fn set_value(&self, value: Option<&str>) -> Result<(), UnknownValueError> {
+        match value{
+            Some(value) => {
+                self.set_raw_value(value);
                 if self.selected_index().is_none(){
-                    Err(UnknownValueError(value.clone()))
+                    Err(UnknownValueError(value.to_string()))
                 }else{
                     Ok(())
                 }
             },
             None => {
-                self.set_selected_index(&None);
+                self.set_selected_index(None);
                 Ok(())
             }
         }
@@ -169,30 +169,30 @@ mod tests{
         assert_eq!(se.selected_index(), Some(2));
         assert_eq!(se.value(), Some("third".to_string()));
 
-        se.set_selected_index(&Some(1));
+        se.set_selected_index(Some(1));
         assert_eq!(se.selected_index(), Some(1));
         assert_eq!(se.value(), Some("second".to_string()));
 
-        se.set_selected_index(&None);
+        se.set_selected_index(None);
         assert_eq!(se.selected_index(), None);
         assert_eq!(se.value(), None);
 
-        let rs = se.set_value(&Some("first".to_string()));
+        let rs = se.set_value(Some("first"));
         assert_eq!(rs, Ok(()));
         assert_eq!(se.selected_index(), Some(0));
         assert_eq!(se.value(), Some("first".to_string()));
 
-        let rs = se.set_value(&None);
+        let rs = se.set_value(None);
         assert_eq!(rs, Ok(()));
         assert_eq!(se.selected_index(), None);
         assert_eq!(se.value(), None);
 
-        let rs = se.set_value(&Some("".to_string()));
+        let rs = se.set_value(Some(""));
         assert_eq!(rs, Ok(()));
         assert_eq!(se.selected_index(), Some(3));
         assert_eq!(se.value(), Some("".to_string()));
 
-        let rs = se.set_value(&Some("invalid_option".to_string()));
+        let rs = se.set_value(Some("invalid_option"));
         assert_eq!(rs, Err(UnknownValueError("invalid_option".to_string())));
         assert_eq!(se.selected_index(), None);
         assert_eq!(se.value(), None);
