@@ -241,6 +241,7 @@ pub mod web {
     pub use webapi::mutation_observer::{MutationObserver, MutationObserverHandle, MutationObserverInit, MutationRecord};
     pub use webapi::xml_http_request::{XmlHttpRequest, XhrReadyState};
     pub use webapi::blob::{IBlob, Blob};
+    pub use webapi::html_collection::HtmlCollection;
 
     /// A module containing error types.
     pub mod error {
@@ -260,6 +261,7 @@ pub mod web {
         };
         pub use webapi::error::{IError, Error};
         pub use webapi::rendering_context::{AddColorStopError, DrawImageError, GetImageDataError};
+        pub use webapi::html_elements::UnknownValueError;
     }
 
     /// A module containing HTML DOM elements.
@@ -268,6 +270,8 @@ pub mod web {
         pub use webapi::html_elements::InputElement;
         pub use webapi::html_elements::TextAreaElement;
         pub use webapi::html_elements::CanvasElement;
+        pub use webapi::html_elements::SelectElement;
+        pub use webapi::html_elements::OptionElement;
     }
 
     /// A module containing JavaScript DOM events.
