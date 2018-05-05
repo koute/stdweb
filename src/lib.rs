@@ -335,7 +335,8 @@ pub mod web {
             SocketCloseEvent,
             SocketErrorEvent,
             SocketOpenEvent,
-            SocketMessageEvent
+            SocketMessageEvent,
+            SocketMessageData
         };
 
         pub use webapi::events::history::{
