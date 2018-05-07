@@ -190,6 +190,19 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
 [WebAssembly]: https://en.wikipedia.org/wiki/WebAssembly
 
 ## Changelog
+   * `0.4.5`
+      * New types:
+         * `DocumentFragment`
+         * `SelectElement`
+         * `OptionElement`
+         * `HtmlCollection`
+      * New methods:
+         * `Node::from_html`
+         * `Value::is_null`
+      * Expose enums:
+         * `SocketMessageData`
+         * `NodeType`
+      * Update to `futures` 0.2
    * `0.4.4`
       * Fix `docs.rs` (hopefully).
       * New methods:
