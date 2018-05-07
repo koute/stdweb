@@ -1,6 +1,6 @@
 [package]
 name = "stdweb"
-version = "0.4.4"
+version = "0.4.5"
 authors = ["Jan Bujak <j@exia.io>"]
 repository = "https://github.com/koute/stdweb"
 homepage = "https://github.com/koute/stdweb"
