@@ -115,6 +115,21 @@ impl ConcreteEvent for ReadyStateChangeEvent {
     const EVENT_TYPE: &'static str = "readystatechange";
 }
 
+/// The submit event is fired when a form is submitted.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/submit)
+// https://html.spec.whatwg.org/#event-submit
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "Event")] // TODO: Better type check.
+#[reference(subclass_of(Event))]
+pub struct SubmitEvent( Reference );
+
+impl IEvent for SubmitEvent {}
+
+impl ConcreteEvent for SubmitEvent {
+    const EVENT_TYPE: &'static str = "submit";
+}
+
 #[cfg(all(test, feature = "web_test"))]
 mod tests {
     use super::*;
@@ -158,5 +173,13 @@ mod tests {
             return new Event( @{ReadyStateChangeEvent::EVENT_TYPE} );
         ).try_into().unwrap();
         assert_eq!( event.event_type(), ReadyStateChangeEvent::EVENT_TYPE);
+    }
+
+    #[test]
+    fn test_submit_event() {
+        let event: SubmitEvent = js!(
+            return new Event( @{SubmitEvent::EVENT_TYPE} );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), SubmitEvent::EVENT_TYPE);
     }
 }
