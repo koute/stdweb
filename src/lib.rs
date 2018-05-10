@@ -351,7 +351,8 @@ pub mod web {
             ResourceErrorEvent,
             ResizeEvent,
             InputEvent,
-            ReadyStateChangeEvent
+            ReadyStateChangeEvent,
+            SubmitEvent
         };
 
         pub use webapi::events::focus::{
