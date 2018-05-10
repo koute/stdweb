@@ -10,14 +10,11 @@ use webapi::node::{INode, Node};
 /// into information items and `TextNode`s that form its children.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Text)
+// https://dom.spec.whatwg.org/#text
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "Text")]
+#[reference(subclass_of(EventTarget, Node))]
 pub struct TextNode( Reference );
 
 impl IEventTarget for TextNode {}
 impl INode for TextNode {}
-
-reference_boilerplate! {
-    TextNode,
-    instanceof Text
-    convertible to EventTarget
-    convertible to Node
-}

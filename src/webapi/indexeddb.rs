@@ -1,8 +1,7 @@
 use webcore::value::Value;
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
-use webapi::event_target::IEventTarget;
-use webapi::event::{ConcreteEvent, IEvent};
+use webapi::event_target::{IEventTarget, EventTarget};
 
 ///
 #[derive(Debug)]
@@ -71,33 +70,29 @@ pub trait IDBRequest : IEventTarget {
 }
 
 /// This is a struct
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "IDBRequest")]
 pub struct DBRequest( Reference );
 
 impl IEventTarget for DBRequest {}
 impl IDBRequest for DBRequest {}
 
-reference_boilerplate! {
-    DBRequest,
-    instanceof IDBRequest
-}
-
 /// Provides access to the results of requests to open or delete databases.
 /// Receives `IDBBlockedEvent` and `IDBVersionChangeEvent` as well as events received by `IDBRequest`.
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBOpenDBRequest)
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "IDBOpenDBRequest")]
+#[reference(subclass_of(EventTarget))]
 pub struct IDBOpenDBRequest( Reference );
 
 impl IEventTarget for IDBOpenDBRequest {}
 impl IDBRequest for IDBOpenDBRequest {}
 
-
-reference_boilerplate! {
-    IDBOpenDBRequest,
-    instanceof IDBOpenDBRequest
-}
-
 /// The `IDBFactory` interface of the IndexedDB API lets applications asynchronously access the indexed databases. The object that implements the interface is `window.indexedDB`. 
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBFactory)
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "IDBFactory")]
 pub struct IDBFactory( Reference );
 
 impl IDBFactory {
@@ -138,11 +133,6 @@ impl IDBFactory {
     
 }
 
-reference_boilerplate! {
-    IDBFactory,
-    instanceof IDBFactory
-}
-
 ///
 #[derive(Debug)]
 pub enum IDBCursorDirection {
@@ -180,6 +170,8 @@ fn string_to_cursor_direction( direction: &str) -> IDBCursorDirection {
 }
 
 ///
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "IDBCursor")]
 pub struct IDBCursor( Reference );
 
 impl IDBCursor {
@@ -233,11 +225,6 @@ impl IDBCursor {
     pub fn delete( &self ) -> DBRequest {
         js!( return @{self}.delete(); ).try_into().unwrap() 
     }
-}
-
-reference_boilerplate! {
-    IDBCursor,
-    instanceof IDBCursor
 }
 
 /// This trait contains mothods that are Identicle in both IDBIndex IDBObjectStore
@@ -367,6 +354,8 @@ pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
 /// Provides asynchronous access to an index in a database.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBIndex)
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "IDBIndex")]
 pub struct IDBIndex( Reference );
 
 impl IDBObjectStoreIndexSharedMethods for IDBIndex {}
@@ -408,14 +397,11 @@ impl IDBIndex {
     //[NewObject] IDBRequest openKeyCursor(optional any query, optional IDBCursorDirection direction = "next");
 }
 
-reference_boilerplate! {
-    IDBIndex,
-    instanceof IDBIndex
-}
-
 /// The `IDBObjectStore` interface of the IndexedDB API represents an object store in a database
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore)
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "IDBObjectStore")]
 pub struct IDBObjectStore( Reference );
 
 impl IDBObjectStoreIndexSharedMethods for IDBObjectStore {}
@@ -531,11 +517,6 @@ impl IDBObjectStore {
     }
 }
 
-reference_boilerplate! {
-    IDBObjectStore,
-    instanceof IDBObjectStore
-}
-
 /* dictionary IDBIndexParameters {
   boolean unique = false;
   boolean multiEntry = false;
@@ -551,6 +532,8 @@ pub enum IDBTransactionMode {
 /// The `IDBTransaction` interface of the IndexedDB API provides a static, asynchronous transaction on a database using event handlers.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBTransaction)
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "IDBTransaction")]
 pub struct IDBTransaction( Reference );
 
 impl IEventTarget for IDBTransaction {}
@@ -594,14 +577,11 @@ impl IDBTransaction {
     // attribute EventHandler onerror;
 }
 
-reference_boilerplate! {
-    IDBTransaction,
-    instanceof IDBTransaction
-}
-
 /// The `IDBDatabase` interface of the IndexedDB API provides a connection to a database.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase)
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "IDBDatabase")]
 pub struct IDBDatabase( Reference );
 
 impl IEventTarget for IDBDatabase {}
@@ -678,9 +658,4 @@ impl IDBDatabase {
     // attribute EventHandler onerror;
     // attribute EventHandler onversionchange;
     
-}
-
-reference_boilerplate! {
-    IDBDatabase,
-    instanceof IDBDatabase
 }

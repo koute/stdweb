@@ -1,0 +1,13 @@
+[package]
+name = "webgl"
+version = "0.1.0"
+authors = ["Diggory Blake"]
+
+[dependencies]
+stdweb = { path = "../.." }
+stdweb-derive = { path = "../../stdweb-derive" }
+serde = "1.0.0"
+serde_derive = "1.0.0"
+
+[build-dependencies]
+webgl_generator = "0.1.0"

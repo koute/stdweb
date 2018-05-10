@@ -2,12 +2,16 @@ use std::collections::{BTreeMap, HashMap};
 use std::hash::Hash;
 use std::fmt;
 use std::error;
+use std::mem;
 use webcore::void::Void;
 use webcore::try_from::{TryFrom, TryInto};
 use webcore::number::{self, Number};
 use webcore::object::Object;
 use webcore::array::Array;
-use webcore::serialization::JsSerializable;
+use webcore::serialization::JsSerialize;
+use webcore::reference_type::ReferenceType;
+use webcore::instance_of::InstanceOf;
+use webcore::symbol::Symbol;
 
 /// A unit type representing JavaScript's `undefined`.
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Debug)]
@@ -19,14 +23,20 @@ pub struct Null;
 
 /// A type representing a reference to a JavaScript value.
 #[repr(C)]
-#[derive(PartialEq, Eq, Debug)]
+#[derive(Debug)]
 pub struct Reference( i32 );
 
 impl Reference {
     #[doc(hidden)]
     #[inline]
     pub unsafe fn from_raw_unchecked( refid: i32 ) -> Reference {
-        __js_raw_asm!( "Module.STDWEB.increment_refcount( $0 );", refid );
+        __js_raw_asm!( "Module.STDWEB_PRIVATE.increment_refcount( $0 );", refid );
+        Reference( refid )
+    }
+
+    #[doc(hidden)]
+    #[inline]
+    pub(super) unsafe fn from_raw_unchecked_noref( refid: i32 ) -> Reference {
         Reference( refid )
     }
 
@@ -39,10 +49,30 @@ impl Reference {
     /// Converts this reference into the given type `T`; checks whenever the reference
     /// is really of type `T` and returns `None` if it's not.
     #[inline]
-    pub fn downcast< T: FromReference >( self ) -> Option< T > {
-        T::from_reference( self )
+    pub fn downcast< T: ReferenceType >( self ) -> Option< T > {
+        if T::instance_of( &self ) {
+            Some( unsafe { T::from_reference_unchecked( self ) } )
+        } else {
+            None
+        }
     }
 }
+
+impl PartialEq for Reference {
+    #[inline]
+    fn eq( &self, other: &Reference ) -> bool {
+        let result = self.0 == other.0;
+
+        debug_assert_eq!( {
+            let real_result: bool = js!( return @{self} === @{other}; ).try_into().unwrap();
+            real_result
+        }, result );
+
+        result
+    }
+}
+
+impl Eq for Reference {}
 
 impl Clone for Reference {
     #[inline]
@@ -56,7 +86,7 @@ impl Clone for Reference {
 impl Drop for Reference {
     #[inline]
     fn drop( &mut self ) {
-        __js_raw_asm!( "Module.STDWEB.decrement_refcount( $0 );", self.0 );
+        __js_raw_asm!( "Module.STDWEB_PRIVATE.decrement_refcount( $0 );", self.0 );
     }
 }
 
@@ -105,29 +135,6 @@ impl_infallible_try_from! {
     impl< 'a > for &'a Reference => &'a Reference;
 }
 
-#[doc(hidden)]
-pub trait FromReferenceUnchecked: Sized {
-    unsafe fn from_reference_unchecked( reference: Reference ) -> Self;
-
-    #[inline]
-    unsafe fn from_value_unchecked( value: Value ) -> Option< Self > {
-        let reference: Option< Reference > = value.try_into().ok();
-        reference.map( |reference| Self::from_reference_unchecked( reference ) )
-    }
-}
-
-#[doc(hidden)]
-pub trait FromReference: FromReferenceUnchecked {
-    fn from_reference( reference: Reference ) -> Option< Self >;
-}
-
-impl FromReferenceUnchecked for Reference {
-    #[inline]
-    unsafe fn from_reference_unchecked( reference: Reference ) -> Self {
-        reference
-    }
-}
-
 /// A type representing a JavaScript value.
 ///
 /// This type implements a rich set of conversions
@@ -153,13 +160,32 @@ pub enum Value {
     Null,
     Bool( bool ),
     Number( Number ),
+    Symbol( Symbol ),
     String( String ),
-    Array( Array ),
-    Object( Object ),
     Reference( Reference )
 }
 
 impl Value {
+    /// Checks whenever the Value is of the Null variant.
+    #[inline]
+    pub fn is_null( &self ) -> bool {
+        if let Value::Null = *self {
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Checks whenever the Value is of the Symbol variant.
+    #[inline]
+    pub fn is_symbol( &self ) -> bool {
+        if let Value::Symbol( _ ) = *self {
+            true
+        } else {
+            false
+        }
+    }
+
     /// Checks whenever the Value is of the Reference variant.
     #[inline]
     pub fn is_reference( &self ) -> bool {
@@ -170,21 +196,21 @@ impl Value {
         }
     }
 
-    /// Checks whenever the Value is of the Object variant.
+    /// Checks whenever the Value is a reference to an `Object`.
     #[inline]
     pub fn is_object( &self ) -> bool {
-        if let Value::Object( _ ) = *self {
-            true
+        if let Value::Reference( ref reference ) = *self {
+            Object::instance_of( reference )
         } else {
             false
         }
     }
 
-    /// Checks whenever the Value is of the Array variant.
+    /// Checks whenever the Value is a reference to an `Array`.
     #[inline]
     pub fn is_array( &self ) -> bool {
-        if let Value::Array( _ ) = *self {
-            true
+        if let Value::Reference( ref reference ) = *self {
+            Array::instance_of( reference )
         } else {
             false
         }
@@ -203,7 +229,11 @@ impl Value {
     #[inline]
     pub fn as_object( &self ) -> Option< &Object > {
         match *self {
-            Value::Object( ref object ) => Some( object ),
+            Value::Reference( ref reference ) if Object::instance_of( reference ) => {
+                unsafe {
+                    Some( mem::transmute( reference ) )
+                }
+            },
             _ => None
         }
     }
@@ -212,7 +242,11 @@ impl Value {
     #[inline]
     pub fn as_array( &self ) -> Option< &Array > {
         match *self {
-            Value::Array( ref array ) => Some( array ),
+            Value::Reference( ref reference ) if Array::instance_of( reference ) => {
+                unsafe {
+                    Some( mem::transmute( reference ) )
+                }
+            },
             _ => None
         }
     }
@@ -230,7 +264,7 @@ impl Value {
     #[inline]
     pub fn into_object( self ) -> Option< Object > {
         match self {
-            Value::Object( object ) => Some( object ),
+            Value::Reference( reference ) => reference.try_into().ok(),
             _ => None
         }
     }
@@ -239,7 +273,7 @@ impl Value {
     #[inline]
     pub fn into_array( self ) -> Option< Array > {
         match self {
-            Value::Array( array ) => Some( array ),
+            Value::Reference( reference ) => reference.try_into().ok(),
             _ => None
         }
     }
@@ -249,8 +283,9 @@ impl Value {
     ///
     /// In cases where the value is not a `Reference` a `None` is returned.
     #[inline]
-    pub unsafe fn into_reference_unchecked< T: FromReferenceUnchecked >( self ) -> Option< T > {
-        T::from_value_unchecked( self )
+    pub unsafe fn into_reference_unchecked< T: ReferenceType >( self ) -> Option< T > {
+        let reference: Option< Reference > = self.try_into().ok();
+        reference.map( |reference| T::from_reference_unchecked( reference ) )
     }
 
     /// Returns the `String` inside this `Value`.
@@ -400,87 +435,87 @@ impl< 'a > From< &'a mut char > for Value {
     }
 }
 
-impl< T > From< Vec< T > > for Value where T: JsSerializable {
+impl< T > From< Vec< T > > for Value where T: JsSerialize {
     #[inline]
     fn from( value: Vec< T > ) -> Self {
         value[..].into()
     }
 }
 
-impl< 'a, T > From< &'a Vec< T > > for Value where T: JsSerializable {
+impl< 'a, T > From< &'a Vec< T > > for Value where T: JsSerialize {
     #[inline]
     fn from( value: &'a Vec< T > ) -> Self {
         value[..].into()
     }
 }
 
-impl< 'a, T > From< &'a mut Vec< T > > for Value where T: JsSerializable {
+impl< 'a, T > From< &'a mut Vec< T > > for Value where T: JsSerialize {
     #[inline]
     fn from( value: &'a mut Vec< T > ) -> Self {
         value[..].into()
     }
 }
 
-impl< 'a, T > From< &'a [T] > for Value where T: JsSerializable {
+impl< 'a, T > From< &'a [T] > for Value where T: JsSerialize {
     #[inline]
     fn from( value: &'a [T] ) -> Self {
         let array: Array = value.into();
-        Value::Array( array )
+        Value::Reference( array.into() )
     }
 }
 
-impl< 'a, T > From< &'a mut [T] > for Value where T: JsSerializable {
+impl< 'a, T > From< &'a mut [T] > for Value where T: JsSerialize {
     #[inline]
     fn from( value: &'a mut [T] ) -> Self {
         (value as &[T]).into()
     }
 }
 
-impl< K, V > From< BTreeMap< K, V > > for Value where K: AsRef< str >, V: JsSerializable {
+impl< K, V > From< BTreeMap< K, V > > for Value where K: AsRef< str >, V: JsSerialize {
     #[inline]
     fn from( value: BTreeMap< K, V > ) -> Self {
         let object: Object = value.into();
-        Value::Object( object )
+        Value::Reference( object.into() )
     }
 }
 
-impl< 'a, K, V > From< &'a BTreeMap< K, V > > for Value where K: AsRef< str >, V: JsSerializable {
+impl< 'a, K, V > From< &'a BTreeMap< K, V > > for Value where K: AsRef< str >, V: JsSerialize {
     #[inline]
     fn from( value: &'a BTreeMap< K, V > ) -> Self {
         let object: Object = value.into();
-        Value::Object( object )
+        Value::Reference( object.into() )
     }
 }
 
-impl< 'a, K, V > From< &'a mut BTreeMap< K, V > > for Value where K: AsRef< str >, V: JsSerializable {
+impl< 'a, K, V > From< &'a mut BTreeMap< K, V > > for Value where K: AsRef< str >, V: JsSerialize {
     #[inline]
     fn from( value: &'a mut BTreeMap< K, V > ) -> Self {
         let object: Object = value.into();
-        Value::Object( object )
+        Value::Reference( object.into() )
     }
 }
 
-impl< K, V > From< HashMap< K, V > > for Value where K: AsRef< str > + Eq + Hash, V: JsSerializable {
+impl< K, V > From< HashMap< K, V > > for Value where K: AsRef< str > + Eq + Hash, V: JsSerialize {
     #[inline]
     fn from( value: HashMap< K, V > ) -> Self {
         let object: Object = value.into();
-        Value::Object( object )
+        Value::Reference( object.into() )
     }
 }
 
-impl< 'a, K, V > From< &'a HashMap< K, V > > for Value where K: AsRef< str > + Eq + Hash, V: JsSerializable {
+impl< 'a, K, V > From< &'a HashMap< K, V > > for Value where K: AsRef< str > + Eq + Hash, V: JsSerialize {
     #[inline]
     fn from( value: &'a HashMap< K, V > ) -> Self {
         let object: Object = value.into();
-        Value::Object( object )
+        Value::Reference( object.into() )
     }
 }
 
-impl< 'a, K, V > From< &'a mut HashMap< K, V > > for Value where K: AsRef< str > + Eq + Hash, V: JsSerializable {
+impl< 'a, K, V > From< &'a mut HashMap< K, V > > for Value where K: AsRef< str > + Eq + Hash, V: JsSerialize {
     #[inline]
     fn from( value: &'a mut HashMap< K, V > ) -> Self {
         let object: Object = value.into();
-        Value::Object( object )
+        Value::Reference( object.into() )
     }
 }
 
@@ -554,35 +589,36 @@ impl_infallible_try_from! {
     char => Value;
     impl< 'a > for &'a char => Value;
     impl< 'a > for &'a mut char => Value;
-    impl< T > for Vec< T > => Value where (T: JsSerializable);
-    impl< 'a, T > for &'a Vec< T > => Value where (T: JsSerializable);
-    impl< 'a, T > for &'a mut Vec< T > => Value where (T: JsSerializable);
-    impl< 'a, T > for &'a [T] => Value where (T: JsSerializable);
-    impl< 'a, T > for &'a mut [T] => Value where (T: JsSerializable);
+    impl< T > for Vec< T > => Value where (T: JsSerialize);
+    impl< 'a, T > for &'a Vec< T > => Value where (T: JsSerialize);
+    impl< 'a, T > for &'a mut Vec< T > => Value where (T: JsSerialize);
+    impl< 'a, T > for &'a [T] => Value where (T: JsSerialize);
+    impl< 'a, T > for &'a mut [T] => Value where (T: JsSerialize);
 
-    impl< K, V > for BTreeMap< K, V > => Value where (K: AsRef< str >, V: JsSerializable);
-    impl< 'a, K, V > for &'a BTreeMap< K, V > => Value where (K: AsRef< str >, V: JsSerializable);
-    impl< 'a, K, V > for &'a mut BTreeMap< K, V > => Value where (K: AsRef< str >, V: JsSerializable);
-    impl< K, V > for HashMap< K, V > => Value where (K: AsRef< str > + Eq + Hash, V: JsSerializable);
-    impl< 'a, K, V > for &'a HashMap< K, V > => Value where (K: AsRef< str > + Eq + Hash, V: JsSerializable);
-    impl< 'a, K, V > for &'a mut HashMap< K, V > => Value where (K: AsRef< str > + Eq + Hash, V: JsSerializable);
+    impl< K, V > for BTreeMap< K, V > => Value where (K: AsRef< str >, V: JsSerialize);
+    impl< 'a, K, V > for &'a BTreeMap< K, V > => Value where (K: AsRef< str >, V: JsSerialize);
+    impl< 'a, K, V > for &'a mut BTreeMap< K, V > => Value where (K: AsRef< str >, V: JsSerialize);
+    impl< K, V > for HashMap< K, V > => Value where (K: AsRef< str > + Eq + Hash, V: JsSerialize);
+    impl< 'a, K, V > for &'a HashMap< K, V > => Value where (K: AsRef< str > + Eq + Hash, V: JsSerialize);
+    impl< 'a, K, V > for &'a mut HashMap< K, V > => Value where (K: AsRef< str > + Eq + Hash, V: JsSerialize);
 
+    Symbol => Value;
     Reference => Value;
 
     // TODO: Move these to object.rs
-    impl< K, V > for BTreeMap< K, V > => Object where (K: AsRef< str >, V: JsSerializable);
-    impl< 'a, K, V > for &'a BTreeMap< K, V > => Object where (K: AsRef< str >, V: JsSerializable);
-    impl< 'a, K, V > for &'a mut BTreeMap< K, V > => Object where (K: AsRef< str >, V: JsSerializable);
-    impl< K, V > for HashMap< K, V > => Object where (K: AsRef< str > + Eq + Hash, V: JsSerializable);
-    impl< 'a, K, V > for &'a HashMap< K, V > => Object where (K: AsRef< str > + Eq + Hash, V: JsSerializable);
-    impl< 'a, K, V > for &'a mut HashMap< K, V > => Object where (K: AsRef< str > + Eq + Hash, V: JsSerializable);
+    impl< K, V > for BTreeMap< K, V > => Object where (K: AsRef< str >, V: JsSerialize);
+    impl< 'a, K, V > for &'a BTreeMap< K, V > => Object where (K: AsRef< str >, V: JsSerialize);
+    impl< 'a, K, V > for &'a mut BTreeMap< K, V > => Object where (K: AsRef< str >, V: JsSerialize);
+    impl< K, V > for HashMap< K, V > => Object where (K: AsRef< str > + Eq + Hash, V: JsSerialize);
+    impl< 'a, K, V > for &'a HashMap< K, V > => Object where (K: AsRef< str > + Eq + Hash, V: JsSerialize);
+    impl< 'a, K, V > for &'a mut HashMap< K, V > => Object where (K: AsRef< str > + Eq + Hash, V: JsSerialize);
 
     // TODO: Move these to array.rs
-    impl< T > for Vec< T > => Array where (T: JsSerializable);
-    impl< 'a, T > for &'a Vec< T > => Array where (T: JsSerializable);
-    impl< 'a, T > for &'a mut Vec< T > => Array where (T: JsSerializable);
-    impl< 'a, T > for &'a [T] => Array where (T: JsSerializable);
-    impl< 'a, T > for &'a mut [T] => Array where (T: JsSerializable);
+    impl< T > for Vec< T > => Array where (T: JsSerialize);
+    impl< 'a, T > for &'a Vec< T > => Array where (T: JsSerialize);
+    impl< 'a, T > for &'a mut Vec< T > => Array where (T: JsSerialize);
+    impl< 'a, T > for &'a [T] => Array where (T: JsSerialize);
+    impl< 'a, T > for &'a mut [T] => Array where (T: JsSerialize);
 }
 
 macro_rules! impl_try_from_number {
@@ -657,6 +693,16 @@ impl PartialEq< Number > for Value {
     fn eq( &self, right: &Number ) -> bool {
         match *self {
             Value::Number( left ) => left == *right,
+            _ => false
+        }
+    }
+}
+
+impl PartialEq< Symbol > for Value {
+    #[inline]
+    fn eq( &self, right: &Symbol ) -> bool {
+        match *self {
+            Value::Symbol( ref left ) => *left == *right,
             _ => false
         }
     }
@@ -770,11 +816,13 @@ impl_partial_eq_boilerplate! {
     bool,
     str,
     String,
-    Number
+    Number,
+    Symbol
 }
 
 /// A structure denoting a conversion error encountered when
 /// converting to or from a `Value`.
+#[doc(hidden)]
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum ConversionError {
     TypeMismatch {
@@ -791,9 +839,8 @@ fn value_type_name( value: &Value ) -> &'static str {
         Value::Null => "Null",
         Value::Bool( _ ) => "Bool",
         Value::Number( _ ) => "Number",
+        Value::Symbol( _ ) => "Symbol",
         Value::String( _ ) => "String",
-        Value::Array( _ ) => "Array",
-        Value::Object( _ ) => "Object",
         Value::Reference( _ ) => "Reference"
     }
 }
@@ -834,7 +881,7 @@ impl From< Void > for ConversionError {
 
 impl ConversionError {
     #[inline]
-    fn type_mismatch( actual_value: &Value ) -> Self {
+    pub(crate) fn type_mismatch( actual_value: &Value ) -> Self {
         ConversionError::TypeMismatch {
             actual_type: value_type_name( actual_value )
         }
@@ -865,6 +912,18 @@ impl TryFrom< Value > for Null {
     fn try_from( value: Value ) -> Result< Self, Self::Error > {
         match value {
             Value::Null => Ok( Null ),
+            _ => Err( ConversionError::type_mismatch( &value ) )
+        }
+    }
+}
+
+impl TryFrom< Value > for () {
+    type Error = ConversionError;
+
+    #[inline]
+    fn try_from( value: Value ) -> Result< Self, Self::Error > {
+        match value {
+            Value::Null | Value::Undefined => Ok( () ),
             _ => Err( ConversionError::type_mismatch( &value ) )
         }
     }
@@ -911,7 +970,10 @@ impl< E: Into< ConversionError >, V: TryFrom< Value, Error = E > > TryFrom< Valu
     #[inline]
     fn try_from( value: Value ) -> Result< Self, Self::Error > {
         match value {
-            Value::Object( object ) => object.try_into(),
+            Value::Reference( reference ) => {
+                let object: Object = reference.try_into()?;
+                object.try_into()
+            },
             _ => Err( ConversionError::type_mismatch( &value ) )
         }
     }
@@ -923,7 +985,10 @@ impl< E: Into< ConversionError >, V: TryFrom< Value, Error = E > > TryFrom< Valu
     #[inline]
     fn try_from( value: Value ) -> Result< Self, Self::Error > {
         match value {
-            Value::Object( object ) => object.try_into(),
+            Value::Reference( reference ) => {
+                let object: Object = reference.try_into()?;
+                object.try_into()
+            },
             _ => Err( ConversionError::type_mismatch( &value ) )
         }
     }
@@ -935,7 +1000,10 @@ impl< E: Into< ConversionError >, T: TryFrom< Value, Error = E > > TryFrom< Valu
     #[inline]
     fn try_from( value: Value ) -> Result< Self, Self::Error > {
         match value {
-            Value::Array( array ) => array.try_into(),
+            Value::Reference( reference ) => {
+                let array: Array = reference.try_into()?;
+                array.try_into()
+            },
             _ => Err( ConversionError::type_mismatch( &value ) )
         }
     }
@@ -948,6 +1016,18 @@ impl TryFrom< Value > for String {
     fn try_from( value: Value ) -> Result< Self, Self::Error > {
         match value {
             Value::String( value ) => Ok( value ),
+            _ => Err( ConversionError::type_mismatch( &value ) )
+        }
+    }
+}
+
+impl TryFrom< Value > for Symbol {
+    type Error = ConversionError;
+
+    #[inline]
+    fn try_from( value: Value ) -> Result< Self, Self::Error > {
+        match value {
+            Value::Symbol( value ) => Ok( value ),
             _ => Err( ConversionError::type_mismatch( &value ) )
         }
     }
@@ -972,6 +1052,18 @@ impl< 'a > TryFrom< &'a Value > for &'a str {
     fn try_from( value: &'a Value ) -> Result< Self, Self::Error > {
         match *value {
             Value::String( ref value ) => Ok( value ),
+            _ => Err( ConversionError::type_mismatch( &value ) )
+        }
+    }
+}
+
+impl< 'a > TryFrom< &'a Value > for &'a Symbol {
+    type Error = ConversionError;
+
+    #[inline]
+    fn try_from( value: &'a Value ) -> Result< Self, Self::Error > {
+        match *value {
+            Value::Symbol( ref value ) => Ok( value ),
             _ => Err( ConversionError::type_mismatch( &value ) )
         }
     }
@@ -1041,7 +1133,7 @@ impl_nullable_try_from_value! {
     impl< V > HashMap< String, V > where (V: TryFrom< Value, Error = ConversionError >);
     impl< T > Vec< T > where (T: TryFrom< Value, Error = ConversionError >);
     String;
-    Reference;
+    Symbol;
 }
 
 impl< 'a > TryFrom< &'a Value > for Option< &'a str > {
@@ -1064,6 +1156,18 @@ impl< 'a > TryFrom< &'a Value > for Option< &'a Reference > {
         match *value {
             Value::Reference( ref value ) => Ok( Some( value ) ),
             ref value => value.try_into().map( Some )
+        }
+    }
+}
+
+impl< T: TryFrom< Value, Error = ConversionError > + AsRef< Reference > > TryFrom< Value > for Option< T > {
+    type Error = ConversionError;
+
+    #[inline]
+    fn try_from( value: Value ) -> Result< Self, Self::Error > {
+        match value {
+            Value::Undefined | Value::Null => Ok( None ),
+            value => value.try_into().map( Some )
         }
     }
 }
@@ -1107,25 +1211,19 @@ mod tests {
         assert!( &reference == &value );
     }
 
+    #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+    #[reference(instance_of = "Error")]
     pub struct Error( Reference );
-    reference_boilerplate! {
-        Error,
-        instanceof Error
-    }
 
+    #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+    #[reference(instance_of = "ReferenceError")]
+    #[reference(subclass_of(Error))]
     pub struct ReferenceError( Reference );
-    reference_boilerplate! {
-        ReferenceError,
-        instanceof ReferenceError
-        convertible to Error
-    }
 
+    #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+    #[reference(instance_of = "TypeError")]
+    #[reference(subclass_of(Error))]
     pub struct TypeError( Reference );
-    reference_boilerplate! {
-        TypeError,
-        instanceof TypeError
-        convertible to Error
-    }
 
     #[test]
     fn reference_downcast() {
@@ -1166,5 +1264,101 @@ mod tests {
         let reference: ReferenceError = js! { return new ReferenceError(); }.into_reference().unwrap().downcast().unwrap();
         let _: Error = reference.clone().into();
         let _: Reference = reference.clone().into();
+    }
+
+    #[test]
+    fn reference_try_into_downcast_from_ref_value() {
+        let value = js! { return new ReferenceError(); };
+        let value: &Value = &value;
+
+        let typed_reference: Result< Error, _ > = value.try_into();
+        assert!( typed_reference.is_ok() );
+
+        let typed_reference: Result< ReferenceError, _ > = value.try_into();
+        assert!( typed_reference.is_ok() );
+
+        let typed_reference: Result< TypeError, _ > = value.try_into();
+        assert!( typed_reference.is_err() );
+    }
+
+    #[test]
+    fn reference_try_into_downcast_from_ref_reference() {
+        let reference: Reference = js! { return new ReferenceError(); }.try_into().unwrap();
+        let reference: &Reference = &reference;
+
+        let typed_reference: Result< Error, _ > = reference.try_into();
+        assert!( typed_reference.is_ok() );
+
+        let typed_reference: Result< ReferenceError, _ > = reference.try_into();
+        assert!( typed_reference.is_ok() );
+
+        let typed_reference: Result< TypeError, _ > = reference.try_into();
+        assert!( typed_reference.is_err() );
+    }
+
+    #[test]
+    fn convert_from_null_or_undefined_to_empty_tuple() {
+        let a: Result< (), _ > = js! { return null; }.try_into();
+        assert!( a.is_ok() );
+
+        let a: Result< (), _ > = js! { return undefined; }.try_into();
+        assert!( a.is_ok() );
+
+        let a: Result< (), _ > = js! { return 1; }.try_into();
+        assert!( a.is_err() );
+    }
+
+    #[test]
+    fn reference_stable() {
+        js! { Module.__test = {}; }
+        let a = js! { return Module.__test; }.as_reference().unwrap().as_raw();
+        let b = js! { return Module.__test; }.as_reference().unwrap().as_raw();
+        assert_eq!(a, b);
+
+        let c = js! { return {}; }.as_reference().unwrap().as_raw();
+        assert_ne!(a, c);
+
+        js! { delete Module.__test; }
+    }
+
+    fn is_known_reference(refid: i32) -> bool {
+        let has_refcount: bool = js! {
+            return @{refid} in Module.STDWEB_PRIVATE.id_to_refcount_map;
+        }.try_into().unwrap();
+
+        let has_ref: bool = js! {
+            return @{refid} in Module.STDWEB_PRIVATE.id_to_ref_map;
+        }.try_into().unwrap();
+
+        assert_eq!(has_refcount, has_ref);
+        has_refcount
+    }
+
+    #[test]
+    fn reference_refcount() {
+        let obj = js! { return new Object(); };
+        let refid = obj.as_reference().unwrap().as_raw();
+        assert!(is_known_reference(refid));
+
+        drop(obj);
+        assert!(!is_known_reference(refid));
+    }
+
+    #[test]
+    fn reference_refcount_clone() {
+        let obj = js! { return new Object(); };
+        let obj2 = obj.clone();
+
+        let refid = obj.as_reference().unwrap().as_raw();
+        let refid2 = obj.as_reference().unwrap().as_raw();
+
+        assert_eq!(refid, refid2);
+        assert!(is_known_reference(refid));
+
+        drop(obj);
+        assert!(is_known_reference(refid));
+
+        drop(obj2);
+        assert!(!is_known_reference(refid));
     }
 }

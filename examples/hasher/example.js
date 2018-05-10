@@ -1,6 +1,6 @@
 "use strict";
 
-const hasher = require( './target/wasm32-unknown-unknown/release/hasher.js' );
+const hasher = require( './../target/wasm32-unknown-unknown/release/hasher.js' );
 
 const string = "fiddlesticks";
 const hash = hasher.sha1( string );

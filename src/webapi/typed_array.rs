@@ -1,7 +1,8 @@
 use std::marker::PhantomData;
 use std::mem::size_of;
-use webcore::value::{Reference, FromReference};
+use webcore::value::Reference;
 use webcore::try_from::TryInto;
+use webcore::instance_of::InstanceOf;
 use webapi::array_buffer::ArrayBuffer;
 
 pub trait ArrayKind: Sized {
@@ -22,38 +23,38 @@ macro_rules! arraykind {
                 let slice_ptr = (slice.as_ptr() as usize / size_of::<$element_type>()) as i32;
                 let raw = __js_raw_asm!(
                     concat!(
-                        "return Module.STDWEB.acquire_rust_reference( ",
+                        "return Module.STDWEB_PRIVATE.acquire_rust_reference( ",
                         stringify!($heap_type),
                         ".slice( $0, $1 ) );"
                     ),
                     slice_ptr,
-                    (slice_ptr + slice.len() as i32)
+                    slice_ptr + slice.len() as i32
                 );
 
                 let reference = unsafe {
                     Reference::from_raw_unchecked( raw )
                 };
 
-                TypedArray::from_reference( reference ).unwrap()
+                reference.downcast().unwrap()
             }
 
             fn into_typed_array_from_array_buffer( buffer: &ArrayBuffer ) -> TypedArray< Self > {
                 let raw = __js_raw_asm!(
                     concat!(
-                        "return Module.STDWEB.acquire_rust_reference( new ",
+                        "return Module.STDWEB_PRIVATE.acquire_rust_reference( new ",
                         stringify!( $js_array_type ),
-                        "( Module.STDWEB.acquire_js_reference( $0 ) )",
+                        "( Module.STDWEB_PRIVATE.acquire_js_reference( $0 ) )",
                         " );"
                     ),
                     buffer.as_ref().as_raw()
                 );
 
                 let reference = unsafe { Reference::from_raw_unchecked( raw ) };
-                TypedArray::from_reference( reference ).unwrap()
+                reference.downcast().unwrap()
             }
 
             fn from_typed_array( array: &TypedArray< Self > ) -> Vec< Self > {
-                let length = array.len();
+                let length = array.len() as usize;
                 let mut vector = Vec::with_capacity( length );
                 let vec_ptr = (vector.as_ptr() as usize / size_of::<$element_type>()) as i32;
 
@@ -94,30 +95,25 @@ arraykind!( u32, Uint32Array, HEAPU32 );
 arraykind!( f32, Float32Array, HEAPF32 );
 arraykind!( f64, Float64Array, HEAPF64 );
 
+impl< T: ArrayKind > InstanceOf for TypedArray< T > {
+    #[inline]
+    fn instance_of( reference: &Reference ) -> bool {
+        T::is_typed_array( reference )
+    }
+}
+
 /// JavaScript typed arrays are array-like objects and provide a mechanism for accessing raw binary data.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays)
+// https://www.ecma-international.org/ecma-262/6.0/#sec-typedarray-objects
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 pub struct TypedArray< T: ArrayKind >( Reference, PhantomData< T > );
-
-reference_boilerplate! {
-    impl< T > for TypedArray< T > where (T: ArrayKind)
-}
-
-impl< T: ArrayKind > FromReference for TypedArray< T > {
-    #[inline]
-    fn from_reference( reference: Reference ) -> Option< Self > {
-        if T::is_typed_array( &reference ) {
-            Some( TypedArray( reference, PhantomData ) )
-        } else {
-            None
-        }
-    }
-}
 
 impl< T: ArrayKind > TypedArray< T > {
     /// Returns the [TypedArray](struct.ArrayBuffer.html) referenced by this typed array.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray/buffer)
+    // https://www.ecma-international.org/ecma-262/6.0/#sec-get-%typedarray%.prototype.buffer
     pub fn buffer( &self ) -> ArrayBuffer {
         js!( return @{self}.buffer; ).try_into().unwrap()
     }
@@ -125,10 +121,9 @@ impl< T: ArrayKind > TypedArray< T > {
     /// Returns the number of elements in the buffer.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray/length)
-    pub fn len( &self ) -> usize {
+    pub fn len( &self ) -> u32 {
         let reference = self.as_ref();
-        let length: i32 = js!( return @{reference}.length; ).try_into().unwrap();
-        length as usize
+        js!( return @{reference}.length; ).try_into().unwrap()
     }
 
     /// Copies `self` into a new `Vec`.

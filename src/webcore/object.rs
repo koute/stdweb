@@ -1,31 +1,15 @@
 use std::collections::{BTreeMap, HashMap};
 use std::hash::Hash;
 use webcore::try_from::{TryFrom, TryInto};
-use webcore::value::{Reference, Value, ConversionError, FromReferenceUnchecked};
-use webcore::serialization::{JsSerializable, deserialize_object};
+use webcore::value::{Reference, Value, ConversionError};
+use webcore::serialization::{JsSerialize, deserialize_object};
 
 /// A type representing a JavaScript object.
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Eq, Debug, ReferenceType)]
+#[reference(instance_of = "Object")]
 pub struct Object( Reference );
 
-impl FromReferenceUnchecked for Object {
-    unsafe fn from_reference_unchecked( reference: Reference ) -> Self {
-        Object( reference )
-    }
-}
-
-impl From< Object > for Reference {
-    fn from( object: Object ) -> Self {
-        object.0.clone()
-    }
-}
-
 impl Object {
-    #[inline]
-    pub(crate) fn as_reference( &self ) -> &Reference {
-        &self.0
-    }
-
     /// Returns the number of elements in this particular object.
     pub fn len( &self ) -> usize {
         js!(
@@ -70,14 +54,14 @@ impl< 'a > From< &'a mut Object > for HashMap< String, Value > {
     }
 }
 
-impl< K: AsRef< str >, V: JsSerializable > From< BTreeMap< K, V > > for Object {
+impl< K: AsRef< str >, V: JsSerialize > From< BTreeMap< K, V > > for Object {
     #[inline]
     fn from( value: BTreeMap< K, V > ) -> Self {
         (&value).into()
     }
 }
 
-impl< 'a, K, V > From< &'a BTreeMap< K, V > > for Object where K: AsRef< str >, V: JsSerializable {
+impl< 'a, K, V > From< &'a BTreeMap< K, V > > for Object where K: AsRef< str >, V: JsSerialize {
     #[inline]
     fn from( value: &'a BTreeMap< K, V > ) -> Self {
         // TODO: Do something more efficient here?
@@ -86,13 +70,13 @@ impl< 'a, K, V > From< &'a BTreeMap< K, V > > for Object where K: AsRef< str >, 
         };
 
         match value {
-            Value::Object( object ) => return object,
+            Value::Reference( reference ) => Object( reference ),
             _ => unreachable!()
         }
     }
 }
 
-impl< 'a, K, V > From< &'a mut BTreeMap< K, V > > for Object where K: AsRef< str >, V: JsSerializable {
+impl< 'a, K, V > From< &'a mut BTreeMap< K, V > > for Object where K: AsRef< str >, V: JsSerialize {
     #[inline]
     fn from( value: &'a mut BTreeMap< K, V > ) -> Self {
         let value: &BTreeMap< K, V > = value;
@@ -100,14 +84,14 @@ impl< 'a, K, V > From< &'a mut BTreeMap< K, V > > for Object where K: AsRef< str
     }
 }
 
-impl< K, V > From< HashMap< K, V > > for Object where K: AsRef< str > + Hash + Eq, V: JsSerializable {
+impl< K, V > From< HashMap< K, V > > for Object where K: AsRef< str > + Hash + Eq, V: JsSerialize {
     #[inline]
     fn from( value: HashMap< K, V > ) -> Self {
         (&value).into()
     }
 }
 
-impl< 'a, K, V > From< &'a HashMap< K, V > > for Object where K: AsRef< str > + Hash + Eq, V: JsSerializable {
+impl< 'a, K, V > From< &'a HashMap< K, V > > for Object where K: AsRef< str > + Hash + Eq, V: JsSerialize {
     #[inline]
     fn from( value: &'a HashMap< K, V > ) -> Self {
         // TODO: Do something more efficient here?
@@ -116,13 +100,13 @@ impl< 'a, K, V > From< &'a HashMap< K, V > > for Object where K: AsRef< str > + 
         };
 
         match value {
-            Value::Object( object ) => return object,
+            Value::Reference( reference ) => Object( reference ),
             _ => unreachable!()
         }
     }
 }
 
-impl< 'a, K: Hash + Eq, V > From< &'a mut HashMap< K, V > > for Object where K: AsRef< str >, V: JsSerializable {
+impl< 'a, K: Hash + Eq, V > From< &'a mut HashMap< K, V > > for Object where K: AsRef< str >, V: JsSerialize {
     #[inline]
     fn from( value: &'a mut HashMap< K, V > ) -> Self {
         let value: &HashMap< K, V > = value;
@@ -135,7 +119,7 @@ impl< E: Into< ConversionError >, V: TryFrom< Value, Error = E > > TryFrom< Obje
     type Error = ConversionError;
 
     fn try_from( object: Object ) -> Result< Self, Self::Error > {
-        deserialize_object( object.as_reference(), |deserializer| -> Result< BTreeMap< String, V >, E > {
+        deserialize_object( object.as_ref(), |deserializer| -> Result< BTreeMap< String, V >, E > {
             let mut output = BTreeMap::new();
             for (key, value) in deserializer {
                 output.insert( key, value.try_into()? );
@@ -149,7 +133,7 @@ impl< E: Into< ConversionError >, V: TryFrom< Value, Error = E > > TryFrom< Obje
     type Error = ConversionError;
 
     fn try_from( object: Object ) -> Result< Self, Self::Error > {
-        deserialize_object( object.as_reference(), |deserializer| -> Result< HashMap< String, V >, E > {
+        deserialize_object( object.as_ref(), |deserializer| -> Result< HashMap< String, V >, E > {
             let mut output = HashMap::with_capacity( deserializer.len() );
             for (key, value) in deserializer {
                 output.insert( key, value.try_into()? );

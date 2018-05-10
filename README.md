@@ -19,7 +19,9 @@ a high degree of interoperability between Rust and JavaScript.
 ## Patrons
 
 This software was brought to you thanks to these wonderful people:
+  * Daniel Norman
   * Ben Berman
+  * Stephen Sugden
 
 Thank you!
 
@@ -37,7 +39,7 @@ let result = js! {
 println!( "2 + 2 * 2 = {:?}", result );
 ```
 
-Even closures are supported:
+Closures are also supported:
 
 ```rust
 let print_hello = |name: String| {
@@ -73,13 +75,57 @@ js! {
 This crate also exposes a number of Web APIs, for example:
 
 ```rust
-let button = document().query_selector( "#hide-button" ).unwrap();
+let button = document().query_selector( "#hide-button" ).unwrap().unwrap();
 button.add_event_listener( move |_: ClickEvent| {
     for anchor in document().query_selector_all( "#main a" ) {
         js!( @{anchor}.style = "display: none;"; );
     }
 });
 ```
+
+Exposing Rust functions to JavaScript is supported too:
+
+```rust
+#[js_export]
+fn hash( string: String ) -> String {
+    let mut hasher = Sha1::new();
+    hasher.update( string.as_bytes() );
+    hasher.digest().to_string()
+}
+```
+
+Then you can do this from Node.js:
+
+```js
+var hasher = require( "hasher.js" ); // Where `hasher.js` is generated from Rust code.
+console.log( hasher.hash( "Hello world!" ) );
+```
+
+Or you can take the same `.js` file and use it in a web browser:
+
+```html
+<script src="hasher.js"></script>
+<script>
+    Rust.hasher.then( function( hasher ) {
+        console.log( hasher.hash( "Hello world!" ) );
+    });
+</script>
+```
+
+If you're using [Parcel] you can also use our [experimental Parcel plugin];
+first do this in your existing Parcel project:
+
+    $ npm install --save parcel-plugin-cargo-web
+
+And then simply:
+
+```js
+import hasher from "./hasher/Cargo.toml";
+console.log( hasher.hash( "Hello world!" ) );
+```
+
+[Parcel]: https://parceljs.org/
+[experimental Parcel plugin]: https://github.com/koute/parcel-plugin-cargo-web
 
 ## Design goals
 
@@ -105,7 +151,8 @@ Take a look at some of the examples:
   * `examples/minimal` - a totally minimal example which calls [alert]
   * `examples/todomvc` - a naively implemented [TodoMVC] application; shows how to call into the DOM
   * `examples/hasher` - shows how to export Rust functions to JavaScript and how to call them from
-                        the browser or Nodejs
+                        a vanilla web browser environment or from Nodejs
+  * `examples/hasher-parcel` - shows how to import and call exported Rust functions in a [Parcel] project
   * [`pinky-web`] - an NES emulator; you can play with the [precompiled version here](http://koute.github.io/pinky-web/)
 
 [alert]: https://developer.mozilla.org/en-US/docs/Web/API/Window/alert
@@ -114,127 +161,209 @@ Take a look at some of the examples:
 
 ## Running the examples
 
-1. Add one of Rust's Web targets with rustup.
-
-    * For compiling to asmjs through Emscripten:
-
-          $ rustup target add asmjs-unknown-emscripten
-
-    * For compiling to WebAssembly through Emscripten:
-
-          $ rustup target add wasm32-unknown-emscripten
-
-    * For compiling to WebAssembly through Rust's native backend:
-
-          $ rustup target add wasm32-unknown-unknown
-
-2. Install [cargo-web]:
+1. Install [cargo-web]:
 
        $ cargo install -f cargo-web
 
-3. Go into `examples/todomvc` and start the example.
+3. Go into `examples/todomvc` and start the example using one of these commands:
 
-    * For the `asmjs-unknown-emscripten` backend:
+    * Compile to [WebAssembly] using Rust's native WebAssembly backend (requires Rust nightly!):
 
-          $ cargo web start --target-asmjs-emscripten
+          $ cargo web start --target=wasm32-unknown-unknown
 
-    * For the `wasm32-unknown-emscripten`:
+    * Compile to [asm.js] using Emscripten:
 
-          $ cargo web start --target-webasm-emscripten
+          $ cargo web start --target=asmjs-unknown-emscripten
 
-    * For the `wasm32-unknown-unknown`:
+    * Compile to [WebAssembly] using Emscripten:
 
-          $ cargo web start --target-webasm
+          $ cargo web start --target=wasm32-unknown-emscripten
 
 4. Visit `http://localhost:8000` with your browser.
 
-For the `*-emscripten` targets `cargo-web` is not neccessary, however
+For the `*-emscripten` targets `cargo-web` is not necessary, however
 the native `wasm32-unknown-unknown` which doesn't need Emscripten
 **requires** `cargo-web` to work!
 
 [cargo-web]: https://github.com/koute/cargo-web
+[asm.js]: https://en.wikipedia.org/wiki/Asm.js
+[WebAssembly]: https://en.wikipedia.org/wiki/WebAssembly
 
-## Exposing Rust functions to JavaScript
-
-***WARNING***: This is only supported for Rust's native `wasm32-unknown-unknown` target!
-
-(Note: this is based on the `examples/hasher` example)
-
-With the `stdweb` crate you can easily expose a Rust function
-to JavaScript like this:
-
-```rust
-#[macro_use]
-extern crate stdweb;
-extern crate sha1;
-
-use sha1::Sha1;
-
-fn hash( string: String ) -> String {
-    let mut hasher = Sha1::new();
-    hasher.update( string.as_bytes() );
-    hasher.digest().to_string()
-}
-
-fn main() {
-    stdweb::initialize();
-
-    js! {
-        Module.exports.sha1 = @{hash};
-    }
-}
-```
-
-If you compile this code with `cargo-web build --target-webasm` you'll get two files:
-
-   * `target/wasm32-unknown-unknown/release/hasher.js`
-   * `target/wasm32-unknown-unknown/release/hasher.wasm`
-
-You can copy them into your JavaScript project and load like any other JavaScript file:
-
-```html
-<script src="hasher.js"></script>
-```
-
-After it's loaded you can access `Rust.hasher`, which is a [Promise] which
-will resolve once the WebAssembly module is loaded. Inside that promise
-you'll find the contents of `Module.exports` which we've set from our
-Rust code, which includes our exported function which you can now call:
-
-```html
-<script>
-    Rust.hasher.then( function( hasher ) {
-        const string = "fiddlesticks";
-        const hash = hasher.sha1( string );
-
-        console.log( "Hash of " + string + " is '" + hash + "'" );
-    });
-</script>
-```
-
-You can also use the very same `hasher.js` from Nodejs:
-
-```js
-const hasher = require( "hasher.js" );
-
-const string = "fiddlesticks";
-const hash = hasher.sha1( string );
-
-console.log( "Hash of " + string + " is '" + hash + "'" );
-```
-
-For the Nodejs environment the WebAssembly is compiled synchronously.
-
-[Promise]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
-
-## Breaking changes
+## Changelog
+   * `0.4.5`
+      * New types:
+         * `DocumentFragment`
+         * `SelectElement`
+         * `OptionElement`
+         * `HtmlCollection`
+      * New methods:
+         * `Node::from_html`
+         * `Value::is_null`
+      * Expose enums:
+         * `SocketMessageData`
+         * `NodeType`
+      * Update to `futures` 0.2
+   * `0.4.4`
+      * Fix `docs.rs` (hopefully).
+      * New methods:
+         * `Location::origin`
+         * `Location::protocol`
+         * `Location::host`
+         * `Location::hostname`
+         * `Location::port`
+         * `Location::pathname`
+         * `Location::search`
+      * These now return `SecurityError` in the error case:
+         * `Location::hash`
+         * `Location::href`
+   * `0.4.3`
+      * Objects which cannot be used as keys in a `WeakMap`
+        should be supported now (e.g. some of the WebGL-related objects under Firefox)
+      * New methods:
+         * `Element::get_bounding_client_rect`
+         * `Element::scroll_top`
+         * `Element::scroll_left`
+         * `Window::page_x_offset`
+         * `Window::page_y_offset`
+         * `NodeList::item`
+         * `Document::body`
+         * `Document::head`
+         * `Document::title`
+         * `Document::set_title`
+         * `IMouseEvent::offset_x`
+         * `IMouseEvent::offset_y`
+      * Expose more canvas related types:
+         * `CompositeOperation`
+         * `LineCap`
+         * `LineJoin`
+         * `Repetition`
+         * `TextAlign`
+         * `TextBaseline`
+      * Expose canvas related error types: `AddColorStopError`, `DrawImageError`, `GetImageDataError`
+      * New events:
+         * `MouseOverEvent`
+         * `MouseOutEvent`
+         * `PointerOverEvent`
+         * `PointerEnterEvent`
+         * `PointerDownEvent`
+         * `PointerMoveEvent`
+         * `PointerUpEvent`
+         * `PointerCancelEvent`
+         * `PointerOutEvent`
+         * `PointerLeaveEvent`
+         * `GotPointerCaptureEvent`
+         * `LostPointerCaptureEvent`
+      * New interface for pointer events: `IPointerEvent`
+   * `0.4.2`
+      * Fixed a leak when deserializing references
+      * Fixed `CanvasRenderingContext2d::get_canvas`
+      * Exposed `FillRule` and `SocketReadyState`
+      * New attribute related methods added to `IElement`
+      * New `Date` bindings
+   * `0.4.1`
+      * Support for newest nightly Rust on `wasm32-unknown-unknown`
+      * Exposed `SocketBinaryType` enum
+      * New canvas APIs:
+         * Numerous new methods for `CanvasRenderingContext2d`
+         * New types: `CanvasGradient`, `CanvasPattern`, `CanvasStyle`, `ImageData`, `TextMetrics`
+      * New error types: `IndexSizeError`, `NotSupportedError`, `TypeError`
+   * `0.4`
+      * (breaking change) Removed `Array` and `Object` variants from `Value`; these are now treated as `Reference`s
+      * (breaking change) The `Value` has an extra variant: `Symbol`
+      * (breaking change) Removed:
+         * `InputElement::set_kind`
+         * `InputElement::files`
+      * (breaking change) Renamed:
+         * `KeydownEvent` -> `KeyDownEvent`
+         * `KeyupEvent` -> `KeyUpEvent`
+         * `KeypressEvent` -> `KeyPressEvent`
+         * `ReadyState` -> `FileReaderReadyState`
+         * `InputElement::value` -> `InputElement::raw_value`
+         * `InputElement::set_value` -> `InputElement::set_raw_value`
+      * (breaking change) `ArrayBuffer::new` now takes an `u64` argument
+      * (breaking change) `InputElement::set_raw_value` now takes `&str` instead of `Into< Value >`
+      * (breaking change) Changed return types:
+         * Every method which returned `usize` now returns `u32`
+         * `INode::remove_child` now returns `Node` in the `Ok` case
+         * The following now return an `u64`:
+            * `ArrayBuffer::len`
+         * The following now return an `i32` instead of `f64`:
+            * `IMouseEvent::client_x`
+            * `IMouseEvent::client_y`
+            * `IMouseEvent::movement_x`
+            * `IMouseEvent::movement_y`
+            * `IMouseEvent::screen_x`
+            * `IMouseEvent::screen_y`
+         * The following now return a `Result`:
+            * `INode::insert_before`
+            * `INode::replace_child`
+            * `INode::clone_node`
+            * `StringMap::insert`
+            * `TokenList::add`
+            * `TokenList::remove`
+            * `Document::create_element`
+            * `IEventTarget::dispatch_event`
+            * `FileReader::read_as_text`
+            * `FileReader::read_as_array_buffer`
+            * `FileReader::read_as_text`
+            * `History::replace_state`
+            * `History::go`
+            * `History::back`
+            * `History::forward`
+            * `Location::href`
+            * `Location::hash`
+            * `CanvasElement::to_data_url`
+            * `CanvasElement::to_blob`
+            * `ArrayBuffer::new`
+        * `INode::base_uri` now returns a `String` instead of `Option< String >`
+        * `InputElement::raw_value` now returns a `String` instead of `Value`
+      * (breaking change) `INode::inner_text` was moved to `IHtmlElement::inner_text`
+      * (breaking change) `Document::query_selector` and `Document::query_selector_all` were moved to `IParentNode`
+      * (breaking change) `IElement::query_selector` and `IElement::query_selector_all` were moved to `IParentNode`
+      * (breaking change) `Document::get_element_by_id` was moved to `INonElementParentNode`
+      * (breaking change) A blanket impl for converting between arbitrary reference-like objects using
+        `TryFrom`/`TryInto` has been removed
+      * When building using a recent `cargo-web` it's not necessary to call
+        `stdweb::initialize` nor `stdweb::event_loop` anymore
+      * Support for `cdylib` crates on `wasm32-unknown-unknown`
+      * New bindings:
+         * `XmlHttpRequest`
+         * `WebSocket`
+         * `MutationObserver`
+         * `History`
+         * `TextAreaElement`
+         * `CanvasElement`
+      * New event types:
+         * `MouseDownEvent`
+         * `MouseUpEvent`
+         * `MouseMoveEvent`
+         * `PopStateEvent`
+         * `ResizeEvent`
+         * `ReadyStateChange`
+         * `SocketCloseEvent`
+         * `SocketErrorEvent`
+         * `SocketOpenEvent`
+         * `SocketMessageEvent`
+      * Initial support for the Canvas APIs
+      * New traits: `ReferenceType` and `InstanceOf`
+      * Add `#[derive(ReferenceType)]` in `stdweb-derive` crate; it's now possible
+        to define custom API bindings outside of `stdweb`
+      * Add `#[js_export]` procedural attribute (`wasm32-unknown-unknown` only)
+      * Add `DomException` and subtypes for passing around JavaScript exceptions
+      * `IElement` now inherits from `INode`
+      * Every interface now inherits from `ReferenceType`
+      * Add `stdweb::traits` module to act as a prelude for `use`-ing all of our interface traits
+      * Add `console!` macro
+      * Most types now implement `PartialEq` and `Eq`
 
    * `0.3`
-      * Deleted `ErrorEvent` methods
-      * Renamed:
+      * (breaking change) Deleted `ErrorEvent` methods
+      * (breaking change) Renamed:
          * `LoadEvent` -> `ResourceLoadEvent`
          * `AbortEvent` -> `ResourceAbortEvent`
          * `ErrorEvent` -> `ResourceErrorEvent`
+      * Add `UnsafeTypedArray` for zero cost slice passing to `js!`
+      * Add `Once` for passing `FnOnce` closures to `js!`
 
 ## License
 
@@ -250,8 +379,6 @@ Snippets of documentation which come from [Mozilla Developer Network] are covere
 [Mozilla Developer Network]: https://developer.mozilla.org/en-US/
 [CC-BY-SA, version 2.5]: https://developer.mozilla.org/en-US/docs/MDN/About#Copyrights_and_licenses
 
-### Contribution
+### Contributing
 
-Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
-dual licensed as above, without any additional terms or conditions.
+See [CONTRIBUTING.md](https://github.com/koute/stdweb/blob/master/CONTRIBUTING.md)

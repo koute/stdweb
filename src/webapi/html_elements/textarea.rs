@@ -5,9 +5,13 @@ use webapi::node::{INode, Node};
 use webapi::element::{IElement, Element};
 use webapi::html_element::{IHtmlElement, HtmlElement};
 
-/// The HTML <textarea> element represents a multi-line plain-text editing control.
+/// The HTML `<textarea>` element represents a multi-line plain-text editing control.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en/docs/Web/HTML/Element/textarea)
+// https://html.spec.whatwg.org/#htmltextareaelement
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "HTMLTextAreaElement")]
+#[reference(subclass_of(EventTarget, Node, Element, HtmlElement))]
 pub struct TextAreaElement( Reference );
 
 impl IEventTarget for TextAreaElement {}
@@ -15,17 +19,9 @@ impl INode for TextAreaElement {}
 impl IElement for TextAreaElement {}
 impl IHtmlElement for TextAreaElement {}
 
-reference_boilerplate! {
-    TextAreaElement,
-    instanceof HTMLTextAreaElement
-    convertible to EventTarget
-    convertible to Node
-    convertible to Element
-    convertible to HtmlElement
-}
-
 impl TextAreaElement {
     /// The value of the control.
+    // https://html.spec.whatwg.org/#the-textarea-element:dom-textarea-value
     #[inline]
     pub fn value( &self ) -> String {
         js! (
@@ -34,6 +30,7 @@ impl TextAreaElement {
     }
 
     /// Sets the value of the control.
+    // https://html.spec.whatwg.org/#the-textarea-element:dom-textarea-value
     #[inline]
     pub fn set_value( &self, value: &str ) {
         js! { @(no_return)

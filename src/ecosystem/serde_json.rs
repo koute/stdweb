@@ -30,7 +30,7 @@ impl TryFrom< JsonValue > for Value {
                     vector.push( element.try_into()? );
                 }
 
-                Value::Array( vector.into() )
+                vector.into()
             },
             JsonValue::Object( value ) => {
                 let mut map: BTreeMap< String, Value > = BTreeMap::new();
@@ -38,7 +38,7 @@ impl TryFrom< JsonValue > for Value {
                     map.insert( key.into(), value.try_into()? );
                 }
 
-                Value::Object( map.into() )
+                map.into()
             }
         };
 

@@ -10,6 +10,10 @@ use webapi::html_element::{IHtmlElement, HtmlElement};
 /// `<img>` elements.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement)
+// https://html.spec.whatwg.org/#htmlimageelement
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "HTMLImageElement")]
+#[reference(subclass_of(EventTarget, Node, Element, HtmlElement))]
 pub struct ImageElement( Reference );
 
 impl IEventTarget for ImageElement {}
@@ -17,19 +21,11 @@ impl INode for ImageElement {}
 impl IElement for ImageElement {}
 impl IHtmlElement for ImageElement {}
 
-reference_boilerplate! {
-    ImageElement,
-    instanceof HTMLImageElement
-    convertible to EventTarget
-    convertible to Node
-    convertible to Element
-    convertible to HtmlElement
-}
-
 impl ImageElement {
     /// Constructs a new ImageElement.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/Image)
+    // https://html.spec.whatwg.org/#the-img-element:dom-image
     pub fn new() -> ImageElement {
         js! (
             return new Image();
@@ -39,6 +35,7 @@ impl ImageElement {
     /// Constructs a new ImageElement with the given width and height.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/Image)
+    // https://html.spec.whatwg.org/#the-img-element:dom-image
     pub fn with_size(width: u32, height: u32) -> ImageElement {
         js! (
             return new Image(@{width}, @{height});
@@ -48,6 +45,7 @@ impl ImageElement {
     /// Returns the HTML `alt` attribute, representing the fallback context for the image.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/alt)
+    // https://html.spec.whatwg.org/#the-img-element:dom-img-alt
     #[inline]
     pub fn alt( &self ) -> String {
         js! (
@@ -58,6 +56,7 @@ impl ImageElement {
     /// Sets the HTML `alt` attribute, representing the fallback context for the image.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/alt)
+    // https://html.spec.whatwg.org/#the-img-element:dom-img-alt
     pub fn set_alt( &self, value: &str ) {
         js! { @(no_return)
             @{self}.alt = @{value};
@@ -68,6 +67,7 @@ impl ImageElement {
     /// successful or not. It also return true if the image has no src value.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/complete)
+    // https://html.spec.whatwg.org/#the-img-element:dom-img-complete
     pub fn complete( &self ) -> bool {
         js! (
             return @{self}.complete;
@@ -77,6 +77,7 @@ impl ImageElement {
     /// Returns the Cross-Origin Resource Sharing (CORS) setting for the image.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/crossOrigin)
+    // https://html.spec.whatwg.org/#the-img-element:dom-img-crossorigin
     pub fn cross_origin( &self ) -> CrossOriginSetting {
         match js!(
             return @{self}.crossOrigin;
@@ -91,6 +92,7 @@ impl ImageElement {
     /// Sets the Cross-Origin Resource Sharing (CORS) setting for the image.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/crossOrigin)
+    // https://html.spec.whatwg.org/#the-img-element:dom-img-crossorigin
     pub fn set_cross_origin( &self, value: CrossOriginSetting ) {
         js! { @(no_return)
             @{self}.crossOrigin = @{
@@ -106,6 +108,7 @@ impl ImageElement {
     /// Returns the the rendered height of the image in CSS pixels.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/height)
+    // https://html.spec.whatwg.org/#the-img-element:dom-img-height
     pub fn height( &self ) -> u32 {
         js! (
             return @{self}.height;
@@ -115,6 +118,7 @@ impl ImageElement {
     /// Sets the the rendered height of the image in CSS pixels.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/height)
+    // https://html.spec.whatwg.org/#the-img-element:dom-img-height
     pub fn set_height( &self, value: u32 ) {
         js! { @(no_return)
             @{self}.height = @{value};
@@ -124,6 +128,7 @@ impl ImageElement {
     /// Indicates whether the image is part of a server-side image map.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/isMap)
+    // https://html.spec.whatwg.org/#the-img-element:dom-img-ismap
     pub fn is_map( &self ) -> bool {
         js!(
             return @{self}.isMap;
@@ -133,6 +138,7 @@ impl ImageElement {
     /// Sets whether the image is part of a server-side image map.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/isMap)
+    // https://html.spec.whatwg.org/#the-img-element:dom-img-ismap
     pub fn set_is_map( &self, value: bool ) {
         js! { @(no_return)
             @{self}.isMap = @{value};
@@ -142,6 +148,7 @@ impl ImageElement {
     /// Returns the intrinsic height of the image in CSS pixels, if it is available.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/naturalHeight)
+    // https://html.spec.whatwg.org/#the-img-element:dom-img-naturalheight
     pub fn natural_height( &self ) -> Option< u32 > {
         match js!(
             return @{self}.naturalHeight;
@@ -154,6 +161,7 @@ impl ImageElement {
     /// Returns the intrinsic width of the image in CSS pixels, if it is available.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/naturalWidth)
+    // https://html.spec.whatwg.org/#the-img-element:dom-img-naturalwidth
     pub fn natural_width( &self ) -> Option< u32 > {
         match js!(
             return @{self}.naturalWidth;
@@ -166,6 +174,7 @@ impl ImageElement {
     /// Returns the full URL of the image, including the base URI.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/src)
+    // https://html.spec.whatwg.org/#the-img-element:dom-img-src
     pub fn src( &self ) -> String {
         js! (
             return @{self}.src;
@@ -175,6 +184,7 @@ impl ImageElement {
     /// Sets the full URL of the image, including the base URI.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/src)
+    // https://html.spec.whatwg.org/#the-img-element:dom-img-src
     pub fn set_src( &self, value: &str ) {
         js! { @(no_return)
             @{self}.src = @{value};
@@ -184,6 +194,7 @@ impl ImageElement {
     /// Returns the `usemap` HTML attribute, containing a partial URL of a map element.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/useMap)
+    // https://html.spec.whatwg.org/#the-img-element:dom-img-usemap
     pub fn use_map( &self ) -> String {
         js!(
             return @{self}.useMap;
@@ -193,6 +204,7 @@ impl ImageElement {
     /// Sets the `usemap` HTML attribute, containing a partial URL of a map element.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/useMap)
+    // https://html.spec.whatwg.org/#the-img-element:dom-img-usemap
     pub fn set_use_map( &self, value: &str ) {
         js! { @(no_return)
              @{self}.useMap = @{value};
@@ -202,6 +214,7 @@ impl ImageElement {
     /// Returns the rendered width of the image in CSS pixels.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/width)
+    // https://html.spec.whatwg.org/#the-img-element:dom-img-width
     pub fn width( &self ) -> u32 {
         js! (
             return @{self}.width;
@@ -211,6 +224,7 @@ impl ImageElement {
     /// Sets the rendered width of the image in CSS pixels.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/width)
+    // https://html.spec.whatwg.org/#the-img-element:dom-img-width
     pub fn set_width( &self, value: u32 ) {
         js! { @(no_return)
             @{self}.width = @{value};

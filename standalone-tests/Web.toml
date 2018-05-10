@@ -1,0 +1,2 @@
+default-target = "wasm32-unknown-unknown"
+prepend-js = "src/runtime.js"

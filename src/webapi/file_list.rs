@@ -1,5 +1,6 @@
-use webcore::value::{Value, Reference, FromReferenceUnchecked};
+use webcore::value::{Value, Reference};
 use webcore::try_from::TryInto;
+use webcore::reference_type::ReferenceType;
 use webapi::file::File;
 
 /// An object of this type is returned by the files property of the HTML `<input>` element;
@@ -7,20 +8,18 @@ use webapi::file::File;
 /// It's also used for a list of files dropped into web content when using the drag and drop API.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/FileList)
+// https://w3c.github.io/FileAPI/#dfn-filelist
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "FileList")]
 pub struct FileList( Reference );
-
-reference_boilerplate! {
-    FileList,
-    instanceof FileList
-}
 
 impl FileList {
     /// Returns the number of [File](struct.File.html)s contained in this list.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/FileList/length)
-    pub fn len( &self ) -> usize {
-        let length: i32 = js!( return @{self}.length; ).try_into().unwrap();
-        length as usize
+    // https://w3c.github.io/FileAPI/#ref-for-dfn-length
+    pub fn len( &self ) -> u32 {
+        js!( return @{self}.length; ).try_into().unwrap()
     }
 
     /// Returns an iterator over the list.
