@@ -88,7 +88,7 @@ impl CanvasElement {
     // https://html.spec.whatwg.org/#the-canvas-element:dom-canvas-todataurl
     pub fn to_data_url( &self, mime_type: Option<&str>, quality: Option<f64> ) -> Result< String, TODO > {
         Ok( js! (
-            return @{self}.toDataUrl(@{mime_type}, @{quality});
+            return @{self}.toDataURL(@{mime_type}, @{quality});
         ).try_into().unwrap() )
     }
 
