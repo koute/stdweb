@@ -5,6 +5,7 @@ use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
 use webapi::token_list::TokenList;
 use webapi::parent_node::IParentNode;
+use webapi::child_node::IChildNode;
 
 /// The `IElement` interface represents an object of a [Document](struct.Document.html).
 /// This interface describes methods and properties common to all
@@ -12,7 +13,7 @@ use webapi::parent_node::IParentNode;
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element)
 // https://dom.spec.whatwg.org/#element
-pub trait IElement: INode + IParentNode {
+pub trait IElement: INode + IParentNode + IChildNode {
     /// The Element.classList is a read-only property which returns a live
     /// [TokenList](struct.TokenList.html) collection of the class attributes
     /// of the element.
@@ -179,3 +180,4 @@ impl INode for Element {}
 impl IElement for Element {}
 
 impl< T: IElement > IParentNode for T {}
+impl< T: IElement > IChildNode for T {}
