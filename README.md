@@ -190,6 +190,12 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
 [WebAssembly]: https://en.wikipedia.org/wiki/WebAssembly
 
 ## Changelog
+   * `0.4.6`
+      * Fix `docs.rs` again
+      * New types:
+         * `SubmitEvent`
+         * `IChildNode`
+      * Fix `CanvasElement::to_data_url`
    * `0.4.5`
       * New types:
          * `DocumentFragment`
