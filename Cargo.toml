@@ -39,6 +39,6 @@ experimental_features_which_may_break_on_minor_version_bumps = ["futures-support
 stdweb-internal-macros = { version = "0.1", path = "stdweb-internal-macros" }
 
 [package.metadata.docs.rs]
-features = ["serde", "serde_json", "futures", "docs-rs"]
+features = ["serde", "serde_json", "futures-support", "docs-rs"]
 all-features = false
 no-default-features = true
