@@ -371,6 +371,22 @@ impl ConcreteEvent for MouseOutEvent {
     const EVENT_TYPE: &'static str = "mouseout";
 }
 
+/// The `ContextMenuEvent` event is fired when the right button of the mouse is clicked
+/// (before the context menu is displayed), or when the context menu key is pressed.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/contextmenu)
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "MouseEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, UiEvent, MouseEvent))]
+pub struct ContextMenuEvent( Reference );
+
+impl IEvent for ContextMenuEvent {}
+impl IUiEvent for ContextMenuEvent {}
+impl IMouseEvent for ContextMenuEvent {}
+impl ConcreteEvent for ContextMenuEvent {
+    const EVENT_TYPE: &'static str = "contextmenu";
+}
+
 #[cfg(all(test, feature = "web_test"))]
 mod tests {
     use super::*;
@@ -470,5 +486,13 @@ mod tests {
             return new MouseEvent( @{MouseOutEvent::EVENT_TYPE} );
         ).try_into().unwrap();
         assert_eq!( event.event_type(), MouseOutEvent::EVENT_TYPE );
+    }
+
+    #[test]
+    fn test_context_menu_event() {
+        let event: ContextMenuEvent = js!(
+            return new MouseEvent( @{ContextMenuEvent::EVENT_TYPE} );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), ContextMenuEvent::EVENT_TYPE );
     }
 }
