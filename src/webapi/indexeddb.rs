@@ -99,6 +99,8 @@ impl IDBFactory {
 
     /// Requests opening a connection to a database.
     ///
+    /// version can be None.
+    ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBFactory/open)
     pub fn open<T: Into<Option<u32>>>( &self, name: &str, version: T) -> IDBOpenDBRequest {
         match version.into() {

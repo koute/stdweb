@@ -383,7 +383,8 @@ pub mod web {
         pub use webapi::events::indexeddb:: {
             IDBSuccessEvent,
             IDBVersionChangeEvent,
-            IDBCompleteEvent
+            IDBCompleteEvent,
+            IDBErrorEvent
         };
     }
 }

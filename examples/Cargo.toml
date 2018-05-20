@@ -1,2 +1,2 @@
 [workspace]
-members = ["canvas", "echo", "hasher", "minimal", "todomvc", "webgl"]
+members = ["canvas", "echo", "hasher", "minimal", "todomvc", "webgl", "indexeddb"]

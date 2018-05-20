@@ -1,0 +1,9 @@
+[package]
+name = "indexeddb_example"
+version = "0.1.0"
+authors = ["Joe Jones <joeknockando@googlemail.com>"]
+
+[dependencies]
+stdweb = { path = "../.." }
+serde="*"
+serde_derive="*"
