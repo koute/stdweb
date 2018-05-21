@@ -27,7 +27,8 @@ use stdweb::web::event::{
     IDBSuccessEvent,
     IDBVersionChangeEvent,
     IDBCompleteEvent,
-    IDBErrorEvent
+    IDBErrorEvent,
+    SubmitEvent
 };
 
 use stdweb::web::indexeddb::{
@@ -37,15 +38,18 @@ use stdweb::web::indexeddb::{
     DBRequest,
     IDBCursor,
     IDBObjectStore,
-    IDBObjectStoreIndexSharedMethods
+    IDBObjectStoreIndexSharedMethods,
+    IDBCursorWithValue,
+    IDBCursorSharedMethods
 };
 
 use stdweb::unstable::TryInto;
 
 #[derive(Serialize, Deserialize)]
 struct Note {
-  title: String,
-  body: String
+    id: u32,
+    title: String,
+    body: String
 }
 
 js_serializable!( Note );
@@ -53,10 +57,7 @@ js_deserializable!( Note );
 
 fn main() {
     stdweb::initialize();
-
-    let title_input = document().query_selector("#title").unwrap().unwrap();
-    let body_input = document().query_selector("#body").unwrap().unwrap();
-    let form = document().query_selector("form").unwrap().unwrap();
+    
     let submit_btn = document().query_selector("form button");
 
     let db: RefCell<Option<IDBDatabase>> = RefCell::new(None);
@@ -113,6 +114,44 @@ fn main() {
 
     });
 
+    let form = document().query_selector("form").unwrap().unwrap();
+    form.add_event_listener( |e: SubmitEvent | {
+        // prevent default - we don't want the form to submit in the conventional way
+        e.prevent_default();
+        
+        // grab the values entered into the form fields and store them in an object ready for being inserted into the DB
+        let title_input = document().query_selector("#title").unwrap().unwrap();
+        let body_input = document().query_selector("#body").unwrap().unwrap();
+        let newItem = Note{ id: 0, title: title_input.text_content().unwrap(), body: body_input.text_content().unwrap() };
+        
+        // open a read/write db transaction, ready for adding the data
+        //let transaction = db.transaction("notes", "readwrite");
+        /*
+        // call an object store that's already been added to the database
+        let objectStore = transaction.objectStore('notes');
+        
+        // Make a request to add our newItem object to the object store
+        var request = objectStore.add(newItem);
+        request.onsuccess = function() {
+            // Clear the form, ready for adding the next entry
+            titleInput.value = '';
+            bodyInput.value = '';
+        };
+        
+        // Report on the success of the transaction completing, when everything is done
+        transaction.oncomplete = function() {
+            console.log('Transaction completed: database modification finished.');
+            
+            // update the display of data to show the newly added item, by running displayData() again.
+            displayData();
+        };
+        
+        transaction.onerror = function() {
+            console.log('Transaction not opened due to error');
+        };
+*/
+    });
+    
     // Define the displayData() function
     fn display_data(db: IDBDatabase) {
         let list = document().query_selector("ul").unwrap().unwrap();
@@ -132,7 +171,7 @@ fn main() {
 
                 // Get a reference to the cursor
                 let db_request: DBRequest = e.target().unwrap().try_into().unwrap();
-                let cursor: IDBCursor = db_request.result().try_into().unwrap();
+                let cursor: IDBCursorWithValue = db_request.result().try_into().unwrap();
 
                 // Todo there is the posibility that we don't have a cursor, how do we handle it.
                 
@@ -148,40 +187,43 @@ fn main() {
                     listItem.append_child(&h3);
                     listItem.append_child(&para);
                     list.append_child(&listItem);
+
+                    let note: Note = cursor.value().try_into().unwrap();
                     
                     // Put the data from the cursor inside the h3 and para
-                  //  h3.textContent = cursor.value.title;
-                    //para.textContent = cursor.value.body;
-                /*
-                // Store the ID of the data item inside an attribute on the listItem, so we know
-                // which item it corresponds to. This will be useful later when we want to delete items
-                listItem.setAttribute('data-note-id', cursor.value.id);
+                    h3.set_text_content(&note.title);
+                    para.set_text_content(&note.body);
+                    
+                    // Store the ID of the data item inside an attribute on the listItem, so we know
+                    // which item it corresponds to. This will be useful later when we want to delete items
+                    listItem.set_attribute("data-note-id", &format!("{}", note.id));
                 
         // Create a button and place it inside each listItem
-                let deleteBtn = document.createElement('button');
-                listItem.appendChild(deleteBtn);
-                deleteBtn.textContent = 'Delete';
-                
-                // Set an event handler so that when the button is clicked, the deleteItem()
-                // function is run
-                deleteBtn.onclick = deleteItem;
+                    let deleteBtn = document().create_element("button").unwrap();
+                    listItem.append_child(&deleteBtn);
+                    deleteBtn.set_text_content("Delete");
+                               
+                    // Set an event handler so that when the button is clicked, the deleteItem()
+                    // function is run
+                    // deleteBtn.onclick = deleteItem;
 
-                // Iterate to the next item in the cursor
-                cursor.continue();
-            } else {
-                // Again, if list item is empty, display a 'No notes stored' message
-                if(!list.firstChild) {
-                    let listItem = document.createElement('li');
-                    listItem.textContent = 'No notes stored.'
-          list.appendChild(listItem);
+                    // Iterate to the next item in the cursor
+                    cursor.advance(1); // Todo this was continue
+                    
+                } else {
+                    // Again, if list item is empty, display a 'No notes stored' message
+                    if(list.first_child().is_none()) {
+                        let listItem = document().create_element("li").unwrap();
+                        listItem.set_text_content("No notes stored.");
+                        list.append_child(&listItem);
+                    }
+                    // if there are no more cursor items to iterate through, say so
+                    console!(log, "Notes all displayed");
+                    
                 }
-                // if there are no more cursor items to iterate through, say so
-                console.log('Notes all displayed');
-*/
-            }
-
-        });
+                
+            });
         
-         
+        
     }
 }

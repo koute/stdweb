@@ -173,11 +173,7 @@ fn string_to_cursor_direction( direction: &str) -> IDBCursorDirection {
 }
 
 ///
-#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "IDBCursor")]
-pub struct IDBCursor( Reference );
-
-impl IDBCursor {
+pub trait IDBCursorSharedMethods: AsRef< Reference >  {
     //readonly attribute (IDBObjectStore or IDBIndex) source;
     
     //readonly attribute IDBCursorDirection direction;
@@ -196,7 +192,7 @@ impl IDBCursor {
     /// 
     ///
     ///
-    pub fn advance( &self, count: u32) {
+    fn advance( &self, count: u32) {
         js! { @{self.as_ref()}.advance(@{count}); }
     }
     
@@ -204,7 +200,7 @@ impl IDBCursor {
     ///
     ///
     ///
-    pub fn advance_to_match<K: Into<Option<Value>>>( &self, key: K) {
+    fn advance_to_match<K: Into<Option<Value>>>( &self, key: K) {
         match key.into() {
             None => js! { @{self.as_ref()}.continue(); },
             Some(key) => js! { @{self.as_ref()}.continue(@{key.as_ref()}); }
@@ -217,16 +213,40 @@ impl IDBCursor {
     ///
     ///
     ///
-    pub fn update( &self, value: Value) -> DBRequest {
-        js! ( return @{self}.update(@{value.as_ref()}); ).try_into().unwrap()
+    fn update( &self, value: Value) -> DBRequest {
+        js! ( return @{self.as_ref()}.update(@{value.as_ref()}); ).try_into().unwrap()
     }
 
     //[NewObject] IDBRequest delete();
     ///
     ///
     ///
-    pub fn delete( &self ) -> DBRequest {
-        js!( return @{self}.delete(); ).try_into().unwrap() 
+    fn delete( &self ) -> DBRequest {
+        js!( return @{self.as_ref()}.delete(); ).try_into().unwrap() 
+    }
+}
+
+///
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "IDBCursor")]
+pub struct IDBCursor( Reference );
+
+impl IDBCursorSharedMethods for IDBCursor {}
+
+///
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "IDBCursorWithValue")]
+pub struct IDBCursorWithValue( Reference );
+
+impl IDBCursorSharedMethods for IDBCursorWithValue {}
+
+impl IDBCursorWithValue {
+
+    ///
+    pub fn value( &self ) -> Value {
+        js! (
+            return @{self}.value
+            ).try_into().unwrap()
     }
 }
 

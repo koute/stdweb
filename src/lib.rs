@@ -218,7 +218,9 @@ pub mod web {
             IDBObjectStoreIndexSharedMethods,
             IDBCursorDirection,
             IDBRequestReadyState,
-            IDBCursor
+            IDBCursorSharedMethods,
+            IDBCursor,
+            IDBCursorWithValue
         };
     }
     
