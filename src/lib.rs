@@ -276,12 +276,15 @@ pub mod web {
         pub use webapi::events::mouse::{
             IMouseEvent,
             ClickEvent,
+            AuxClickEvent,
             DoubleClickEvent,
             MouseDownEvent,
             MouseUpEvent,
             MouseMoveEvent,
             MouseOverEvent,
             MouseOutEvent,
+            MouseEnterEvent,
+            MouseLeaveEvent,
             MouseButton
         };
 
