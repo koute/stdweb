@@ -72,6 +72,7 @@ pub trait IDBRequest : IEventTarget {
 /// This is a struct
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "IDBRequest")]
+#[reference(subclass_of(EventTarget))]
 pub struct DBRequest( Reference );
 
 impl IEventTarget for DBRequest {}

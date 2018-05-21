@@ -35,6 +35,7 @@ use stdweb::web::indexeddb::{
     IDBDatabase,
     IDBRequest,
     DBRequest,
+    IDBCursor,
     IDBObjectStore,
     IDBObjectStoreIndexSharedMethods
 };
@@ -127,30 +128,31 @@ fn main() {
         let object_store = db.transaction("notes", "readonly").object_store("notes");
         
         object_store.open_cursor(None, None)
-            .add_event_listener( |e: IDBSuccessEvent| {
-            
-                // Get a reference to the cursor
-            
-                let cursor = e.target();
-                    
-                    //.result;
-/*            
-      // If there is still another data item to iterate through, keep running this code
-            if(cursor) {
-                // Create a list item, h3, and p to put each data item inside when displaying it
-                // structure the HTML fragment, and append it inside the list
-                let listItem = document.createElement('li');
-                let h3 = document.createElement('h3');
-                let para = document.createElement('p');
-                
-                listItem.appendChild(h3);
-                listItem.appendChild(para);
-                list.appendChild(listItem);
+            .add_event_listener( move |e: IDBSuccessEvent| {
 
-                // Put the data from the cursor inside the h3 and para
-                h3.textContent = cursor.value.title;
-                para.textContent = cursor.value.body;
+                // Get a reference to the cursor
+                let db_request: DBRequest = e.target().unwrap().try_into().unwrap();
+                let cursor: IDBCursor = db_request.result().try_into().unwrap();
+
+                // Todo there is the posibility that we don't have a cursor, how do we handle it.
                 
+                // If there is still another data item to iterate through, keep running this code
+                if true {
+                    
+                    // Create a list item, h3, and p to put each data item inside when displaying it
+                    // structure the HTML fragment, and append it inside the list
+                    let listItem = document().create_element("li").unwrap();
+                    let h3 = document().create_element("h3").unwrap();
+                    let para = document().create_element("p").unwrap();
+                                
+                    listItem.append_child(&h3);
+                    listItem.append_child(&para);
+                    list.append_child(&listItem);
+                    
+                    // Put the data from the cursor inside the h3 and para
+                  //  h3.textContent = cursor.value.title;
+                    //para.textContent = cursor.value.body;
+                /*
                 // Store the ID of the data item inside an attribute on the listItem, so we know
                 // which item it corresponds to. This will be useful later when we want to delete items
                 listItem.setAttribute('data-note-id', cursor.value.id);
@@ -175,8 +177,9 @@ fn main() {
                 }
                 // if there are no more cursor items to iterate through, say so
                 console.log('Notes all displayed');
-            }
 */
+            }
+
         });
         
          
