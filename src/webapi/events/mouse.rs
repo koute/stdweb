@@ -285,6 +285,23 @@ impl ConcreteEvent for AuxClickEvent {
     const EVENT_TYPE: &'static str = "auxclick";
 }
 
+/// The `ContextMenuEvent` event is fired when the right button of the mouse is clicked
+/// (before the context menu is displayed), or when the context menu key is pressed.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/contextmenu)
+// https://html.spec.whatwg.org/#event-contextmenu
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "MouseEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, UiEvent, MouseEvent))]
+pub struct ContextMenuEvent( Reference );
+
+impl IEvent for ContextMenuEvent {}
+impl IUiEvent for ContextMenuEvent {}
+impl IMouseEvent for ContextMenuEvent {}
+impl ConcreteEvent for ContextMenuEvent {
+    const EVENT_TYPE: &'static str = "contextmenu";
+}
+
 /// The `DoubleClickEvent` is fired when a pointing device button
 /// (usually a mouse's primary button) is clicked twice on a single
 /// element.
@@ -482,6 +499,14 @@ mod tests {
         ).try_into()
             .unwrap();
         assert_eq!( event.event_type(), AuxClickEvent::EVENT_TYPE );
+    }
+
+    #[test]
+    fn test_context_menu_event() {
+        let event: ContextMenuEvent = js!(
+            return new MouseEvent( @{ContextMenuEvent::EVENT_TYPE} );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), ContextMenuEvent::EVENT_TYPE );
     }
 
     #[test]

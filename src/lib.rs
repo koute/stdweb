@@ -289,6 +289,7 @@ pub mod web {
             IMouseEvent,
             ClickEvent,
             AuxClickEvent,
+            ContextMenuEvent,
             DoubleClickEvent,
             MouseDownEvent,
             MouseUpEvent,
