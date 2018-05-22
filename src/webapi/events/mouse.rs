@@ -375,6 +375,7 @@ impl ConcreteEvent for MouseOutEvent {
 /// (before the context menu is displayed), or when the context menu key is pressed.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/contextmenu)
+// https://html.spec.whatwg.org/#event-contextmenu
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "MouseEvent")] // TODO: Better type check.
 #[reference(subclass_of(Event, UiEvent, MouseEvent))]
