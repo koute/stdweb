@@ -186,6 +186,14 @@ pub trait IDBCursorSharedMethods: AsRef< Reference >  {
 
     // Todo, not sure what I'm doing with these two
     //readonly attribute any key;
+    ///
+    fn key( &self ) -> Value {
+        js!(
+            console.log( "This is a dert", @{self.as_ref()}.key);
+            return @{self.as_ref()}.key; )
+            .try_into().unwrap()
+    }
+    
     //readonly attribute any primaryKey;
 
     //void advance([EnforceRange] unsigned long count);
@@ -584,6 +592,7 @@ impl IDBTransaction {
     /// This is a method
     pub fn object_store( &self, name: &str) -> IDBObjectStore {
         js! (
+            console.log("Here we are in Weerdert land ", @{self.as_ref()}, @{name});
             return @{self.as_ref()}.objectStore(@{name});
         ).try_into().unwrap()
     }
@@ -641,7 +650,7 @@ impl IDBDatabase {
     pub fn transaction( &self, store_name: &str, mode: &str) -> IDBTransaction {
         js! (
             //return @{self.as_ref()}.transaction(@{store_name}, @{mode});
-            return @{self.as_ref()}.transaction("customers", "readwrite");
+            return @{self.as_ref()}.transaction(@{store_name}, @{mode});
         ).try_into().unwrap()
     }
     

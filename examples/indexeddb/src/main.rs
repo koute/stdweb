@@ -49,7 +49,7 @@ use stdweb::unstable::TryInto;
 
 #[derive(Serialize, Deserialize)]
 struct Note {
-    id: u32,
+    //id: u32,
     title: String,
     body: String
 }
@@ -60,30 +60,31 @@ js_deserializable!( Note );
 thread_local!(static DB: RefCell<Option<IDBDatabase>> = RefCell::new(None));
 
 fn display_data_inner(db: &IDBDatabase) {
+    console!(log, "a");
     let list = document().query_selector("ul").unwrap().unwrap();
-    
+    console!(log, "b");
     // Here we empty the contents of the list element each time the display is updated
     // If you ddn't do this, you'd get duplicates listed each time a new note is added
     while list.first_child().is_some() {
         list.remove_child(&list.first_child().unwrap());
     }
-
+    console!(log, "c");
     // Open our object store and then get a cursor - which iterates through all the
     // different data items in the store
     let object_store = db.transaction("notes", "readonly").object_store("notes");
-    
+    console!(log, "5");
     object_store.open_cursor(None, None)
         .add_event_listener( move |e: IDBSuccessEvent| {
-
+            console!(log, "6");
             // Get a reference to the cursor
             let db_request: DBRequest = e.target().unwrap().try_into().unwrap();
-            let cursor: IDBCursorWithValue = db_request.result().try_into().unwrap();
-
-            // Todo there is the posibility that we don't have a cursor, how do we handle it.
-            
+            console!(log, "7");
+            //let cursor: IDBCursorWithValue = db_request.result().try_into().unwrap();
+            let maybe_cursor: Result<IDBCursorWithValue, stdweb::private::ConversionError> = db_request.result().try_into();
+                        
             // If there is still another data item to iterate through, keep running this code
-            if true {
-                
+            if let Ok(cursor) = maybe_cursor {
+                console!(log, "8");    
                 // Create a list item, h3, and p to put each data item inside when displaying it
                 // structure the HTML fragment, and append it inside the list
                 let listItem = document().create_element("li").unwrap();
@@ -102,8 +103,11 @@ fn display_data_inner(db: &IDBDatabase) {
                 
                 // Store the ID of the data item inside an attribute on the listItem, so we know
                 // which item it corresponds to. This will be useful later when we want to delete items
-                listItem.set_attribute("data-note-id", &format!("{}", note.id));
-                
+                console!(log, "9");
+                let id: u32 = cursor.key().try_into().unwrap();
+                console!(log, "10");
+                listItem.set_attribute("data-note-id", &format!("{}", id));
+                console!(log, "11");
                 // Create a button and place it inside each listItem
                 let deleteBtn = document().create_element("button").unwrap();
                 listItem.append_child(&deleteBtn);
@@ -125,12 +129,15 @@ fn display_data_inner(db: &IDBDatabase) {
                 }
                 // if there are no more cursor items to iterate through, say so
                 console!(log, "Notes all displayed");
-            }});}
+            }
+        });}
 
 fn display_data() {
         DB.with(|db_cell| {
             if let Some(ref db) = *db_cell.borrow_mut()  {
+                console!(log, "3");
                 display_data_inner(db);
+                console!(log, "4");
             }})
 }
 
@@ -166,7 +173,9 @@ fn main() {
             db_cell.replace(Some(db));
         });
         // Run the displayData() function to display the notes already in the IDB
+        console!(log, "1");
         display_data();
+        console!(log, "2");
     });
     
     request.add_event_listener( |event: IDBVersionChangeEvent| {
@@ -176,7 +185,7 @@ fn main() {
         // Create an objectStore to store our notes in (basically like a single table)
         // including a auto-incrementing key
         let mut store_options = HashMap::new();
-        store_options.insert("keyPath", "id");
+        //store_options.insert("keyPath", "id");
         store_options.insert("autoIncrement", "true");
         let object_store = db_.create_object_store("notes", Value::from(store_options));
         
@@ -203,7 +212,7 @@ fn main() {
         // grab the values entered into the form fields and store them in an object ready for being inserted into the DB
         let title_input: InputElement = document().query_selector("#title").unwrap().unwrap().try_into().unwrap();
         let body_input: InputElement = document().query_selector("#body").unwrap().unwrap().try_into().unwrap();
-        let newItem = Note{ id: 0, title: title_input.text_content().unwrap(), body: body_input.text_content().unwrap() };
+        let newItem = Note{ title: title_input.raw_value(), body: body_input.raw_value() };
 
         DB.with(|db_cell| {
             if let Some(ref db) = *db_cell.borrow_mut() {
