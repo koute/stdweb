@@ -191,3 +191,27 @@ pub fn get_gamepads() -> Vec<Option<Gamepad>> {
         return Array.from(navigator.getGamepads());
     ).try_into().unwrap()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::GamepadMappingType;
+
+    use webcore::try_from::TryInto;
+    use webcore::value::{ConversionError, Value};
+
+    #[test]
+    fn test_value_into_gamepad_mapping() {
+
+        let to_mapping = |v: Value| -> Result<GamepadMappingType, ConversionError> {
+            v.try_into()
+        };
+
+        assert_eq!(to_mapping("standard".into()), Ok(GamepadMappingType::Standard));
+        assert_eq!(to_mapping("".into()), Ok(GamepadMappingType::NoMapping));
+        assert!(to_mapping("fakemapping".into()).is_err());
+        assert!(to_mapping(Value::Null).is_err());
+    }
+
+    // most of the Gamepad API is not testable,
+    // because Gamepad and GamepadButton are not constructible
+}

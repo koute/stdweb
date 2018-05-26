@@ -61,3 +61,28 @@ impl IGamepadEvent for GamepadDisconnectedEvent {}
 impl ConcreteEvent for GamepadDisconnectedEvent {
     const EVENT_TYPE: &'static str = "gamepaddisconnected";
 }
+
+#[cfg(all(test, feature = "web_test"))]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_gamepad_connected_event() {
+
+        let event: GamepadConnectedEvent = js!(
+            return new GamepadEvent("gamepadconnected");
+        ).try_into().unwrap();
+
+        assert_eq!(event.event_type(), "gamepadconnected");
+    }
+
+    #[test]
+    fn test_gamepad_disconnected_event() {
+
+        let event: GamepadDisconnectedEvent = js!(
+            return new GamepadEvent("gamepaddisconnected");
+        ).try_into().unwrap();
+
+        assert_eq!(event.event_type(), "gamepaddisconnected");
+    }
+}
