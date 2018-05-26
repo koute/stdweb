@@ -183,3 +183,13 @@ pub trait IGamepad: ReferenceType {
 pub struct Gamepad( Reference );
 
 impl IGamepad for Gamepad {}
+
+/// Retrieve all connected gamepads, in an array indexed by each gamepad's `index` member.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/getGamepads)
+// https://www.w3.org/TR/gamepad/#dom-gamepad-axes
+pub fn get_gamepads() -> Vec<Option<Gamepad>> {
+    js!(
+        return Array.from(navigator.getGamepads());
+    ).try_into().unwrap()
+}

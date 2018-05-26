@@ -9,6 +9,7 @@ use stdweb::web::{
     document,
     Gamepad,
     GamepadMappingType,
+    get_gamepads,
     HtmlElement,
     IEventTarget,
     IGamepad,
@@ -52,6 +53,9 @@ impl State {
     }
 
     fn animate(&self, rc: Rc<RefCell<Self>>) {
+
+        // Chrome only updates Gamepad state when getGamepads is called
+        get_gamepads();
 
         let list = document().create_element("ul").unwrap();
 
