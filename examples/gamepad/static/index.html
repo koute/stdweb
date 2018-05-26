@@ -3,11 +3,19 @@
     <head>
         <meta charset="utf-8">
         <title>stdweb • Gamepad</title>
+        <style>
+            .gp-pressed {
+                background-color: black;
+                color: white;
+            }
+        </style>
     </head>
     <body>
-        <div class="state">
+        <h1>Gamepad State</h1>
+        <div id="state">
         </div>
-        <div class="log">
+        <h1>Connection Log</h1>
+        <div id="log">
         </div>
         <script src="gamepad.js"></script>
     </body>
