@@ -1,5 +1,3 @@
-//use std::fmt::Debug;
-
 use webcore::reference_type::ReferenceType;
 use webcore::try_from::{
     TryFrom,
@@ -57,7 +55,7 @@ pub trait IGamepadButton: ReferenceType {
 
     /// Is the button currently touched?
     ///
-    /// MDN does not document this, it may be unsupported by browsers.
+    /// MDN does not document this. Firefox supports it, but Chrome (as of v65) does not.
     // https://w3c.github.io/gamepad/#dom-gamepadbutton-touched
     #[inline]
     fn touched(&self) -> bool {
@@ -98,7 +96,7 @@ pub trait IGamepad: ReferenceType {
     /// A string containing some information about this gamepad.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Gamepad/id)
-    // https://www.w3.org/TR/gamepad/#dom-gamepad-id
+    // https://w3c.github.io/gamepad/#dom-gamepad-id
     #[inline]
     fn id(&self) -> String {
         js!(
@@ -109,7 +107,7 @@ pub trait IGamepad: ReferenceType {
     /// An auto-incrementing integer to uniquely identify a connected Gamepad.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Gamepad/index)
-    // https://www.w3.org/TR/gamepad/#dom-gamepad-index
+    // https://w3c.github.io/gamepad/#dom-gamepad-index
     #[inline]
     fn index(&self) -> i32 {
         js!(
@@ -120,7 +118,7 @@ pub trait IGamepad: ReferenceType {
     /// Is this gamepad connected to the system, powered on, and usable?
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Gamepad/connected)
-    // https://www.w3.org/TR/gamepad/#dom-gamepad-connected
+    // https://w3c.github.io/gamepad/#dom-gamepad-connected
     #[inline]
     fn connected(&self) -> bool {
         js!(
@@ -131,7 +129,7 @@ pub trait IGamepad: ReferenceType {
     /// Monotonically increasing time this gamepad was updated.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Gamepad/timestamp)
-    // https://www.w3.org/TR/gamepad/#dom-gamepad-timestamp
+    // https://w3c.github.io/gamepad/#dom-gamepad-timestamp
     #[inline]
     fn timestamp(&self) -> f64 {
         js!(
@@ -142,7 +140,7 @@ pub trait IGamepad: ReferenceType {
     /// The mapping in use for this device.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Gamepad/mapping)
-    // https://www.w3.org/TR/gamepad/#dom-gamepad-mapping
+    // https://w3c.github.io/gamepad/#dom-gamepad-mapping
     #[inline]
     fn mapping(&self) -> GamepadMappingType {
         js!(
@@ -153,7 +151,7 @@ pub trait IGamepad: ReferenceType {
     /// Array of values for all axes of the gamepad.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Gamepad/axes)
-    // https://www.w3.org/TR/gamepad/#dom-gamepad-axes
+    // https://w3c.github.io/gamepad/#dom-gamepad-axes
     #[inline]
     fn axes(&self) -> Vec<f64> {
         js!(
@@ -164,7 +162,7 @@ pub trait IGamepad: ReferenceType {
     /// Array of button states for all buttons of the gamepad.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Gamepad/buttons)
-    // https://www.w3.org/TR/gamepad/#dom-gamepad-buttons
+    // https://w3c.github.io/gamepad/#dom-gamepad-buttons
     #[inline]
     fn buttons(&self) -> Vec<GamepadButton> {
         js!(
@@ -187,7 +185,7 @@ impl IGamepad for Gamepad {}
 /// Retrieve all connected gamepads, in an array indexed by each gamepad's `index` member.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/getGamepads)
-// https://www.w3.org/TR/gamepad/#dom-gamepad-axes
+// https://w3c.github.io/gamepad/#dom-gamepad-axes
 pub fn get_gamepads() -> Vec<Option<Gamepad>> {
     js!(
         return Array.from(navigator.getGamepads());

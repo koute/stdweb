@@ -1,5 +1,3 @@
-//use std::fmt::Debug;
-
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
 
@@ -9,7 +7,7 @@ use webapi::gamepad::Gamepad;
 /// A GamepadEvent is fired on the window object, when a gamepad is connected or disconnected to the system.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/GamepadEvent)
-// https://www.w3.org/TR/gamepad/#gamepadevent-interface
+// https://w3c.github.io/gamepad/#gamepadevent-interface
 pub trait IGamepadEvent: IEvent {
 
     /// Returns the gamepad associated with this event.
@@ -25,7 +23,7 @@ pub trait IGamepadEvent: IEvent {
 /// interface.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/GamepadEvent)
-// https://www.w3.org/TR/gamepad/#gamepadevent-interface
+// https://w3c.github.io/gamepad/#gamepadevent-interface
 #[derive(Clone, Debug, Eq, PartialEq, ReferenceType)]
 #[reference(instance_of = "GamepadEvent")]
 #[reference(subclass_of(Event))]
@@ -37,7 +35,7 @@ impl IGamepadEvent for GamepadEvent {}
 /// The `GamepadConnected` event is fired on the window object, when the first input is received for a gamepad.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/gamepadconnected)
-// https://www.w3.org/TR/gamepad/#event-gamepadconnected
+// https://w3c.github.io/gamepad/#event-gamepadconnected
 #[derive(Clone, Debug, Eq, PartialEq, ReferenceType)]
 #[reference(instance_of = "GamepadEvent")]
 #[reference(subclass_of(Event, GamepadEvent))]
@@ -52,7 +50,7 @@ impl ConcreteEvent for GamepadConnectedEvent {
 /// The `GamepadDisconnected` event is fired on the window object, when a gamepad is disconnected.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/gamepaddisconnected)
-// https://www.w3.org/TR/gamepad/#event-gamepaddisconnected
+// https://w3c.github.io/gamepad/#event-gamepaddisconnected
 #[derive(Clone, Debug, Eq, PartialEq, ReferenceType)]
 #[reference(instance_of = "GamepadEvent")]
 #[reference(subclass_of(Event, GamepadEvent))]
