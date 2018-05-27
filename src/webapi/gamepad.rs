@@ -168,9 +168,11 @@ impl Gamepad {
 
     /// Retrieve all connected gamepads, in an array indexed by each gamepad's `index` member.
     ///
+    /// Chrome doesn't update Gamepad state automatically, you must call this function each frame.
+    ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/getGamepads)
     // https://w3c.github.io/gamepad/#dom-navigator-getgamepads
-    pub fn get_gamepads() -> Vec<Option<Gamepad>> {
+    pub fn get_all() -> Vec<Option<Gamepad>> {
         js!(
             return Array.from(navigator.getGamepads());
         ).try_into().unwrap()

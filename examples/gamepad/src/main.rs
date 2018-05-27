@@ -108,7 +108,7 @@ fn get_pad_state(pad: &Option<Gamepad>) -> Element {
 fn animate() {
     let list = document().create_element("ul").unwrap();
 
-    for pad in Gamepad::get_gamepads() {
+    for pad in Gamepad::get_all() {
         let item = document().create_element("li").unwrap();
         item.append_child(&get_pad_state(&pad));
         list.append_child(&item);
