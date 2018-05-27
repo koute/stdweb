@@ -1,4 +1,3 @@
-use webcore::reference_type::ReferenceType;
 use webcore::try_from::{
     TryFrom,
     TryInto,
@@ -40,14 +39,18 @@ impl TryFrom<Value> for GamepadMappingType {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/GamepadButton)
 // https://w3c.github.io/gamepad/#gamepadbutton-interface
-pub trait IGamepadButton: ReferenceType {
+#[derive(Clone, Debug, Eq, PartialEq, ReferenceType)]
+#[reference(instance_of = "GamepadButton")]
+pub struct GamepadButton( Reference );
+
+impl GamepadButton {
 
     /// Is the button currently pressed?
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/GamepadButton/pressed)
     // https://w3c.github.io/gamepad/#dom-gamepadbutton-pressed
     #[inline]
-    fn pressed(&self) -> bool {
+    pub fn pressed(&self) -> bool {
         js!(
             return @{self.as_ref()}.pressed;
         ).try_into().unwrap()
@@ -58,7 +61,7 @@ pub trait IGamepadButton: ReferenceType {
     /// MDN does not document this. Firefox supports it, but Chrome (as of v65) does not.
     // https://w3c.github.io/gamepad/#dom-gamepadbutton-touched
     #[inline]
-    fn touched(&self) -> bool {
+    pub fn touched(&self) -> bool {
         js!(
             return @{self.as_ref()}.touched;
         ).try_into().unwrap()
@@ -69,36 +72,29 @@ pub trait IGamepadButton: ReferenceType {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/GamepadButton/value)
     // https://w3c.github.io/gamepad/#dom-gamepadbutton-touched
     #[inline]
-    fn value(&self) -> f64 {
+    pub fn value(&self) -> f64 {
         js!(
             return @{self.as_ref()}.value;
         ).try_into().unwrap()
     }
 }
 
-/// A reference to a JavaScript object which implements the [IGamepadButton](trait.IGamepadButton.html)
-/// interface.
-///
-/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/GamepadButton)
-// https://w3c.github.io/gamepad/#gamepadbutton-interface
-#[derive(Clone, Debug, Eq, PartialEq, ReferenceType)]
-#[reference(instance_of = "GamepadButton")]
-pub struct GamepadButton( Reference );
-
-impl IGamepadButton for GamepadButton {}
-
 /// An individual gamepad/controller.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Gamepad)
 // https://w3c.github.io/gamepad/#gamepad-interface
-pub trait IGamepad: ReferenceType {
+#[derive(Clone, Debug, Eq, PartialEq, ReferenceType)]
+#[reference(instance_of = "Gamepad")]
+pub struct Gamepad( Reference );
+
+impl Gamepad {
 
     /// A string containing some information about this gamepad.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Gamepad/id)
     // https://w3c.github.io/gamepad/#dom-gamepad-id
     #[inline]
-    fn id(&self) -> String {
+    pub fn id(&self) -> String {
         js!(
             return @{self.as_ref()}.id;
         ).try_into().unwrap()
@@ -109,7 +105,7 @@ pub trait IGamepad: ReferenceType {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Gamepad/index)
     // https://w3c.github.io/gamepad/#dom-gamepad-index
     #[inline]
-    fn index(&self) -> i32 {
+    pub fn index(&self) -> i32 {
         js!(
             return @{self.as_ref()}.index;
         ).try_into().unwrap()
@@ -120,7 +116,7 @@ pub trait IGamepad: ReferenceType {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Gamepad/connected)
     // https://w3c.github.io/gamepad/#dom-gamepad-connected
     #[inline]
-    fn connected(&self) -> bool {
+    pub fn connected(&self) -> bool {
         js!(
             return @{self.as_ref()}.connected;
         ).try_into().unwrap()
@@ -131,7 +127,7 @@ pub trait IGamepad: ReferenceType {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Gamepad/timestamp)
     // https://w3c.github.io/gamepad/#dom-gamepad-timestamp
     #[inline]
-    fn timestamp(&self) -> f64 {
+    pub fn timestamp(&self) -> f64 {
         js!(
             return @{self.as_ref()}.timestamp;
         ).try_into().unwrap()
@@ -142,7 +138,7 @@ pub trait IGamepad: ReferenceType {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Gamepad/mapping)
     // https://w3c.github.io/gamepad/#dom-gamepad-mapping
     #[inline]
-    fn mapping(&self) -> GamepadMappingType {
+    pub fn mapping(&self) -> GamepadMappingType {
         js!(
             return @{self.as_ref()}.mapping;
         ).try_into().unwrap()
@@ -153,7 +149,7 @@ pub trait IGamepad: ReferenceType {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Gamepad/axes)
     // https://w3c.github.io/gamepad/#dom-gamepad-axes
     #[inline]
-    fn axes(&self) -> Vec<f64> {
+    pub fn axes(&self) -> Vec<f64> {
         js!(
             return @{self.as_ref()}.axes;
         ).try_into().unwrap()
@@ -164,32 +160,21 @@ pub trait IGamepad: ReferenceType {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Gamepad/buttons)
     // https://w3c.github.io/gamepad/#dom-gamepad-buttons
     #[inline]
-    fn buttons(&self) -> Vec<GamepadButton> {
+    pub fn buttons(&self) -> Vec<GamepadButton> {
         js!(
             return @{self.as_ref()}.buttons;
         ).try_into().unwrap()
     }
-}
 
-/// A reference to a JavaScript object which implements the [IGamepad](trait.IGamepad.html)
-/// interface.
-///
-/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Gamepad)
-// https://w3c.github.io/gamepad/#gamepad-interface
-#[derive(Clone, Debug, Eq, PartialEq, ReferenceType)]
-#[reference(instance_of = "Gamepad")]
-pub struct Gamepad( Reference );
-
-impl IGamepad for Gamepad {}
-
-/// Retrieve all connected gamepads, in an array indexed by each gamepad's `index` member.
-///
-/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/getGamepads)
-// https://w3c.github.io/gamepad/#dom-gamepad-axes
-pub fn get_gamepads() -> Vec<Option<Gamepad>> {
-    js!(
-        return Array.from(navigator.getGamepads());
-    ).try_into().unwrap()
+    /// Retrieve all connected gamepads, in an array indexed by each gamepad's `index` member.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/getGamepads)
+    // https://w3c.github.io/gamepad/#dom-navigator-getgamepads
+    pub fn get_gamepads() -> Vec<Option<Gamepad>> {
+        js!(
+            return Array.from(navigator.getGamepads());
+        ).try_into().unwrap()
+    }
 }
 
 #[cfg(test)]
