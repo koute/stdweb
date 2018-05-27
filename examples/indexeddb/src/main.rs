@@ -141,6 +141,34 @@ fn display_data() {
             }})
 }
 
+// Define the deleteItem() function
+fn delete_item( e: ClickEvent ) {
+    // retrieve the name of the task we want to delete. We need
+    // to convert it to a number before trying it use it with IDB; IDB key
+    // values are type-sensitive.
+    let noteId = Number(e.target.parentNode.getAttribute('data-note-id'));
+    
+    // open a database transaction and delete the task, finding it using the id we retrieved above
+    let transaction = db.transaction(['notes'], 'readwrite');
+    let objectStore = transaction.objectStore('notes');
+    let request = objectStore.delete(noteId);
+    
+    // report that the data item has been deleted
+    transaction.oncomplete = function() {
+        // delete the parent of the button
+        // which is the list item, so it is no longer displayed
+        e.target.parentNode.parentNode.removeChild(e.target.parentNode);
+        console.log('Note ' + noteId + ' deleted.');
+
+        // Again, if list item is empty, display a 'No notes stored' message
+        if(!list.firstChild) {
+            let listItem = document.createElement('li');
+            listItem.textContent = 'No notes stored.';
+            list.appendChild(listItem);
+        }
+    }
+}
+
 fn main() {
     stdweb::initialize();
     
