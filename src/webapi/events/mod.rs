@@ -1,5 +1,6 @@
 pub mod dom;
 pub mod focus;
+pub mod gamepad;
 pub mod history;
 pub mod keyboard;
 pub mod mouse;
