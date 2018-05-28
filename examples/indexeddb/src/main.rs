@@ -8,6 +8,7 @@ extern crate serde;
 
 use std::collections::HashMap;
 use std::cell::RefCell;
+use std::str::FromStr;
 
 use stdweb::Value;
 
@@ -18,7 +19,8 @@ use stdweb::web::{
     window,
     document,
     IEventTarget,
-    EventTarget
+    EventTarget,
+    Node
 };
 
 use stdweb::web::html_element::InputElement;
@@ -30,7 +32,8 @@ use stdweb::web::event::{
     IDBVersionChangeEvent,
     IDBCompleteEvent,
     IDBErrorEvent,
-    SubmitEvent
+    SubmitEvent,
+    ClickEvent
 };
 
 use stdweb::web::indexeddb::{
@@ -115,7 +118,7 @@ fn display_data_inner(db: &IDBDatabase) {
                 
                 // Set an event handler so that when the button is clicked, the deleteItem()
                 // function is run
-                // deleteBtn.onclick = deleteItem;
+                deleteBtn.add_event_listener( delete_item );
 
                 // Iterate to the next item in the cursor
                 cursor.advance(1); // Todo this was continue
@@ -146,27 +149,42 @@ fn delete_item( e: ClickEvent ) {
     // retrieve the name of the task we want to delete. We need
     // to convert it to a number before trying it use it with IDB; IDB key
     // values are type-sensitive.
-    let noteId = Number(e.target.parentNode.getAttribute('data-note-id'));
+    let button: Element = e.target().unwrap().try_into().unwrap();
+    let note: Element = button.parent_node().unwrap().try_into().unwrap();
+    let noteId = note.get_attribute("data-note-id").unwrap().parse::<u32>().unwrap();
     
     // open a database transaction and delete the task, finding it using the id we retrieved above
-    let transaction = db.transaction(['notes'], 'readwrite');
-    let objectStore = transaction.objectStore('notes');
-    let request = objectStore.delete(noteId);
-    
-    // report that the data item has been deleted
-    transaction.oncomplete = function() {
-        // delete the parent of the button
-        // which is the list item, so it is no longer displayed
-        e.target.parentNode.parentNode.removeChild(e.target.parentNode);
-        console.log('Note ' + noteId + ' deleted.');
+    DB.with(|db_cell| {
+        if let Some(ref db) = *db_cell.borrow_mut()  {
+            let transaction = db.transaction("notes", "readwrite");
+            let objectStore = transaction.object_store("notes");
+            let request = objectStore.delete(noteId.try_into().unwrap());
+            
+            // report that the data item has been deleted
+            console!(log, 20);
+            js!{
+                @{transaction.as_ref()}.oncomplete = function(e) {
+                    console.log(e);
+                };
 
-        // Again, if list item is empty, display a 'No notes stored' message
-        if(!list.firstChild) {
-            let listItem = document.createElement('li');
-            listItem.textContent = 'No notes stored.';
-            list.appendChild(listItem);
-        }
-    }
+            };
+            transaction.add_event_listener( move |e: IDBCompleteEvent| {
+                console!(log, 21);
+                // delete the parent of the button
+                // which is the list item, so it is no longer displayed
+                //let node: Node = e.target().unwrap().try_into().unwrap();
+                note.parent_node().unwrap().remove_child(&note);
+                console!(log, "Note ", noteId,  "deleted.");
+
+                // Again, if list item is empty, display a 'No notes stored' message
+                let list = document().query_selector("ul").unwrap().unwrap();
+                if(!list.first_child().is_some()) {
+                    let listItem = document().create_element("li").unwrap();
+                    listItem.set_text_content("No notes stored.");
+                    list.append_child(&listItem);
+                }
+            });
+        }});
 }
 
 fn main() {
