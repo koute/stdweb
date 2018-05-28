@@ -63,31 +63,24 @@ js_deserializable!( Note );
 thread_local!(static DB: RefCell<Option<IDBDatabase>> = RefCell::new(None));
 
 fn display_data_inner(db: &IDBDatabase) {
-    console!(log, "a");
     let list = document().query_selector("ul").unwrap().unwrap();
-    console!(log, "b");
     // Here we empty the contents of the list element each time the display is updated
     // If you ddn't do this, you'd get duplicates listed each time a new note is added
     while list.first_child().is_some() {
         list.remove_child(&list.first_child().unwrap());
     }
-    console!(log, "c");
     // Open our object store and then get a cursor - which iterates through all the
     // different data items in the store
     let object_store = db.transaction("notes", "readonly").object_store("notes");
-    console!(log, "5");
     object_store.open_cursor(None, None)
         .add_event_listener( move |e: IDBSuccessEvent| {
-            console!(log, "6");
             // Get a reference to the cursor
             let db_request: DBRequest = e.target().unwrap().try_into().unwrap();
-            console!(log, "7");
             //let cursor: IDBCursorWithValue = db_request.result().try_into().unwrap();
             let maybe_cursor: Result<IDBCursorWithValue, stdweb::private::ConversionError> = db_request.result().try_into();
-                        
+            
             // If there is still another data item to iterate through, keep running this code
             if let Ok(cursor) = maybe_cursor {
-                console!(log, "8");    
                 // Create a list item, h3, and p to put each data item inside when displaying it
                 // structure the HTML fragment, and append it inside the list
                 let listItem = document().create_element("li").unwrap();
@@ -106,11 +99,8 @@ fn display_data_inner(db: &IDBDatabase) {
                 
                 // Store the ID of the data item inside an attribute on the listItem, so we know
                 // which item it corresponds to. This will be useful later when we want to delete items
-                console!(log, "9");
                 let id: u32 = cursor.key().try_into().unwrap();
-                console!(log, "10");
                 listItem.set_attribute("data-note-id", &format!("{}", id));
-                console!(log, "11");
                 // Create a button and place it inside each listItem
                 let deleteBtn = document().create_element("button").unwrap();
                 listItem.append_child(&deleteBtn);
@@ -138,9 +128,7 @@ fn display_data_inner(db: &IDBDatabase) {
 fn display_data() {
         DB.with(|db_cell| {
             if let Some(ref db) = *db_cell.borrow_mut()  {
-                console!(log, "3");
                 display_data_inner(db);
-                console!(log, "4");
             }})
 }
 
@@ -161,15 +149,7 @@ fn delete_item( e: ClickEvent ) {
             let request = objectStore.delete(noteId.try_into().unwrap());
             
             // report that the data item has been deleted
-            console!(log, 20);
-            js!{
-                @{transaction.as_ref()}.oncomplete = function(e) {
-                    console.log(e);
-                };
-
-            };
             transaction.add_event_listener( move |e: IDBCompleteEvent| {
-                console!(log, 21);
                 // delete the parent of the button
                 // which is the list item, so it is no longer displayed
                 //let node: Node = e.target().unwrap().try_into().unwrap();
@@ -219,9 +199,7 @@ fn main() {
             db_cell.replace(Some(db));
         });
         // Run the displayData() function to display the notes already in the IDB
-        console!(log, "1");
         display_data();
-        console!(log, "2");
     });
     
     request.add_event_listener( |event: IDBVersionChangeEvent| {

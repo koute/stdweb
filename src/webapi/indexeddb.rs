@@ -189,7 +189,6 @@ pub trait IDBCursorSharedMethods: AsRef< Reference >  {
     ///
     fn key( &self ) -> Value {
         js!(
-            console.log( "This is a dert", @{self.as_ref()}.key);
             return @{self.as_ref()}.key; )
             .try_into().unwrap()
     }
@@ -592,7 +591,6 @@ impl IDBTransaction {
     /// This is a method
     pub fn object_store( &self, name: &str) -> IDBObjectStore {
         js! (
-            console.log("Here we are in Weerdert land ", @{self.as_ref()}, @{name});
             return @{self.as_ref()}.objectStore(@{name});
         ).try_into().unwrap()
     }
