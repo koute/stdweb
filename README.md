@@ -190,6 +190,17 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
 [WebAssembly]: https://en.wikipedia.org/wiki/WebAssembly
 
 ## Changelog
+   * `0.4.7`
+      * New events:
+         * `AuxClickEvent`
+         * `MouseEnterEvent`
+         * `MouseLeaveEvent`
+         * `ContextMenuEvent`
+      * Implement gamepad APIs:
+         * `Gamepad`
+         * `GamepadButton`
+         * `GamepadButtonMapping`
+         * `GamepadEvent`
    * `0.4.6`
       * Fix `docs.rs` again
       * New types:
