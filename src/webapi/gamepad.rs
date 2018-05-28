@@ -70,7 +70,7 @@ impl GamepadButton {
     /// The amount which the button has been pressed, between 0.0 (not pressed), and 1.0 (fully pressed).
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/GamepadButton/value)
-    // https://w3c.github.io/gamepad/#dom-gamepadbutton-touched
+    // https://w3c.github.io/gamepad/#dom-gamepadbutton-value
     #[inline]
     pub fn value(&self) -> f64 {
         js!(
