@@ -3,12 +3,14 @@ use webcore::value::Reference;
 use webcore::try_from::TryInto;
 use webapi::event_target::{IEventTarget, EventTarget};
 
+/// Used to represent the state of an IDBRequest.
 ///
+/// [(JavaScript docx)](https://developer.mozilla.org/en-US/docs/Web/API/IDBRequest/readyState)
 #[derive(Debug)]
 pub enum IDBRequestReadyState {
-    ///
+    /// The request is pending.
     Pending,
-    ///
+    /// The request is done.
     Done
 }
 
@@ -38,8 +40,8 @@ pub trait IDBRequest : IEventTarget {
             return @{self.as_ref()}.transaction;
         );
         match transaction {
-            Undefined => None,
-            Null => None,
+            Value::Undefined => None,
+            Value::Null => None,
             _ => Some(transaction.try_into().unwrap())
         }
     }
@@ -136,25 +138,27 @@ impl IDBFactory {
     
 }
 
+/// The IDBCursorDirection enum indicates the direction in which a cursor is traversing the data.
 ///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor/direction)
 #[derive(Debug)]
 pub enum IDBCursorDirection {
-    ///
+    /// This direction causes the cursor to be opened at the start of the source.
     Next,
-    ///
+    /// This direction causes the cursor to be opened at the start of the source. For every key with duplicate values, only the first record is yielded.
     NextUnique,
-    ///
+    /// This direction causes the cursor to be opened at the end of the source.
     Prev,
-    ///
+    /// This direction causes the cursor to be opened at the end of the source. For every key with duplicate values, only the first record is yielded.
     PrevUnique
 }
 
 fn cursor_direction_to_string( direction: IDBCursorDirection) -> String {
     match direction {
-        Next => "next".to_string(),
-        NextUnique => "nextunique".to_string(),
-        Prev => "prev".to_string(),
-        PrevUnique => "prevunique".to_string()
+        IDBCursorDirection::Next => "next".to_string(),
+        IDBCursorDirection::NextUnique => "nextunique".to_string(),
+        IDBCursorDirection::Prev => "prev".to_string(),
+        IDBCursorDirection::PrevUnique => "prevunique".to_string()
     }
 }
 
