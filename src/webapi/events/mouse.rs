@@ -268,6 +268,40 @@ impl ConcreteEvent for ClickEvent {
     const EVENT_TYPE: &'static str = "click";
 }
 
+/// The `AuxClickEvent` event is fired when a non-primary pointing device button
+/// (e.g. any non-left mouse button) has been pressed and released on an element.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/auxclick)
+// https://w3c.github.io/uievents/#event-type-auxclick
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "MouseEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, UiEvent, MouseEvent))]
+pub struct AuxClickEvent( Reference );
+
+impl IEvent for AuxClickEvent {}
+impl IUiEvent for AuxClickEvent {}
+impl IMouseEvent for AuxClickEvent {}
+impl ConcreteEvent for AuxClickEvent {
+    const EVENT_TYPE: &'static str = "auxclick";
+}
+
+/// The `ContextMenuEvent` event is fired when the right button of the mouse is clicked
+/// (before the context menu is displayed), or when the context menu key is pressed.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/contextmenu)
+// https://html.spec.whatwg.org/#event-contextmenu
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "MouseEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, UiEvent, MouseEvent))]
+pub struct ContextMenuEvent( Reference );
+
+impl IEvent for ContextMenuEvent {}
+impl IUiEvent for ContextMenuEvent {}
+impl IMouseEvent for ContextMenuEvent {}
+impl ConcreteEvent for ContextMenuEvent {
+    const EVENT_TYPE: &'static str = "contextmenu";
+}
+
 /// The `DoubleClickEvent` is fired when a pointing device button
 /// (usually a mouse's primary button) is clicked twice on a single
 /// element.
@@ -371,6 +405,40 @@ impl ConcreteEvent for MouseOutEvent {
     const EVENT_TYPE: &'static str = "mouseout";
 }
 
+/// The `MouseEnterEvent` is fired when a pointing device (usually a mouse)
+/// is moved over the element that has the listener attached.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/mouseenter)
+// https://w3c.github.io/uievents/#event-type-mouseenter
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "MouseEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, UiEvent, MouseEvent))]
+pub struct MouseEnterEvent( Reference );
+
+impl IEvent for MouseEnterEvent {}
+impl IUiEvent for MouseEnterEvent {}
+impl IMouseEvent for MouseEnterEvent {}
+impl ConcreteEvent for MouseEnterEvent {
+    const EVENT_TYPE: &'static str = "mouseenter";
+}
+
+/// The `MouseLeaveEvent` is fired when a pointing device (usually a mouse)
+/// is moved out of an element that has the listener attached to it.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/mouseleave)
+// https://w3c.github.io/uievents/#event-type-mouseleave
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "MouseEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, UiEvent, MouseEvent))]
+pub struct MouseLeaveEvent( Reference );
+
+impl IEvent for MouseLeaveEvent {}
+impl IUiEvent for MouseLeaveEvent {}
+impl IMouseEvent for MouseLeaveEvent {}
+impl ConcreteEvent for MouseLeaveEvent {
+    const EVENT_TYPE: &'static str = "mouseleave";
+}
+
 #[cfg(all(test, feature = "web_test"))]
 mod tests {
     use super::*;
@@ -425,6 +493,23 @@ mod tests {
     }
 
     #[test]
+    fn test_aux_click_event() {
+        let event: AuxClickEvent = js!(
+            return new MouseEvent( @{AuxClickEvent::EVENT_TYPE} );
+        ).try_into()
+            .unwrap();
+        assert_eq!( event.event_type(), AuxClickEvent::EVENT_TYPE );
+    }
+
+    #[test]
+    fn test_context_menu_event() {
+        let event: ContextMenuEvent = js!(
+            return new MouseEvent( @{ContextMenuEvent::EVENT_TYPE} );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), ContextMenuEvent::EVENT_TYPE );
+    }
+
+    #[test]
     fn test_double_click_event() {
         let event: DoubleClickEvent = js!(
             return new MouseEvent( @{DoubleClickEvent::EVENT_TYPE} );
@@ -470,5 +555,23 @@ mod tests {
             return new MouseEvent( @{MouseOutEvent::EVENT_TYPE} );
         ).try_into().unwrap();
         assert_eq!( event.event_type(), MouseOutEvent::EVENT_TYPE );
+    }
+
+    #[test]
+    fn test_mouse_enter_event() {
+        let event: MouseEnterEvent = js!(
+            return new MouseEvent( @{MouseEnterEvent::EVENT_TYPE} );
+        ).try_into()
+            .unwrap();
+        assert_eq!( event.event_type(), MouseEnterEvent::EVENT_TYPE );
+    }
+
+    #[test]
+    fn test_mouse_leave_event() {
+        let event: MouseLeaveEvent = js!(
+            return new MouseEvent( @{MouseLeaveEvent::EVENT_TYPE} );
+        ).try_into()
+            .unwrap();
+        assert_eq!( event.event_type(), MouseLeaveEvent::EVENT_TYPE );
     }
 }

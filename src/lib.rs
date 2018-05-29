@@ -263,6 +263,8 @@ pub mod web {
     pub use webapi::xml_http_request::{XmlHttpRequest, XhrReadyState};
     pub use webapi::blob::{IBlob, Blob};
     pub use webapi::html_collection::HtmlCollection;
+    pub use webapi::child_node::IChildNode;
+    pub use webapi::gamepad::{Gamepad, GamepadButton, GamepadMappingType};
 
     /// A module containing error types.
     pub mod error {
@@ -308,12 +310,16 @@ pub mod web {
         pub use webapi::events::mouse::{
             IMouseEvent,
             ClickEvent,
+            AuxClickEvent,
+            ContextMenuEvent,
             DoubleClickEvent,
             MouseDownEvent,
             MouseUpEvent,
             MouseMoveEvent,
             MouseOverEvent,
             MouseOutEvent,
+            MouseEnterEvent,
+            MouseLeaveEvent,
             MouseButton
         };
 
@@ -388,6 +394,12 @@ pub mod web {
             IDBCompleteEvent,
             IDBErrorEvent
         };
+
+        pub use webapi::events::gamepad::{
+            IGamepadEvent,
+            GamepadConnectedEvent,
+            GamepadDisconnectedEvent,
+        };
     }
 }
 
@@ -417,7 +429,8 @@ pub mod traits {
         // Mixins.
         IWindowOrWorker,
         IParentNode,
-        INonElementParentNode
+        INonElementParentNode,
+        IChildNode
     };
 
     pub use super::web::error::{

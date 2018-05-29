@@ -1,0 +1,7 @@
+[package]
+name = "gamepad"
+version = "0.1.0"
+authors = ["Cory Sherman <coryshrmn@gmail.com>"]
+
+[dependencies]
+stdweb = { path = "../.." }

@@ -37,3 +37,5 @@ pub mod parent_node;
 pub mod non_element_parent_node;
 pub mod console;
 pub mod html_collection;
+pub mod child_node;
+pub mod gamepad;
