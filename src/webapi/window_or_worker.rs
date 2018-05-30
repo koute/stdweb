@@ -29,5 +29,4 @@ pub trait IWindowOrWorker: ReferenceType {
             }, $3 );\
         ", self.as_ref().as_raw(), funcall_adapter::< F > as extern fn( *mut F ), callback, timeout );
     }
-   
 }
