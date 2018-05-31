@@ -36,7 +36,7 @@ use stdweb::web::indexeddb::{
     IDBOpenDBRequest,
     IDBDatabase,
     IDBRequest,
-    DBRequest,
+    IDBRequestSharedMethods,
     IDBObjectStoreIndexSharedMethods,
     IDBCursorWithValue,
     IDBCursorSharedMethods
@@ -69,7 +69,7 @@ fn display_data_inner(db: &IDBDatabase) {
     object_store.open_cursor(None, None)
         .add_event_listener( move |e: IDBSuccessEvent| {
             // Get a reference to the cursor
-            let db_request: DBRequest = e.target().unwrap().try_into().unwrap();
+            let db_request: IDBRequest = e.target().unwrap().try_into().unwrap();
             //let cursor: IDBCursorWithValue = db_request.result().try_into().unwrap();
             let maybe_cursor: Result<IDBCursorWithValue, stdweb::private::ConversionError> = db_request.result().try_into();
             

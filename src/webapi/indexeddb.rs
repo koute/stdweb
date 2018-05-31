@@ -2,6 +2,7 @@ use webcore::value::Value;
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
 use webapi::event_target::{IEventTarget, EventTarget};
+use webapi::dom_exception::InvalidStateError;
 
 /// Used to represent the state of an IDBRequest.
 ///
@@ -14,25 +15,62 @@ pub enum IDBRequestReadyState {
     Done
 }
 
-/// This is a trait
-pub trait IDBRequest : IEventTarget {
-    
-    //readonly attribute any result;
-    /// This is a trait method
+/// Represents the different types the source arrtibute of an IDBRequest
+/// can take.
+#[derive(Debug)]
+pub enum IDBRequestSource {
+    /// Indicates no source exists, such as when calling `indexedDB.open`
+    None,
+    Store(IDBObjectStore),
+    Index(IDBIndex),
+    Cursor(IDBCursor)
+}
+
+/// IDBRequestSharedMethode represents the methode that are shared between
+/// IDBOpenDBRequest and IDBRequest.
+pub trait IDBRequestSharedMethods : IEventTarget {
+
+    ///
+    ///
+    ///
     fn result( &self ) -> Value {
-        js! (
-            return @{self.as_ref()}.result;
-        )
+        js!( return @{self.as_ref()}.result; )
     }
+    //fn result( &self ) -> Result<Value, InvalidStateError> {
+    //    js_try!( return @{self.as_ref()}.result; ).unwrap()
+    //}
     
     /*fn error(&self) ->  DOMException {
         
 }*/
     
-    //readonly attribute (IDBObjectStore or IDBIndex or IDBCursor)? source;
-    
-    //readonly attribute IDBTransaction? transaction;
+    /// Returns the source of the request.
     ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBRequest/source)
+    fn source( &self ) -> IDBRequestSource {
+        let t: i32 = js!{
+            if (@{self.as_ref()}.source instanceof IDBObjectStore) {
+                return 0;
+            } else  if (@{self.as_ref()}.source instanceof IDBIndex) {
+                return 1;
+            } else if (@{self.as_ref()}.source instanceof IDBCursor) {
+                return 2;
+            } else {
+                return 3;
+            }
+        }.try_into().unwrap();
+        match t {
+            0 => IDBRequestSource::Store(js!(return @{self.as_ref()}.source;).try_into().unwrap()),
+            1 => IDBRequestSource::Index(js!(return @{self.as_ref()}.source;).try_into().unwrap()),
+            2 => IDBRequestSource::Cursor(js!(return @{self.as_ref()}.source;).try_into().unwrap()),
+            3 => IDBRequestSource::None,
+            _ => panic!()
+        }
+    }
+    
+    /// The `transaction` read-only property of the `IDBRequest` interface
+    /// returns the transaction for the request, that is, the transaction
+    /// the request is being made inside.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBRequest/transaction)
     fn transaction( &self ) -> Option<IDBTransaction> {
@@ -46,8 +84,8 @@ pub trait IDBRequest : IEventTarget {
         }
     }
     
-    //readonly attribute IDBRequestReadyState readyState;
-    ///
+    /// The `ready_state` read-only property of the `IDBRequest` interface
+    /// returns the state of the request.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBRequest/readyState)
     fn ready_state( &self ) -> IDBRequestReadyState {
@@ -61,24 +99,23 @@ pub trait IDBRequest : IEventTarget {
             return IDBRequestReadyState::Done;
         } else {
             panic!("Got {} as an IDBRequestReadyState.", ready_state);
-        }
-        
+        }        
     }
     
-    // Event handlers:
-    //attribute EventHandler onsuccess;
-    //attribute EventHandler onerror;
-
 }
 
-/// This is a struct
+/// The `IDBReques`t interface of the IndexedDB API provides access to results
+/// of asynchronous requests to databases and database objects using event
+/// handlers. Events that are received are IDBSuccessEvent and IDBErrorEvent.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBRequest)
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "IDBRequest")]
 #[reference(subclass_of(EventTarget))]
-pub struct DBRequest( Reference );
+pub struct IDBRequest( Reference );
 
-impl IEventTarget for DBRequest {}
-impl IDBRequest for DBRequest {}
+impl IEventTarget for IDBRequest {}
+impl IDBRequestSharedMethods for IDBRequest {}
 
 /// Provides access to the results of requests to open or delete databases.
 /// Receives `IDBBlockedEvent` and `IDBVersionChangeEvent` as well as events received by `IDBRequest`.
@@ -89,7 +126,7 @@ impl IDBRequest for DBRequest {}
 pub struct IDBOpenDBRequest( Reference );
 
 impl IEventTarget for IDBOpenDBRequest {}
-impl IDBRequest for IDBOpenDBRequest {}
+impl IDBRequestSharedMethods for IDBOpenDBRequest {}
 
 /// The `IDBFactory` interface of the IndexedDB API lets applications asynchronously access the indexed databases. The object that implements the interface is `window.indexedDB`. 
 ///
@@ -176,17 +213,20 @@ fn string_to_cursor_direction( direction: &str) -> IDBCursorDirection {
     }
 }
 
-///
+/// This trait implements all the methods that are shared between
+/// 
 pub trait IDBCursorSharedMethods: AsRef< Reference >  {
     //readonly attribute (IDBObjectStore or IDBIndex) source;
     
-    //readonly attribute IDBCursorDirection direction;
-    // ///
-    // ///
-    // ///
-    // pub fn direction( &self ) -> IDBCursorDirection {
-    //    string_to_cursor_direction(js! ( return @{self.as_ref()}.direction; ).try_into().unwrap())
-    //}
+    /// The `direction` read-only property of the `IDBCursor` interface is
+    /// an enum that represents the direction of traversal of the
+    /// cursor (set using `IDBObjectStore.openCursor` for example).
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor/direction)
+    fn direction( &self ) -> IDBCursorDirection {
+        let direction: String = js! ( return @{self.as_ref()}.direction; ).try_into().unwrap();
+        return string_to_cursor_direction(&direction);
+    }
 
     // Todo, not sure what I'm doing with these two
     //readonly attribute any key;
@@ -224,7 +264,7 @@ pub trait IDBCursorSharedMethods: AsRef< Reference >  {
     ///
     ///
     ///
-    fn update( &self, value: Value) -> DBRequest {
+    fn update( &self, value: Value) -> IDBRequest {
         js! ( return @{self.as_ref()}.update(@{value.as_ref()}); ).try_into().unwrap()
     }
 
@@ -232,7 +272,7 @@ pub trait IDBCursorSharedMethods: AsRef< Reference >  {
     ///
     ///
     ///
-    fn delete( &self ) -> DBRequest {
+    fn delete( &self ) -> IDBRequest {
         js!( return @{self.as_ref()}.delete(); ).try_into().unwrap() 
     }
 }
@@ -287,7 +327,7 @@ pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
     /// This is for retrieving specific records from an object store.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/get)
-    fn get( &self, query: Value) -> DBRequest {
+    fn get( &self, query: Value) -> IDBRequest {
         js! (
             return @{self.as_ref()}.get(@{query.as_ref()});
         ).try_into().unwrap()
@@ -297,7 +337,7 @@ pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
     /// This is for retrieving specific records from an object store.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/getKey)
-    fn get_key( &self, query: Value) -> DBRequest {
+    fn get_key( &self, query: Value) -> IDBRequest {
         js! (
             return @{self.as_ref()}.getKey(@{query.as_ref()});
         ).try_into().unwrap()
@@ -307,7 +347,7 @@ pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
     /// 
     ///
     ///
-    fn get_all<Q: Into<Option<Value>>, C: Into<Option<u32>>>( &self, query: Q, count: C) -> DBRequest {
+    fn get_all<Q: Into<Option<Value>>, C: Into<Option<u32>>>( &self, query: Q, count: C) -> IDBRequest {
         match query.into() {
             None => js! ( return @{self.as_ref()}.getAll(); ),
             Some(query) => {
@@ -324,7 +364,7 @@ pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
     ///
     ///
     ///
-    fn get_all_keys<Q: Into<Option<Value>>, C: Into<Option<u32>>>( &self, query: Q, count: C) -> DBRequest {
+    fn get_all_keys<Q: Into<Option<Value>>, C: Into<Option<u32>>>( &self, query: Q, count: C) -> IDBRequest {
         match query.into() {
             None => js! ( return @{self.as_ref()}.getAllKeys(); ),
             Some(query) => {
@@ -340,7 +380,7 @@ pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
     ///
     ///
     ///
-    fn count<Q: Into<Option<Value>>>( &self, query: Q) -> DBRequest {
+    fn count<Q: Into<Option<Value>>>( &self, query: Q) -> IDBRequest {
         match query.into() {
             None => js! (
                 return @{self.as_ref()}.count();
@@ -355,7 +395,7 @@ pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
     ///
     ///
     ///
-    fn open_cursor<Q: Into<Option<Value>>, D: Into<Option<IDBCursorDirection>>>( &self, query: Q, direction: D) -> DBRequest {
+    fn open_cursor<Q: Into<Option<Value>>, D: Into<Option<IDBCursorDirection>>>( &self, query: Q, direction: D) -> IDBRequest {
         match query.into() {
             None => js! ( return @{self.as_ref()}.openCursor(); ),
             Some(query) => {
@@ -371,7 +411,7 @@ pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
     ///
     ///
     ///
-    fn open_key_cursor<Q: Into<Option<Value>>, D: Into<Option<IDBCursorDirection>>>( &self, query: Q, direction: D) -> DBRequest {
+    fn open_key_cursor<Q: Into<Option<Value>>, D: Into<Option<IDBCursorDirection>>>( &self, query: Q, direction: D) -> IDBRequest {
         match query.into() {
             None => js! ( return @{self.as_ref()}.openKeyCursor(); ),
             Some(query) => {
@@ -474,7 +514,7 @@ impl IDBObjectStore {
     /// The key is only needed if 
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/put)
-    pub fn put<T: Into<Option<Value>>>( &self, value: Value, key: T) -> DBRequest {
+    pub fn put<T: Into<Option<Value>>>( &self, value: Value, key: T) -> IDBRequest {
         match key.into() {
             None => js! (
                 return @{self.as_ref()}.put(@{value.as_ref()});
@@ -489,7 +529,7 @@ impl IDBObjectStore {
     /// Returns an `IDBRequest` object, and, in a separate thread, creates a structured clone of the value, and stores the cloned value in the object store. This is for adding new records to an object store.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/add)
-    pub fn add<T: Into<Option<Value>>>( &self, value: Value, key: T) -> DBRequest {
+    pub fn add<T: Into<Option<Value>>>( &self, value: Value, key: T) -> IDBRequest {
         match key.into() {
             None => js! (
                 return @{self.as_ref()}.add(@{value.as_ref()});
@@ -504,7 +544,7 @@ impl IDBObjectStore {
     /// returns an `IDBRequest` object, and, in a separate thread, deletes the specified record or records.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/delete)
-    pub fn delete( &self, query: Value) -> DBRequest {
+    pub fn delete( &self, query: Value) -> IDBRequest {
         js! (
             return @{self.as_ref()}.delete(@{query.as_ref()});
         ).try_into().unwrap()
@@ -514,7 +554,7 @@ impl IDBObjectStore {
     /// Returns an IDBRequest object, and clears this object store in a separate thread
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/clear)
-    pub fn clear( &self ) -> DBRequest {
+    pub fn clear( &self ) -> IDBRequest {
         js! (
             return @{self.as_ref()}.clear();
         ).try_into().unwrap()

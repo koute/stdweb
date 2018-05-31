@@ -209,8 +209,8 @@ pub mod web {
         pub use webapi::indexeddb::{
             IDBOpenDBRequest,
             IDBDatabase,
+            IDBRequestSharedMethods,
             IDBRequest,
-            DBRequest,
             IDBIndex,
             IDBObjectStore,
             IDBTransaction,
