@@ -130,6 +130,22 @@ impl ConcreteEvent for SubmitEvent {
     const EVENT_TYPE: &'static str = "submit";
 }
 
+/// The selectionchange event of the Selection API is fired when the current text selection on a
+/// document is changed.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/selectionchange)
+// https://html.spec.whatwg.org/#event-selectionchange
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "Event")] // TODO: Better type check.
+#[reference(subclass_of(Event))]
+pub struct SelectionChangeEvent( Reference );
+
+impl IEvent for SelectionChangeEvent {}
+
+impl ConcreteEvent for SelectionChangeEvent {
+    const EVENT_TYPE: &'static str = "selectionchange";
+}
+
 #[cfg(all(test, feature = "web_test"))]
 mod tests {
     use super::*;
@@ -181,5 +197,13 @@ mod tests {
             return new Event( @{SubmitEvent::EVENT_TYPE} );
         ).try_into().unwrap();
         assert_eq!( event.event_type(), SubmitEvent::EVENT_TYPE);
+    }
+
+    #[test]
+    fn test_selectionchange_event() {
+        let event: SelectionChangeEvent = js!(
+            return new Event( @{SelectionChangeEvent::EVENT_TYPE} );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), SelectionChangeEvent::EVENT_TYPE);
     }
 }
