@@ -925,7 +925,7 @@ impl CanvasRenderingContext2d {
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-clearrect
     pub fn clear_rect(&self, x: f64, y: f64, width: f64, height: f64) {
         js! { @(no_return)
-            @{&self.0}.clearRect(@{x}, @{y}, @{width}, @{width}, @{height});
+            @{&self.0}.clearRect(@{x}, @{y}, @{width}, @{height});
         }
     }
 
