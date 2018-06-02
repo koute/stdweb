@@ -358,7 +358,8 @@ pub mod web {
             ResizeEvent,
             InputEvent,
             ReadyStateChangeEvent,
-            SubmitEvent
+            SubmitEvent,
+            SelectionChangeEvent
         };
 
         pub use webapi::events::focus::{
