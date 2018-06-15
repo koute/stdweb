@@ -39,5 +39,5 @@ pub mod html_collection;
 pub mod child_node;
 pub mod gamepad;
 
-#[cfg(feature = "futures")]
+#[cfg(feature = "futures-support")]
 pub mod timer_future;

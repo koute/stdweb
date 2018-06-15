@@ -1,10 +1,11 @@
+use std::sync::{Arc, Mutex};
 use webcore::once::Once;
-use webcore::try_from::TryInto;
 use webcore::value::Value;
 use webapi::error::Error;
-use futures::{Future, Poll, Stream};
-use futures::unsync::oneshot;
-use futures::sync::mpsc;
+use futures_core::{Future, Poll, Async};
+use futures_core::task::{Waker, Context};
+use futures_core::stream::Stream;
+use futures_channel::oneshot;
 
 
 #[inline]
@@ -22,8 +23,7 @@ fn convert_to_i32( ms: u32 ) -> i32 {
 #[derive( Debug )]
 pub struct Wait {
     receiver: oneshot::Receiver< () >,
-    callback: Value,
-    timer_id: u32,
+    timer: Value,
 }
 
 impl Wait {
@@ -34,21 +34,27 @@ impl Wait {
         let ( sender, receiver ) = oneshot::channel();
 
         let callback = move || {
-            sender.send( () ).unwrap();
+            // TODO is this correct ?
+            match sender.send( () ) {
+                Ok( _ ) => {},
+                Err( _ ) => {},
+            };
         };
 
-        let callback = js!( return @{Once( callback )}; );
+        let timer = js!(
+            var callback = @{Once( callback )};
 
-        let timer_id = js!(
-            return setTimeout( function () {
-                @{&callback}();
-            }, @{ms} );
-        ).try_into().unwrap();
+            return {
+                callback: callback,
+                id: setTimeout( function () {
+                    callback();
+                }, @{ms} )
+            };
+        );
 
         Self {
             receiver,
-            callback,
-            timer_id,
+            timer,
         }
     }
 }
@@ -59,8 +65,8 @@ impl Future for Wait {
     type Error = Error;
 
     #[inline]
-    fn poll( &mut self ) -> Poll< Self::Item, Self::Error > {
-        self.receiver.poll().map_err( |_| unreachable!() )
+    fn poll( &mut self, cx: &mut Context ) -> Poll< Self::Item, Self::Error > {
+        self.receiver.poll( cx ).map_err( |_| unreachable!() )
     }
 }
 
@@ -68,8 +74,9 @@ impl Drop for Wait {
     #[inline]
     fn drop( &mut self ) {
         js! { @(no_return)
-            clearTimeout( @{self.timer_id} );
-            @{&self.callback}.drop();
+            var timer = @{&self.timer};
+            clearTimeout( timer.id );
+            timer.callback.drop();
         }
     }
 }
@@ -81,12 +88,17 @@ pub fn wait( ms: u32 ) -> Wait {
 }
 
 
+#[derive( Debug )]
+struct IntervalBufferedState {
+    waker: Option< Waker >,
+    count: usize,
+}
+
 ///
 #[derive( Debug )]
 pub struct IntervalBuffered {
-    receiver: mpsc::UnboundedReceiver< () >,
-    callback: Value,
-    timer_id: u32,
+    state: Arc< Mutex< IntervalBufferedState > >,
+    timer: Value,
 }
 
 impl IntervalBuffered {
@@ -94,24 +106,40 @@ impl IntervalBuffered {
         // We accept a u32 because we don't want negative values, however setInterval requires it to be i32
         let ms = convert_to_i32( ms );
 
-        let ( sender, receiver ) = mpsc::unbounded();
+        let state = Arc::new( Mutex::new( IntervalBufferedState {
+            waker: None,
+            count: 0,
+        } ) );
 
-        let callback = move || {
-            sender.unbounded_send( () ).unwrap();
+        let callback = {
+            let state = state.clone();
+
+            move || {
+                let mut lock = state.lock().unwrap();
+
+                lock.count += 1;
+
+                if let Some( waker ) = lock.waker.take() {
+                    drop( lock );
+                    waker.wake();
+                }
+            }
         };
 
-        let callback = js!( return @{callback}; );
+        let timer = js!(
+            var callback = @{callback};
 
-        let timer_id = js!(
-            return setInterval( function () {
-                @{&callback}();
-            }, @{ms} );
-        ).try_into().unwrap();
+            return {
+                callback: callback,
+                id: setInterval( function () {
+                    callback();
+                }, @{ms} )
+            };
+        );
 
         Self {
-            receiver,
-            callback,
-            timer_id,
+            state,
+            timer,
         }
     }
 }
@@ -121,9 +149,18 @@ impl Stream for IntervalBuffered {
     // TODO use Void instead
     type Error = Error;
 
-    #[inline]
-    fn poll( &mut self ) -> Poll< Option< Self::Item >, Self::Error > {
-        self.receiver.poll().map_err( |_| unreachable!() )
+    fn poll_next( &mut self, cx: &mut Context ) -> Poll< Option< Self::Item >, Self::Error > {
+        let mut lock = self.state.lock().unwrap();
+
+        if lock.count == 0 {
+            lock.waker = Some( cx.waker().clone() );
+            Ok( Async::Pending )
+
+        } else {
+            lock.count -= 1;
+
+            Ok( Async::Ready( Some( () ) ) )
+        }
     }
 }
 
@@ -131,8 +168,9 @@ impl Drop for IntervalBuffered {
     #[inline]
     fn drop( &mut self ) {
         js! { @(no_return)
-            clearInterval( @{self.timer_id} );
-            @{&self.callback}.drop();
+            var timer = @{&self.timer};
+            clearInterval( timer.id );
+            timer.callback.drop();
         }
     }
 }
