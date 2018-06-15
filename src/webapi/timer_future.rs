@@ -18,7 +18,8 @@ fn convert_to_i32( ms: u32 ) -> i32 {
 }
 
 
-///
+/// The [`Future`](https://docs.rs/futures/0.2.*/futures/future/trait.Future.html) which is returned by
+/// [`wait`](fn.wait.html).
 // This isn't implemented as a PromiseFuture because Promises do not support cancellation
 #[derive( Debug )]
 pub struct Wait {
@@ -81,7 +82,14 @@ impl Drop for Wait {
     }
 }
 
+/// Creates a [`Future`](https://docs.rs/futures/0.2.*/futures/future/trait.Future.html) which
+/// will return `()` after `ms` milliseconds have passed.
 ///
+/// It might return a long time *after* `ms` milliseconds have passed, but it
+/// will never return *before* `ms` milliseconds have passed.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout)
+// https://html.spec.whatwg.org/multipage/webappapis.html#dom-settimeout
 #[inline]
 pub fn wait( ms: u32 ) -> Wait {
     Wait::new( ms )
@@ -94,7 +102,8 @@ struct IntervalBufferedState {
     count: usize,
 }
 
-///
+/// The [`Stream`](https://docs.rs/futures/0.2.*/futures/stream/trait.Stream.html)
+/// which is returned by [`interval_buffered`](fn.interval_buffered.html).
 #[derive( Debug )]
 pub struct IntervalBuffered {
     state: Arc< Mutex< IntervalBufferedState > >,
@@ -175,7 +184,21 @@ impl Drop for IntervalBuffered {
     }
 }
 
+/// Creates a [`Stream`](https://docs.rs/futures/0.2.*/futures/stream/trait.Stream.html) which
+/// will continuously output `()` every `ms` milliseconds, until it is dropped.
 ///
+/// It might output `()` a long time *after* `ms` milliseconds have passed, but it
+/// will never output `()` *before* `ms` milliseconds have passed.
+///
+/// If the consumer isn't ready to receive the `()`, it will be put into a queue.
+/// When the consumer is ready, it will output all of the `()` from the queue.
+///
+/// That means that if the consumer is too slow, it might receive multiple `()` at the same time.
+/// Or it might receive another `()` before `ms` milliseconds have passed for the consumer
+/// (that happens because `ms` milliseconds *have* passed for the [`IntervalBuffered`](struct.IntervalBuffered.html)).
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setInterval)
+// https://html.spec.whatwg.org/multipage/webappapis.html#dom-setinterval
 #[inline]
 pub fn interval_buffered( ms: u32 ) -> IntervalBuffered {
     IntervalBuffered::new( ms )
