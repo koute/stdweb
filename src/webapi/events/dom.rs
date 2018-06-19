@@ -134,7 +134,7 @@ impl ConcreteEvent for SubmitEvent {
 /// document is changed.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/selectionchange)
-// https://html.spec.whatwg.org/#event-selectionchange
+// https://w3c.github.io/selection-api/#selectionchange-event
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Event")] // TODO: Better type check.
 #[reference(subclass_of(Event))]
