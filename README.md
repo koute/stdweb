@@ -20,7 +20,8 @@ a high degree of interoperability between Rust and JavaScript.
 
 This software was brought to you thanks to these wonderful people:
   * Daniel Norman
-  * Ben Berman
+  * Edward Knyshov
+  * Johan Andersson
   * Stephen Sugden
 
 Thank you!
