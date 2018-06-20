@@ -173,7 +173,7 @@ impl IPointerEvent for PointerEvent {}
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/pointerover)
 // https://w3c.github.io/pointerevents/#the-pointerover-event
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "PointerEvent")] // TODO: Better type check.
+#[reference(instance_of = "PointerEvent", constraint="type=pointerover")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, PointerEvent))]
 pub struct PointerOverEvent( Reference );
 
@@ -191,7 +191,7 @@ impl ConcreteEvent for PointerOverEvent {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/pointerenter)
 // https://w3c.github.io/pointerevents/#the-pointerenter-event
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "PointerEvent")] // TODO: Better type check.
+#[reference(instance_of = "PointerEvent", constraint="type=pointerenter")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, PointerEvent))]
 pub struct PointerEnterEvent( Reference );
 
@@ -208,7 +208,7 @@ impl ConcreteEvent for PointerEnterEvent {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/pointerdown)
 // https://w3c.github.io/pointerevents/#the-pointerdown-event
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "PointerEvent")] // TODO: Better type check.
+#[reference(instance_of = "PointerEvent", constraint="type=pointerdown")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, PointerEvent))]
 pub struct PointerDownEvent( Reference );
 
@@ -225,7 +225,7 @@ impl ConcreteEvent for PointerDownEvent {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/pointermove)
 // https://w3c.github.io/pointerevents/#the-pointermove-event
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "PointerEvent")] // TODO: Better type check.
+#[reference(instance_of = "PointerEvent", constraint="type=pointermove")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, PointerEvent))]
 pub struct PointerMoveEvent( Reference );
 
@@ -256,7 +256,7 @@ impl PointerMoveEvent
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/pointerup)
 // https://w3c.github.io/pointerevents/#the-pointerup-event
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "PointerEvent")] // TODO: Better type check.
+#[reference(instance_of = "PointerEvent", constraint="type=pointerup")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, PointerEvent))]
 pub struct PointerUpEvent( Reference );
 
@@ -275,7 +275,7 @@ impl ConcreteEvent for PointerUpEvent {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/pointercancel)
 // https://w3c.github.io/pointerevents/#the-pointercancel-event
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "PointerEvent")] // TODO: Better type check.
+#[reference(instance_of = "PointerEvent", constraint="type=pointercancel")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, PointerEvent))]
 pub struct PointerCancelEvent( Reference );
 
@@ -293,7 +293,7 @@ impl ConcreteEvent for PointerCancelEvent {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/pointerout)
 // https://w3c.github.io/pointerevents/#the-pointerout-event
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "PointerEvent")] // TODO: Better type check.
+#[reference(instance_of = "PointerEvent", constraint="type=pointerout")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, PointerEvent))]
 pub struct PointerOutEvent( Reference );
 
@@ -312,7 +312,7 @@ impl ConcreteEvent for PointerOutEvent {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/pointerleave)
 // https://w3c.github.io/pointerevents/#the-pointerleave-event
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "PointerEvent")] // TODO: Better type check.
+#[reference(instance_of = "PointerEvent", constraint="type=pointerleave")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, PointerEvent))]
 pub struct PointerLeaveEvent( Reference );
 
@@ -329,7 +329,7 @@ impl ConcreteEvent for PointerLeaveEvent {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/gotpointercapture)
 // https://w3c.github.io/pointerevents/#the-gotpointercapture-event
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "PointerEvent")] // TODO: Better type check.
+#[reference(instance_of = "PointerEvent", constraint="type=gotpointercapture")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, PointerEvent))]
 pub struct GotPointerCaptureEvent( Reference );
 
@@ -346,7 +346,7 @@ impl ConcreteEvent for GotPointerCaptureEvent {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/lostpointercapture)
 // https://w3c.github.io/pointerevents/#the-lostpointercapture-event
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "PointerEvent")] // TODO: Better type check.
+#[reference(instance_of = "PointerEvent", constraint="type=lostpointercapture")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, PointerEvent))]
 pub struct LostPointerCaptureEvent( Reference );
 

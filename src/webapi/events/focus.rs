@@ -40,7 +40,7 @@ impl IFocusEvent for FocusRelatedEvent {}
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/focus)
 // https://w3c.github.io/uievents/#event-type-focus
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "FocusEvent")] // TODO: Better type check.
+#[reference(instance_of = "FocusEvent", constraint="type=focus")]
 #[reference(subclass_of(Event, FocusRelatedEvent))]
 pub struct FocusEvent( Reference );
 
@@ -56,7 +56,7 @@ impl ConcreteEvent for FocusEvent {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/blur)
 // https://w3c.github.io/uievents/#event-type-blur
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "FocusEvent")] // TODO: Better type check.
+#[reference(instance_of = "FocusEvent", constraint="type=blur")]
 #[reference(subclass_of(Event, FocusRelatedEvent))]
 pub struct BlurEvent( Reference );
 

@@ -12,7 +12,7 @@ use webapi::event::{IEvent, Event, ConcreteEvent};
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/close)
 // https://html.spec.whatwg.org/multipage/web-sockets.html#closeevent
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "CloseEvent")] // TODO: Better type check.
+#[reference(instance_of = "CloseEvent", constraint="type=close")]
 #[reference(subclass_of(Event))]
 pub struct SocketCloseEvent( Reference );
 
@@ -63,7 +63,7 @@ impl ConcreteEvent for SocketCloseEvent {
 // https://html.spec.whatwg.org/#event-error
 // https://html.spec.whatwg.org/multipage/web-sockets.html#handler-websocket-onerror
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "Event")] // TODO: Better type check.
+#[reference(instance_of = "Event", constraint="type=error")]
 #[reference(subclass_of(Event))]
 pub struct SocketErrorEvent( Reference );
 
@@ -78,7 +78,7 @@ impl ConcreteEvent for SocketErrorEvent {
 // https://html.spec.whatwg.org/#event-open
 // https://html.spec.whatwg.org/multipage/web-sockets.html#handler-websocket-onopen
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "Event")] // TODO: Better type check.
+#[reference(instance_of = "Event", constraint="type=open")]
 #[reference(subclass_of(Event))]
 pub struct SocketOpenEvent( Reference );
 

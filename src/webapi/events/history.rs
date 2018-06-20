@@ -61,7 +61,7 @@ impl HashChangeEvent {
 // https://html.spec.whatwg.org/#event-popstate
 // https://html.spec.whatwg.org/#popstateevent
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "Event")] // TODO: Better type check.
+#[reference(instance_of = "Event", constraint="type=popstate")]
 #[reference(subclass_of(Event))]
 pub struct PopStateEvent(Reference);
 
