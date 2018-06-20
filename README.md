@@ -196,11 +196,16 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
          * `MouseEnterEvent`
          * `MouseLeaveEvent`
          * `ContextMenuEvent`
+         * `SelectionChangeEvent`
+      * New types:
+        * `FileList`
+        * `FileReaderReadyState`
       * Implement gamepad APIs:
          * `Gamepad`
          * `GamepadButton`
          * `GamepadButtonMapping`
          * `GamepadEvent`
+      * Fixed `CanvasRenderingContext2d::clear_rect`
    * `0.4.6`
       * Fix `docs.rs` again
       * New types:
