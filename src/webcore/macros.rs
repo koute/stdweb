@@ -1,3 +1,6 @@
+use webcore::try_from::TryInto;
+use webcore::value::Value;
+
 macro_rules! next {
     (empty) => {};
 
@@ -612,6 +615,19 @@ macro_rules! newtype_enum {
     }
 }
 
+// This helps with type inference and converts the outer error
+// type when the `TryInto`'s error type in the `js_try!`'s
+// success and error cases differ.
+#[inline]
+pub fn js_try_convert< T, E, P >( value: Value ) -> Result< Result< T, E >, P >
+    where Value: TryInto< T >, <Value as TryInto< T >>::Error: Into< P >
+{
+    match value.try_into() {
+        Ok( value ) => Ok( Ok( value ) ),
+        Err( error ) => Err( error.into() )
+    }
+}
+
 /// Embeds JavaScript code into your Rust program similar to the `js!` macro, but
 /// catches errors that may be thrown.
 ///
@@ -670,10 +686,7 @@ macro_rules! js_try {
 
         use webcore::try_from::TryInto;
         if js!( return @{result.as_ref()}.success; ) == true {
-            match js!( return @{result}.value; ).try_into() {
-                Ok(t) => Ok(Ok(t)),
-                Err(e) => Err(e),
-            }
+            ::webcore::macros::js_try_convert( js!( return @{result}.value; ) )
         } else {
             match js!( return @{result}.error; ).try_into() {
                 Ok(e) => Ok(Err(e)),
@@ -726,6 +739,8 @@ macro_rules! error_enum_boilerplate {
 
 #[cfg(test)]
 mod tests {
+    use webcore::value::{ConversionError, Value};
+
     macro_rules! stringify_js {
         ($($token:tt)*) => {
             _js_impl!( @stringify [] -> $($token)* )
@@ -762,8 +777,6 @@ mod tests {
 
     #[test]
     fn js_try() {
-        use ::webcore::value::{ConversionError, Value};
-
         let v: Result<Value, Value> = js_try!( return "test"; ).unwrap();
         assert_eq!( v, Ok(Value::String("test".to_string())) );
 
@@ -793,5 +806,11 @@ mod tests {
             Err(ConversionError::TypeMismatch { actual_type: _ }) => (),
             _ => panic!("Expected ConversionError::TypeMistmatch, got {:?}", v),
         }
+    }
+
+    #[test]
+    fn js_try_from_value_to_value() {
+        let output: Result< Value, String > = js_try!( return null; ).unwrap();
+        assert_eq!( output, Ok( Value::Null ) );
     }
 }
