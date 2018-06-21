@@ -207,6 +207,8 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
          * `GamepadButtonMapping`
          * `GamepadEvent`
       * Fixed `CanvasRenderingContext2d::clear_rect`
+      * Fixed a leak when creating `TypedArray`s from
+        `Vec`s and `ArrayBuffer`s.
    * `0.4.6`
       * Fix `docs.rs` again
       * New types:
