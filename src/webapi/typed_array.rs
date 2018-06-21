@@ -32,7 +32,7 @@ macro_rules! arraykind {
                 );
 
                 let reference = unsafe {
-                    Reference::from_raw_unchecked( raw )
+                    Reference::from_raw_unchecked_noref( raw )
                 };
 
                 reference.downcast().unwrap()
@@ -49,7 +49,7 @@ macro_rules! arraykind {
                     buffer.as_ref().as_raw()
                 );
 
-                let reference = unsafe { Reference::from_raw_unchecked( raw ) };
+                let reference = unsafe { Reference::from_raw_unchecked_noref( raw ) };
                 reference.downcast().unwrap()
             }
 
@@ -152,6 +152,10 @@ impl< 'a, T: ArrayKind > From< &'a ArrayBuffer > for TypedArray< T > {
 
 #[cfg(test)]
 mod tests {
+    use super::TypedArray;
+    use webcore::try_from::TryInto;
+    use webapi::array_buffer::ArrayBuffer;
+
     macro_rules! arraykind_test {
         ($element_type: ident, $js_array_type: ident) => {
             mod $element_type {
@@ -217,4 +221,28 @@ mod tests {
     arraykind_test!(u32, Uint32Array);
     arraykind_test!(f32, Float32Array);
     arraykind_test!(f64, Float64Array);
+
+    fn get_refcount() -> i32 {
+        js!( return Object.keys( Module.STDWEB_PRIVATE.id_to_ref_map ).length; ).try_into().unwrap()
+    }
+
+    #[test]
+    fn slice_to_typed_array_does_not_leak() {
+        let initial_refcount = get_refcount();
+        {
+            let vec: Vec< i32 > = (0..10).collect();
+            let _: TypedArray< i32 > = vec[..].into();
+        }
+        assert_eq!( initial_refcount, get_refcount() );
+    }
+
+    #[test]
+    fn array_buffer_to_typed_array_does_not_leak() {
+        let initial_refcount = get_refcount();
+        {
+            let array_buffer = ArrayBuffer::new( 16 ).unwrap();
+            let _: TypedArray< i32 > = array_buffer.into();
+        }
+        assert_eq!( initial_refcount, get_refcount() );
+    }
 }
