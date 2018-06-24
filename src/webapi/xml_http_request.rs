@@ -22,7 +22,7 @@ pub struct XmlHttpRequest( Reference );
 /// An enum indicating the state of the `XmlHttpRequest`.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/readyState)
-/// https://xhr.spec.whatwg.org/#dom-xmlhttprequest-readystate
+// https://xhr.spec.whatwg.org/#dom-xmlhttprequest-readystate
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum XhrReadyState {
     /// Client has been created. [open()](struct.XmlHttpRequest.html#method.open) not called yet.
@@ -84,12 +84,12 @@ impl XmlHttpRequest {
 
     /// Returns the type of the request as a [XhrResponseType](enum.XhrResponseType.html)
     ///
-    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/readyState)
-    // https://xhr.spec.whatwg.org/#dom-xmlhttprequest-readystate
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseType)
+    // https://xhr.spec.whatwg.org/#dom-xmlhttprequest-responsetype
     pub fn response_type(&self) -> XhrResponseType {
         use self::XhrResponseType::*;
-        let type: String = js! ( return @{self}.responseType; ).try_into().unwrap();
-        match &type {
+        let repsonse_type: String = js! ( return @{self}.responseType; ).try_into().unwrap();
+        match &repsonse_type {
             "arraybuffer" => ArrayBuffer,
             "blob" => Blob,
             "document" => Document,
@@ -117,8 +117,8 @@ impl XmlHttpRequest {
     ///
     ///[(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/response)
     // https://xhr.spec.whatwg.org/#ref-for-dom-xmlhttprequest-response
-    pub fn response(&self) -> Result< Value, TODO > {
-        Ok(js!(return @{self}.response;))
+    pub fn raw_response(&self) -> Value {
+        js!(return @{self}.response;)
     }
 
     /// Returns an unsigned short with the status of the response of the request.
