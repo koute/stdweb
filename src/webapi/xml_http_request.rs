@@ -89,7 +89,7 @@ impl XmlHttpRequest {
     pub fn response_type(&self) -> XhrResponseType {
         use self::XhrResponseType::*;
         let repsonse_type: String = js! ( return @{self}.responseType; ).try_into().unwrap();
-        match &repsonse_type {
+        match repsonse_type.as_str() {
             "arraybuffer" => ArrayBuffer,
             "blob" => Blob,
             "document" => Document,
