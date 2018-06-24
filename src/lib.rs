@@ -240,7 +240,7 @@ pub mod web {
     pub use webapi::web_socket::{WebSocket, SocketCloseCode, SocketBinaryType, SocketReadyState};
     pub use webapi::rendering_context::{RenderingContext, CanvasRenderingContext2d, CanvasGradient, CanvasPattern, CanvasStyle, CompositeOperation, FillRule, ImageData, LineCap, LineJoin, Repetition, TextAlign, TextBaseline, TextMetrics};
     pub use webapi::mutation_observer::{MutationObserver, MutationObserverHandle, MutationObserverInit, MutationRecord};
-    pub use webapi::xml_http_request::{XmlHttpRequest, XhrReadyState};
+    pub use webapi::xml_http_request::{XmlHttpRequest, XhrReadyState, XhrResponseType};
     pub use webapi::blob::{IBlob, Blob};
     pub use webapi::html_collection::HtmlCollection;
     pub use webapi::child_node::IChildNode;

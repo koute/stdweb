@@ -22,7 +22,7 @@ pub struct XmlHttpRequest( Reference );
 /// An enum indicating the state of the `XmlHttpRequest`.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/readyState)
-// https://xhr.spec.whatwg.org/#dom-xmlhttprequest-readystate
+/// https://xhr.spec.whatwg.org/#dom-xmlhttprequest-readystate
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum XhrReadyState {
     /// Client has been created. [open()](struct.XmlHttpRequest.html#method.open) not called yet.
@@ -35,6 +35,24 @@ pub enum XhrReadyState {
     Loading,
     /// The operation is complete.
     Done,
+}
+
+/// An enum describing the type of the response to `XmlHttpRequest`
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseType)
+// https://xhr.spec.whatwg.org/#dom-xmlhttprequest-responsetype
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+pub enum XhrResponseType {
+    /// A JavaScript ArrayBuffer containing binary data
+    ArrayBuffer,
+    /// A Blob object container the binary data
+    Blob,
+    /// An HTML Document or XML XMLDocument
+    Document,
+    /// A JavaScript object parsed from JSON
+    Json,
+    /// Text in a String object
+    Text
 }
 
 impl IEventTarget for XmlHttpRequest {}
@@ -64,6 +82,23 @@ impl XmlHttpRequest {
         }
     }
 
+    /// Returns the type of the request as a [XhrResponseType](enum.XhrResponseType.html)
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/readyState)
+    // https://xhr.spec.whatwg.org/#dom-xmlhttprequest-readystate
+    pub fn response_type(&self) -> XhrResponseType {
+        use self::XhrResponseType::*;
+        let type: String = js! ( return @{self}.responseType; ).try_into().unwrap();
+        match &type {
+            "arraybuffer" => ArrayBuffer,
+            "blob" => Blob,
+            "document" => Document,
+            "json" => Json,
+            "text" | "" => Text,
+            x => unreachable!( "Unexpected value of XMLHttpRequest::responseType:: {}", x)
+        }
+    }
+
     /// Returns a string that contains the response to the request as text, or None
     /// if the request was unsuccessful or has not yet been sent.
     ///
@@ -76,6 +111,14 @@ impl XmlHttpRequest {
             Value::String( resp ) => Ok( Some( resp ) ),
             _ => unreachable!(),
         }
+    }
+
+    /// Returns the object representing the response
+    ///
+    ///[(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/response)
+    // https://xhr.spec.whatwg.org/#ref-for-dom-xmlhttprequest-response
+    pub fn response(&self) -> Result< Value, TODO > {
+        Ok(js!(return @{self}.response;))
     }
 
     /// Returns an unsigned short with the status of the response of the request.
