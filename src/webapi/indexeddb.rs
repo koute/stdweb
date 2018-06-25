@@ -1,8 +1,8 @@
 use webcore::value::Value;
 use webcore::value::Reference;
-use webcore::try_from::TryInto;
+use webcore::try_from::{TryFrom, TryInto};
 use webapi::event_target::{IEventTarget, EventTarget};
-use webapi::dom_exception::{DomException, InvalidStateError};
+use webapi::dom_exception::{DomException, InvalidStateError, TypeError, TransactionInactiveError};
 
 /// Used to represent the state of an IDBRequest.
 ///
@@ -225,10 +225,42 @@ fn string_to_cursor_direction( direction: &str) -> IDBCursorDirection {
     }
 }
 
+/// This enum is used to represent the vlaue of the soure property of
+/// a `IDBCursor`.
+#[derive(Debug)]
+pub enum IDBCursorSource {
+    Store(IDBObjectStore),
+    Index(IDBIndex)
+}
+
+error_enum_boilerplate! {
+    /// An enum of the exceptions that IDBCursorSharedMethods.advance() may throw
+    AdvanceError,
+    /// This IDBCursor's transaction is inactive.
+    TransactionInactiveError,
+    /// The value passed into the count parameter was zero or a negative number.
+    TypeError,
+    /// The cursor is currently being iterated or has iterated past its end.
+    InvalidStateError
+}
+
 /// This trait implements all the methods that are shared between
-/// 
+/// `IDBCursor` and `IDBCursorWithValue`.
 pub trait IDBCursorSharedMethods: AsRef< Reference >  {
-    //readonly attribute (IDBObjectStore or IDBIndex) source;
+    
+    /// The source read-only property of the `IDBCursor` interface returns
+    /// the `IDBObjectStore` or `IDBIndex` that the cursor is iterating over.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor/source)
+    fn source( &self ) -> IDBCursorSource {
+        if js!( return @{self.as_ref()}.source instanceof IDBObjectStore; ).try_into().unwrap() {
+            IDBCursorSource::Store(js!( return @{self.as_ref()}.source ).try_into().unwrap())
+        } else if js!( return @{self.as_ref()}.source instanceof IDBIndex;).try_into().unwrap() {
+            IDBCursorSource::Index(js!( return @{self.as_ref()}.source ).try_into().unwrap())
+        } else {
+            panic!()
+        }
+    }
     
     /// The `direction` read-only property of the `IDBCursor` interface is
     /// an enum that represents the direction of traversal of the
@@ -240,24 +272,36 @@ pub trait IDBCursorSharedMethods: AsRef< Reference >  {
         return string_to_cursor_direction(&direction);
     }
 
-    // Todo, not sure what I'm doing with these two
-    //readonly attribute any key;
+    /// The `key` read-only property of the `IDBCursor` interface returns the key
+    /// for the record at the cursor's position. If the cursor is outside its range,
+    /// this is set to undefined. The cursor's key can be any data type.
     ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor/key)
     fn key( &self ) -> Value {
         js!(
             return @{self.as_ref()}.key; )
             .try_into().unwrap()
     }
     
-    //readonly attribute any primaryKey;
+    /// The `primary_key` read-only property of the `IDBCursor` interface returns
+    /// the cursor's current effective key. If the cursor is currently being
+    /// iterated or has iterated outside its range, this is set to undefined.
+    ///The cursor's primary key can be any data type.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor/primaryKey)
+    fn primary_key( &self ) -> Value {
+        js!(
+            return @{self.as_ref()}.primaryKey; )
+            .try_into().unwrap()
+    }
 
-    //void advance([EnforceRange] unsigned long count);
     /// 
     ///
     ///
-    fn advance( &self, count: u32) {
-        js! { @{self.as_ref()}.advance(@{count}); }
+    fn advance( &self, count: u32) -> Result<(), AdvanceError> {
+        js_try!( @{self.as_ref()}.advance(@{count}); ).unwrap()
     }
+    
     
     //void continue(optional any key);
     ///

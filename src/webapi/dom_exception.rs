@@ -143,6 +143,17 @@ impl IDomException for InvalidPointerId {}
 
 error_boilerplate! { InvalidPointerId, name = "InvalidPointerId" }
 
+/// The cursor is currently being iterated or has iterated past its end.
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(subclass_of(Error, DomException))]
+pub struct TransactionInactiveError( Reference );
+
+impl IError for TransactionInactiveError {}
+impl IDomException for TransactionInactiveError {}
+
+error_boilerplate! { TransactionInactiveError, name = "TransactionInactiveError" }
+
+
 #[cfg(all(test, feature = "web_test"))]
 mod test {
     use super::*;
