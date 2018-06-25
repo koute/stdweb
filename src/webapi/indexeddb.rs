@@ -2,7 +2,7 @@ use webcore::value::Value;
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
 use webapi::event_target::{IEventTarget, EventTarget};
-use webapi::dom_exception::InvalidStateError;
+use webapi::dom_exception::{DomException, InvalidStateError};
 
 /// Used to represent the state of an IDBRequest.
 ///
@@ -30,19 +30,20 @@ pub enum IDBRequestSource {
 /// IDBOpenDBRequest and IDBRequest.
 pub trait IDBRequestSharedMethods : IEventTarget {
 
+    /// The result read-only property of the `IDBRequest` interface returns the result of the request,
+    /// or if the request failed InvalidStateError.
     ///
-    ///
-    ///
-    fn result( &self ) -> Value {
-        js!( return @{self.as_ref()}.result; )
+    /// [(JavaScript docx)](https://developer.mozilla.org/en-US/docs/Web/API/IDBRequest/result)
+    fn result( &self ) -> Result<Value, InvalidStateError> {
+        js_try!( return @{self.as_ref()}.result; ).unwrap()
     }
-    //fn result( &self ) -> Result<Value, InvalidStateError> {
-    //    js_try!( return @{self.as_ref()}.result; ).unwrap()
-    //}
-    
-    /*fn error(&self) ->  DOMException {
-        
-}*/
+
+    /// Returns the error in the event of an unsuccessful request.
+    ///
+    /// [(JavaScript docx)](https://developer.mozilla.org/en-US/docs/Web/API/IDBRequest/error)
+    fn error(&self) ->  Option<DomException> {
+        js!( @{self.as_ref()}.error;).try_into().unwrap()
+    }
     
     /// Returns the source of the request.
     ///

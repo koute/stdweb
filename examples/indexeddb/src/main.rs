@@ -71,7 +71,7 @@ fn display_data_inner(db: &IDBDatabase) {
             // Get a reference to the cursor
             let db_request: IDBRequest = e.target().unwrap().try_into().unwrap();
             //let cursor: IDBCursorWithValue = db_request.result().try_into().unwrap();
-            let maybe_cursor: Result<IDBCursorWithValue, stdweb::private::ConversionError> = db_request.result().try_into();
+            let maybe_cursor: Result<IDBCursorWithValue, stdweb::private::ConversionError> = db_request.result().unwrap().try_into();
             
             // If there is still another data item to iterate through, keep running this code
             if let Ok(cursor) = maybe_cursor {
@@ -183,7 +183,7 @@ fn main() {
 
         let db_request: IDBOpenDBRequest = event.target().unwrap().try_into().unwrap();
         // Store the opened database object in the db variable. This is used a lot below
-        let db : IDBDatabase = db_request.result().try_into().unwrap();
+        let db : IDBDatabase = db_request.result().unwrap().try_into().unwrap();
 
         DB.with(|db_cell| {
             db_cell.replace(Some(db));
@@ -194,7 +194,7 @@ fn main() {
     
     request.add_event_listener( |event: IDBVersionChangeEvent| {
     	let db_request: IDBOpenDBRequest = event.target().unwrap().try_into().unwrap();
-        let db_: IDBDatabase = db_request.result().try_into().unwrap();
+        let db_: IDBDatabase = db_request.result().unwrap().try_into().unwrap();
 
         // Create an object_store to store our notes in (basically like a single table)
         // including a auto-incrementing key
