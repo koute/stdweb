@@ -41,11 +41,10 @@ pub struct CanvasGradient(Reference);
 #[reference(instance_of = "CanvasPattern")]
 pub struct CanvasPattern(Reference);
 
-/// The ImageData struct represents the underlying pixel data of an area of a <canvas> element. 
-/// It is created using the ImageData() constructor or creator methods on the CanvasRenderingContext2D
-///  object associated with a canvas: createImageData() and getImageData(). It can also be used to set 
-/// a part of the canvas by using putImageData().
-/// 
+/// The ImageData struct represents the underlying pixel data of an area of a `<canvas>` element.
+/// You can create a new instance by calling [`CanvasRenderingContext2d::create_image_data`](struct.CanvasRenderingContext2d.html#method.create_image_data)
+/// or [`CanvasRenderingContext2d::create_image_data_size_of`](struct.CanvasRenderingContext2d.html#method.create_image_data_size_of).
+///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ImageData)
 // https://html.spec.whatwg.org/#imagedata
 #[derive(Clone, Debug, ReferenceType)]
@@ -925,7 +924,7 @@ impl CanvasRenderingContext2d {
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-clearrect
     pub fn clear_rect(&self, x: f64, y: f64, width: f64, height: f64) {
         js! { @(no_return)
-            @{&self.0}.clearRect(@{x}, @{y}, @{width}, @{width}, @{height});
+            @{&self.0}.clearRect(@{x}, @{y}, @{width}, @{height});
         }
     }
 
