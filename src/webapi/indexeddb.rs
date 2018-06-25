@@ -129,6 +129,17 @@ pub struct IDBOpenDBRequest( Reference );
 impl IEventTarget for IDBOpenDBRequest {}
 impl IDBRequestSharedMethods for IDBOpenDBRequest {}
 
+impl IDBOpenDBRequest {
+
+    /// Returns the value property as an `IDBDatabase`, or an `InvalidStateError`.
+    pub fn database_result(&self) -> Result<IDBDatabase, InvalidStateError> {
+        match self.result() {
+            Ok(value) => Ok(value.try_into().unwrap()),
+            Err(error) => Err(error)
+        }
+    }
+}
+
 /// The `IDBFactory` interface of the IndexedDB API lets applications asynchronously access the indexed databases. The object that implements the interface is `window.indexedDB`. 
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBFactory)

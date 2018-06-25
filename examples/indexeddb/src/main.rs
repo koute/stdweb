@@ -183,7 +183,7 @@ fn main() {
 
         let db_request: IDBOpenDBRequest = event.target().unwrap().try_into().unwrap();
         // Store the opened database object in the db variable. This is used a lot below
-        let db : IDBDatabase = db_request.result().unwrap().try_into().unwrap();
+        let db : IDBDatabase = db_request.database_result().unwrap();
 
         DB.with(|db_cell| {
             db_cell.replace(Some(db));
