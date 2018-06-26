@@ -153,6 +153,35 @@ impl IDomException for TransactionInactiveError {}
 
 error_boilerplate! { TransactionInactiveError, name = "TransactionInactiveError" }
 
+/// The key was not valid in the context it was used.
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(subclass_of(Error, DomException))]
+pub struct DataError( Reference );
+
+impl IError for DataError {}
+impl IDomException for DataError {}
+
+error_boilerplate! { DataError, name = "DataError" }
+
+/// The transaction mode is read only.
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(subclass_of(Error, DomException))]
+pub struct ReadOnlyError( Reference );
+
+impl IError for ReadOnlyError {}
+impl IDomException for ReadOnlyError {}
+
+error_boilerplate! { ReadOnlyError, name = "ReadOnlyError" }
+
+/// The data being stored could not be cloned by the internal structured cloning algorithm.
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(subclass_of(Error, DomException))]
+pub struct DataCloneError( Reference );
+
+impl IError for DataCloneError {}
+impl IDomException for DataCloneError {}
+
+error_boilerplate! { DataCloneError, name = "DataCloneError" }
 
 #[cfg(all(test, feature = "web_test"))]
 mod test {

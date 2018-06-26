@@ -1,8 +1,9 @@
+
 use webcore::value::Value;
 use webcore::value::Reference;
 use webcore::try_from::{TryFrom, TryInto};
 use webapi::event_target::{IEventTarget, EventTarget};
-use webapi::dom_exception::{DomException, InvalidStateError, TypeError, TransactionInactiveError};
+use webapi::dom_exception::{DomException, InvalidStateError, TypeError, TransactionInactiveError, DataError, InvalidAccessError, ReadOnlyError, DataCloneError};
 
 /// Used to represent the state of an IDBRequest.
 ///
@@ -233,14 +234,54 @@ pub enum IDBCursorSource {
     Index(IDBIndex)
 }
 
+// Todo, rename this
 error_enum_boilerplate! {
     /// An enum of the exceptions that IDBCursorSharedMethods.advance() may throw
     AdvanceError,
     /// This IDBCursor's transaction is inactive.
     TransactionInactiveError,
-    /// The value passed into the count parameter was zero or a negative number.
+    /// The value passed into the parameter was zero or a negative number.
     TypeError,
     /// The cursor is currently being iterated or has iterated past its end.
+    InvalidStateError
+}
+
+error_enum_boilerplate! {
+    ContinuePrimaryKeyError,
+    /// This IDBCursor's transaction is inactive.
+    TransactionInactiveError,
+    /// The key parameter may have any of the following conditions:
+    /// * The key is not a valid key.
+    /// * The key is less than or equal to this cursor's position and the cursor's direction is next or nextunique.
+    /// * The key is greater than or equal to this cursor's position and this cursor's direction is prev or prevunique.
+    DataError,
+    ///	The cursor is currently being iterated or has iterated past its end.
+    InvalidStateError,
+    ///	The cursor's direction is not prev or next.
+    InvalidAccessError
+}
+
+error_enum_boilerplate! {
+    UpdateError,
+    /// This IDBCursor's transaction is inactive.
+    TransactionInactiveError,
+    /// The transaction mode is read only.
+    ReadOnlyError,
+    /// The cursor was created using IDBIndex.openKeyCursor, is currently being iterated, or has iterated past its end.
+    InvalidStateError,
+    /// The underlying object store uses in-line keys and the property in the value at the object store's key path does not match the key in this cursor's position.
+    DataError,
+    ///The data being stored could not be cloned by the internal structured cloning algorithm.
+    DataCloneError
+}
+
+error_enum_boilerplate! {
+    DeleteError,
+    /// This IDBCursor's transaction is inactive.
+    TransactionInactiveError,
+    /// The transaction mode is read-only.
+    ReadOnlyError,
+    /// The cursor was created using IDBindex.openKeyCursor, is currently being iterated, or has iterated past its end.
     InvalidStateError
 }
 
@@ -295,52 +336,75 @@ pub trait IDBCursorSharedMethods: AsRef< Reference >  {
             .try_into().unwrap()
     }
 
-    /// 
+    /// The advance() method of the IDBCursor interface sets the number of times
+    /// a cursor should move its position forward. 
     ///
-    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor/advance) 
     fn advance( &self, count: u32) -> Result<(), AdvanceError> {
         js_try!( @{self.as_ref()}.advance(@{count}); ).unwrap()
     }
-    
-    
-    //void continue(optional any key);
+        
+    /// The next() method of the IDBCursor interface advances the cursor to the
+    /// next position along its direction, to the item whose key matches the optional
+    /// key parameter. If no key (None) is specified, the cursor advances to the immediate
+    /// next position, based on its direction.
     ///
+    /// This function stands in for continue in the javascript interface. Continue
+    /// is a keyword in rust and so needed to be renamed.
     ///
-    ///
-    fn advance_to_match<K: Into<Option<Value>>>( &self, key: K) {
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor/continue)
+    fn next<K: Into<Option<Value>>>( &self, key: K) -> Result<(), AdvanceError> {
         match key.into() {
-            None => js! { @{self.as_ref()}.continue(); },
-            Some(key) => js! { @{self.as_ref()}.continue(@{key.as_ref()}); }
-        };
-    }
-    
-    //void continuePrimaryKey(any key, any primaryKey);
-
-    //[NewObject] IDBRequest update(any value);
-    ///
-    ///
-    ///
-    fn update( &self, value: Value) -> IDBRequest {
-        js! ( return @{self.as_ref()}.update(@{value.as_ref()}); ).try_into().unwrap()
+            None => js_try!( @{self.as_ref()}.continue(); ).unwrap(),
+            Some(key) => js_try! ( @{self.as_ref()}.continue(@{key.as_ref()}); ).unwrap()
+        }
     }
 
-    //[NewObject] IDBRequest delete();
+    /// The continuePrimaryKey() method of the IDBCursor interface advances
+    /// the cursor to the to the item whose key matches the key parameter as
+    /// well as whose primary key matches the primary key parameter.
     ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor/continuePrimaryKey)
+    fn continue_primary_key( &self, key: Value, primary_key: Value) -> Result<(), ContinuePrimaryKeyError> {
+        js_try!( @{self.as_ref()}.continuePrimaryKey(@{key}, @{primary_key}); ).unwrap()
+    }
+
+    /// The update() method of the IDBCursor interface returns an IDBRequest
+    /// object, and, in a separate thread, updates the value at the current
+    /// position of the cursor in the object store. If the cursor points to
+    /// a record that has just been deleted, a new record is created.
     ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor/update)
+    fn update( &self, value: Value) -> Result<IDBRequest, UpdateError> {
+        js_try!( return @{self.as_ref()}.update(@{value.as_ref()}); ).unwrap()
+    }
+
+    /// The delete() method of the IDBCursor interface returns an IDBRequest
+    /// object, and, in a separate thread, deletes the record at the cursor's
+    /// position, without changing the cursor's position. Once the record is
+    /// deleted, the cursor's value is set to null.
     ///
-    fn delete( &self ) -> IDBRequest {
-        js!( return @{self.as_ref()}.delete(); ).try_into().unwrap() 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor/delete)
+    fn delete( &self ) -> Result<IDBRequest, DeleteError> {
+        js_try!( return @{self.as_ref()}.delete(); ).unwrap() 
     }
 }
 
+/// The IDBCursor interface of the IndexedDB API represents a cursor for
+/// traversing or iterating over multiple records in a database.
 ///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor)
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "IDBCursor")]
 pub struct IDBCursor( Reference );
 
 impl IDBCursorSharedMethods for IDBCursor {}
 
+/// The IDBCursorWithValue interface of the IndexedDB API represents a cursor
+/// for traversing or iterating over multiple records in a database. It is
+/// the same as the IDBCursor, except that it includes the value property.
 ///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursorWithValue)
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "IDBCursorWithValue")]
 pub struct IDBCursorWithValue( Reference );
@@ -349,7 +413,9 @@ impl IDBCursorSharedMethods for IDBCursorWithValue {}
 
 impl IDBCursorWithValue {
 
+    /// Returns the value of the current cursor.
     ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursorWithValue/value)
     pub fn value( &self ) -> Value {
         js! (
             return @{self}.value
