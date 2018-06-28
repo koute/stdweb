@@ -439,6 +439,23 @@ impl ConcreteEvent for MouseLeaveEvent {
     const EVENT_TYPE: &'static str = "mouseleave";
 }
 
+/// The `WheelEvent` is fired when a pointing device's wheel button (usually a mousewheel)
+/// is rotated over the element that has the listener attached.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/mousewheel)
+// https://w3c.github.io/uievents/#event-type-wheel
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "MouseEvent")] // TODO: Better type check.
+#[reference(subclass_of(Event, UiEvent, MouseEvent))]
+pub struct WheelEvent( Reference );
+
+impl IEvent for WheelEvent {}
+impl IUiEvent for WheelEvent {}
+impl IMouseEvent for WheelEvent {}
+impl ConcreteEvent for WheelEvent {
+    const EVENT_TYPE: &'static str = "mouseleave";
+}
+
 #[cfg(all(test, feature = "web_test"))]
 mod tests {
     use super::*;
@@ -573,5 +590,14 @@ mod tests {
         ).try_into()
             .unwrap();
         assert_eq!( event.event_type(), MouseLeaveEvent::EVENT_TYPE );
+    }
+
+    #[test]
+    fn test_mouse_leave_event() {
+        let event: WheelEvent = js!(
+            return new MouseEvent( @{WheelEvent::EVENT_TYPE} );
+        ).try_into()
+            .unwrap();
+        assert_eq!( event.event_type(), WheelEvent::EVENT_TYPE );
     }
 }
