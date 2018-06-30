@@ -300,6 +300,8 @@ pub mod web {
             MouseOutEvent,
             MouseEnterEvent,
             MouseLeaveEvent,
+            MouseWheelEvent,
+            MouseWheelDeltaMode,
             MouseButton
         };
 
