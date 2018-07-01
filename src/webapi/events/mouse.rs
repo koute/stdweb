@@ -493,7 +493,7 @@ impl MouseWheelEvent {
     // https://w3c.github.io/uievents/#dom-wheelevent-deltamode
     pub fn delta_mode(&self) -> MouseWheelDeltaMode {
         let mode: u32 = js! (
-            @{&self.0}.deltaMode
+            return @{self}.deltaMode;
         ).try_into().unwrap();
         match mode {
             0 => MouseWheelDeltaMode::Pixel,
