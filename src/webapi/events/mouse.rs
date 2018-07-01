@@ -439,7 +439,7 @@ impl ConcreteEvent for MouseLeaveEvent {
     const EVENT_TYPE: &'static str = "mouseleave";
 }
 
-/// The `WheelEvent` is fired when a pointing device's wheel button (usually a mousewheel)
+/// The `MouseWheelEvent` is fired when a pointing device's wheel button (usually a mousewheel)
 /// is rotated over the element that has the listener attached.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/wheel)
@@ -461,9 +461,9 @@ impl MouseWheelEvent {
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WheelEvent/deltaX)
     // https://w3c.github.io/uievents/#dom-wheelevent-deltax
-    pub fn delta_x(&mut self) -> f64 {
+    pub fn delta_x(&self) -> f64 {
         js! (
-            @{&self.0}.deltaX
+            return @{self}.deltaX;
         ).try_into().unwrap()
     }
 
@@ -471,9 +471,9 @@ impl MouseWheelEvent {
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WheelEvent/deltaY)
     // https://w3c.github.io/uievents/#dom-wheelevent-deltay
-    pub fn delta_y(&mut self) -> f64 {
+    pub fn delta_y(&self) -> f64 {
         js! (
-            @{&self.0}.deltaY
+            return @{self}.deltaY;
         ).try_into().unwrap()
     }
 
@@ -481,9 +481,9 @@ impl MouseWheelEvent {
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WheelEvent/deltaZ)
     // https://w3c.github.io/uievents/#dom-wheelevent-deltaz
-    pub fn delta_z(&mut self) -> f64 {
+    pub fn delta_z(&self) -> f64 {
         js! (
-            @{&self.0}.deltaZ
+            return @{self}.deltaZ;
         ).try_into().unwrap()
     }
 
@@ -491,14 +491,14 @@ impl MouseWheelEvent {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WheelEvent/deltaMode)
     // https://w3c.github.io/uievents/#dom-wheelevent-deltamode
-    pub fn delta_mode(&mut self) -> MouseWheelDeltaMode {
-        let mode: u64 = js! (
+    pub fn delta_mode(&self) -> MouseWheelDeltaMode {
+        let mode: u32 = js! (
             @{&self.0}.deltaMode
         ).try_into().unwrap();
         match mode {
-            0 => MouseWheelDeltaMode::DomDeltaPixel,
-            1 => MouseWheelDeltaMode::DomDeltaLine,
-            2 => MouseWheelDeltaMode::DomDeltaPage,
+            0 => MouseWheelDeltaMode::Pixel,
+            1 => MouseWheelDeltaMode::Line,
+            2 => MouseWheelDeltaMode::Page,
             _ => unreachable!()
         }
     }
@@ -511,13 +511,13 @@ impl MouseWheelEvent {
 pub enum MouseWheelDeltaMode {
     /// The unit of measurement for the delta is pixels
     // https://w3c.github.io/uievents/#dom-wheelevent-dom_delta_pixel
-    DomDeltaPixel = 0,
-     /// The unit of measurement for the delta is lines
+    Pixel,
+    /// The unit of measurement for the delta is lines
     // https://w3c.github.io/uievents/#dom-wheelevent-dom_delta_line
-    DomDeltaLine = 1,
+    Line,
      /// The unit of measurement for the delta is pages
     // https://w3c.github.io/uievents/#dom-wheelevent-dom_delta_page
-    DomDeltaPage = 2
+    Page
 }
 
 #[cfg(all(test, feature = "web_test"))]
