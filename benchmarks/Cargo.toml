@@ -1,0 +1,10 @@
+[package]
+name = "benchmarks"
+version = "0.1.0"
+authors = ["Jan Bujak <j@exia.io>"]
+
+[dependencies]
+stdweb = { path = ".." }
+
+[build-dependencies]
+rustc_version = "0.2"
