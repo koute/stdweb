@@ -442,7 +442,7 @@ impl ConcreteEvent for MouseLeaveEvent {
 /// The `WheelEvent` is fired when a pointing device's wheel button (usually a mousewheel)
 /// is rotated over the element that has the listener attached.
 ///
-/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/mousewheel)
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/wheel)
 // https://w3c.github.io/uievents/#event-type-wheel
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "MouseEvent")] // TODO: Better type check.
@@ -453,7 +453,7 @@ impl IEvent for MouseWheelEvent {}
 impl IUiEvent for MouseWheelEvent {}
 impl IMouseEvent for MouseWheelEvent {}
 impl ConcreteEvent for MouseWheelEvent {
-    const EVENT_TYPE: &'static str = "mouseleave";
+    const EVENT_TYPE: &'static str = "wheel";
 }
 
 impl MouseWheelEvent {
