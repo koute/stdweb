@@ -164,6 +164,6 @@ impl Document {
     pub fn exit_point_lock( &self ) {
         js!(
             @{self}.exitPointerLock();
-        )
+        );
     }
 }
