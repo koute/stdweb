@@ -317,6 +317,8 @@ pub mod web {
             PointerLeaveEvent,
             GotPointerCaptureEvent,
             LostPointerCaptureEvent,
+            PointerLockChangeEvent,
+            PointerLockErrorEvent
         };
 
         pub use webapi::events::keyboard::{
