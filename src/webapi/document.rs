@@ -148,7 +148,7 @@ impl Document {
     // https://w3c.github.io/pointerlock/#extensions-to-the-documentorshadowroot-mixin
     pub fn pointer_lock_element( &self ) -> Option< Element > {
         let value = js!(
-            return @{self}.pointerLockElement
+            return @{self}.pointerLockElement;
         );
         match value {
             Value::Null | Value::Undefined => None,
