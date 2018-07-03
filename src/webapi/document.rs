@@ -161,7 +161,7 @@ impl Document {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/exitPointerLock)
     // https://w3c.github.io/pointerlock/#dom-document-exitpointerlock
-    pub fn exit_point_lock( &self ) {
+    pub fn exit_pointer_lock( &self ) {
         js!( @(no_return)
             @{self}.exitPointerLock();
         );
