@@ -1,4 +1,4 @@
-use webcore::value::Reference;
+use webcore::value::{Reference, Value};
 use webcore::try_from::TryInto;
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
@@ -140,5 +140,30 @@ impl Document {
                 return @{self}.documentElement;
             ).try_into().unwrap()
         }
+    }
+
+    /// Returns the Element that the pointer is locked to, if it is locked to any
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DocumentOrShadowRoot/pointerLockElement)
+    // https://w3c.github.io/pointerlock/#extensions-to-the-documentorshadowroot-mixin
+    pub fn pointer_lock_element( &self ) -> Option< Element > {
+        let value = js!(
+            return @{self}.pointerLockElement
+        );
+        match value {
+            Value::Null | Value::Undefined => None,
+            Value::Reference(reference) => Some(reference.try_into().unwrap()),
+            _ => unreachable!()
+        }
+    }
+
+    /// Exit the pointer lock on the current element
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/exitPointerLock)
+    // https://w3c.github.io/pointerlock/#dom-document-exitpointerlock
+    pub fn exit_point_lock( &self ) {
+        js!(
+            @{self}.exitPointerLock();
+        )
     }
 }

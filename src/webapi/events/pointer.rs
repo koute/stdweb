@@ -358,6 +358,40 @@ impl ConcreteEvent for LostPointerCaptureEvent {
     const EVENT_TYPE: &'static str = "lostpointercapture";
 }
 
+/// The `PointerLockChangeEvent` fires when the pointer is locked or unlocked
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/pointerlockchange)
+// http://www.w3.org/TR/pointerlock/#pointerlockchange-and-pointerlockerror-events
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "Event")] // TODO: Better type check.
+#[reference(subclass_of(Event))]
+pub struct PointerLockChangeEvent( Reference );
+
+impl IEvent for PointerLockChangeEvent {}
+impl IUiEvent for PointerLockChangeEvent {}
+impl IMouseEvent for PointerLockChangeEvent {}
+impl IPointerEvent for PointerLockChangeEvent {}
+impl ConcreteEvent for PointerLockChangeEvent {
+    const EVENT_TYPE: &'static str = "pointerlockchange";
+}
+
+/// The `PointerLockErrorEvent` fires when an error occurs locking a pointer
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/pointerlockerror)
+// http://www.w3.org/TR/pointerlock/#pointerlockchange-and-pointerlockerror-events
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "Event")] // TODO: Better type check.
+#[reference(subclass_of(Event))]
+pub struct PointerLockErrorEvent( Reference );
+
+impl IEvent for PointerLockErrorEvent {}
+impl IUiEvent for PointerLockErrorEvent {}
+impl IMouseEvent for PointerLockErrorEvent {}
+impl IPointerEvent for PointerLockErrorEvent {}
+impl ConcreteEvent for PointerLockErrorEvent {
+    const EVENT_TYPE: &'static str = "pointerlockerror";
+}
+
 #[cfg(all(test, feature = "web_test"))]
 mod tests {
     use super::*;
