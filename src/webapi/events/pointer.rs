@@ -368,9 +368,6 @@ impl ConcreteEvent for LostPointerCaptureEvent {
 pub struct PointerLockChangeEvent( Reference );
 
 impl IEvent for PointerLockChangeEvent {}
-impl IUiEvent for PointerLockChangeEvent {}
-impl IMouseEvent for PointerLockChangeEvent {}
-impl IPointerEvent for PointerLockChangeEvent {}
 impl ConcreteEvent for PointerLockChangeEvent {
     const EVENT_TYPE: &'static str = "pointerlockchange";
 }
@@ -385,9 +382,6 @@ impl ConcreteEvent for PointerLockChangeEvent {
 pub struct PointerLockErrorEvent( Reference );
 
 impl IEvent for PointerLockErrorEvent {}
-impl IUiEvent for PointerLockErrorEvent {}
-impl IMouseEvent for PointerLockErrorEvent {}
-impl IPointerEvent for PointerLockErrorEvent {}
 impl ConcreteEvent for PointerLockErrorEvent {
     const EVENT_TYPE: &'static str = "pointerlockerror";
 }
@@ -521,5 +515,21 @@ mod tests {
             return new PointerEvent( @{LostPointerCaptureEvent::EVENT_TYPE} );
         ).try_into().unwrap();
         assert_eq!( event.event_type(), LostPointerCaptureEvent::EVENT_TYPE );
+    }
+
+    #[test]
+    fn test_pointer_lock_change_event() {
+        let event: PointerLockChangeEvent = js!(
+            return new Event( @{PointerLockChangeEvent::EVENT_TYPE} );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), PointerLockChangeEvent::EVENT_TYPE );
+    }
+
+    #[test]
+    fn test_pointer_lock_error_event() {
+        let event: PointerLockErrorEvent = js!(
+            return new Event( @{PointerLockErrorEvent::EVENT_TYPE} );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), PointerLockErrorEvent::EVENT_TYPE );
     }
 }
