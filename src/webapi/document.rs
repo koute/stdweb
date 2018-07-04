@@ -145,7 +145,7 @@ impl Document {
     /// Returns the Element that the pointer is locked to, if it is locked to any
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DocumentOrShadowRoot/pointerLockElement)
-    // https://w3c.github.io/pointerlock/#extensions-to-the-documentorshadowroot-mixin
+    // https://w3c.github.io/pointerlock/#dom-documentorshadowroot-pointerlockelement
     pub fn pointer_lock_element( &self ) -> Option< Element > {
         let value = js!(
             return @{self}.pointerLockElement;
