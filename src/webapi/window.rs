@@ -222,4 +222,14 @@ impl Window {
             return @{self}.pageXOffset;
         ).try_into().unwrap()
     }
+
+    /// The ratio in resolution from physical pixels to CSS pixels
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio)
+    // https://drafts.csswg.org/cssom-view/#ref-for-dom-window-devicepixelratio
+    pub fn device_pixel_ratio(&self) -> f64 {
+        js! (
+            return @{self}.devicePixelRatio;
+        ).try_into().unwrap()
+    }
 }

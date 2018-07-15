@@ -20,7 +20,9 @@ a high degree of interoperability between Rust and JavaScript.
 
 This software was brought to you thanks to these wonderful people:
   * Daniel Norman
+  * Anselm Eickhoff
   * Edward Knyshov
+  * Ferran Pujol Camins
   * Johan Andersson
   * Stephen Sugden
 

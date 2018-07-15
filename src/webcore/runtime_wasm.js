@@ -8,11 +8,11 @@ Module.STDWEB_PRIVATE.dyncall = function( signature, ptr, args ) {
 
 // This is based on code from Emscripten's preamble.js.
 Module.STDWEB_PRIVATE.utf8_len = function utf8_len( str ) {
-    let len = 0;
-    for( let i = 0; i < str.length; ++i ) {
+    var len = 0;
+    for( var i = 0; i < str.length; ++i ) {
         // Gotcha: charCodeAt returns a 16-bit word that is a UTF-16 encoded code unit, not a Unicode code point of the character! So decode UTF16->UTF32->UTF8.
         // See http://unicode.org/faq/utf_bom.html#utf16-3
-        let u = str.charCodeAt( i ); // possibly a lead surrogate
+        var u = str.charCodeAt( i ); // possibly a lead surrogate
         if( u >= 0xD800 && u <= 0xDFFF ) {
             u = 0x10000 + ((u & 0x3FF) << 10) | (str.charCodeAt( ++i ) & 0x3FF);
         }
