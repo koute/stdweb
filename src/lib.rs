@@ -204,6 +204,15 @@ pub mod serde {
 /// A module with bindings to the Web APIs.
 pub mod web {
 
+    #[cfg(feature = "futures-support")]
+    pub use webapi::timer_future::{
+        Wait,
+        wait,
+        IntervalBuffered,
+        interval_buffered
+    };
+
+
     /// This is a module
     pub mod indexeddb {
         pub use webapi::indexeddb::{
@@ -223,7 +232,7 @@ pub mod web {
             IDBCursorWithValue
         };
     }
-    
+
     pub use webapi::window::{
         Window,
         window
