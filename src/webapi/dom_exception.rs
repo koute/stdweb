@@ -183,6 +183,26 @@ impl IDomException for DataCloneError {}
 
 error_boilerplate! { DataCloneError, name = "DataCloneError" }
 
+/// An index or an object store already has this name
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(subclass_of(Error, DomException))]
+pub struct ConstraintError( Reference );
+
+impl IError for ConstraintError {}
+impl IDomException for ConstraintError {}
+
+error_boilerplate! { ConstraintError, name = "ConstraintError" }
+/*
+/// There is no index with the given name (case-sensitive) in the database.
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(subclass_of(Error, DomException))]
+pub struct NotFoundError( Reference );
+
+impl IError for NotFoundError {}
+impl IDomException for NotFoundError {}
+
+error_boilerplate! { NotFoundError, name = "NotFoundError" }
+*/
 #[cfg(all(test, feature = "web_test"))]
 mod test {
     use super::*;

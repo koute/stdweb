@@ -3,7 +3,7 @@ use webcore::value::Value;
 use webcore::value::Reference;
 use webcore::try_from::{TryFrom, TryInto};
 use webapi::event_target::{IEventTarget, EventTarget};
-use webapi::dom_exception::{DomException, InvalidStateError, TypeError, TransactionInactiveError, DataError, InvalidAccessError, ReadOnlyError, DataCloneError};
+use webapi::dom_exception::{DomException, InvalidStateError, TypeError, TransactionInactiveError, DataError, InvalidAccessError, ReadOnlyError, DataCloneError, ConstraintError, NotFoundError};
 
 /// Used to represent the state of an IDBRequest.
 ///
@@ -276,6 +276,22 @@ error_enum_boilerplate! {
 }
 
 error_enum_boilerplate! {
+    UpdateWithConstraintError,
+    /// This IDBCursor's transaction is inactive.
+    TransactionInactiveError,
+    /// The transaction mode is read only.
+    ReadOnlyError,
+    /// The cursor was created using IDBIndex.openKeyCursor, is currently being iterated, or has iterated past its end.
+    InvalidStateError,
+    /// The underlying object store uses in-line keys and the property in the value at the object store's key path does not match the key in this cursor's position.
+    DataError,
+    ///The data being stored could not be cloned by the internal structured cloning algorithm.
+    DataCloneError,
+    /// An operation failed because the primary key constraint was violated (due to an already existing record with the same primary key value).
+    ConstraintError
+}
+
+error_enum_boilerplate! {
     DeleteError,
     /// This IDBCursor's transaction is inactive.
     TransactionInactiveError,
@@ -283,6 +299,23 @@ error_enum_boilerplate! {
     ReadOnlyError,
     /// The cursor was created using IDBindex.openKeyCursor, is currently being iterated, or has iterated past its end.
     InvalidStateError
+}
+
+// Todo this is fpr IDBObjectStore::delete
+error_enum_boilerplate! {
+    Delete2Error,
+    
+    TransactionInactiveError, // This object store's transaction is inactive.
+    ReadOnlyError, // The object store's transaction mode is read-only.
+    InvalidStateError, // The object store has been deleted.
+    DataError //        The key is not a valid key or a key range.
+}
+
+error_enum_boilerplate! {
+    ClearError,
+
+    ReadOnlyError, // The transaction associated with this operation is in read-only mode.
+    TransactionInactiveError // This IDBObjectStore's transaction is inactive.
 }
 
 /// This trait implements all the methods that are shared between
@@ -423,11 +456,96 @@ impl IDBCursorWithValue {
     }
 }
 
+/// The IDBKeyRange interface of the IndexedDB API represents a continuous interval
+/// over some data type that is used for keys. Records can be retrieved from
+/// IDBObjectStore and IDBIndex objects using keys or a range of keys. You can limit
+/// the range using lower and upper bounds. For example, you can iterate over all
+/// values of a key in the value range A–Z.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange)
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "IDBKeyRange")]
+pub struct IDBKeyRange( Reference );
+
+impl IDBKeyRange {
+
+    /// Lower bound of the key range.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange/lower)
+    pub fn lower( &self ) -> Value {
+        js!( return @{self}.lower; ).try_into().unwrap()
+    }
+
+    /// Upper bound of the key range.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange/upper)
+    pub fn upper( &self ) -> Value {
+        js!( return @{self}.upper; ).try_into().unwrap()
+    }
+
+    /// Returns false if the lower-bound value is included in the key range.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange/lowerOpen)
+    pub fn lower_open( &self ) -> bool {
+        js!( return @{self}.lowerOpen; ).try_into().unwrap()
+    }
+
+    /// Returns false if the upper-bound value is included in the key range.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange/upperOpen)
+    pub fn upper_open( &self ) -> bool {
+        js!( return @{self}.upperOpen; ).try_into().unwrap()
+    }
+}
+
+#[derive(Debug)]
+pub enum IDBKeyOrKeyRange {
+    None,
+    Value(Value),
+    Range(IDBKeyRange)
+}
+
+error_enum_boilerplate! {
+    SetNameError,
+
+    /// The index, or its object store, has been deleted; or the current transaction
+    /// is not an upgrade transaction. You can only rename indexes during upgrade
+    /// transactions; that is, when the mode is "versionchange".
+    InvalidStateError,
+
+    /// The current transaction is not active.
+    TransactionInactiveError,
+        
+    /// An index is already using the specified name
+    ConstraintError
+}
+
+// Todo, this needs renamed as it is used places other than the count method
+error_enum_boilerplate! {
+    IDBCountError,
+    
+    ///  This IDBIndex's transaction is inactive.
+    TransactionInactiveError,
+    
+    /// The key or key range provided contains an invalid key.
+    DataError,
+    
+    ///  The IDBIndex has been deleted or removed.
+    InvalidStateError
+}
+
+error_enum_boilerplate! {
+    IndexError,
+
+    InvalidStateError, // The source object store has been deleted, or the transaction for the object store has finished.
+    NotFoundError // There is no index with the given name (case-sensitive) in the database.
+         
+}
+
 /// This trait contains mothods that are Identicle in both IDBIndex IDBObjectStore
 pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
 
-    // attribute DOMString name;
-    /// Returns the name of this object store.
+    /// Returns the name of this index or object store.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/name)
     fn name( &self ) -> String {
@@ -436,113 +554,150 @@ pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
         ).try_into().unwrap()
     }
 
-    /// Returns the name of this object store.
+    /// Returns the name of this index or object store.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/name)
-    fn set_name( &self, name: &str) {
-        js! {
-            @{self.as_ref()}.name = @{name};
-        };
+    fn set_name( &self, name: &str) -> Result<(), SetNameError> {
+        js_try! ( @{self.as_ref()}.name = @{name}; ).unwrap()
     }
 
-    // [NewObject] IDBRequest get(any query);
-    /// This is for retrieving specific records from an object store.
+    /// The key_path read-only property of the IDBObjectStore interface returns the
+    /// key path of this object store. Or in the case of an IDBIndex, the current
+    /// object store.
+    fn key_path( &self ) -> Value {
+        js!( return @{self.as_ref()}.keyPath; ).try_into().unwrap()
+    }
+
+    /// This is for retrieving specific records from an object store or index.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/get)
-    fn get( &self, query: Value) -> IDBRequest {
-        js! (
-            return @{self.as_ref()}.get(@{query.as_ref()});
-        ).try_into().unwrap()
+    fn get<Q: Into<IDBKeyOrKeyRange>>( &self, query: Q) -> Result<IDBRequest, IDBCountError> {
+        match query.into() {
+            IDBKeyOrKeyRange::None => js_try! (
+                return @{self.as_ref()}.get();
+            ),
+            IDBKeyOrKeyRange::Value(value) => js_try! (
+                return @{self.as_ref()}.get(@{value.as_ref()});
+            ),
+            IDBKeyOrKeyRange::Range(range) => js_try! (
+                return @{self.as_ref()}.get(@{range.as_ref()});
+            )
+        }.unwrap()
     }
-    
-    // [NewObject] IDBRequest getKey(any query);
+
+    // Todo, I think this description is wrong.
     /// This is for retrieving specific records from an object store.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/getKey)
-    fn get_key( &self, query: Value) -> IDBRequest {
-        js! (
-            return @{self.as_ref()}.getKey(@{query.as_ref()});
-        ).try_into().unwrap()
+    fn get_key<Q: Into<IDBKeyOrKeyRange>>( &self, query: Q) -> Result<IDBRequest, IDBCountError> {
+        match query.into() {
+            IDBKeyOrKeyRange::None => js_try! (
+                return @{self.as_ref()}.getKey();
+            ),
+            IDBKeyOrKeyRange::Value(value) => js_try! (
+                return @{self.as_ref()}.getKey(@{value.as_ref()});
+            ),
+            IDBKeyOrKeyRange::Range(range) => js_try! (
+                return @{self.as_ref()}.getKey(@{range.as_ref()});
+            )
+        }.unwrap()
     }
     
-    // [NewObject] IDBRequest getAll(optional any query,                                optional [EnforceRange] unsigned long count);
-    /// 
+    /// The get_ll() method retrieves all objects that are inside the index or
+    /// object store.
     ///
-    ///
-    fn get_all<Q: Into<Option<Value>>, C: Into<Option<u32>>>( &self, query: Q, count: C) -> IDBRequest {
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBIndex/getAll)
+    fn get_all<Q: Into<IDBKeyOrKeyRange>, C: Into<Option<u32>>>( &self, query: Q, count: C) -> Result<IDBRequest, IDBCountError> {
         match query.into() {
-            None => js! ( return @{self.as_ref()}.getAll(); ),
-            Some(query) => {
+            IDBKeyOrKeyRange::None => js_try! ( return @{self.as_ref()}.getAll(); ),
+            IDBKeyOrKeyRange::Value(value) => {
                 match count.into() {
-                    None => js! ( return @{self.as_ref()}.getAll(@{query.as_ref()}); ),
-                    Some(count) => js! ( return @{self.as_ref()}.getAll(@{query.as_ref()}, @{count}); )
+                    None => js_try! ( return @{self.as_ref()}.getAll(@{value.as_ref()}); ),
+                    Some(count) => js_try! ( return @{self.as_ref()}.getAll(@{value.as_ref()}, @{count}); )
+                }
+            },
+            IDBKeyOrKeyRange::Range(range) => {
+                match count.into() {
+                    None => js_try! ( return @{self.as_ref()}.getAll(@{range.as_ref()}); ),
+                    Some(count) => js_try! ( return @{self.as_ref()}.getAll(@{range.as_ref()}, @{count}); )
                 }
             }
-        }.try_into().unwrap()
+        }.unwrap()
     }
     
-    
-    // [NewObject] IDBRequest getAllKeys(optional any query,                                    optional [EnforceRange] unsigned long count);
+    // Todo, acording to the mozilla documentation the IDBIndex version does not
+    // Throw DataError.
+    /// The get_all_keys() method returns an IDBRequest object retrieves record keys
+    /// for all objects matching the specified parameter or all objects if no
+    /// parameters are given.
     ///
-    ///
-    ///
-    fn get_all_keys<Q: Into<Option<Value>>, C: Into<Option<u32>>>( &self, query: Q, count: C) -> IDBRequest {
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/getAllKeys)
+    fn get_all_keys<Q: Into<IDBKeyOrKeyRange>, C: Into<Option<u32>>>( &self, query: Q, count: C) -> Result<IDBRequest, IDBCountError> {
         match query.into() {
-            None => js! ( return @{self.as_ref()}.getAllKeys(); ),
-            Some(query) => {
+            IDBKeyOrKeyRange::None => js_try! ( return @{self.as_ref()}.getAllKeys(); ),
+            IDBKeyOrKeyRange::Value(value) => {
                 match count.into() {
-                    None => js! ( return @{self.as_ref()}.getAllKeys(@{query.as_ref()}); ),
-                    Some(count) => js! ( return @{self.as_ref()}.getAllKeys(@{query.as_ref()}, @{count}); )
+                    None => js_try! ( return @{self.as_ref()}.getAllKeys(@{value.as_ref()}); ),
+                    Some(count) => js_try! ( return @{self.as_ref()}.getAllKeys(@{value.as_ref()}, @{count}); )
+                }
+            },
+            IDBKeyOrKeyRange::Range(range) => {
+                match count.into() {
+                    None => js_try! ( return @{self.as_ref()}.getAllKeys(@{range.as_ref()}); ),
+                    Some(count) => js_try! ( return @{self.as_ref()}.getAllKeys(@{range.as_ref()}, @{count}); )
                 }
             }
-        }.try_into().unwrap()
+        }.unwrap()
     }
     
-    // [NewObject] IDBRequest count(optional any query);
+    /// Returns an IDBRequest object, and, in a separate thread, returns the total number of records that match the provided key or IDBKeyRange
     ///
-    ///
-    ///
-    fn count<Q: Into<Option<Value>>>( &self, query: Q) -> IDBRequest {
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBIndex/count)
+    fn count<Q: Into<IDBKeyOrKeyRange>>( &self, query: Q) -> Result<IDBRequest, IDBCountError> {
         match query.into() {
-            None => js! (
+            IDBKeyOrKeyRange::None => js_try! (
                 return @{self.as_ref()}.count();
             ),
-            Some(query) => js! (
-                return @{self.as_ref()}.count(@{query.as_ref()});
+            IDBKeyOrKeyRange::Value(value) => js_try! (
+                return @{self.as_ref()}.count(@{value.as_ref()});
+            ),
+            IDBKeyOrKeyRange::Range(range) => js_try! (
+                return @{self.as_ref()}.count(@{range.as_ref()});
             )
-        }.try_into().unwrap()
+        }.unwrap()
     }
 
-    //    [NewObject] IDBRequest openCursor(optional any query,                                    optional IDBCursorDirection direction = "next");
+    /// The open_cursor() method returns an IDBRequest object, and, in a separate
+    /// thread, creates a cursor over the specified key range.
     ///
-    ///
-    ///
-    fn open_cursor<Q: Into<Option<Value>>, D: Into<Option<IDBCursorDirection>>>( &self, query: Q, direction: D) -> IDBRequest {
-        match query.into() {
-            None => js! ( return @{self.as_ref()}.openCursor(); ),
-            Some(query) => {
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBIndex/openCursor)
+    fn open_cursor<Q: Into<Option<IDBKeyRange>>, D: Into<Option<IDBCursorDirection>>>( &self, range: Q, direction: D) -> Result<IDBRequest, IDBCountError> {
+        match range.into() {
+            None => js_try! ( return @{self.as_ref()}.openCursor(); ),
+            Some(range) => {
                 match direction.into() {
-                    None => js! ( return @{self.as_ref()}.openCursor(@{query.as_ref()}); ),
-                    Some(direction) => js! ( return @{self.as_ref()}.openCursor(@{query.as_ref()}, @{cursor_direction_to_string(direction)}); )
+                    None => js_try! ( return @{self.as_ref()}.openCursor(@{range.as_ref()}); ),
+                    Some(direction) => js_try! ( return @{self.as_ref()}.openCursor(@{range.as_ref()}, @{cursor_direction_to_string(direction)}); )
                 }
             }
-        }.try_into().unwrap()
+        }.unwrap()
     }
     
-    // [NewObject] IDBRequest openKeyCursor(optional any query,                                       optional IDBCursorDirection direction = "next");
-    ///
-    ///
-    ///
-    fn open_key_cursor<Q: Into<Option<Value>>, D: Into<Option<IDBCursorDirection>>>( &self, query: Q, direction: D) -> IDBRequest {
-        match query.into() {
-            None => js! ( return @{self.as_ref()}.openKeyCursor(); ),
-            Some(query) => {
+    /// The open_key_cursor() method returns an IDBRequest object, and, in a
+    /// separate thread, creates a cursor over the specified key range, as arranged
+    /// by this index.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBIndex/openKeyCursor)
+    fn open_key_cursor<Q: Into<Option<IDBKeyRange>>, D: Into<Option<IDBCursorDirection>>>( &self, range: Q, direction: D) -> Result<IDBRequest, IDBCountError> {
+        match range.into() {
+            None => js_try! ( return @{self.as_ref()}.openKeyCursor(); ),
+            Some(range) => {
                 match direction.into() {
-                    None => js! ( return @{self.as_ref()}.openKeyCursor(@{query.as_ref()}); ),
-                    Some(direction) => js! ( return @{self.as_ref()}.openKeyCursor(@{query.as_ref()}, @{cursor_direction_to_string(direction)}); )
+                    None => js_try! ( return @{self.as_ref()}.openKeyCursor(@{range.as_ref()}); ),
+                    Some(direction) => js_try! ( return @{self.as_ref()}.openKeyCursor(@{range.as_ref()}, @{cursor_direction_to_string(direction)}); )
                 }
             }
-        }.try_into().unwrap()
+        }.unwrap()
     }
 
 }
@@ -557,13 +712,14 @@ pub struct IDBIndex( Reference );
 impl IDBObjectStoreIndexSharedMethods for IDBIndex {}
 
 impl IDBIndex {
-    //attribute DOMString name;
-    // Implemented in trait.
     
-    //[SameObject] readonly attribute IDBObjectStore objectStore;
-    //readonly attribute any keyPath;
+    /// The object_store property of the IDBIndex interface returns the name of the object store referenced by the current index.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBIndex/objectStore)
+    pub fn object_store( &self ) -> IDBObjectStore {
+        js! ( return @{self.as_ref()}.objectStore ).try_into().unwrap()
+    }
     
-    //readonly attribute boolean multiEntry;
     /// Affects how the index behaves when the result of evaluating the index's key path yields an array. If `true`, there is one record in the index for each item in an array of keys. If `false`, then there is one record for each key that is an array.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBIndex/multiEntry)
@@ -573,7 +729,6 @@ impl IDBIndex {
         ).try_into().unwrap()
     }
     
-    //readonly attribute boolean unique;
     /// If `true`, this index does not allow duplicate values for a key.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBIndex/unique)
@@ -583,14 +738,6 @@ impl IDBIndex {
         ).try_into().unwrap()
     }
 
-    // The rest of this is implemented in the trait
-    //[NewObject] IDBRequest get(any query);
-    //[NewObject] IDBRequest getKey(any query);
-    //[NewObject] IDBRequest getAll(optional any query, optional [EnforceRange] unsigned long count);
-    //[NewObject] IDBRequest getAllKeys(optional any query, optional [EnforceRange] unsigned long count);
-    //[NewObject] IDBRequest count(optional any query);
-    //[NewObject] IDBRequest openCursor(optional any query, optional IDBCursorDirection direction = "next");
-    //[NewObject] IDBRequest openKeyCursor(optional any query, optional IDBCursorDirection direction = "next");
 }
 
 /// The `IDBObjectStore` interface of the IndexedDB API represents an object store in a database
@@ -603,15 +750,10 @@ pub struct IDBObjectStore( Reference );
 impl IDBObjectStoreIndexSharedMethods for IDBObjectStore {}
 
 impl IDBObjectStore {
-   
-    
-    // readonly attribute any keyPath;
-    // Todo, how am I wrapping this.
-    
+       
     // readonly attribute DOMStringList indexNames;
     // TODO: how am I wrapping this
     
-    // [SameObject] readonly attribute IDBTransaction transaction;
     /// The `IDBTransaction` object to which this object store belongs.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/transaction)
@@ -621,7 +763,6 @@ impl IDBObjectStore {
         ).try_into().unwrap()
     }
     
-    // readonly attribute boolean autoIncrement;
     /// Returns the value of the auto increment flag for this object store.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/autoIncrement)
@@ -631,65 +772,60 @@ impl IDBObjectStore {
         ).try_into().unwrap()
     }
     
-    // [NewObject] IDBRequest put(any value, optional any key);
     /// Updates a given record in a database, or inserts a new record if the given item does not already exist.
     /// The key is only needed if 
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/put)
-    pub fn put<T: Into<Option<Value>>>( &self, value: Value, key: T) -> IDBRequest {
+    pub fn put<T: Into<Option<Value>>>( &self, value: Value, key: T) -> Result<IDBRequest, UpdateError> {
         match key.into() {
-            None => js! (
+            None => js_try! (
                 return @{self.as_ref()}.put(@{value.as_ref()});
             ),
-            Some(key) => js! (
+            Some(key) => js_try! (
                 return @{self.as_ref()}.put(@{value.as_ref()}, @{key.as_ref()});
             )
-        }.try_into().unwrap()
+        }.unwrap()
     }
     
-    // [NewObject] IDBRequest add(any value, optional any key);
     /// Returns an `IDBRequest` object, and, in a separate thread, creates a structured clone of the value, and stores the cloned value in the object store. This is for adding new records to an object store.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/add)
-    pub fn add<T: Into<Option<Value>>>( &self, value: Value, key: T) -> IDBRequest {
+    pub fn add<T: Into<Option<Value>>>( &self, value: Value, key: T) -> Result<IDBRequest, UpdateWithConstraintError> {
         match key.into() {
-            None => js! (
+            None => js_try! (
                 return @{self.as_ref()}.add(@{value.as_ref()});
             ),
-            Some(key) => js! (
+            Some(key) => js_try! (
                 return @{self.as_ref()}.add(@{value.as_ref()}, @{key.as_ref()});
             )
-        }.try_into().unwrap()
+        }.unwrap()
     }
 
-    // [NewObject] IDBRequest delete(any query);
     /// returns an `IDBRequest` object, and, in a separate thread, deletes the specified record or records.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/delete)
-    pub fn delete( &self, query: Value) -> IDBRequest {
-        js! (
+    pub fn delete( &self, query: Value) -> Result<IDBRequest, Delete2Error> {
+        js_try! (
             return @{self.as_ref()}.delete(@{query.as_ref()});
-        ).try_into().unwrap()
+        ).unwrap()
     }
     
-    // [NewObject] IDBRequest clear();
     /// Returns an IDBRequest object, and clears this object store in a separate thread
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/clear)
-    pub fn clear( &self ) -> IDBRequest {
-        js! (
+    pub fn clear( &self ) -> Result<IDBRequest, ClearError> {
+        js_try! (
             return @{self.as_ref()}.clear();
-        ).try_into().unwrap()
+        ).unwrap()
     }
     
-    // IDBIndex index(DOMString name);
     /// opens a named index in the current object store
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/index)
-    pub fn index( &self, name: &str) -> IDBIndex {
-        js! (
+    pub fn index( &self, name: &str) -> Result<IDBIndex, IndexError> {
+        js_try! (
             return @{self.as_ref()}.index(@{name});
-        ).try_into().unwrap()
+        ).unwrap()
     }
 
     // [NewObject] IDBIndex createIndex(DOMString name, (DOMString or sequence<DOMString>) keyPath, optional IDBIndexParameters options);

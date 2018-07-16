@@ -66,7 +66,7 @@ fn display_data_inner(db: &IDBDatabase) {
     // Open our object store and then get a cursor - which iterates through all the
     // different data items in the store
     let object_store = db.transaction("notes", "readonly").object_store("notes");
-    object_store.open_cursor(None, None)
+    object_store.open_cursor(None, None).unwrap()
         .add_event_listener( move |e: IDBSuccessEvent| {
             // Get a reference to the cursor
             let db_request: IDBRequest = e.target().unwrap().try_into().unwrap();
@@ -237,7 +237,7 @@ fn main() {
                 let object_store = transaction.object_store("notes");
         
                 // Make a request to add our new_item object to the object store
-                let request = object_store.add(new_item.try_into().unwrap(), None);
+                let request = object_store.add(new_item.try_into().unwrap(), None).unwrap();
                 
                 request.add_event_listener( move |_e: IDBSuccessEvent| {
                     // Clear the form, ready for adding the next entry
