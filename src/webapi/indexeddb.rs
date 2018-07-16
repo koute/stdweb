@@ -469,6 +469,46 @@ pub struct IDBKeyRange( Reference );
 
 impl IDBKeyRange {
 
+    // Static construction methods:
+    
+    /// The only() method of the IDBKeyRange interface creates a new key range
+    /// containing a single value.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange/only)
+    pub fn only( value: Value ) -> Result<IDBKeyRange, DataError> {
+        js_try! ( return IDBKeyRange.only(@{value}); ).unwrap()
+    }
+    
+    /// The lower_bound() method of the IDBKeyRange interface creates a new key range
+    /// with only a lower bound. if open is false it includes the lower endpoint
+    /// value and is closed.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange/lowerBound)
+    pub fn lower_bound( lower: Value, open: bool ) -> Result<IDBKeyRange, DataError> {
+        js_try! ( return IDBKeyRange.lowerBound(@{lower}, @{open}); ).unwrap()
+    }
+    
+    /// The upper_bound() method of the IDBKeyRange interface creates a new key range
+    /// with only an apper bound. if open is false it includes the upper endpoint
+    /// value and is closed.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange/upperBound)
+    pub fn upper_bound( upper: Value, open: bool ) -> Result<IDBKeyRange, DataError> {
+        js_try! ( return IDBKeyRange.upperBound(@{upper}, @{open}); ).unwrap()
+    }
+    
+    /// The bound() method of the IDBKeyRange interface creates a new key range
+    /// with the specified upper and lower bounds. The bounds can be open (that
+    /// is, the bounds exclude the endpoint values) or closed (that is, the bounds
+    /// include the endpoint values).
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange/bound)
+    pub fn bound (lower: Value, upper: Value, lower_open: bool, upper_open: bool) -> Result<IDBKeyRange, DataError> {
+        js_try! (
+            return IDBKeyRange.boundound(@{lower}, @{upper}, @{lower_open}, @{upper_open});
+        ).unwrap()
+    }
+        
     /// Lower bound of the key range.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange/lower)
@@ -495,6 +535,14 @@ impl IDBKeyRange {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange/upperOpen)
     pub fn upper_open( &self ) -> bool {
         js!( return @{self}.upperOpen; ).try_into().unwrap()
+    }
+
+    /// The includes() method of the IDBKeyRange interface returns a boolean
+    /// indicating whether a specified key is inside the key range.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange/includes)
+    pub fn includes( &self, value: Value ) -> Result<bool, DataError> {
+        js_try! ( return @{self}.includes(@{value}); ).unwrap()
     }
 }
 
