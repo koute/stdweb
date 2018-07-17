@@ -902,11 +902,41 @@ impl IDBObjectStore {
   boolean multiEntry = false;
 };*/
 
-
+#[derive(Debug)]
 pub enum IDBTransactionMode {
   ReadOnly,
-  Readwrite,
+  ReadWrite,
   VersionChange
+}
+
+fn transaction_mode_to_string( mode: IDBTransactionMode ) -> String {
+    match mode {
+        IDBTransactionMode::ReadOnly => "readonly".to_string(),
+        IDBTransactionMode::ReadWrite => "readwrite".to_string(),
+        IDBTransactionMode::VersionChange => "versionchange".to_string()
+    }
+}
+
+fn string_to_transaction_mode( mode: &str ) -> IDBTransactionMode {
+    if mode.eq("readonly") {
+        return IDBTransactionMode::ReadOnly;
+    } else if mode.eq("readwrite") {
+        return IDBTransactionMode::ReadWrite;
+    } else if mode.eq("versionchange") {
+        return IDBTransactionMode::VersionChange;
+    } else {
+        unreachable!("Unknown transaction mode \"{}\".", mode);
+    }
+}
+
+error_enum_boilerplate! {
+    IDBObjectStoreError,
+
+    /// The requested object store is not in this transaction's scope.
+    NotFoundError,
+    /// The request was made on a source object that has been deleted or removed, or
+    /// if the transaction has finished.
+    InvalidStateError
 }
 
 /// The `IDBTransaction` interface of the IndexedDB API provides a static, asynchronous transaction on a database using event handlers.
@@ -922,10 +952,17 @@ impl IDBTransaction {
     // readonly attribute DOMStringList objectStoreNames;
     // Todo, how am I wrapping DOMStringList
     
-    // readonly attribute IDBTransactionMode mode;
-    // Todo, should I use an enum or a string
+    /// The mode read-only property of the `IDBTransaction` interface returns the
+    /// current mode for accessing the data in the object stores in the scope of the
+    /// transaction (i.e. is the mode to be read-only, or do you want to write to
+    /// the object stores?) The default value is readonly.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBTransaction/mode
+    pub fn mode( &self ) -> IDBTransactionMode {
+        let mode: String = js!( return @{self}.mode; ).try_into().unwrap();
+        string_to_transaction_mode(&mode)
+    }
     
-    // [SameObject] readonly attribute IDBDatabase db;
     /// Returns the database connection with which this transaction is associated.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBTransaction/db)
@@ -934,27 +971,28 @@ impl IDBTransaction {
             return @{self}.db();
         ).try_into().unwrap()
     }
-    
+
+    // Todo
     // readonly attribute DOMException error;
     
-    // IDBObjectStore objectStore(DOMString name);
-    /// This is a method
-    pub fn object_store( &self, name: &str) -> IDBObjectStore {
-        js! (
+    /// The object_store() method of the IDBTransaction interface returns an object
+    /// store that has already been added to the scope of this transaction.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBTransaction/objectStore)
+    pub fn object_store( &self, name: &str) -> Result<IDBObjectStore, IDBObjectStoreError> {
+        js_try! (
             return @{self.as_ref()}.objectStore(@{name});
-        ).try_into().unwrap()
+        ).unwrap()
     }
     
-    // void abort();
-    // Todo, do I need to implement this or do I get it for free from IEventTarget
-    // ///
-    // ///
-    // /// [(JavaScript docs)]
-    
-    // Event handlers:
-    // attribute EventHandler onabort;
-    // attribute EventHandler oncomplete;
-    // attribute EventHandler onerror;
+    /// The abort() method of the IDBTransaction interface rolls back all the
+    /// changes to objects in the database associated with this transaction. 
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBTransaction/abort)
+    pub fn abort( &self ) -> Result<(), InvalidStateError> {
+        js_try! ( @{self}.abort(); ).unwrap()
+    }
+
 }
 
 /// The `IDBDatabase` interface of the IndexedDB API provides a connection to a database.
@@ -968,7 +1006,6 @@ impl IEventTarget for IDBDatabase {}
 
 impl IDBDatabase {
     
-    // readonly attribute DOMString name;
     /// Returns the the name of the connected database.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase/name)
@@ -978,7 +1015,6 @@ impl IDBDatabase {
         ).try_into().unwrap()
     }
     
-    // readonly attribute unsigned long long version;
     /// Returns the version of the connected database.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase/version)

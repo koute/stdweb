@@ -65,7 +65,7 @@ fn display_data_inner(db: &IDBDatabase) {
     }
     // Open our object store and then get a cursor - which iterates through all the
     // different data items in the store
-    let object_store = db.transaction("notes", "readonly").object_store("notes");
+    let object_store = db.transaction("notes", "readonly").object_store("notes").unwrap();
     object_store.open_cursor(None, None).unwrap()
         .add_event_listener( move |e: IDBSuccessEvent| {
             // Get a reference to the cursor
@@ -139,7 +139,7 @@ fn delete_item( e: ClickEvent ) {
     DB.with(|db_cell| {
         if let Some(ref db) = *db_cell.borrow_mut()  {
             let transaction = db.transaction("notes", "readwrite");
-            let object_store = transaction.object_store("notes");
+            let object_store = transaction.object_store("notes").unwrap();
             object_store.delete(note_id.try_into().unwrap());
             
             // report that the data item has been deleted
@@ -234,7 +234,7 @@ fn main() {
                 let transaction = db.transaction("notes", "readwrite");
         
                 // call an object store that's already been added to the database
-                let object_store = transaction.object_store("notes");
+                let object_store = transaction.object_store("notes").unwrap();
         
                 // Make a request to add our new_item object to the object store
                 let request = object_store.add(new_item.try_into().unwrap(), None).unwrap();
