@@ -446,7 +446,6 @@ pub mod private {
     pub use webcore::serialization::{
         JsSerialize,
         JsSerializeOwned,
-        PreallocatedArena,
         SerializedValue
     };
 
@@ -460,6 +459,9 @@ pub mod private {
         to_value,
         from_value
     };
+
+    pub use webcore::global_arena::ArenaRestorePoint;
+    pub use webcore::global_arena::serialize_value;
 
     // This is to prevent an unused_mut warnings in macros, because an `allow` doesn't work apparently?
     #[allow(dead_code)]
