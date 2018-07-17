@@ -193,6 +193,20 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
 [WebAssembly]: https://en.wikipedia.org/wiki/WebAssembly
 
 ## Changelog
+   * `0.4.8`
+      * Fixed compilation on the newest nightly when targeting `wasm32-unknown-unknown`
+      * New events:
+        * `PointerLockChangeEvent`
+        * `PointerLockErrorEvent`
+        * `MouseWheelEvent`
+      * New types:
+        * `MouseWheelDeltaMode`
+        * `XhrResponseType`
+      * New methods:
+        * `XmlHttpRequest::raw_response`
+        * `Window::device_pixel_ratio`
+        * `Document::pointer_lock_element`
+        * `Document::exit_pointer_lock`
    * `0.4.7`
       * New events:
          * `AuxClickEvent`
