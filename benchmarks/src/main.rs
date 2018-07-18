@@ -104,7 +104,7 @@ impl Bencher {
     }
 }
 
-fn main() {
+fn run_benchmarks< F: FnOnce( &mut Bencher ) >( callback: F ) {
     if !*IS_NODEJS {
         let body = document().query_selector( "body" ).unwrap().unwrap();
         let start = document().create_element( "button" ).unwrap();
@@ -122,9 +122,7 @@ fn main() {
     }
 
     let mut bencher = Bencher::new();
-    bencher.add( "call-into-js", || js!( @(no_return) ) );
-    bencher.add( "call-into-js-returning-undefined", || js!() );
-    bencher.add( "call-into-js-with-string", || js!( @(no_return) var test = @{"Hello world!"}; ) );
+    callback( &mut bencher );
 
     if !*IS_NODEJS {
         let body = document().query_selector( "body" ).unwrap().unwrap();
@@ -134,4 +132,12 @@ fn main() {
     } else {
         bencher.run();
     }
+}
+
+fn main() {
+    run_benchmarks( |bencher| {
+        bencher.add( "call-into-js", || js!( @(no_return) ) );
+        bencher.add( "call-into-js-returning-undefined", || js!() );
+        bencher.add( "call-into-js-with-string", || js!( @(no_return) var test = @{"Hello world!"}; ) );
+    });
 }
