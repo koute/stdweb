@@ -47,26 +47,55 @@ fn get_meta_items( attr: &syn::Attribute ) -> Option< Vec< syn::NestedMeta > > {
 /// ```
 #[proc_macro_derive(ReferenceType, attributes(reference))]
 pub fn derive_reference_type( input: TokenStream ) -> TokenStream {
+    enum InstanceOfImplementation {
+        None,
+        Generic(String),
+        Input(String)
+    }
+
     let input: DeriveInput = syn::parse( input ).unwrap();
 
     let name = input.ident;
     let generics_params = &input.generics.params;
 
-    let mut instance_of = None;
+    let mut instance_of = InstanceOfImplementation::None;
     let mut subclass_of = Vec::new();
 
     for meta_items in input.attrs.iter().filter_map( get_meta_items ) {
         for meta in meta_items {
             match meta {
                 syn::NestedMeta::Meta( syn::Meta::NameValue( ref meta ) ) if meta.ident == "instance_of" => {
-                    if instance_of.is_some() {
-                        panic!( "Duplicate '#[reference(instance_of)]'!" );
+                    match instance_of {
+                        InstanceOfImplementation::Generic(_) => {
+                            panic!( "Duplicate '#[reference(instance_of)]'!" )
+                        },
+                        InstanceOfImplementation::Input(_) => {
+                            panic!( "Cannot apply '#[reference(instance_of)]' and '#[reference(input_instance_of)]' to the same type!" )
+                        },
+                        InstanceOfImplementation::None => {
+                            if let syn::Lit::Str( ref str ) = meta.lit {
+                                instance_of = InstanceOfImplementation::Generic( str.value() );
+                            } else {
+                                panic!( "The value of '#[reference(instance_of = ...)]' is not a string!" );
+                            }
+                        }
                     }
-
-                    if let syn::Lit::Str( ref str ) = meta.lit {
-                        instance_of = Some( str.value() );
-                    } else {
-                        panic!( "The value of '#[reference(instance_of = ...)]' is not a string!" );
+                },
+                syn::NestedMeta::Meta( syn::Meta::NameValue( ref meta ) ) if meta.ident == "input_instance_of" => {
+                    match instance_of {
+                        InstanceOfImplementation::Input(_) => {
+                            panic!( "Duplicate '#[reference(input_instance_of)]'!" )
+                        },
+                        InstanceOfImplementation::Generic(_) => {
+                            panic!( "Cannot apply '#[reference(instance_of)]' and '#[reference(input_instance_of)]' to the same type!" )
+                        },
+                        InstanceOfImplementation::None => {
+                            if let syn::Lit::Str( ref str ) = meta.lit {
+                                instance_of = InstanceOfImplementation::Input( str.value() );
+                            } else {
+                                panic!( "The value of '#[reference(input_instance_of = ...)]' is not a string!" );
+                            }
+                        }
                     }
                 },
                 syn::NestedMeta::Meta( syn::Meta::List( ref meta ) ) if meta.ident == "subclass_of" => {
@@ -166,7 +195,7 @@ pub fn derive_reference_type( input: TokenStream ) -> TokenStream {
     }
     let default_args = quote! { #(#default_args),* };
     let instance_of_impl = match instance_of {
-        Some( js_name ) => {
+        InstanceOfImplementation::Generic( js_name ) => {
             quote! {
                 impl #impl_generics ::stdweb::InstanceOf for #name #ty_generics {
                     #[inline]
@@ -179,7 +208,20 @@ pub fn derive_reference_type( input: TokenStream ) -> TokenStream {
                 }
             }
         },
-        None => quote! {}
+        InstanceOfImplementation::Input( js_name ) => {
+            quote! {
+                impl #impl_generics ::stdweb::InstanceOf for #name #ty_generics {
+                    #[inline]
+                    fn instance_of( reference: &::stdweb::Reference ) -> bool {
+                        __js_raw_asm!(
+                        concat!( "return ((Module.STDWEB_PRIVATE.acquire_js_reference( $0 ) instanceof HTMLInputElement) && Module.STDWEB_PRIVATE.acquire_js_reference( $0 ).type === '", #js_name , "') | 0;" ),
+                            reference.as_raw()
+                        ) == 1
+                    }
+                }
+            }
+        },
+        InstanceOfImplementation::None => quote! {}
     };
 
     let subclass_of_impl: Vec< _ > = subclass_of.into_iter().map( |target| {

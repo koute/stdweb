@@ -283,6 +283,7 @@ pub mod web {
     pub mod html_element {
         pub use webapi::html_elements::ImageElement;
         pub use webapi::html_elements::InputElement;
+        pub use webapi::html_elements::FileInputElement;
         pub use webapi::html_elements::TextAreaElement;
         pub use webapi::html_elements::CanvasElement;
         pub use webapi::html_elements::SelectElement;
