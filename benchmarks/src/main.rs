@@ -86,11 +86,12 @@ impl Bencher {
         Bencher { benches: Vec::new() }
     }
 
-    fn add< R, F: 'static + Fn() -> R >( &mut self, name: &str, callback: F ) {
+    fn add< R, F: 'static + Fn() -> R, G: 'static + Fn() -> F >( &mut self, name: &str, callback: G ) {
         self.benches.push( Bench {
             name: name.to_owned(),
             callback: Box::new( move |bench| {
                 println!( "Benchmarking '{}'...", bench.name );
+                let callback = callback();
                 let result = utils::benchmark::< Timer, R, F >( &callback );
                 println!( "    {}", result );
             })
@@ -136,8 +137,8 @@ fn run_benchmarks< F: FnOnce( &mut Bencher ) >( callback: F ) {
 
 fn main() {
     run_benchmarks( |bencher| {
-        bencher.add( "call-into-js", || js!( @(no_return) ) );
-        bencher.add( "call-into-js-returning-undefined", || js!() );
-        bencher.add( "call-into-js-with-string", || js!( @(no_return) var test = @{"Hello world!"}; ) );
+        bencher.add( "call-into-js", || || js!( @(no_return) ) );
+        bencher.add( "call-into-js-returning-undefined", || || js!() );
+        bencher.add( "call-into-js-with-string", || || js!( @(no_return) var test = @{"Hello world!"}; ) );
     });
 }
