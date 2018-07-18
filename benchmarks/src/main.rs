@@ -9,8 +9,13 @@ extern crate stdweb;
 #[macro_use]
 extern crate lazy_static;
 
-use std::time::Duration;
+#[macro_use]
+extern crate serde_derive;
 
+use std::time::Duration;
+use std::collections::HashMap;
+
+use stdweb::Reference;
 use stdweb::web::document;
 use stdweb::web::event::ClickEvent;
 use stdweb::unstable::TryInto;
@@ -135,10 +140,61 @@ fn run_benchmarks< F: FnOnce( &mut Bencher ) >( callback: F ) {
     }
 }
 
+#[derive(PartialEq, Serialize, Deserialize, Debug)]
+struct Struct {
+    number: i32,
+    boolean: bool,
+    string: String,
+    array: Vec< i32 >,
+    object: HashMap< String, i32 >
+}
+
+js_serializable!( Struct );
+
 fn main() {
     run_benchmarks( |bencher| {
         bencher.add( "call-into-js", || || js!( @(no_return) ) );
         bencher.add( "call-into-js-returning-undefined", || || js!() );
+        bencher.add( "call-into-js-returning-bool", || || js!( return true; ) );
+        bencher.add( "call-into-js-returning-string", || || js!( return "Hello world!"; ) );
         bencher.add( "call-into-js-with-string", || || js!( @(no_return) var test = @{"Hello world!"}; ) );
+        bencher.add( "call-into-js-with-bool", || || js!( @(no_return) var test = @{true}; ) );
+        bencher.add( "call-into-js-with-array", || || js!( @(no_return) var test = @{&[1, 2, 3, 4, 5, 6, 7, 8][..]}; ) );
+        bencher.add( "call-into-js-with-object", || {
+            let object: HashMap< _, _ > =
+                vec![
+                    ("One".to_owned(), 1),
+                    ("Two".to_owned(), 2),
+                    ("Three".to_owned(), 3)
+                ].into_iter().collect();
+
+            move || js!( @(no_return) var test = @{&object}; )
+        });
+        bencher.add( "call-into-js-with-serde-struct", || {
+            let structure = Struct {
+                number: 123,
+                boolean: true,
+                string: "Hello world!".to_owned(),
+                array: vec![ 1, 2, 3, 4, 5, 6, 7, 8 ],
+                object: vec![
+                    ("One".to_owned(), 1),
+                    ("Two".to_owned(), 2),
+                    ("Three".to_owned(), 3)
+                ].into_iter().collect()
+            };
+
+            move || js!( @(no_return) var test = @{&structure}; )
+        });
+        bencher.add( "call-into-js-with-reference", || {
+            let reference: Reference = js!( return [@{0}]; ).try_into().unwrap();
+            move || js!( @(no_return) var test = @{&reference}; )
+        });
+        bencher.add( "call-into-js-with-reference-while-having-a-lot-of-references", || {
+            let references: Vec< Reference > = (0..1000).into_iter().map( |nth| {
+                js!( return [@{nth}]; ).try_into().unwrap()
+            }).collect();
+
+            move || js!( @(no_return) var test = @{&references[0]}; )
+        });
     });
 }
