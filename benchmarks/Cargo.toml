@@ -5,6 +5,7 @@ authors = ["Jan Bujak <j@exia.io>"]
 
 [dependencies]
 stdweb = { path = ".." }
+lazy_static = "1"
 
 [build-dependencies]
 rustc_version = "0.2"
