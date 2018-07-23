@@ -59,7 +59,7 @@ macro_rules! __js_raw_asm {
     // args, params = [], []
     // 1.upto( 17 ) do |nth|
     //     args << "$a#{nth}:expr"
-    //     params << "$a#{nth} as i32"
+    //     params << "$a#{nth} as *const u8"
     //     puts "($code:expr, #{args.join ', '}) => {{"
     //     puts "    #[allow(unused_unsafe)]"
     //     puts "    unsafe {"
@@ -72,119 +72,119 @@ macro_rules! __js_raw_asm {
         #[allow(unused_unsafe)]
         unsafe {
             #[allow(trivial_numeric_casts)]
-            $crate::private::__js_1( $a1 as i32, concat!( $code, "\0" ) as *const _ as *const u8 )
+            $crate::private::__js_1( $a1 as *const u8, concat!( $code, "\0" ) as *const _ as *const u8 )
         }
     }};
     ($code:expr, $a1:expr, $a2:expr) => {{
         #[allow(unused_unsafe)]
         unsafe {
             #[allow(trivial_numeric_casts)]
-            $crate::private::__js_2( $a1 as i32, $a2 as i32, concat!( $code, "\0" ) as *const _ as *const u8 )
+            $crate::private::__js_2( $a1 as *const u8, $a2 as *const u8, concat!( $code, "\0" ) as *const _ as *const u8 )
         }
     }};
     ($code:expr, $a1:expr, $a2:expr, $a3:expr) => {{
         #[allow(unused_unsafe)]
         unsafe {
             #[allow(trivial_numeric_casts)]
-            $crate::private::__js_3( $a1 as i32, $a2 as i32, $a3 as i32, concat!( $code, "\0" ) as *const _ as *const u8 )
+            $crate::private::__js_3( $a1 as *const u8, $a2 as *const u8, $a3 as *const u8, concat!( $code, "\0" ) as *const _ as *const u8 )
         }
     }};
     ($code:expr, $a1:expr, $a2:expr, $a3:expr, $a4:expr) => {{
         #[allow(unused_unsafe)]
         unsafe {
             #[allow(trivial_numeric_casts)]
-            $crate::private::__js_4( $a1 as i32, $a2 as i32, $a3 as i32, $a4 as i32, concat!( $code, "\0" ) as *const _ as *const u8 )
+            $crate::private::__js_4( $a1 as *const u8, $a2 as *const u8, $a3 as *const u8, $a4 as *const u8, concat!( $code, "\0" ) as *const _ as *const u8 )
         }
     }};
     ($code:expr, $a1:expr, $a2:expr, $a3:expr, $a4:expr, $a5:expr) => {{
         #[allow(unused_unsafe)]
         unsafe {
             #[allow(trivial_numeric_casts)]
-            $crate::private::__js_5( $a1 as i32, $a2 as i32, $a3 as i32, $a4 as i32, $a5 as i32, concat!( $code, "\0" ) as *const _ as *const u8 )
+            $crate::private::__js_5( $a1 as *const u8, $a2 as *const u8, $a3 as *const u8, $a4 as *const u8, $a5 as *const u8, concat!( $code, "\0" ) as *const _ as *const u8 )
         }
     }};
     ($code:expr, $a1:expr, $a2:expr, $a3:expr, $a4:expr, $a5:expr, $a6:expr) => {{
         #[allow(unused_unsafe)]
         unsafe {
             #[allow(trivial_numeric_casts)]
-            $crate::private::__js_6( $a1 as i32, $a2 as i32, $a3 as i32, $a4 as i32, $a5 as i32, $a6 as i32, concat!( $code, "\0" ) as *const _ as *const u8 )
+            $crate::private::__js_6( $a1 as *const u8, $a2 as *const u8, $a3 as *const u8, $a4 as *const u8, $a5 as *const u8, $a6 as *const u8, concat!( $code, "\0" ) as *const _ as *const u8 )
         }
     }};
     ($code:expr, $a1:expr, $a2:expr, $a3:expr, $a4:expr, $a5:expr, $a6:expr, $a7:expr) => {{
         #[allow(unused_unsafe)]
         unsafe {
             #[allow(trivial_numeric_casts)]
-            $crate::private::__js_7( $a1 as i32, $a2 as i32, $a3 as i32, $a4 as i32, $a5 as i32, $a6 as i32, $a7 as i32, concat!( $code, "\0" ) as *const _ as *const u8 )
+            $crate::private::__js_7( $a1 as *const u8, $a2 as *const u8, $a3 as *const u8, $a4 as *const u8, $a5 as *const u8, $a6 as *const u8, $a7 as *const u8, concat!( $code, "\0" ) as *const _ as *const u8 )
         }
     }};
     ($code:expr, $a1:expr, $a2:expr, $a3:expr, $a4:expr, $a5:expr, $a6:expr, $a7:expr, $a8:expr) => {{
         #[allow(unused_unsafe)]
         unsafe {
             #[allow(trivial_numeric_casts)]
-            $crate::private::__js_8( $a1 as i32, $a2 as i32, $a3 as i32, $a4 as i32, $a5 as i32, $a6 as i32, $a7 as i32, $a8 as i32, concat!( $code, "\0" ) as *const _ as *const u8 )
+            $crate::private::__js_8( $a1 as *const u8, $a2 as *const u8, $a3 as *const u8, $a4 as *const u8, $a5 as *const u8, $a6 as *const u8, $a7 as *const u8, $a8 as *const u8, concat!( $code, "\0" ) as *const _ as *const u8 )
         }
     }};
     ($code:expr, $a1:expr, $a2:expr, $a3:expr, $a4:expr, $a5:expr, $a6:expr, $a7:expr, $a8:expr, $a9:expr) => {{
         #[allow(unused_unsafe)]
         unsafe {
             #[allow(trivial_numeric_casts)]
-            $crate::private::__js_9( $a1 as i32, $a2 as i32, $a3 as i32, $a4 as i32, $a5 as i32, $a6 as i32, $a7 as i32, $a8 as i32, $a9 as i32, concat!( $code, "\0" ) as *const _ as *const u8 )
+            $crate::private::__js_9( $a1 as *const u8, $a2 as *const u8, $a3 as *const u8, $a4 as *const u8, $a5 as *const u8, $a6 as *const u8, $a7 as *const u8, $a8 as *const u8, $a9 as *const u8, concat!( $code, "\0" ) as *const _ as *const u8 )
         }
     }};
     ($code:expr, $a1:expr, $a2:expr, $a3:expr, $a4:expr, $a5:expr, $a6:expr, $a7:expr, $a8:expr, $a9:expr, $a10:expr) => {{
         #[allow(unused_unsafe)]
         unsafe {
             #[allow(trivial_numeric_casts)]
-            $crate::private::__js_10( $a1 as i32, $a2 as i32, $a3 as i32, $a4 as i32, $a5 as i32, $a6 as i32, $a7 as i32, $a8 as i32, $a9 as i32, $a10 as i32, concat!( $code, "\0" ) as *const _ as *const u8 )
+            $crate::private::__js_10( $a1 as *const u8, $a2 as *const u8, $a3 as *const u8, $a4 as *const u8, $a5 as *const u8, $a6 as *const u8, $a7 as *const u8, $a8 as *const u8, $a9 as *const u8, $a10 as *const u8, concat!( $code, "\0" ) as *const _ as *const u8 )
         }
     }};
     ($code:expr, $a1:expr, $a2:expr, $a3:expr, $a4:expr, $a5:expr, $a6:expr, $a7:expr, $a8:expr, $a9:expr, $a10:expr, $a11:expr) => {{
         #[allow(unused_unsafe)]
         unsafe {
             #[allow(trivial_numeric_casts)]
-            $crate::private::__js_11( $a1 as i32, $a2 as i32, $a3 as i32, $a4 as i32, $a5 as i32, $a6 as i32, $a7 as i32, $a8 as i32, $a9 as i32, $a10 as i32, $a11 as i32, concat!( $code, "\0" ) as *const _ as *const u8 )
+            $crate::private::__js_11( $a1 as *const u8, $a2 as *const u8, $a3 as *const u8, $a4 as *const u8, $a5 as *const u8, $a6 as *const u8, $a7 as *const u8, $a8 as *const u8, $a9 as *const u8, $a10 as *const u8, $a11 as *const u8, concat!( $code, "\0" ) as *const _ as *const u8 )
         }
     }};
     ($code:expr, $a1:expr, $a2:expr, $a3:expr, $a4:expr, $a5:expr, $a6:expr, $a7:expr, $a8:expr, $a9:expr, $a10:expr, $a11:expr, $a12:expr) => {{
         #[allow(unused_unsafe)]
         unsafe {
             #[allow(trivial_numeric_casts)]
-            $crate::private::__js_12( $a1 as i32, $a2 as i32, $a3 as i32, $a4 as i32, $a5 as i32, $a6 as i32, $a7 as i32, $a8 as i32, $a9 as i32, $a10 as i32, $a11 as i32, $a12 as i32, concat!( $code, "\0" ) as *const _ as *const u8 )
+            $crate::private::__js_12( $a1 as *const u8, $a2 as *const u8, $a3 as *const u8, $a4 as *const u8, $a5 as *const u8, $a6 as *const u8, $a7 as *const u8, $a8 as *const u8, $a9 as *const u8, $a10 as *const u8, $a11 as *const u8, $a12 as *const u8, concat!( $code, "\0" ) as *const _ as *const u8 )
         }
     }};
     ($code:expr, $a1:expr, $a2:expr, $a3:expr, $a4:expr, $a5:expr, $a6:expr, $a7:expr, $a8:expr, $a9:expr, $a10:expr, $a11:expr, $a12:expr, $a13:expr) => {{
         #[allow(unused_unsafe)]
         unsafe {
             #[allow(trivial_numeric_casts)]
-            $crate::private::__js_13( $a1 as i32, $a2 as i32, $a3 as i32, $a4 as i32, $a5 as i32, $a6 as i32, $a7 as i32, $a8 as i32, $a9 as i32, $a10 as i32, $a11 as i32, $a12 as i32, $a13 as i32, concat!( $code, "\0" ) as *const _ as *const u8 )
+            $crate::private::__js_13( $a1 as *const u8, $a2 as *const u8, $a3 as *const u8, $a4 as *const u8, $a5 as *const u8, $a6 as *const u8, $a7 as *const u8, $a8 as *const u8, $a9 as *const u8, $a10 as *const u8, $a11 as *const u8, $a12 as *const u8, $a13 as *const u8, concat!( $code, "\0" ) as *const _ as *const u8 )
         }
     }};
     ($code:expr, $a1:expr, $a2:expr, $a3:expr, $a4:expr, $a5:expr, $a6:expr, $a7:expr, $a8:expr, $a9:expr, $a10:expr, $a11:expr, $a12:expr, $a13:expr, $a14:expr) => {{
         #[allow(unused_unsafe)]
         unsafe {
             #[allow(trivial_numeric_casts)]
-            $crate::private::__js_14( $a1 as i32, $a2 as i32, $a3 as i32, $a4 as i32, $a5 as i32, $a6 as i32, $a7 as i32, $a8 as i32, $a9 as i32, $a10 as i32, $a11 as i32, $a12 as i32, $a13 as i32, $a14 as i32, concat!( $code, "\0" ) as *const _ as *const u8 )
+            $crate::private::__js_14( $a1 as *const u8, $a2 as *const u8, $a3 as *const u8, $a4 as *const u8, $a5 as *const u8, $a6 as *const u8, $a7 as *const u8, $a8 as *const u8, $a9 as *const u8, $a10 as *const u8, $a11 as *const u8, $a12 as *const u8, $a13 as *const u8, $a14 as *const u8, concat!( $code, "\0" ) as *const _ as *const u8 )
         }
     }};
     ($code:expr, $a1:expr, $a2:expr, $a3:expr, $a4:expr, $a5:expr, $a6:expr, $a7:expr, $a8:expr, $a9:expr, $a10:expr, $a11:expr, $a12:expr, $a13:expr, $a14:expr, $a15:expr) => {{
         #[allow(unused_unsafe)]
         unsafe {
             #[allow(trivial_numeric_casts)]
-            $crate::private::__js_15( $a1 as i32, $a2 as i32, $a3 as i32, $a4 as i32, $a5 as i32, $a6 as i32, $a7 as i32, $a8 as i32, $a9 as i32, $a10 as i32, $a11 as i32, $a12 as i32, $a13 as i32, $a14 as i32, $a15 as i32, concat!( $code, "\0" ) as *const _ as *const u8 )
+            $crate::private::__js_15( $a1 as *const u8, $a2 as *const u8, $a3 as *const u8, $a4 as *const u8, $a5 as *const u8, $a6 as *const u8, $a7 as *const u8, $a8 as *const u8, $a9 as *const u8, $a10 as *const u8, $a11 as *const u8, $a12 as *const u8, $a13 as *const u8, $a14 as *const u8, $a15 as *const u8, concat!( $code, "\0" ) as *const _ as *const u8 )
         }
     }};
     ($code:expr, $a1:expr, $a2:expr, $a3:expr, $a4:expr, $a5:expr, $a6:expr, $a7:expr, $a8:expr, $a9:expr, $a10:expr, $a11:expr, $a12:expr, $a13:expr, $a14:expr, $a15:expr, $a16:expr) => {{
         #[allow(unused_unsafe)]
         unsafe {
             #[allow(trivial_numeric_casts)]
-            $crate::private::__js_16( $a1 as i32, $a2 as i32, $a3 as i32, $a4 as i32, $a5 as i32, $a6 as i32, $a7 as i32, $a8 as i32, $a9 as i32, $a10 as i32, $a11 as i32, $a12 as i32, $a13 as i32, $a14 as i32, $a15 as i32, $a16 as i32, concat!( $code, "\0" ) as *const _ as *const u8 )
+            $crate::private::__js_16( $a1 as *const u8, $a2 as *const u8, $a3 as *const u8, $a4 as *const u8, $a5 as *const u8, $a6 as *const u8, $a7 as *const u8, $a8 as *const u8, $a9 as *const u8, $a10 as *const u8, $a11 as *const u8, $a12 as *const u8, $a13 as *const u8, $a14 as *const u8, $a15 as *const u8, $a16 as *const u8, concat!( $code, "\0" ) as *const _ as *const u8 )
         }
     }};
     ($code:expr, $a1:expr, $a2:expr, $a3:expr, $a4:expr, $a5:expr, $a6:expr, $a7:expr, $a8:expr, $a9:expr, $a10:expr, $a11:expr, $a12:expr, $a13:expr, $a14:expr, $a15:expr, $a16:expr, $a17:expr) => {{
         #[allow(unused_unsafe)]
         unsafe {
             #[allow(trivial_numeric_casts)]
-            $crate::private::__js_17( $a1 as i32, $a2 as i32, $a3 as i32, $a4 as i32, $a5 as i32, $a6 as i32, $a7 as i32, $a8 as i32, $a9 as i32, $a10 as i32, $a11 as i32, $a12 as i32, $a13 as i32, $a14 as i32, $a15 as i32, $a16 as i32, $a17 as i32, concat!( $code, "\0" ) as *const _ as *const u8 )
+            $crate::private::__js_17( $a1 as *const u8, $a2 as *const u8, $a3 as *const u8, $a4 as *const u8, $a5 as *const u8, $a6 as *const u8, $a7 as *const u8, $a8 as *const u8, $a9 as *const u8, $a10 as *const u8, $a11 as *const u8, $a12 as *const u8, $a13 as *const u8, $a14 as *const u8, $a15 as *const u8, $a16 as *const u8, $a17 as *const u8, concat!( $code, "\0" ) as *const _ as *const u8 )
         }
     }};
 

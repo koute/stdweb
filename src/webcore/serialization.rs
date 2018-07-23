@@ -886,11 +886,12 @@ macro_rules! impl_for_fn {
             #[inline]
             fn into_js_owned< 'a >( value: &'a mut Option< Self > ) -> SerializedValue< 'a > {
                 let callback: *mut F = Box::into_raw( Box::new( value.take().unwrap().unwrap_newtype().0 ) );
-
+                let adapter_pointer = <Self as FuncallAdapter< F > >::funcall_adapter;
+                let deallocator_pointer = <Self as FuncallAdapter< F > >::deallocator;
                 SerializedUntaggedFunctionOnce {
-                    adapter_pointer: <Self as FuncallAdapter< F > >::funcall_adapter as u32,
+                    adapter_pointer: adapter_pointer as u32,
                     pointer: callback as u32,
-                    deallocator_pointer: <Self as FuncallAdapter< F > >::deallocator as u32
+                    deallocator_pointer: deallocator_pointer as u32
                 }.into()
             }
         }
@@ -901,11 +902,12 @@ macro_rules! impl_for_fn {
             #[inline]
             fn into_js_owned< 'a >( value: &'a mut Option< Self > ) -> SerializedValue< 'a > {
                 let callback: *mut F = Box::into_raw( Box::new( value.take().unwrap().unwrap_newtype() ) );
-
+                let adapter_pointer = <Self as FuncallAdapter< F > >::funcall_adapter;
+                let deallocator_pointer = <Self as FuncallAdapter< F > >::deallocator;
                 SerializedUntaggedFunction {
-                    adapter_pointer: <Self as FuncallAdapter< F > >::funcall_adapter as u32,
+                    adapter_pointer: adapter_pointer as u32,
                     pointer: callback as u32,
-                    deallocator_pointer: <Self as FuncallAdapter< F > >::deallocator as u32
+                    deallocator_pointer: deallocator_pointer as u32
                 }.into()
             }
         }
@@ -917,10 +919,12 @@ macro_rules! impl_for_fn {
             fn into_js_owned< 'a >( value: &'a mut Option< Self > ) -> SerializedValue< 'a > {
                 if let Some( value ) = value.take().unwrap().unwrap_newtype() {
                     let callback: *mut F = Box::into_raw( Box::new( value ) );
+                    let adapter_pointer = <Newtype< (FunctionTag, ($($kind,)*)), F > as FuncallAdapter< F > >::funcall_adapter;
+                    let deallocator_pointer = <Newtype< (FunctionTag, ($($kind,)*)), F > as FuncallAdapter< F > >::deallocator;
                     SerializedUntaggedFunction {
-                        adapter_pointer: <Newtype< (FunctionTag, ($($kind,)*)), F > as FuncallAdapter< F > >::funcall_adapter as u32,
+                        adapter_pointer: adapter_pointer as u32,
                         pointer: callback as u32,
-                        deallocator_pointer: <Newtype< (FunctionTag, ($($kind,)*)), F > as FuncallAdapter< F > >::deallocator as u32
+                        deallocator_pointer: deallocator_pointer as u32
                     }.into()
                 } else {
                     SerializedUntaggedNull.into()
