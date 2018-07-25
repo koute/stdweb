@@ -142,12 +142,12 @@ fn process( exports: Vec< Export > ) -> quote::Tokens {
                 // TODO: Figure out a better way to do this, if possible.
                 export_result_conversion = quote! {
                     let __result = ::stdweb::private::IntoNewtype::into_newtype( __result );
-                    let __result_memory_required = ::stdweb::private::JsSerializeOwned::memory_required_owned( &__result );
-                    let mut __result_arena = ::stdweb::private::PreallocatedArena::new( __result_memory_required );
+                    let mut __arena_restore_point = ::stdweb::private::ArenaRestorePoint::new();
                     let mut __result = Some( __result );
-                    let __result = ::stdweb::private::JsSerializeOwned::into_js_owned( &mut __result, &mut __result_arena );
+                    let __result = ::stdweb::private::JsSerializeOwned::into_js_owned( &mut __result );
                     let __result = &__result as *const _;
                     __js_raw_asm!( "Module.STDWEB_PRIVATE.tmp = Module.STDWEB_PRIVATE.to_js( $0 );", __result );
+                    ::std::mem::drop( __arena_restore_point );
                     let __result = ();
                 };
                 export_result_metadata = Some( TypeMetadata::Custom {

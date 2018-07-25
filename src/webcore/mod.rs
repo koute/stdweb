@@ -18,6 +18,7 @@ pub mod instance_of;
 pub mod reference_type;
 pub mod promise;
 pub mod discard;
+pub mod global_arena;
 
 #[cfg(feature = "futures-support")]
 pub mod promise_future;

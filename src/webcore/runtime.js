@@ -62,7 +62,7 @@ Module.STDWEB_PRIVATE.to_js = function to_js( address ) {
     } else if( kind === 6 ) {
         return true;
     } else if( kind === 7 ) {
-        var pointer = HEAPU32[ address / 4 ];
+        var pointer = Module.STDWEB_PRIVATE.arena + HEAPU32[ address / 4 ];
         var length = HEAPU32[ (address + 4) / 4 ];
         var output = [];
         for( var i = 0; i < length; ++i ) {
@@ -70,9 +70,10 @@ Module.STDWEB_PRIVATE.to_js = function to_js( address ) {
         }
         return output;
     } else if( kind === 8 ) {
-        var value_array_pointer = HEAPU32[ address / 4 ];
+        var arena = Module.STDWEB_PRIVATE.arena;
+        var value_array_pointer = arena + HEAPU32[ address / 4 ];
         var length = HEAPU32[ (address + 4) / 4 ];
-        var key_array_pointer = HEAPU32[ (address + 8) / 4 ];
+        var key_array_pointer = arena + HEAPU32[ (address + 8) / 4 ];
         var output = {};
         for( var i = 0; i < length; ++i ) {
             var key_pointer = HEAPU32[ (key_array_pointer + i * 8) / 4 ];
