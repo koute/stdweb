@@ -995,6 +995,26 @@ impl IDBTransaction {
 
 }
 
+error_enum_boilerplate! {
+    IDBCreateObjectStoreError,
+    
+    /// Occurs if the method was not called from a versionchange transaction
+    /// callback. For older WebKit browsers, you must call first.
+    InvalidStateError,
+    
+    /// Occurs if a request is made on a source database that doesn't exist (e.g.
+    /// has been deleted or removed.)
+    TransactionInactiveError, 
+
+    /// An object store with the given name (based on case-sensitive comparison)
+    /// already exists in the connected database.
+    ConstraintError, 
+
+    /// If autoIncrement is set to true and keyPath is either an empty string or an
+    /// array containing an empty string.
+    InvalidAccessError
+}
+
 /// The `IDBDatabase` interface of the IndexedDB API provides a connection to a database.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase)
@@ -1038,7 +1058,6 @@ impl IDBDatabase {
         ).try_into().unwrap()
     }
     
-    //void close();
     /// Returns immediately and closes the connection in a separate thread.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase/close)
@@ -1048,14 +1067,14 @@ impl IDBDatabase {
         }
     }
 
-    // [NewObject] IDBObjectStore createObjectStore(DOMString name, optional IDBObjectStoreParameters options);
-    /// Creates and returns a new object store or index. TODO: why does this say index
+    /// Creates and returns a new object store or index. TODO: why does this say
+    /// index?
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase/createObjectStore)
-    pub fn create_object_store( &self, name: &str, options: Value) -> IDBObjectStore {
-        js! (
-            return @{self.as_ref()}.createObjectStore(@{name}, @{options.as_ref()});
-        ).try_into().unwrap()
+    pub fn create_object_store( &self, name: &str, auto_increment: bool, options: Value) -> Result<IDBObjectStore, IDBCreateObjectStoreError> {
+        js_try! (
+            return @{self.as_ref()}.createObjectStore(@{name}, { autoIncrememt: @{auto_increment}, keyPath: @{options.as_ref()} } );
+        ).unwrap()
     }
     
     // void deleteObjectStore(DOMString name);

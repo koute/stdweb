@@ -201,7 +201,7 @@ fn main() {
         let mut store_options = HashMap::new();
         //store_options.insert("keyPath", "id");
         store_options.insert("autoIncrement", "true");
-        let object_store = db_.create_object_store("notes", Value::from(store_options));
+        let object_store = db_.create_object_store("notes", true, Value::from(store_options)).unwrap();
         
         // Define what data items the object_store will contain
         let mut title_options = HashMap::new();
