@@ -1015,6 +1015,21 @@ error_enum_boilerplate! {
     InvalidAccessError
 }
 
+error_enum_boilerplate! {
+    IDBDeleteObjectStoreError,
+
+    /// Occurs if the method was not called from a versionchange transaction callback.
+    /// For older WebKit browsers, you must call first.
+    InvalidStateError,
+
+    /// Occurs if a request is made on a source database that doesn't exist (e.g. has
+    /// been deleted or removed.)
+    TransactionInactiveError,
+
+    /// You are trying to delete an object store that does not exist. Names are case sensitive.
+    NotFoundError
+}
+
 /// The `IDBDatabase` interface of the IndexedDB API provides a connection to a database.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase)
@@ -1048,6 +1063,7 @@ impl IDBDatabase {
     // TODO: how should I expose DomStringList
 
     // [NewObject] IDBTransaction transaction((DOMString or sequence<DOMString>) storeNames, optional IDBTransactionMode mode = "readonly");
+    // Todo, this can be a string or an array of strings, how to handle this
     /// Immediately returns a transaction object (`IDBTransaction`) containing the `IDBTransaction.object_store` method, which you can use to access your object store.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase/transaction)
@@ -1071,26 +1087,20 @@ impl IDBDatabase {
     /// index?
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase/createObjectStore)
-    pub fn create_object_store( &self, name: &str, auto_increment: bool, options: Value) -> Result<IDBObjectStore, IDBCreateObjectStoreError> {
+    pub fn create_object_store( &self, name: &str, auto_increment: bool, key_path: Value) -> Result<IDBObjectStore, IDBCreateObjectStoreError> {
+        // Todo, there's a question around how to handle the key path
         js_try! (
-            return @{self.as_ref()}.createObjectStore(@{name}, { autoIncrememt: @{auto_increment}, keyPath: @{options.as_ref()} } );
+            return @{self.as_ref()}.createObjectStore(@{name}, { autoIncrememt: @{auto_increment}, key_path: @{key_path.as_ref()} } );
         ).unwrap()
     }
     
-    // void deleteObjectStore(DOMString name);
     /// Destroys the object store with the given name.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase/deleteObjectStore)
-    pub fn delete_object_store( &self, name: &str ) {
-        js! {
+    pub fn delete_object_store( &self, name: &str ) -> Result<(), IDBDeleteObjectStoreError> {
+        js_try! (
             @{self.as_ref()}.deleteObjectStore(@{name});
-        }
+        ).unwrap()
     }
 
-    // Event handlers:
-    // attribute EventHandler onabort;
-    // attribute EventHandler onclose;
-    // attribute EventHandler onerror;
-    // attribute EventHandler onversionchange;
-    
 }
