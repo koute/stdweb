@@ -1,4 +1,3 @@
-
 use webcore::value::Value;
 use webcore::value::Reference;
 use webcore::try_from::{TryFrom, TryInto};
@@ -234,10 +233,10 @@ pub enum IDBCursorSource {
     Index(IDBIndex)
 }
 
-// Todo, rename this
 error_enum_boilerplate! {
-    /// An enum of the exceptions that IDBCursorSharedMethods.advance() may throw
-    AdvanceError,
+    /// An enum of the exceptions that IDBCursorSharedMethods.advance()
+    /// and IDBCursorSharedMethods.next may throw.
+    IDBAdvanceError,
     /// This IDBCursor's transaction is inactive.
     TransactionInactiveError,
     /// The value passed into the parameter was zero or a negative number.
@@ -247,7 +246,7 @@ error_enum_boilerplate! {
 }
 
 error_enum_boilerplate! {
-    ContinuePrimaryKeyError,
+    IDBContinuePrimaryKeyError,
     /// This IDBCursor's transaction is inactive.
     TransactionInactiveError,
     /// The key parameter may have any of the following conditions:
@@ -262,7 +261,7 @@ error_enum_boilerplate! {
 }
 
 error_enum_boilerplate! {
-    UpdateError,
+    IDBUpdateError,
     /// This IDBCursor's transaction is inactive.
     TransactionInactiveError,
     /// The transaction mode is read only.
@@ -276,7 +275,7 @@ error_enum_boilerplate! {
 }
 
 error_enum_boilerplate! {
-    UpdateWithConstraintError,
+    IDBAddError,
     /// This IDBCursor's transaction is inactive.
     TransactionInactiveError,
     /// The transaction mode is read only.
@@ -292,7 +291,7 @@ error_enum_boilerplate! {
 }
 
 error_enum_boilerplate! {
-    DeleteError,
+    IDBCursorDeleteError,
     /// This IDBCursor's transaction is inactive.
     TransactionInactiveError,
     /// The transaction mode is read-only.
@@ -301,21 +300,12 @@ error_enum_boilerplate! {
     InvalidStateError
 }
 
-// Todo this is fpr IDBObjectStore::delete
 error_enum_boilerplate! {
-    Delete2Error,
-    
-    TransactionInactiveError, // This object store's transaction is inactive.
-    ReadOnlyError, // The object store's transaction mode is read-only.
-    InvalidStateError, // The object store has been deleted.
-    DataError //        The key is not a valid key or a key range.
-}
-
-error_enum_boilerplate! {
-    ClearError,
-
-    ReadOnlyError, // The transaction associated with this operation is in read-only mode.
-    TransactionInactiveError // This IDBObjectStore's transaction is inactive.
+    IDBClearError,
+    /// The transaction associated with this operation is in read-only mode.
+    ReadOnlyError,
+    /// This IDBObjectStore's transaction is inactive.
+    TransactionInactiveError
 }
 
 /// This trait implements all the methods that are shared between
@@ -373,7 +363,7 @@ pub trait IDBCursorSharedMethods: AsRef< Reference >  {
     /// a cursor should move its position forward. 
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor/advance) 
-    fn advance( &self, count: u32) -> Result<(), AdvanceError> {
+    fn advance( &self, count: u32) -> Result<(), IDBAdvanceError> {
         js_try!( @{self.as_ref()}.advance(@{count}); ).unwrap()
     }
         
@@ -386,7 +376,7 @@ pub trait IDBCursorSharedMethods: AsRef< Reference >  {
     /// is a keyword in rust and so needed to be renamed.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor/continue)
-    fn next<K: Into<Option<Value>>>( &self, key: K) -> Result<(), AdvanceError> {
+    fn next<K: Into<Option<Value>>>( &self, key: K) -> Result<(), IDBAdvanceError> {
         match key.into() {
             None => js_try!( @{self.as_ref()}.continue(); ).unwrap(),
             Some(key) => js_try! ( @{self.as_ref()}.continue(@{key.as_ref()}); ).unwrap()
@@ -398,7 +388,7 @@ pub trait IDBCursorSharedMethods: AsRef< Reference >  {
     /// well as whose primary key matches the primary key parameter.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor/continuePrimaryKey)
-    fn continue_primary_key( &self, key: Value, primary_key: Value) -> Result<(), ContinuePrimaryKeyError> {
+    fn continue_primary_key( &self, key: Value, primary_key: Value) -> Result<(), IDBContinuePrimaryKeyError> {
         js_try!( @{self.as_ref()}.continuePrimaryKey(@{key}, @{primary_key}); ).unwrap()
     }
 
@@ -408,7 +398,7 @@ pub trait IDBCursorSharedMethods: AsRef< Reference >  {
     /// a record that has just been deleted, a new record is created.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor/update)
-    fn update( &self, value: Value) -> Result<IDBRequest, UpdateError> {
+    fn update( &self, value: Value) -> Result<IDBRequest, IDBUpdateError> {
         js_try!( return @{self.as_ref()}.update(@{value.as_ref()}); ).unwrap()
     }
 
@@ -418,7 +408,7 @@ pub trait IDBCursorSharedMethods: AsRef< Reference >  {
     /// deleted, the cursor's value is set to null.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor/delete)
-    fn delete( &self ) -> Result<IDBRequest, DeleteError> {
+    fn delete( &self ) -> Result<IDBRequest, IDBCursorDeleteError> {
         js_try!( return @{self.as_ref()}.delete(); ).unwrap() 
     }
 }
@@ -554,7 +544,7 @@ pub enum IDBKeyOrKeyRange {
 }
 
 error_enum_boilerplate! {
-    SetNameError,
+    IDBSetNameError,
 
     /// The index, or its object store, has been deleted; or the current transaction
     /// is not an upgrade transaction. You can only rename indexes during upgrade
@@ -568,9 +558,10 @@ error_enum_boilerplate! {
     ConstraintError
 }
 
-// Todo, this needs renamed as it is used places other than the count method
 error_enum_boilerplate! {
-    IDBCountError,
+    /// This Error is raised by various methods ised to query object stores
+    /// and indexes.
+    IDBQueryError,
     
     ///  This IDBIndex's transaction is inactive.
     TransactionInactiveError,
@@ -583,10 +574,11 @@ error_enum_boilerplate! {
 }
 
 error_enum_boilerplate! {
-    IndexError,
-
-    InvalidStateError, // The source object store has been deleted, or the transaction for the object store has finished.
-    NotFoundError // There is no index with the given name (case-sensitive) in the database.
+    IDBIndexError,
+    /// The source object store has been deleted, or the transaction for the object store has finished.
+    InvalidStateError,
+    /// There is no index with the given name (case-sensitive) in the database.
+    NotFoundError
          
 }
 
@@ -605,7 +597,7 @@ pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
     /// Returns the name of this index or object store.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/name)
-    fn set_name( &self, name: &str) -> Result<(), SetNameError> {
+    fn set_name( &self, name: &str) -> Result<(), IDBSetNameError> {
         js_try! ( @{self.as_ref()}.name = @{name}; ).unwrap()
     }
 
@@ -619,7 +611,7 @@ pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
     /// This is for retrieving specific records from an object store or index.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/get)
-    fn get<Q: Into<IDBKeyOrKeyRange>>( &self, query: Q) -> Result<IDBRequest, IDBCountError> {
+    fn get<Q: Into<IDBKeyOrKeyRange>>( &self, query: Q) -> Result<IDBRequest, IDBQueryError> {
         match query.into() {
             IDBKeyOrKeyRange::None => js_try! (
                 return @{self.as_ref()}.get();
@@ -637,7 +629,7 @@ pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
     /// This is for retrieving specific records from an object store.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/getKey)
-    fn get_key<Q: Into<IDBKeyOrKeyRange>>( &self, query: Q) -> Result<IDBRequest, IDBCountError> {
+    fn get_key<Q: Into<IDBKeyOrKeyRange>>( &self, query: Q) -> Result<IDBRequest, IDBQueryError> {
         match query.into() {
             IDBKeyOrKeyRange::None => js_try! (
                 return @{self.as_ref()}.getKey();
@@ -655,7 +647,7 @@ pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
     /// object store.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBIndex/getAll)
-    fn get_all<Q: Into<IDBKeyOrKeyRange>, C: Into<Option<u32>>>( &self, query: Q, count: C) -> Result<IDBRequest, IDBCountError> {
+    fn get_all<Q: Into<IDBKeyOrKeyRange>, C: Into<Option<u32>>>( &self, query: Q, count: C) -> Result<IDBRequest, IDBQueryError> {
         match query.into() {
             IDBKeyOrKeyRange::None => js_try! ( return @{self.as_ref()}.getAll(); ),
             IDBKeyOrKeyRange::Value(value) => {
@@ -680,7 +672,7 @@ pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
     /// parameters are given.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/getAllKeys)
-    fn get_all_keys<Q: Into<IDBKeyOrKeyRange>, C: Into<Option<u32>>>( &self, query: Q, count: C) -> Result<IDBRequest, IDBCountError> {
+    fn get_all_keys<Q: Into<IDBKeyOrKeyRange>, C: Into<Option<u32>>>( &self, query: Q, count: C) -> Result<IDBRequest, IDBQueryError> {
         match query.into() {
             IDBKeyOrKeyRange::None => js_try! ( return @{self.as_ref()}.getAllKeys(); ),
             IDBKeyOrKeyRange::Value(value) => {
@@ -701,7 +693,7 @@ pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
     /// Returns an IDBRequest object, and, in a separate thread, returns the total number of records that match the provided key or IDBKeyRange
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBIndex/count)
-    fn count<Q: Into<IDBKeyOrKeyRange>>( &self, query: Q) -> Result<IDBRequest, IDBCountError> {
+    fn count<Q: Into<IDBKeyOrKeyRange>>( &self, query: Q) -> Result<IDBRequest, IDBQueryError> {
         match query.into() {
             IDBKeyOrKeyRange::None => js_try! (
                 return @{self.as_ref()}.count();
@@ -719,7 +711,7 @@ pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
     /// thread, creates a cursor over the specified key range.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBIndex/openCursor)
-    fn open_cursor<Q: Into<Option<IDBKeyRange>>, D: Into<Option<IDBCursorDirection>>>( &self, range: Q, direction: D) -> Result<IDBRequest, IDBCountError> {
+    fn open_cursor<Q: Into<Option<IDBKeyRange>>, D: Into<Option<IDBCursorDirection>>>( &self, range: Q, direction: D) -> Result<IDBRequest, IDBQueryError> {
         match range.into() {
             None => js_try! ( return @{self.as_ref()}.openCursor(); ),
             Some(range) => {
@@ -736,7 +728,7 @@ pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
     /// by this index.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBIndex/openKeyCursor)
-    fn open_key_cursor<Q: Into<Option<IDBKeyRange>>, D: Into<Option<IDBCursorDirection>>>( &self, range: Q, direction: D) -> Result<IDBRequest, IDBCountError> {
+    fn open_key_cursor<Q: Into<Option<IDBKeyRange>>, D: Into<Option<IDBCursorDirection>>>( &self, range: Q, direction: D) -> Result<IDBRequest, IDBQueryError> {
         match range.into() {
             None => js_try! ( return @{self.as_ref()}.openKeyCursor(); ),
             Some(range) => {
@@ -788,6 +780,18 @@ impl IDBIndex {
 
 }
 
+error_enum_boilerplate! {
+    IDBObjectStoreDeleteError,
+    /// This object store's transaction is inactive.
+    TransactionInactiveError,
+    /// The object store's transaction mode is read-only.
+    ReadOnlyError,
+    /// The object store has been deleted.
+    InvalidStateError,
+    /// The key is not a valid key or a key range.
+    DataError
+}
+
 /// The `IDBObjectStore` interface of the IndexedDB API represents an object store in a database
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore)
@@ -824,7 +828,7 @@ impl IDBObjectStore {
     /// The key is only needed if 
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/put)
-    pub fn put<T: Into<Option<Value>>>( &self, value: Value, key: T) -> Result<IDBRequest, UpdateError> {
+    pub fn put<T: Into<Option<Value>>>( &self, value: Value, key: T) -> Result<IDBRequest, IDBUpdateError> {
         match key.into() {
             None => js_try! (
                 return @{self.as_ref()}.put(@{value.as_ref()});
@@ -838,7 +842,7 @@ impl IDBObjectStore {
     /// Returns an `IDBRequest` object, and, in a separate thread, creates a structured clone of the value, and stores the cloned value in the object store. This is for adding new records to an object store.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/add)
-    pub fn add<T: Into<Option<Value>>>( &self, value: Value, key: T) -> Result<IDBRequest, UpdateWithConstraintError> {
+    pub fn add<T: Into<Option<Value>>>( &self, value: Value, key: T) -> Result<IDBRequest, IDBAddError> {
         match key.into() {
             None => js_try! (
                 return @{self.as_ref()}.add(@{value.as_ref()});
@@ -852,7 +856,7 @@ impl IDBObjectStore {
     /// returns an `IDBRequest` object, and, in a separate thread, deletes the specified record or records.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/delete)
-    pub fn delete( &self, query: Value) -> Result<IDBRequest, Delete2Error> {
+    pub fn delete( &self, query: Value) -> Result<IDBRequest, IDBObjectStoreDeleteError> {
         js_try! (
             return @{self.as_ref()}.delete(@{query.as_ref()});
         ).unwrap()
@@ -861,7 +865,7 @@ impl IDBObjectStore {
     /// Returns an IDBRequest object, and clears this object store in a separate thread
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/clear)
-    pub fn clear( &self ) -> Result<IDBRequest, ClearError> {
+    pub fn clear( &self ) -> Result<IDBRequest, IDBClearError> {
         js_try! (
             return @{self.as_ref()}.clear();
         ).unwrap()
@@ -870,7 +874,7 @@ impl IDBObjectStore {
     /// opens a named index in the current object store
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/index)
-    pub fn index( &self, name: &str) -> Result<IDBIndex, IndexError> {
+    pub fn index( &self, name: &str) -> Result<IDBIndex, IDBIndexError> {
         js_try! (
             return @{self.as_ref()}.index(@{name});
         ).unwrap()
