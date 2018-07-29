@@ -3,6 +3,7 @@ use webcore::value::Reference;
 use webcore::try_from::{TryFrom, TryInto};
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::dom_exception::{DomException, InvalidStateError, TypeError, TransactionInactiveError, DataError, InvalidAccessError, ReadOnlyError, DataCloneError, ConstraintError, NotFoundError};
+use webapi::dom_string_list::DOMStringList;
 
 /// Used to represent the state of an IDBRequest.
 ///
@@ -803,8 +804,13 @@ impl IDBObjectStoreIndexSharedMethods for IDBObjectStore {}
 
 impl IDBObjectStore {
        
-    // readonly attribute DOMStringList indexNames;
-    // TODO: how am I wrapping this
+    /// The index_names read-only property of the `IDBObjectStore` interface returns a list of th
+    /// names of indexes on objects in this object store.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/indexNames)
+    pub fn index_names( &self ) -> DOMStringList {
+        js! ( return @{self}.indexNames ).try_into().unwrap()
+    }
     
     /// The `IDBTransaction` object to which this object store belongs.
     ///
@@ -818,7 +824,7 @@ impl IDBObjectStore {
     /// Returns the value of the auto increment flag for this object store.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/autoIncrement)
-    fn auto_increment( &self ) -> bool {
+    pub fn auto_increment( &self ) -> bool {
         js! (
             return @{self.as_ref()}.autoIncrement;
         ).try_into().unwrap()
@@ -894,7 +900,7 @@ impl IDBObjectStore {
     /// Destroys the index with the specified name in the connected database, used during a version upgrade.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/deleteIndex)
-    fn delete_index( &self, name: &str) {
+    pub fn delete_index( &self, name: &str) {
         js! {
             return @{self.as_ref()}.deleteIndex(@{name});
         }
@@ -953,8 +959,14 @@ pub struct IDBTransaction( Reference );
 impl IEventTarget for IDBTransaction {}
 
 impl IDBTransaction {
-    // readonly attribute DOMStringList objectStoreNames;
-    // Todo, how am I wrapping DOMStringList
+
+    /// The object_store_names read-only property of the IDBTransaction interface returns
+    /// a DOMStringList of names of IDBObjectStore objects.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBTransaction/objectStoreNames)
+    pub fn object_store_names( &self ) -> DOMStringList {
+        js! ( return @{self}.objectStoreNames ).try_into().unwrap()
+    }
     
     /// The mode read-only property of the `IDBTransaction` interface returns the
     /// current mode for accessing the data in the object stores in the scope of the

@@ -237,6 +237,8 @@ pub mod web {
         };
     }
 
+    pub use webapi::dom_string_list::DOMStringList;
+
     pub use webapi::window::{
         Window,
         window
