@@ -626,8 +626,8 @@ pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
         }.unwrap()
     }
 
-    // Todo, I think this description is wrong.
-    /// This is for retrieving specific records from an object store.
+    /// Returns an IDBRequest object, and, in a separate thread retrieves and
+    /// returns the record key for the object matching the specified parameter.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/getKey)
     fn get_key<Q: Into<IDBKeyOrKeyRange>>( &self, query: Q) -> Result<IDBRequest, IDBQueryError> {
@@ -896,7 +896,6 @@ impl IDBObjectStore {
         ).try_into().unwrap()
     }
     
-    //  void deleteIndex(DOMString name);
     /// Destroys the index with the specified name in the connected database, used during a version upgrade.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/deleteIndex)
@@ -988,8 +987,13 @@ impl IDBTransaction {
         ).try_into().unwrap()
     }
 
-    // Todo
-    // readonly attribute DOMException error;
+    /// The IDBTransaction.error property of the IDBTransaction interface returns
+    /// one of several types of error when there is an unsuccessful transaction.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBTransaction/error)
+    pub fn error( &self ) -> Option<DomException> {
+        js!( return @{self}.error; ).try_into().unwrap()
+    }
     
     /// The object_store() method of the IDBTransaction interface returns an object
     /// store that has already been added to the scope of this transaction.
@@ -1075,8 +1079,14 @@ impl IDBDatabase {
             ).try_into().unwrap()
     }
     
-    // readonly attribute DOMStringList objectStoreNames;
-    // TODO: how should I expose DomStringList
+    /// The objectStoreNames read-only property of the IDBDatabase interface is a
+    /// DOMStringList containing a list of the names of the object stores currently
+    /// in the connected database.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase/objectStoreNames)
+    pub fn object_store_names( &self ) -> DOMStringList {
+        js! ( return @{self}.objectStoreNames ).try_into().unwrap()
+    }
 
     // [NewObject] IDBTransaction transaction((DOMString or sequence<DOMString>) storeNames, optional IDBTransactionMode mode = "readonly");
     // Todo, this can be a string or an array of strings, how to handle this
