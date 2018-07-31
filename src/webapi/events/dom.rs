@@ -105,12 +105,11 @@ impl ConcreteEvent for ResizeEvent {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/scroll)
 // https://drafts.csswg.org/cssom-view/#eventdef-document-scroll
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "UIEvent")] // TODO: Better type check.
-#[reference(subclass_of(Event, UiEvent))]
+#[reference(instance_of = "Event")] // TODO: Better type check.
+#[reference(subclass_of(Event))]
 pub struct ScrollEvent( Reference );
 
 impl IEvent for ScrollEvent {}
-impl IUiEvent for ScrollEvent {}
 impl ConcreteEvent for ScrollEvent {
     const EVENT_TYPE: &'static str = "scroll";
 }
@@ -201,7 +200,7 @@ mod tests {
     #[test]
     fn test_scroll_event() {
         let event: ScrollEvent = js!(
-            return new UIEvent( @{ScrollEvent::EVENT_TYPE} );
+            return new Event( @{ScrollEvent::EVENT_TYPE} );
         ).try_into().unwrap();
         assert_eq!( event.event_type(), ScrollEvent::EVENT_TYPE );
     }
