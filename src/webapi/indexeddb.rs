@@ -888,6 +888,9 @@ impl IDBObjectStore {
     // [NewObject] IDBIndex createIndex(DOMString name, (DOMString or sequence<DOMString>) keyPath, optional IDBIndexParameters options);
     /// Creates and returns a new `IDBIndex` object in the connected database.
     ///
+    /// Note that this method must be called only from a VersionChange
+    /// transaction mode callback.
+    ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/createIndex)
     pub fn create_index( &self, name: &str, key_path: &str, options: Value) -> IDBIndex { // TODO, how am I doing the optinal options?
         js! (
