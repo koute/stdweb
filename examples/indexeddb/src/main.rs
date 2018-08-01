@@ -39,7 +39,8 @@ use stdweb::web::indexeddb::{
     IDBRequestSharedMethods,
     IDBObjectStoreIndexSharedMethods,
     IDBCursorWithValue,
-    IDBCursorSharedMethods
+    IDBCursorSharedMethods,
+    IDBTransactionMode
 };
 
 use stdweb::unstable::TryInto;
@@ -65,7 +66,7 @@ fn display_data_inner(db: &IDBDatabase) {
     }
     // Open our object store and then get a cursor - which iterates through all the
     // different data items in the store
-    let object_store = db.transaction(vec!["notes"], "readonly").object_store("notes").unwrap();
+    let object_store = db.transaction(vec!["notes"], IDBTransactionMode::ReadOnly).object_store("notes").unwrap();
     object_store.open_cursor(None, None).unwrap()
         .add_event_listener( move |e: IDBSuccessEvent| {
             // Get a reference to the cursor
@@ -138,7 +139,7 @@ fn delete_item( e: ClickEvent ) {
     // open a database transaction and delete the task, finding it using the id we retrieved above
     DB.with(|db_cell| {
         if let Some(ref db) = *db_cell.borrow_mut()  {
-            let transaction = db.transaction("notes", "readwrite");
+            let transaction = db.transaction(vec!["notes"], IDBTransactionMode::ReadWrite);
             let object_store = transaction.object_store("notes").unwrap();
             object_store.delete(note_id.try_into().unwrap());
             
@@ -231,7 +232,7 @@ fn main() {
         DB.with(|db_cell| {
             if let Some(ref db) = *db_cell.borrow_mut() {
                 // open a read/write db transaction, ready for adding the data
-                let transaction = db.transaction("notes", "readwrite");
+                let transaction = db.transaction(vec!["notes"], IDBTransactionMode::ReadWrite);
         
                 // call an object store that's already been added to the database
                 let object_store = transaction.object_store("notes").unwrap();

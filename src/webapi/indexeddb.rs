@@ -1,5 +1,4 @@
 use webcore::value::{Value, Reference};
-use webcore::array::Array;
 use webcore::try_from::{TryFrom, TryInto};
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::dom_exception::{DomException, InvalidStateError, TypeError, TransactionInactiveError, DataError, InvalidAccessError, ReadOnlyError, DataCloneError, ConstraintError, NotFoundError};
@@ -666,7 +665,7 @@ pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
         }.unwrap()
     }
     
-    // Todo, acording to the mozilla documentation the IDBIndex version does not
+    // Acording to the mozilla documentation the IDBIndex version does not
     // Throw DataError.
     /// The get_all_keys() method returns an IDBRequest object retrieves record keys
     /// for all objects matching the specified parameter or all objects if no
@@ -911,11 +910,22 @@ impl IDBObjectStore {
   boolean multiEntry = false;
 };*/
 
+/// An IDBTransactionMode object defining the mode for isolating access to
+/// data in the current object stores.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBTransaction/mode)
 #[derive(Debug)]
 pub enum IDBTransactionMode {
-  ReadOnly,
-  ReadWrite,
-  VersionChange
+    /// Allows data to be read but not changed.
+    ReadOnly,
+    /// Allows reading and writing of data in existing data stores to be changed.
+    ReadWrite,
+    /// Allows any operation to be performed, including ones that delete and
+    /// create object stores and indexes. This mode is for updating the version
+    /// number of transactions that were started using IDBDatabase.set_version().
+    /// Transactions of this mode cannot run concurrently with other transactions.
+    /// Transactions in this mode are known as "upgrade transactions."
+    VersionChange
 }
 
 fn transaction_mode_to_string( mode: IDBTransactionMode ) -> String {
@@ -1050,14 +1060,6 @@ error_enum_boilerplate! {
     NotFoundError
 }
 
-fn string_iterator_to_value<T: IntoIterator<Item = String>>(i: T) -> Value {
-    let v: Value = js!( return []);
-    for item in i {
-        js!{ @{v.as_ref()}.push(@{item}); }
-    }
-    v
-}
-
 /// The `IDBDatabase` interface of the IndexedDB API provides a connection to a database.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase)
@@ -1096,16 +1098,14 @@ impl IDBDatabase {
         js! ( return @{self}.objectStoreNames ).try_into().unwrap()
     }
 
-    // [NewObject] IDBTransaction transaction((DOMString or sequence<DOMString>) storeNames, optional IDBTransactionMode mode = "readonly");
-    // Todo, this can be a string or an array of strings, how to handle this
-    /// Immediately returns a transaction object (`IDBTransaction`) containing the `IDBTransaction.object_store` method, which you can use to access your object store.
+    /// Immediately returns a transaction object (`IDBTransaction`) containing
+    /// the `IDBTransaction.object_store` method, which you can use to access
+    /// your object store.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase/transaction)
-    pub fn transaction<T: IntoIterator<Item = String>>( &self, store_names: T, mode: &str) -> IDBTransaction {
-        let v = string_iterator_to_value(store_names);
+    pub fn transaction( &self, store_names: Vec<&str>, mode: IDBTransactionMode) -> IDBTransaction {
         js! (
-            //return @{self.as_ref()}.transaction(@{store_name}, @{mode});
-            return @{self.as_ref()}.transaction(@{v}, @{mode});
+            return @{self.as_ref()}.transaction(@{store_names}, @{transaction_mode_to_string(mode)});
         ).try_into().unwrap()
     }
     

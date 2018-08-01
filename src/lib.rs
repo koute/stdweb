@@ -227,6 +227,7 @@ pub mod web {
             IDBIndex,
             IDBObjectStore,
             IDBTransaction,
+            IDBTransactionMode,
             IDBFactory,
             IDBObjectStoreIndexSharedMethods,
             IDBCursorDirection,
