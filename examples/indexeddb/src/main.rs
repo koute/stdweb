@@ -65,7 +65,7 @@ fn display_data_inner(db: &IDBDatabase) {
     }
     // Open our object store and then get a cursor - which iterates through all the
     // different data items in the store
-    let object_store = db.transaction("notes", "readonly").object_store("notes").unwrap();
+    let object_store = db.transaction(vec!["notes"], "readonly").object_store("notes").unwrap();
     object_store.open_cursor(None, None).unwrap()
         .add_event_listener( move |e: IDBSuccessEvent| {
             // Get a reference to the cursor

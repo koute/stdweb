@@ -1,5 +1,5 @@
-use webcore::value::Value;
-use webcore::value::Reference;
+use webcore::value::{Value, Reference};
+use webcore::array::Array;
 use webcore::try_from::{TryFrom, TryInto};
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::dom_exception::{DomException, InvalidStateError, TypeError, TransactionInactiveError, DataError, InvalidAccessError, ReadOnlyError, DataCloneError, ConstraintError, NotFoundError};
@@ -1050,6 +1050,14 @@ error_enum_boilerplate! {
     NotFoundError
 }
 
+fn string_iterator_to_value<T: IntoIterator<Item = String>>(i: T) -> Value {
+    let v: Value = js!( return []);
+    for item in i {
+        js!{ @{v.as_ref()}.push(@{item}); }
+    }
+    v
+}
+
 /// The `IDBDatabase` interface of the IndexedDB API provides a connection to a database.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase)
@@ -1093,10 +1101,11 @@ impl IDBDatabase {
     /// Immediately returns a transaction object (`IDBTransaction`) containing the `IDBTransaction.object_store` method, which you can use to access your object store.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase/transaction)
-    pub fn transaction( &self, store_name: &str, mode: &str) -> IDBTransaction {
+    pub fn transaction<T: IntoIterator<Item = String>>( &self, store_names: T, mode: &str) -> IDBTransaction {
+        let v = string_iterator_to_value(store_names);
         js! (
             //return @{self.as_ref()}.transaction(@{store_name}, @{mode});
-            return @{self.as_ref()}.transaction(@{store_name}, @{mode});
+            return @{self.as_ref()}.transaction(@{v}, @{mode});
         ).try_into().unwrap()
     }
     
