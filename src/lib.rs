@@ -373,6 +373,7 @@ pub mod web {
             ResourceAbortEvent,
             ResourceErrorEvent,
             ResizeEvent,
+            ScrollEvent,
             InputEvent,
             ReadyStateChangeEvent,
             SubmitEvent,
