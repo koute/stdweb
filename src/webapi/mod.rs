@@ -38,3 +38,4 @@ pub mod console;
 pub mod html_collection;
 pub mod child_node;
 pub mod gamepad;
+pub mod selection;

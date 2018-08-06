@@ -133,6 +133,18 @@ pub trait IElement: INode + IParentNode + IChildNode {
         ).try_into().unwrap()
     }
 
+    /// Returns the closest ancestor of the element (or the element itself) which matches the selectors 
+    /// given in parameter. If there isn't such an ancestor, it returns
+    /// `None`.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/closest)
+    // https://dom.spec.whatwg.org/#dom-element-closest
+    fn closest( &self, selectors: String) -> Option<Element> {
+        js!(
+            return @{self.as_ref()}.closest(@{selectors});
+        ).try_into().unwrap()
+    }
+
     /// Designates a specific element as the capture target of future pointer events.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/setPointerCapture)

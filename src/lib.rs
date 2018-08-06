@@ -244,6 +244,7 @@ pub mod web {
     pub use webapi::html_collection::HtmlCollection;
     pub use webapi::child_node::IChildNode;
     pub use webapi::gamepad::{Gamepad, GamepadButton, GamepadMappingType};
+    pub use webapi::selection::Selection;
 
     /// A module containing error types.
     pub mod error {

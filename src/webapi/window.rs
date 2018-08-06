@@ -5,6 +5,7 @@ use webapi::window_or_worker::IWindowOrWorker;
 use webapi::storage::Storage;
 use webapi::location::Location;
 use webapi::history::History;
+use webapi::selection::Selection;
 use webcore::once::Once;
 use webcore::value::Value;
 
@@ -212,5 +213,17 @@ impl Window {
         js!(
             return @{self}.pageXOffset;
         ).try_into().unwrap()
+    }
+
+    /// Returns a [Selection](struct.Selection.html) object representing the range of text selected
+    /// by the user or the current position of the caret.
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Window/getSelection)
+    // https://w3c.github.io/selection-api/
+    pub fn get_selection(&self) -> Option<Selection> {
+        unsafe {
+            js!(
+                return @{self}.getSelection();
+            ).into_reference_unchecked()
+        }
     }
 }
