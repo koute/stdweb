@@ -268,6 +268,15 @@ impl Selection {
     }
 }
 
+/// The Range interface represents a fragment of a document that can contain nodes and parts of
+/// text nodes.
+///
+/// A range can be created using the [create_range()](struct.Document.html#method.create_range) method
+/// of the Document object. Range objects can also be retrieved by using the
+/// [get_range_at()](struct.Selection.html#method.get_range_at) method of the [Selection](struct.Selection.html)
+/// object or the [caret_range_from_point()](struct.Document.html#method.caret_range_from_point) method of
+/// the [Document](struct.Document.html] object.
+// https://dom.spec.whatwg.org/#range
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Range")]
 pub struct Range(Reference);
