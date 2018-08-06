@@ -20,7 +20,10 @@ a high degree of interoperability between Rust and JavaScript.
 
 This software was brought to you thanks to these wonderful people:
   * Daniel Norman
-  * Ben Berman
+  * Anselm Eickhoff
+  * Edward Knyshov
+  * Ferran Pujol Camins
+  * Johan Andersson
   * Stephen Sugden
 
 Thank you!
@@ -190,17 +193,38 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
 [WebAssembly]: https://en.wikipedia.org/wiki/WebAssembly
 
 ## Changelog
+   * `0.4.8`
+      * Fixed compilation on the newest nightly when targeting `wasm32-unknown-unknown`
+      * New events:
+        * `PointerLockChangeEvent`
+        * `PointerLockErrorEvent`
+        * `MouseWheelEvent`
+      * New types:
+        * `MouseWheelDeltaMode`
+        * `XhrResponseType`
+      * New methods:
+        * `XmlHttpRequest::raw_response`
+        * `Window::device_pixel_ratio`
+        * `Document::pointer_lock_element`
+        * `Document::exit_pointer_lock`
    * `0.4.7`
       * New events:
          * `AuxClickEvent`
          * `MouseEnterEvent`
          * `MouseLeaveEvent`
          * `ContextMenuEvent`
+         * `SelectionChangeEvent`
+      * New types:
+        * `FileList`
+        * `FileReaderReadyState`
       * Implement gamepad APIs:
          * `Gamepad`
          * `GamepadButton`
          * `GamepadButtonMapping`
          * `GamepadEvent`
+      * Fixed `CanvasRenderingContext2d::clear_rect`
+      * Fixed a leak when creating `TypedArray`s from
+        `Vec`s and `ArrayBuffer`s.
    * `0.4.6`
       * Fix `docs.rs` again
       * New types:

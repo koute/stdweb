@@ -31,14 +31,18 @@ $CARGO_WEB build --release --target=wasm32-unknown-emscripten
 popd > /dev/null
 
 if [ "$IS_NIGHTLY" = "1" ]; then
+    echo "Testing for wasm32-unknown-unknown..."
     $CARGO_WEB test --nodejs --target=wasm32-unknown-unknown
 
     pushd examples/todomvc > /dev/null
     $CARGO_WEB build --release --target=wasm32-unknown-unknown
     popd > /dev/null
 
+    echo "Building standalone tests..."
     pushd standalone-tests > /dev/null
     $CARGO_WEB build --release --target=wasm32-unknown-unknown
+
+    echo "Running standalone tests..."
     node target/wasm32-unknown-unknown/release/standalone-tests.js
     popd > /dev/null
 fi
@@ -60,10 +64,12 @@ for EXAMPLE in "${EXAMPLES[@]}"; do
 done
 
 if [ "$IS_NIGHTLY" = "1" ]; then
+    echo "Trying to run the hasher example..."
     pushd examples/hasher > /dev/null
     node example.js
     popd > /dev/null
 
+    echo "Trying to build with parcel..."
     pushd examples/hasher-parcel > /dev/null
     npm install
     $(npm bin)/parcel build index.html

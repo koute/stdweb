@@ -114,6 +114,10 @@
     all(target_arch = "wasm32", target_os = "unknown"),
     feature(proc_macro)
 )]
+#![cfg_attr(
+    all(target_arch = "wasm32", target_os = "unknown"),
+    feature(use_extern_macros)
+)]
 #![cfg_attr(feature = "nightly", feature(core_intrinsics))]
 #![cfg_attr(feature = "nightly", feature(never_type))]
 #![recursion_limit="1500"]
@@ -203,6 +207,14 @@ pub mod serde {
 
 /// A module with bindings to the Web APIs.
 pub mod web {
+    #[cfg(feature = "futures-support")]
+    pub use webapi::timer_future::{
+        Wait,
+        wait,
+        IntervalBuffered,
+        interval_buffered
+    };
+
     pub use webapi::window::{
         Window,
         window
@@ -234,12 +246,13 @@ pub mod web {
     pub use webapi::location::Location;
     pub use webapi::array_buffer::ArrayBuffer;
     pub use webapi::typed_array::TypedArray;
-    pub use webapi::file_reader::{FileReader, FileReaderResult};
+    pub use webapi::file_reader::{FileReader, FileReaderResult, FileReaderReadyState};
+    pub use webapi::file_list::FileList;
     pub use webapi::history::History;
     pub use webapi::web_socket::{WebSocket, SocketCloseCode, SocketBinaryType, SocketReadyState};
     pub use webapi::rendering_context::{RenderingContext, CanvasRenderingContext2d, CanvasGradient, CanvasPattern, CanvasStyle, CompositeOperation, FillRule, ImageData, LineCap, LineJoin, Repetition, TextAlign, TextBaseline, TextMetrics};
     pub use webapi::mutation_observer::{MutationObserver, MutationObserverHandle, MutationObserverInit, MutationRecord};
-    pub use webapi::xml_http_request::{XmlHttpRequest, XhrReadyState};
+    pub use webapi::xml_http_request::{XmlHttpRequest, XhrReadyState, XhrResponseType};
     pub use webapi::blob::{IBlob, Blob};
     pub use webapi::html_collection::HtmlCollection;
     pub use webapi::child_node::IChildNode;
@@ -300,6 +313,8 @@ pub mod web {
             MouseOutEvent,
             MouseEnterEvent,
             MouseLeaveEvent,
+            MouseWheelEvent,
+            MouseWheelDeltaMode,
             MouseButton
         };
 
@@ -315,6 +330,8 @@ pub mod web {
             PointerLeaveEvent,
             GotPointerCaptureEvent,
             LostPointerCaptureEvent,
+            PointerLockChangeEvent,
+            PointerLockErrorEvent
         };
 
         pub use webapi::events::keyboard::{
@@ -357,6 +374,7 @@ pub mod web {
             ResourceAbortEvent,
             ResourceErrorEvent,
             ResizeEvent,
+            ScrollEvent,
             InputEvent,
             ReadyStateChangeEvent,
             SubmitEvent,
@@ -430,7 +448,6 @@ pub mod private {
     pub use webcore::serialization::{
         JsSerialize,
         JsSerializeOwned,
-        PreallocatedArena,
         SerializedValue
     };
 
@@ -444,6 +461,9 @@ pub mod private {
         to_value,
         from_value
     };
+
+    pub use webcore::global_arena::ArenaRestorePoint;
+    pub use webcore::global_arena::serialize_value;
 
     // This is to prevent an unused_mut warnings in macros, because an `allow` doesn't work apparently?
     #[allow(dead_code)]

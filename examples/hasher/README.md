@@ -28,6 +28,7 @@ which can be used to mark arbitrary functions for export, e.g.:
 
 ```rust
 #![feature(proc_macro)]
+#![feature(use_extern_macros)]
 
 #[macro_use]
 extern crate stdweb;

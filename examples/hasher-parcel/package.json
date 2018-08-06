@@ -8,7 +8,7 @@
   "author": "",
   "license": "(MIT OR Apache-2.0)",
   "dependencies": {
-    "parcel-bundler": "^1.6.2",
-    "parcel-plugin-cargo-web": "^0.1.0"
+    "parcel-bundler": "^1.9",
+    "parcel-plugin-cargo-web": "^0.3.0"
   }
 }

@@ -36,7 +36,7 @@ impl Reference {
 
     #[doc(hidden)]
     #[inline]
-    pub(super) unsafe fn from_raw_unchecked_noref( refid: i32 ) -> Reference {
+    pub(crate) unsafe fn from_raw_unchecked_noref( refid: i32 ) -> Reference {
         Reference( refid )
     }
 

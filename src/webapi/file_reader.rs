@@ -33,8 +33,11 @@ pub enum FileReaderResult {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readyState)
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum FileReaderReadyState {
+    /// No data has been loaded yet.
     Empty,
+    /// Data is currently being loaded.
     Loading,
+    /// The entire read request has been completed.
     Done
 }
 

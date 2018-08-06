@@ -100,6 +100,20 @@ impl ConcreteEvent for ResizeEvent {
     const EVENT_TYPE: &'static str = "resize";
 }
 
+/// The scroll event is fired when the document view or an element has been scrolled.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/scroll)
+// https://drafts.csswg.org/cssom-view/#eventdef-document-scroll
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "Event")] // TODO: Better type check.
+#[reference(subclass_of(Event))]
+pub struct ScrollEvent( Reference );
+
+impl IEvent for ScrollEvent {}
+impl ConcreteEvent for ScrollEvent {
+    const EVENT_TYPE: &'static str = "scroll";
+}
+
 /// The readystatechange event is fired when the readyState attribute of a document has changed.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/readystatechange)
@@ -134,7 +148,7 @@ impl ConcreteEvent for SubmitEvent {
 /// document is changed.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/selectionchange)
-// https://html.spec.whatwg.org/#event-selectionchange
+// https://w3c.github.io/selection-api/#selectionchange-event
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Event")] // TODO: Better type check.
 #[reference(subclass_of(Event))]
@@ -181,6 +195,14 @@ mod tests {
             return new UIEvent( @{ResourceAbortEvent::EVENT_TYPE} );
         ).try_into().unwrap();
         assert_eq!( event.event_type(), ResourceAbortEvent::EVENT_TYPE );
+    }
+
+    #[test]
+    fn test_scroll_event() {
+        let event: ScrollEvent = js!(
+            return new Event( @{ScrollEvent::EVENT_TYPE} );
+        ).try_into().unwrap();
+        assert_eq!( event.event_type(), ScrollEvent::EVENT_TYPE );
     }
 
     #[test]

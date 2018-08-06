@@ -2,6 +2,7 @@
 #![recursion_limit="128"]
 
 extern crate proc_macro;
+extern crate proc_macro2;
 extern crate syn;
 #[macro_use]
 extern crate quote;
@@ -12,6 +13,7 @@ extern crate serde_derive;
 extern crate serde_json;
 
 use proc_macro::TokenStream;
+use proc_macro2::Span;
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 enum TypeMetadata {
@@ -40,7 +42,7 @@ struct ExportMetadata {
 // Generated with: (('A'..'Z').to_a + ('a'..'z').to_a + ('0'..'9').to_a).join("")
 const ENCODING_BASE: &'static [u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-fn match_shallow_path( path: &syn::Path ) -> Option< &str > {
+fn match_shallow_path( path: &syn::Path ) -> Option< String > {
     if path.leading_colon.is_some() || path.segments.len() != 1 {
         return None;
     }
@@ -51,7 +53,7 @@ fn match_shallow_path( path: &syn::Path ) -> Option< &str > {
         _ => return None
     }
 
-    Some( segment.ident.as_ref() )
+    Some( format!( "{}", segment.ident ) )
 }
 
 fn match_type( ty: &syn::Type ) -> ExportType {
@@ -74,7 +76,7 @@ fn match_type( ty: &syn::Type ) -> ExportType {
                 None => return ExportType::Unknown( ty.clone() )
             };
 
-            match name {
+            match name.as_str() {
                 "i32" => ExportType::I32,
                 "f64" => ExportType::F64,
                 _ => ExportType::Unknown( ty.clone() )
@@ -106,7 +108,7 @@ struct Export {
     args: Vec< ExportArg >
 }
 
-fn process( exports: Vec< Export > ) -> quote::Tokens {
+fn process( exports: Vec< Export > ) -> proc_macro2::TokenStream {
     let mut output = Vec::new();
     for export in exports {
         let export_result;
@@ -142,12 +144,12 @@ fn process( exports: Vec< Export > ) -> quote::Tokens {
                 // TODO: Figure out a better way to do this, if possible.
                 export_result_conversion = quote! {
                     let __result = ::stdweb::private::IntoNewtype::into_newtype( __result );
-                    let __result_memory_required = ::stdweb::private::JsSerializeOwned::memory_required_owned( &__result );
-                    let mut __result_arena = ::stdweb::private::PreallocatedArena::new( __result_memory_required );
+                    let mut __arena_restore_point = ::stdweb::private::ArenaRestorePoint::new();
                     let mut __result = Some( __result );
-                    let __result = ::stdweb::private::JsSerializeOwned::into_js_owned( &mut __result, &mut __result_arena );
+                    let __result = ::stdweb::private::JsSerializeOwned::into_js_owned( &mut __result );
                     let __result = &__result as *const _;
                     __js_raw_asm!( "Module.STDWEB_PRIVATE.tmp = Module.STDWEB_PRIVATE.to_js( $0 );", __result );
+                    ::std::mem::drop( __arena_restore_point );
                     let __result = ();
                 };
                 export_result_metadata = Some( TypeMetadata::Custom {
@@ -248,7 +250,7 @@ fn process( exports: Vec< Export > ) -> quote::Tokens {
 
         let json_metadata = serde_json::to_string( &metadata ).unwrap();
         let encoded_metadata = base_x::encode( ENCODING_BASE, json_metadata.as_bytes() );
-        let export_ident = syn::Ident::from( format!( "__JS_EXPORT_{}", &encoded_metadata ) );
+        let export_ident = syn::Ident::new( &format!( "__JS_EXPORT_{}", &encoded_metadata ), Span::call_site() );
         let original_ident = export.ident.clone();
 
         output.push(
@@ -288,7 +290,7 @@ fn into_export( ident: syn::Ident, decl: &syn::FnDecl ) -> Export {
             syn::FnArg::SelfRef( .. ) => panic!( "`&self` is not supported" ),
             syn::FnArg::SelfValue( .. ) => panic!( "`self` is not supported" ),
             syn::FnArg::Ignored( ty ) => {
-                let ident = syn::Ident::from( format!( "__arg_{}", index ) );
+                let ident = syn::Ident::new( &format!( "__arg_{}", index ), Span::call_site() );
                 args.push( ExportArg {
                     ident,
                     ty: match_type( &ty )
@@ -297,7 +299,7 @@ fn into_export( ident: syn::Ident, decl: &syn::FnDecl ) -> Export {
             syn::FnArg::Captured( cap ) => {
                 match cap.pat {
                     syn::Pat::Wild( _ ) => {
-                        let ident = syn::Ident::from( format!( "__arg_{}", index ) );
+                        let ident = syn::Ident::new( &format!( "__arg_{}", index ), Span::call_site() );
                         args.push( ExportArg {
                             ident,
                             ty: match_type( &cap.ty )
@@ -329,7 +331,8 @@ fn into_export( ident: syn::Ident, decl: &syn::FnDecl ) -> Export {
 
 #[proc_macro_attribute]
 pub fn js_export( attrs: TokenStream, input: TokenStream ) -> TokenStream {
-    let item: syn::Item = syn::parse( input ).unwrap();
+    let input: proc_macro2::TokenStream = input.into();
+    let item: syn::Item = syn::parse2( input ).unwrap();
     let mut exports = Vec::new();
 
     if !attrs.is_empty() {

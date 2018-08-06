@@ -291,38 +291,22 @@ pub fn derive_reference_type( input: TokenStream ) -> TokenStream {
         impl #impl_generics ::stdweb::private::JsSerialize for #name #ty_generics #where_clause {
             #[doc(hidden)]
             #[inline]
-            fn _into_js< 'a >( &'a self, arena: &'a ::stdweb::private::PreallocatedArena ) -> ::stdweb::private::SerializedValue< 'a > {
-                self.0._into_js( arena )
-            }
-
-            #[doc(hidden)]
-            #[inline]
-            fn _memory_required( &self ) -> usize {
-                ::stdweb::Reference::_memory_required( &self.0 )
+            fn _into_js< 'a >( &'a self ) -> ::stdweb::private::SerializedValue< 'a > {
+                self.0._into_js()
             }
         }
 
         impl #impl_generics ::stdweb::private::JsSerializeOwned for #name #ty_generics #where_clause {
             #[inline]
-            fn into_js_owned< '_a >( value: &'_a mut Option< Self >, arena: &'_a ::stdweb::private::PreallocatedArena ) -> ::stdweb::private::SerializedValue< '_a > {
-                ::stdweb::private::JsSerialize::_into_js( value.as_ref().unwrap(), arena )
-            }
-
-            #[inline]
-            fn memory_required_owned( &self ) -> usize {
-                ::stdweb::private::JsSerialize::_memory_required( self )
+            fn into_js_owned< '_a >( value: &'_a mut Option< Self > ) -> ::stdweb::private::SerializedValue< '_a > {
+                ::stdweb::private::JsSerialize::_into_js( value.as_ref().unwrap() )
             }
         }
 
         impl< '_r, #generics_params > ::stdweb::private::JsSerializeOwned for &'_r #name #ty_generics #where_clause {
             #[inline]
-            fn into_js_owned< '_a >( value: &'_a mut Option< Self >, arena: &'_a ::stdweb::private::PreallocatedArena ) -> ::stdweb::private::SerializedValue< '_a > {
-                ::stdweb::private::JsSerialize::_into_js( value.unwrap(), arena )
-            }
-
-            #[inline]
-            fn memory_required_owned( &self ) -> usize {
-                ::stdweb::private::JsSerialize::_memory_required( *self )
+            fn into_js_owned< '_a >( value: &'_a mut Option< Self > ) -> ::stdweb::private::SerializedValue< '_a > {
+                ::stdweb::private::JsSerialize::_into_js( value.unwrap() )
             }
         }
     };
