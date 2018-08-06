@@ -274,7 +274,9 @@ error_enum_boilerplate! {
     DataCloneError
 }
 
+///
 error_enum_boilerplate! {
+    ///
     IDBAddError,
     /// This IDBCursor's transaction is inactive.
     TransactionInactiveError,
@@ -1121,14 +1123,12 @@ impl IDBDatabase {
         }
     }
 
-    /// Creates and returns a new object store or index. TODO: why does this say
-    /// index?
+    /// Creates and returns a new object store.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase/createObjectStore)
-    pub fn create_object_store( &self, name: &str, auto_increment: bool, key_path: Value) -> Result<IDBObjectStore, IDBCreateObjectStoreError> {
-        // Todo, there's a question around how to handle the key path
+    pub fn create_object_store( &self, name: &str, auto_increment: bool, key_path: &str) -> Result<IDBObjectStore, IDBCreateObjectStoreError> {
         js_try! (
-            return @{self.as_ref()}.createObjectStore(@{name}, { autoIncrememt: @{auto_increment}, key_path: @{key_path.as_ref()} } );
+            return @{self.as_ref()}.createObjectStore(@{name}, { autoIncrement: @{auto_increment}, key_path: @{key_path} } );
         ).unwrap()
     }
     

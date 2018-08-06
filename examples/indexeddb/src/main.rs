@@ -198,11 +198,7 @@ fn main() {
         let db_: IDBDatabase = db_request.result().unwrap().try_into().unwrap();
 
         // Create an object_store to store our notes in (basically like a single table)
-        // including a auto-incrementing key
-        let mut store_options = HashMap::new();
-        //store_options.insert("keyPath", "id");
-        store_options.insert("autoIncrement", "true");
-        let object_store = db_.create_object_store("notes", true, Value::from(store_options)).unwrap();
+        let object_store = db_.create_object_store("notes", true, "").unwrap();
         
         // Define what data items the object_store will contain
         let mut title_options = HashMap::new();

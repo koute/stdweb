@@ -234,7 +234,8 @@ pub mod web {
             IDBRequestReadyState,
             IDBCursorSharedMethods,
             IDBCursor,
-            IDBCursorWithValue
+            IDBCursorWithValue,
+            IDBAddError
         };
     }
 
