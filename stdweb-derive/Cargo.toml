@@ -15,11 +15,12 @@ description = "Derive macros for the `stdweb` crate"
 proc-macro = true
 
 [dependencies]
-quote = "0.4"
+quote = "0.6"
 serde = "1"
 serde_derive = "1"
+proc-macro2 = "0.4"
 
 [dependencies.syn]
-version = "0.12"
+version = "0.14"
 default-features = false
 features = ["derive", "parsing", "printing"]

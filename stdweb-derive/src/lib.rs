@@ -4,6 +4,7 @@ extern crate proc_macro;
 extern crate syn;
 #[macro_use]
 extern crate quote;
+extern crate proc_macro2;
 
 use proc_macro::TokenStream;
 use syn::DeriveInput;
@@ -47,7 +48,8 @@ fn get_meta_items( attr: &syn::Attribute ) -> Option< Vec< syn::NestedMeta > > {
 /// ```
 #[proc_macro_derive(ReferenceType, attributes(reference))]
 pub fn derive_reference_type( input: TokenStream ) -> TokenStream {
-    let input: DeriveInput = syn::parse( input ).unwrap();
+    let input: proc_macro2::TokenStream = input.into();
+    let input: DeriveInput = syn::parse2( input ).unwrap();
 
     let name = input.ident;
     let generics_params = &input.generics.params;
@@ -74,8 +76,8 @@ pub fn derive_reference_type( input: TokenStream ) -> TokenStream {
                         match *nested {
                             syn::NestedMeta::Meta( ref nested ) => {
                                 match *nested {
-                                    syn::Meta::Word( ident ) => {
-                                        subclass_of.push( ident );
+                                    syn::Meta::Word( ref ident ) => {
+                                        subclass_of.push( ident.clone() );
                                     },
                                     _ => panic!( "The value of '#[reference(subclass_of(...))]' is invalid!" )
                                 }
