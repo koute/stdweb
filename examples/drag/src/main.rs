@@ -23,7 +23,7 @@ pub fn remove_str(vec: &mut Vec<String>, item: &str) -> Option<String> {
 }
 
 fn show_latest_drop(dt: DataTransfer) {
-    dt.items().index(0).unwrap().get_as_string_callback(|s| {
+    dt.items().index(0).unwrap().get_as_string(|s| {
         let latest_drop_elem =
             document()
                 .query_selector(".latest-drop")

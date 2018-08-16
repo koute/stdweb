@@ -16,6 +16,7 @@ use webapi::html_elements::ImageElement;
 /// This interface inherits properties from MouseEvent and Event.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DragEvent)
+// https://www.w3.org/TR/html51/editing.html#the-dragevent-interface
 pub trait IDragEvent: IMouseEvent {
     /// The DataEvent.dataTransfer property holds the drag operation's data (as a DataTransfer object).
     ///
@@ -32,6 +33,7 @@ pub trait IDragEvent: IMouseEvent {
 /// interface.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DragEvent)
+// https://www.w3.org/TR/html51/editing.html#the-dragevent-interface
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DragEvent")]
 #[reference(subclass_of(Event, MouseEvent))]
@@ -49,6 +51,7 @@ impl IDragEvent for DragEvent {}
 /// dragged by the user.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/drag)
+// https://www.w3.org/TR/html51/editing.html#eventdef-global-drag
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DragEvent")]
 #[reference(subclass_of(Event, MouseEvent, DragEvent))]
@@ -69,6 +72,7 @@ impl ConcreteEvent for DragRelatedEvent {
 /// The dragstart event is fired when the user starts dragging an element or text selection.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/dragstart)
+// https://www.w3.org/TR/html51/editing.html#eventdef-global-dragstart
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DragEvent")]
 #[reference(subclass_of(Event, MouseEvent, DragEvent))]
@@ -89,6 +93,7 @@ impl ConcreteEvent for DragStartEvent {
 /// The dragenter event is fired when a dragged element or text selection enters a valid drop target.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/dragenter)
+// https://www.w3.org/TR/html51/editing.html#eventdef-global-dragenter
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DragEvent")]
 #[reference(subclass_of(Event, MouseEvent))]
@@ -109,6 +114,7 @@ impl ConcreteEvent for DragEnterEvent {
 /// The dragstart event is fired when the user starts dragging an element or text selection.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/dragexit)
+// https://www.w3.org/TR/html51/editing.html#eventdef-global-dragexit
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DragEvent")]
 #[reference(subclass_of(Event, MouseEvent))]
@@ -129,6 +135,7 @@ impl ConcreteEvent for DragExitEvent {
 /// The dragleave event is fired when a dragged element or text selection leaves a valid drop target.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/dragleave)
+// https://www.w3.org/TR/html51/editing.html#eventdef-global-dragleave
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DragEvent")]
 #[reference(subclass_of(Event, MouseEvent))]
@@ -150,6 +157,7 @@ impl ConcreteEvent for DragLeaveEvent {
 /// target (every few hundred milliseconds).
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/dragover)
+// https://www.w3.org/TR/html51/editing.html#eventdef-global-dragover
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DragEvent")]
 #[reference(subclass_of(Event, MouseEvent))]
@@ -170,6 +178,7 @@ impl ConcreteEvent for DragOverEvent {
 /// The dragstart event is fired when the user starts dragging an element or text selection.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/drop)
+// https://www.w3.org/TR/html51/editing.html#eventdef-global-drop
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DragEvent")]
 #[reference(subclass_of(Event, MouseEvent))]
@@ -191,6 +200,7 @@ impl ConcreteEvent for DropEvent {
 /// hitting the escape key).
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/dragend)
+// https://www.w3.org/TR/html51/editing.html#eventdef-global-dragend
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DragEvent")]
 #[reference(subclass_of(Event, MouseEvent))]
@@ -214,6 +224,7 @@ impl ConcreteEvent for DragEndEvent {
 /// For more information about drag and drop, see HTML Drag and Drop API.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer)
+// https://www.w3.org/TR/html51/editing.html#the-datatransfer-interface
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DataTransfer")]
 pub struct DataTransfer( Reference );
@@ -366,6 +377,7 @@ impl DataTransfer {
 }
 
 /// A DOMString representing the drag operation effect.
+// https://www.w3.org/TR/html51/editing.html#dom-datatransfer-dropeffect
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DropEffect {
     /// A copy of the source item is made at the new location
@@ -379,6 +391,7 @@ pub enum DropEffect {
 }
 
 /// A DOMString representing the drag operation that is allowed.
+// https://www.w3.org/TR/html51/editing.html#dom-datatransfer-effectallowed
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum EffectAllowed {
     /// The item may not be dropped.
@@ -407,6 +420,7 @@ pub enum EffectAllowed {
 /// DataTransferItemList.
 ///
 /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItemList)
+// https://www.w3.org/TR/html51/editing.html#the-datatransferitemlist-interface
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DataTransferItemList")]
 pub struct DataTransferItemList( Reference );
@@ -478,6 +492,7 @@ pub enum DataTransferItemAdd {
 /// list is a DataTransferItem object.
 ///
 /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItem)
+// https://www.w3.org/TR/html51/editing.html#the-datatransferitem-interface
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DataTransferItem")]
 pub struct DataTransferItem( Reference );
@@ -519,8 +534,18 @@ impl DataTransferItem {
     /// Invokes the specified callback with the drag data item string as its argument.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItem/getAsString)
+    pub fn get_as_string<F>( &self, callback: F )
+        where F: FnOnce(String) + 'static {
+        js!(@(no_return)
+            @{self.as_ref()}.getAsString(@{Once(callback)});
+        );
+    }
+
+    /// Invokes the specified callback with the drag data item string as its argument.
+    ///
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItem/getAsString)
     #[cfg(feature = "futures-support")]
-    pub fn get_as_string( &self ) -> oneshot::Receiver<String> {
+    pub fn get_as_string_future( &self ) -> oneshot::Receiver<String> {
         let (sender, receiver) = oneshot::channel();
         let callback = |s: String| {
             match sender.send(s) {
@@ -534,13 +559,6 @@ impl DataTransferItem {
         );
 
         receiver
-    }
-
-    pub fn get_as_string_callback<F>( &self, callback: F )
-        where F: FnOnce(String) + 'static {
-        js!(@(no_return)
-            @{self.as_ref()}.getAsString(@{Once(callback)});
-        );
     }
 }
 
