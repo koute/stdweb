@@ -406,6 +406,10 @@ pub mod web {
             DataTransfer,
             EffectAllowed,
             DropEffect,
+            DataTransferItemList,
+            DataTransferItem,
+            DataTransferItemAdd,
+            DataTransferItemKind,
         };
     }
 }

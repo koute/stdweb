@@ -480,6 +480,7 @@ impl DataTransferItemList {
         }
     }
 
+    /// Returns an iterator over the list
     pub fn iter( &self ) -> DataTransferItemIter {
         DataTransferItemIter {
             list: self.clone(),
@@ -614,6 +615,9 @@ impl DataTransferItem {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
+/// The kind of drag data item, string or file.
+///
+/// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItem/kind)
 pub enum DataTransferItemKind {
     File,
     String,
