@@ -479,6 +479,57 @@ impl DataTransferItemList {
             _ => None,
         }
     }
+
+    pub fn iter( &self ) -> DataTransferItemIter {
+        DataTransferItemIter {
+            list: self.clone(),
+            index: 0,
+        }
+    }
+}
+
+impl IntoIterator for DataTransferItemList {
+    type Item = DataTransferItem;
+    type IntoIter = DataTransferItemIter;
+
+    #[inline]
+    fn into_iter( self ) -> Self::IntoIter {
+        DataTransferItemIter {
+            list: self,
+            index: 0
+        }
+    }
+}
+
+impl< 'a > IntoIterator for &'a DataTransferItemList {
+    type Item = DataTransferItem;
+    type IntoIter = DataTransferItemIter;
+
+    #[inline]
+    fn into_iter( self ) -> Self::IntoIter {
+        DataTransferItemIter {
+            list: self.clone(),
+            index: 0
+        }
+    }
+}
+
+impl Iterator for DataTransferItemIter {
+    type Item = DataTransferItem;
+
+    fn next( &mut self ) -> Option< Self::Item > {
+        let v = self.list.index(self.index);
+        if v.is_some() {
+            self.index += 1;
+        }
+        v
+    }
+}
+
+#[derive(Debug)]
+pub struct DataTransferItemIter {
+    list: DataTransferItemList,
+    index: u32,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -628,6 +679,7 @@ mod tests {
         let file = js!(return new File(["content"], @{filename})).try_into().unwrap();
         event.data_transfer().items().add(DataTransferItemAdd::File(file)).unwrap();
         assert_eq!(event.data_transfer().items().len(), 2);
+        assert_eq!(event.data_transfer().items().iter().count(), 2);
         assert!(event.data_transfer().items().index(2).is_none());
         assert_eq!(event.data_transfer().files().len(), 1);
         let item = event.data_transfer().items().index(1).unwrap();
