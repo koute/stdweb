@@ -11,7 +11,7 @@ use stdweb::web::event::{
     DataTransfer,
     DragOverEvent,
     DragStartEvent,
-    DropEvent,
+    DragDropEvent,
     EffectAllowed,
     DropEffect,
 };
@@ -42,20 +42,20 @@ fn add_event_listeners<F>(team: &'static str, change_team: F)
     chars_elem.add_event_listener(|e: DragStartEvent| {
         let target = e.target().unwrap();
         let char_name: String = js!(return @{target.as_ref()}.textContent).try_into().unwrap();
-        e.data_transfer().set_effect_allowed(EffectAllowed::CopyMove);
-        e.data_transfer().set_data("text/plain", char_name.as_ref());
+        e.data_transfer().unwrap().set_effect_allowed(EffectAllowed::CopyMove);
+        e.data_transfer().unwrap().set_data("text/plain", char_name.as_ref());
     });
 
     let dropzone_elem = document().query_selector(&format!(".{}-dropzone", team)).unwrap().unwrap();
     dropzone_elem.add_event_listener(|e: DragOverEvent| {
         e.prevent_default();
-        e.data_transfer().set_drop_effect(DropEffect::Move);
+        e.data_transfer().unwrap().set_drop_effect(DropEffect::Move);
     });
 
-    dropzone_elem.add_event_listener(move |e: DropEvent| {
+    dropzone_elem.add_event_listener(move |e: DragDropEvent| {
         e.prevent_default();
-        let content = e.data_transfer().get_data("text/plain");
-        show_latest_drop(e.data_transfer());
+        let content = e.data_transfer().unwrap().get_data("text/plain");
+        show_latest_drop(e.data_transfer().unwrap());
         change_team(&content);
     });
 }
@@ -127,12 +127,12 @@ fn drop_filesystem_example() {
     dropzone().add_event_listener(move |e: DragOverEvent| {
         e.prevent_default();
         js!(@{e.as_ref()}.currentTarget.style.backgroundColor = "lightblue");
-        e.data_transfer().set_drop_effect(DropEffect::Move);
+        e.data_transfer().unwrap().set_drop_effect(DropEffect::Move);
     });
-    dropzone().add_event_listener(move |e: DropEvent| {
+    dropzone().add_event_listener(move |e: DragDropEvent| {
         e.prevent_default();
         js!(@{e.as_ref()}.currentTarget.style.backgroundColor = "transparent");
-        for x in e.data_transfer().files() {
+        for x in e.data_transfer().unwrap().files() {
             let div = document().create_element("div").unwrap();
             js!(@{div.as_ref()}.innerHTML = "- " + @{x.name()});
             dropzone().append_child(&div)

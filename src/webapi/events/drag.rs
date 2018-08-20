@@ -1,6 +1,6 @@
 #[cfg(feature = "futures-support")]
 use futures_channel::oneshot;
-use webapi::event::{IEvent, IUiEvent, Event, ConcreteEvent};
+use webapi::event::{IEvent, IUiEvent, UiEvent, Event, ConcreteEvent};
 use webapi::events::mouse::{IMouseEvent, MouseEvent};
 use webapi::file::File;
 use webcore::once::Once;
@@ -8,6 +8,8 @@ use webcore::value::{Reference, Value};
 use webcore::try_from::TryInto;
 use webapi::file_list::FileList;
 use webapi::html_elements::ImageElement;
+use webapi::dom_exception::NotSupportedError;
+use webapi::dom_exception::InvalidStateError;
 
 /// The DragEvent interface is a DOM event that represents a drag and drop interaction.
 /// The user initiates a drag by placing a pointer device (such as a mouse) on the touch surface
@@ -16,13 +18,14 @@ use webapi::html_elements::ImageElement;
 /// This interface inherits properties from MouseEvent and Event.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DragEvent)
-// https://www.w3.org/TR/html51/editing.html#the-dragevent-interface
+// https://www.w3.org/TR/html51/editing.html#dragevent-dragevent
 pub trait IDragEvent: IMouseEvent {
     /// The DataEvent.dataTransfer property holds the drag operation's data (as a DataTransfer object).
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DragEvent/dataTransfer)
+    // https://www.w3.org/TR/html51/editing.html#ref-for-dom-dragevent-datatransfer-1
     #[inline]
-    fn data_transfer(&self) -> DataTransfer {
+    fn data_transfer(&self) -> Option<DataTransfer> {
         js!(
             return @{self.as_ref()}.dataTransfer;
         ).try_into().unwrap()
@@ -36,25 +39,7 @@ pub trait IDragEvent: IMouseEvent {
 // https://www.w3.org/TR/html51/editing.html#the-dragevent-interface
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DragEvent")]
-#[reference(subclass_of(Event, MouseEvent))]
-pub struct DragEvent(Reference);
-
-impl IEvent for DragEvent {}
-
-impl IUiEvent for DragEvent {}
-
-impl IMouseEvent for DragEvent {}
-
-impl IDragEvent for DragEvent {}
-
-/// The drag event is fired every few hundred milliseconds as an element or text selection is being
-/// dragged by the user.
-///
-/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/drag)
-// https://www.w3.org/TR/html51/editing.html#eventdef-global-drag
-#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "DragEvent")]
-#[reference(subclass_of(Event, MouseEvent, DragEvent))]
+#[reference(subclass_of(Event, UiEvent, MouseEvent))]
 pub struct DragRelatedEvent(Reference);
 
 impl IEvent for DragRelatedEvent {}
@@ -65,7 +50,25 @@ impl IMouseEvent for DragRelatedEvent {}
 
 impl IDragEvent for DragRelatedEvent {}
 
-impl ConcreteEvent for DragRelatedEvent {
+/// The drag event is fired every few hundred milliseconds as an element or text selection is being
+/// dragged by the user.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/drag)
+// https://www.w3.org/TR/html51/editing.html#eventdef-global-drag
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "DragEvent")]
+#[reference(subclass_of(Event, UiEvent, MouseEvent, DragRelatedEvent))]
+pub struct DragEvent(Reference);
+
+impl IEvent for DragEvent {}
+
+impl IUiEvent for DragEvent {}
+
+impl IMouseEvent for DragEvent {}
+
+impl IDragEvent for DragEvent {}
+
+impl ConcreteEvent for DragEvent {
     const EVENT_TYPE: &'static str = "drag";
 }
 
@@ -75,7 +78,7 @@ impl ConcreteEvent for DragRelatedEvent {
 // https://www.w3.org/TR/html51/editing.html#eventdef-global-dragstart
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DragEvent")]
-#[reference(subclass_of(Event, MouseEvent, DragEvent))]
+#[reference(subclass_of(Event, UiEvent, MouseEvent, DragRelatedEvent))]
 pub struct DragStartEvent(Reference);
 
 impl IEvent for DragStartEvent {}
@@ -96,7 +99,7 @@ impl ConcreteEvent for DragStartEvent {
 // https://www.w3.org/TR/html51/editing.html#eventdef-global-dragenter
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DragEvent")]
-#[reference(subclass_of(Event, MouseEvent))]
+#[reference(subclass_of(Event, UiEvent, MouseEvent, DragRelatedEvent))]
 pub struct DragEnterEvent(Reference);
 
 impl IEvent for DragEnterEvent {}
@@ -111,13 +114,14 @@ impl ConcreteEvent for DragEnterEvent {
     const EVENT_TYPE: &'static str = "dragenter";
 }
 
-/// The dragstart event is fired when the user starts dragging an element or text selection.
+/// The dragexit event is fired when an element is no longer the drag operation's immediate
+/// selection target.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/dragexit)
 // https://www.w3.org/TR/html51/editing.html#eventdef-global-dragexit
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DragEvent")]
-#[reference(subclass_of(Event, MouseEvent))]
+#[reference(subclass_of(Event, UiEvent, MouseEvent, DragRelatedEvent))]
 pub struct DragExitEvent(Reference);
 
 impl IEvent for DragExitEvent {}
@@ -138,7 +142,7 @@ impl ConcreteEvent for DragExitEvent {
 // https://www.w3.org/TR/html51/editing.html#eventdef-global-dragleave
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DragEvent")]
-#[reference(subclass_of(Event, MouseEvent))]
+#[reference(subclass_of(Event, UiEvent, MouseEvent, DragRelatedEvent))]
 pub struct DragLeaveEvent(Reference);
 
 impl IEvent for DragLeaveEvent {}
@@ -160,7 +164,7 @@ impl ConcreteEvent for DragLeaveEvent {
 // https://www.w3.org/TR/html51/editing.html#eventdef-global-dragover
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DragEvent")]
-#[reference(subclass_of(Event, MouseEvent))]
+#[reference(subclass_of(Event, UiEvent, MouseEvent, DragRelatedEvent))]
 pub struct DragOverEvent(Reference);
 
 impl IEvent for DragOverEvent {}
@@ -175,24 +179,24 @@ impl ConcreteEvent for DragOverEvent {
     const EVENT_TYPE: &'static str = "dragover";
 }
 
-/// The dragstart event is fired when the user starts dragging an element or text selection.
+/// The drop event is fired when an element or text selection is dropped on a valid drop target.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/drop)
 // https://www.w3.org/TR/html51/editing.html#eventdef-global-drop
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DragEvent")]
-#[reference(subclass_of(Event, MouseEvent))]
-pub struct DropEvent(Reference);
+#[reference(subclass_of(Event, UiEvent, MouseEvent, DragRelatedEvent))]
+pub struct DragDropEvent(Reference);
 
-impl IEvent for DropEvent {}
+impl IEvent for DragDropEvent {}
 
-impl IUiEvent for DropEvent {}
+impl IUiEvent for DragDropEvent {}
 
-impl IMouseEvent for DropEvent {}
+impl IMouseEvent for DragDropEvent {}
 
-impl IDragEvent for DropEvent {}
+impl IDragEvent for DragDropEvent {}
 
-impl ConcreteEvent for DropEvent {
+impl ConcreteEvent for DragDropEvent {
     const EVENT_TYPE: &'static str = "drop";
 }
 
@@ -203,7 +207,7 @@ impl ConcreteEvent for DropEvent {
 // https://www.w3.org/TR/html51/editing.html#eventdef-global-dragend
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DragEvent")]
-#[reference(subclass_of(Event, MouseEvent))]
+#[reference(subclass_of(Event, UiEvent, MouseEvent, DragRelatedEvent))]
 pub struct DragEndEvent(Reference);
 
 impl IEvent for DragEndEvent {}
@@ -220,19 +224,21 @@ impl ConcreteEvent for DragEndEvent {
 
 /// The DataTransfer object is used to hold the data that is being dragged during a drag and drop
 /// operation.
+///
 /// It may hold one or more data items, each of one or more data types.
 /// For more information about drag and drop, see HTML Drag and Drop API.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer)
-// https://www.w3.org/TR/html51/editing.html#the-datatransfer-interface
+// https://www.w3.org/TR/html51/editing.html#datatransfer-datatransfer
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DataTransfer")]
 pub struct DataTransfer( Reference );
 impl DataTransfer {
-    /// Gets the type of drag-and-drop operation currently selected or sets the operation to a new
-    /// type. The value must be none, copy, link or move.
+    /// Gets the type of drag-and-drop operation currently selected type.
+    /// The value must be none, copy, link or move.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer/dropEffect)
+    // https://www.w3.org/TR/html51/editing.html#ref-for-dom-datatransfer-dropeffect-2
     pub fn drop_effect( &self ) -> DropEffect {
         let v: String = js!(
             return @{self.as_ref()}.dropEffect;
@@ -246,10 +252,11 @@ impl DataTransfer {
         }
     }
 
-    /// Sets the type of drag-and-drop operation currently selected or sets the operation to a new
-    /// type. The value must be none, copy, link or move.
+    /// Sets the type of drag-and-drop operation currently selected.
+    /// The value must be none, copy, link or move.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/dropEffect)
+    // https://www.w3.org/TR/html51/editing.html#ref-for-dom-datatransfer-dropeffect-2
     pub fn set_drop_effect( &self, value: DropEffect ) {
         js! { @(no_return)
             @{self.as_ref()}.dropEffect = @{match value {
@@ -265,6 +272,7 @@ impl DataTransfer {
     /// Must be one of none, copy, copyLink, copyMove, link, linkMove, move, all or uninitialized.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer/effectAllowed)
+    // https://www.w3.org/TR/html51/editing.html#ref-for-dom-datatransfer-effectallowed-1
     pub fn effect_allowed( &self ) -> EffectAllowed {
         let v: String = js!(
             return @{self.as_ref()}.effectAllowed;
@@ -287,6 +295,7 @@ impl DataTransfer {
     /// Must be one of none, copy, copyLink, copyMove, link, linkMove, move, all or uninitialized.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/effectAllowed)
+    // https://www.w3.org/TR/html51/editing.html#ref-for-dom-datatransfer-effectallowed-1
     pub fn set_effect_allowed( &self, value: EffectAllowed ) {
         js! { @(no_return)
             @{self.as_ref()}.effectAllowed = @{match value {
@@ -306,6 +315,7 @@ impl DataTransfer {
     /// Gives a DataTransferItemList object which is a list of all of the drag data.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer/items)
+    // https://www.w3.org/TR/html51/editing.html#ref-for-dom-datatransfer-items-1
     pub fn items( &self ) -> DataTransferItemList {
         js!(
             return @{self.as_ref()}.items;
@@ -316,6 +326,7 @@ impl DataTransfer {
     /// If the drag operation doesn't involve dragging files, this property is an empty list.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer/files)
+    // https://www.w3.org/TR/html51/editing.html#ref-for-dom-datatransfer-files-1
     pub fn files( &self ) -> FileList {
         js!(
             return @{self.as_ref()}.files;
@@ -325,6 +336,7 @@ impl DataTransfer {
     /// An array of strings giving the formats that were set in the dragstart event.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer/types)
+    // https://www.w3.org/TR/html51/editing.html#ref-for-dom-datatransfer-types-1
     pub fn types( &self ) -> Vec<String> {
         js!(
             return @{self.as_ref()}.types;
@@ -337,6 +349,7 @@ impl DataTransfer {
     /// this method will have no effect.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer/clearData)
+    // https://www.w3.org/TR/html51/editing.html#ref-for-dom-datatransfer-cleardata-1
     pub fn clear_data( &self, format: Option<&str> ) {
         match format {
             None => js!(@(no_return) @{self.as_ref()}.clearData()),
@@ -348,6 +361,7 @@ impl DataTransfer {
     /// or the data transfer contains no data.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer/getData)
+    // https://www.w3.org/TR/html51/editing.html#ref-for-dom-datatransfer-getdata-1
     pub fn get_data( &self, format: &str ) -> String {
         js!(
             return @{self.as_ref()}.getData(@{format});
@@ -360,6 +374,7 @@ impl DataTransfer {
     /// If data for the type already exists, the existing data is replaced in the same position.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer/setData)
+    // https://www.w3.org/TR/html51/editing.html#ref-for-dom-datatransfer-setdata-1
     pub fn set_data( &self, format: &str, data: &str ) {
         js!(@(no_return)
             @{self.as_ref()}.setData(@{format}, @{data});
@@ -369,7 +384,8 @@ impl DataTransfer {
     /// Set the image to be used for dragging if a custom one is desired.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer/setDragImage)
-    pub fn set_drag_image( &self, img: &ImageElement, x_offset: u32, y_offset: u32 ) {
+    // https://www.w3.org/TR/html51/editing.html#ref-for-dom-datatransfer-setdragimage-1
+    pub fn set_drag_image( &self, img: &ImageElement, x_offset: i32, y_offset: i32 ) {
         js!(@(no_return)
             @{self.as_ref()}.setDragImage(@{img.as_ref()}, @{x_offset}, @{y_offset});
         );
@@ -420,7 +436,7 @@ pub enum EffectAllowed {
 /// DataTransferItemList.
 ///
 /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItemList)
-// https://www.w3.org/TR/html51/editing.html#the-datatransferitemlist-interface
+// https://www.w3.org/TR/html51/editing.html#datatransferitemlist-datatransferitemlist
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DataTransferItemList")]
 pub struct DataTransferItemList( Reference );
@@ -428,41 +444,47 @@ impl DataTransferItemList {
     /// An unsigned long that is the number of drag items in the list.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItemList/length)
-    pub fn len( &self ) -> u64 {
+    // https://www.w3.org/TR/html51/editing.html#ref-for-dom-datatransferitemlist-length-1
+    pub fn len( &self ) -> u32 {
         js!(
             return @{self.as_ref()}.length;
         ).try_into().unwrap()
     }
 
-    /// Adds an item (either a File object or a string) to the drag item list and returns
+    /// Adds an item of kind "string" to the drag item list and returns
     /// a DataTransferItem object for the new item.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItemList/add)
-    pub fn add( &self, item: DataTransferItemAdd ) -> Option<DataTransferItem> {
-        match item {
-            DataTransferItemAdd::File(file) => {
-                js!(
-                    return @{self.as_ref()}.add(@{file});
-                ).try_into().unwrap()
-            },
-            DataTransferItemAdd::String(data, ty) => {
-                js!(
-                    return @{self.as_ref()}.add(@{data}, @{ty})
-                ).try_into().unwrap()
-            }
-        }
+    // https://www.w3.org/TR/html51/editing.html#ref-for-dom-datatransferitemlist-add-1
+    pub fn add_string( &self, data: String, ty: String ) -> Result<Option<DataTransferItem>, NotSupportedError> {
+        js_try!(
+            return @{self.as_ref()}.add(@{data}, @{ty});
+        ).unwrap()
+    }
+
+    /// Adds an item of kind "file" to the drag item list and returns
+    /// a DataTransferItem object for the new item.
+    ///
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItemList/add)
+    // https://www.w3.org/TR/html51/editing.html#ref-for-dom-datatransferitemlist-add-2
+    pub fn add_file( &self, file: File ) -> Option<DataTransferItem> {
+        js!(
+            return @{self.as_ref()}.add(@{file});
+        ).try_into().unwrap()
     }
 
     /// Removes the drag item from the list at the given index.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItemList/remove)
-    pub fn remove( &self, index: u32 ) {
-        js!(@(no_return) @{self.as_ref()}.remove(@{index}));
+    // https://www.w3.org/TR/html51/editing.html#ref-for-dom-datatransferitemlist-remove-1
+    pub fn remove( &self, index: u32 ) -> Result<(), InvalidStateError> {
+        js_try!(@{self.as_ref()}.remove(@{index})).unwrap()
     }
 
     /// Removes all of the drag items from the list.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItemList/clear)
+    // https://www.w3.org/TR/html51/editing.html#ref-for-dom-datatransferitemlist-clear-1
     pub fn clear( &self ) {
         js!(@(no_return) @{self.as_ref()}.clear());
     }
@@ -470,6 +492,7 @@ impl DataTransferItemList {
     /// Getter that returns a DataTransferItem at the given index.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItemList/DataTransferItem)
+    // https://www.w3.org/TR/html51/editing.html#ref-for-datatransferitem-datatransferitem-1
     pub fn index( &self, index: u32 ) -> Option<DataTransferItem> {
         let v: Value = js!(
             return @{self.as_ref()}[@{index}];
@@ -533,18 +556,12 @@ pub struct DataTransferItemIter {
     index: u32,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum DataTransferItemAdd {
-    File(File),
-    String(String, String),
-}
-
 /// The DataTransferItem object represents one drag data item. During a drag operation, each drag
 /// event has a dataTransfer property which contains a list of drag data items. Each item in the
 /// list is a DataTransferItem object.
 ///
 /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItem)
-// https://www.w3.org/TR/html51/editing.html#the-datatransferitem-interface
+// https://www.w3.org/TR/html51/editing.html#datatransferitem-datatransferitem
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DataTransferItem")]
 pub struct DataTransferItem( Reference );
@@ -553,6 +570,7 @@ impl DataTransferItem {
     /// The kind of drag data item, string or file.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItem/kind)
+    // https://www.w3.org/TR/html51/editing.html#ref-for-dom-datatransferitem-kind-13
     pub fn kind( &self ) -> DataTransferItemKind {
         let kind: String = js!(
             return @{self.as_ref()}.kind;
@@ -567,6 +585,7 @@ impl DataTransferItem {
     /// The drag data item's type, typically a MIME type.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItem/type)
+    // https://www.w3.org/TR/html51/editing.html#ref-for-dom-datatransferitem-type-2
     pub fn ty( &self ) -> String {
         js!(
             return @{self.as_ref()}.type;
@@ -577,7 +596,8 @@ impl DataTransferItem {
     /// (or null if the drag item is not a file)
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItem/getAsFile)
-    pub fn get_as_file( &self ) -> File {
+    // https://www.w3.org/TR/html51/editing.html#ref-for-dom-datatransferitem-getasfile-1
+    pub fn get_as_file( &self ) -> Option<File> {
         js!(
             return @{self.as_ref()}.getAsFile();
         ).try_into().unwrap()
@@ -586,6 +606,7 @@ impl DataTransferItem {
     /// Invokes the specified callback with the drag data item string as its argument.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItem/getAsString)
+    // https://www.w3.org/TR/html51/editing.html#ref-for-dom-datatransferitem-getasstring-1
     pub fn get_as_string<F>( &self, callback: F )
         where F: FnOnce(String) + 'static {
         js!(@(no_return)
@@ -596,6 +617,7 @@ impl DataTransferItem {
     /// Invokes the specified callback with the drag data item string as its argument.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItem/getAsString)
+    // https://www.w3.org/TR/html51/editing.html#ref-for-dom-datatransferitem-getasstring-1
     #[cfg(feature = "futures-support")]
     pub fn get_as_string_future( &self ) -> oneshot::Receiver<String> {
         let (sender, receiver) = oneshot::channel();
@@ -614,12 +636,15 @@ impl DataTransferItem {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
 /// The kind of drag data item, string or file.
 ///
 /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItem/kind)
+// https://www.w3.org/TR/html51/editing.html#ref-for-dom-datatransferitem-kind-13
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum DataTransferItemKind {
+    /// If the drag data item is a file.
     File,
+    /// If the kind of drag data item is a plain Unicode string.
     String,
 }
 
@@ -640,37 +665,37 @@ mod tests {
 
         // effects
         assert_eq!(event.event_type(), DragStartEvent::EVENT_TYPE);
-        assert_eq!(event.data_transfer().effect_allowed(), EffectAllowed::None);
-        assert_eq!(event.data_transfer().drop_effect(), DropEffect::None);
-        event.data_transfer().set_effect_allowed(EffectAllowed::CopyMove);
-        event.data_transfer().set_drop_effect(DropEffect::Copy);
+        assert_eq!(event.data_transfer().unwrap().effect_allowed(), EffectAllowed::None);
+        assert_eq!(event.data_transfer().unwrap().drop_effect(), DropEffect::None);
+        event.data_transfer().unwrap().set_effect_allowed(EffectAllowed::CopyMove);
+        event.data_transfer().unwrap().set_drop_effect(DropEffect::Copy);
         // TODO how to test? can only set these during ondragstart event triggered in browser
         // assert_eq!(event.data_transfer().effect_allowed(), EffectAllowed::CopyMove);
         // assert_eq!(event.data_transfer().drop_effect(), DropEffect::Copy);
 
         // get, set, clear data
-        event.data_transfer().set_data("myformat", "mydata");
-        event.data_transfer().set_data("myformat2", "mydata2");
-        event.data_transfer().clear_data(Some("myformat3"));
-        assert_eq!(event.data_transfer().get_data("myformat"), String::from("mydata"));
-        event.data_transfer().clear_data(Some("myformat"));
-        assert_eq!(event.data_transfer().get_data("myformat"), String::from(""));
-        assert_eq!(event.data_transfer().get_data("myformat2"), String::from("mydata2"));
-        event.data_transfer().clear_data(None);
-        assert_eq!(event.data_transfer().get_data("myformat2"), String::from(""));
+        event.data_transfer().unwrap().set_data("myformat", "mydata");
+        event.data_transfer().unwrap().set_data("myformat2", "mydata2");
+        event.data_transfer().unwrap().clear_data(Some("myformat3"));
+        assert_eq!(event.data_transfer().unwrap().get_data("myformat"), String::from("mydata"));
+        event.data_transfer().unwrap().clear_data(Some("myformat"));
+        assert_eq!(event.data_transfer().unwrap().get_data("myformat"), String::from(""));
+        assert_eq!(event.data_transfer().unwrap().get_data("myformat2"), String::from("mydata2"));
+        event.data_transfer().unwrap().clear_data(None);
+        assert_eq!(event.data_transfer().unwrap().get_data("myformat2"), String::from(""));
         let img = ImageElement::new();
-        event.data_transfer().set_drag_image(&img, 10, 10);
+        event.data_transfer().unwrap().set_drag_image(&img, 10, 10);
 
         // types
-        assert_eq!(event.data_transfer().types().len(), 0);
+        assert_eq!(event.data_transfer().unwrap().types().len(), 0);
 
         // items
-        assert_eq!(event.data_transfer().items().len(), 0);
+        assert_eq!(event.data_transfer().unwrap().items().len(), 0);
         let data = "mydata";
         let ty = "text/plain";
-        let item = event.data_transfer().items().add(
-            DataTransferItemAdd::String(String::from(data), String::from(ty))
-        ).unwrap();
+        let item = event.data_transfer().unwrap().items().add_string(
+            String::from(data), String::from(ty)
+        ).unwrap().unwrap();
         assert_eq!(item.ty(), ty);
         assert_eq!(item.kind(), DataTransferItemKind::String);
         // TODO(https://github.com/koute/stdweb/issues/128) fix when async unit testing is available
@@ -681,17 +706,18 @@ mod tests {
         // });
         let filename = "myname";
         let file = js!(return new File(["content"], @{filename})).try_into().unwrap();
-        event.data_transfer().items().add(DataTransferItemAdd::File(file)).unwrap();
-        assert_eq!(event.data_transfer().items().len(), 2);
-        assert_eq!(event.data_transfer().items().iter().count(), 2);
-        assert!(event.data_transfer().items().index(2).is_none());
-        assert_eq!(event.data_transfer().files().len(), 1);
-        let item = event.data_transfer().items().index(1).unwrap();
+        event.data_transfer().unwrap().items().add_file(file).unwrap();
+        assert_eq!(event.data_transfer().unwrap().items().len(), 2);
+        assert_eq!(event.data_transfer().unwrap().items().iter().count(), 2);
+        assert!(event.data_transfer().unwrap().items().index(2).is_none());
+        assert_eq!(event.data_transfer().unwrap().files().len(), 1);
+        let item = event.data_transfer().unwrap().items().index(1).unwrap();
         assert_eq!(item.kind(), DataTransferItemKind::File);
-        assert_eq!(item.get_as_file().name(), filename);
-        event.data_transfer().items().remove(0);
-        assert_eq!(event.data_transfer().items().len(), 1);
-        event.data_transfer().items().clear();
-        assert_eq!(event.data_transfer().items().len(), 0);
+        assert_eq!(item.get_as_file().unwrap().name(), filename);
+        let result = event.data_transfer().unwrap().items().remove(0);
+        assert!(result.is_ok());
+        assert_eq!(event.data_transfer().unwrap().items().len(), 1);
+        event.data_transfer().unwrap().items().clear();
+        assert_eq!(event.data_transfer().unwrap().items().len(), 0);
     }
 }

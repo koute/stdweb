@@ -394,21 +394,20 @@ pub mod web {
 
         pub use webapi::events::drag::{
             IDragEvent,
-            DragEvent,
             DragRelatedEvent,
+            DragEvent,
             DragStartEvent,
             DragEndEvent,
             DragEnterEvent,
             DragLeaveEvent,
             DragOverEvent,
             DragExitEvent,
-            DropEvent,
+            DragDropEvent,
             DataTransfer,
             EffectAllowed,
             DropEffect,
             DataTransferItemList,
             DataTransferItem,
-            DataTransferItemAdd,
             DataTransferItemKind,
         };
     }
