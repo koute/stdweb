@@ -9,6 +9,7 @@ use stdweb::web::{
 };
 use stdweb::web::event::{
     DataTransfer,
+    DataTransferItemKind,
     DragOverEvent,
     DragStartEvent,
     DragDropEvent,
@@ -86,7 +87,6 @@ fn drag_and_drop_elements_example() {
         String::from("Captain Falcon"),
     ]));
 
-
     let change_team = |name: &str,
                        team_a: &mut Vec<String>,
                        team_b: &mut Vec<String>,
@@ -131,12 +131,34 @@ fn drop_filesystem_example() {
     });
     dropzone().add_event_listener(move |e: DragDropEvent| {
         e.prevent_default();
+
         js!(@{e.as_ref()}.currentTarget.style.backgroundColor = "transparent");
+
+        let div = document().create_element("div").unwrap();
+        js!(@{div.as_ref()}.innerHTML = "content of dataTransfer.items:");
+        dropzone().append_child(&div);
+        for x in e.data_transfer().unwrap().items() {
+            let div = document().create_element("div").unwrap();
+            let kind_str = match x.kind() {
+                DataTransferItemKind::String => String::from("a string"),
+                DataTransferItemKind::File => String::from("a file"),
+                DataTransferItemKind::Other(_) if x.kind().as_str() == "other" => String::from("an expected other kind"),
+                DataTransferItemKind::Other(_) => format!("an unexpected other kind \"{}\"", x.kind().as_str()),
+            };
+            js!(@{div.as_ref()}.innerHTML = @{format!("- {} of type {}", kind_str, x.ty())});
+            dropzone().append_child(&div);
+        };
+
+        let div = document().create_element("div").unwrap();
+        js!(@{div.as_ref()}.innerHTML = "content of dataTransfer.files:");
+        dropzone().append_child(&div);
         for x in e.data_transfer().unwrap().files() {
             let div = document().create_element("div").unwrap();
-            js!(@{div.as_ref()}.innerHTML = "- " + @{x.name()});
-            dropzone().append_child(&div)
+            js!(@{div.as_ref()}.innerHTML = "- a file named " + @{x.name()});
+            dropzone().append_child(&div);
         }
+        let hr = document().create_element("hr").unwrap();
+        dropzone().append_child(&hr);
     });
 }
 

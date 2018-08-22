@@ -456,7 +456,7 @@ impl DataTransferItemList {
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItemList/add)
     // https://www.w3.org/TR/html51/editing.html#ref-for-dom-datatransferitemlist-add-1
-    pub fn add_string( &self, data: String, ty: String ) -> Result<Option<DataTransferItem>, NotSupportedError> {
+    pub fn add_string( &self, data: &str, ty: &str ) -> Result<Option<DataTransferItem>, NotSupportedError> {
         js_try!(
             return @{self.as_ref()}.add(@{data}, @{ty});
         ).unwrap()
@@ -467,7 +467,7 @@ impl DataTransferItemList {
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItemList/add)
     // https://www.w3.org/TR/html51/editing.html#ref-for-dom-datatransferitemlist-add-2
-    pub fn add_file( &self, file: File ) -> Option<DataTransferItem> {
+    pub fn add_file( &self, file: &File ) -> Option<DataTransferItem> {
         js!(
             return @{self.as_ref()}.add(@{file});
         ).try_into().unwrap()
@@ -578,7 +578,7 @@ impl DataTransferItem {
         match kind.as_ref() {
             "string" => DataTransferItemKind::String,
             "file" => DataTransferItemKind::File,
-            other => panic!("Expected valid kind, got {:?}", other),
+            other => DataTransferItemKind::Other(OtherKind { name: String::from(other) }),
         }
     }
 
@@ -640,12 +640,33 @@ impl DataTransferItem {
 ///
 /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItem/kind)
 // https://www.w3.org/TR/html51/editing.html#ref-for-dom-datatransferitem-kind-13
+// TODO use #[non_exhaustive] when available
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum DataTransferItemKind {
     /// If the drag data item is a file.
     File,
     /// If the kind of drag data item is a plain Unicode string.
     String,
+    /// If the kind of drag data is something different (e.g. dragging an <img /> tag in Firefox)
+    #[doc(hidden)]
+    Other(OtherKind),
+}
+
+impl DataTransferItemKind {
+    /// Returns the string representation of this DataTransferItemKind
+    /// Useful in case the browser returns a non-standard kind that you want to special case.
+    pub fn as_str( &self ) -> &str {
+        match self {
+            DataTransferItemKind::File => "file",
+            DataTransferItemKind::String => "string",
+            DataTransferItemKind::Other(other_kind) => &other_kind.name,
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct OtherKind {
+    name: String,
 }
 
 #[cfg(all(test, feature = "web_test"))]
@@ -693,9 +714,7 @@ mod tests {
         assert_eq!(event.data_transfer().unwrap().items().len(), 0);
         let data = "mydata";
         let ty = "text/plain";
-        let item = event.data_transfer().unwrap().items().add_string(
-            String::from(data), String::from(ty)
-        ).unwrap().unwrap();
+        let item = event.data_transfer().unwrap().items().add_string(data, ty).unwrap().unwrap();
         assert_eq!(item.ty(), ty);
         assert_eq!(item.kind(), DataTransferItemKind::String);
         // TODO(https://github.com/koute/stdweb/issues/128) fix when async unit testing is available
@@ -706,7 +725,7 @@ mod tests {
         // });
         let filename = "myname";
         let file = js!(return new File(["content"], @{filename})).try_into().unwrap();
-        event.data_transfer().unwrap().items().add_file(file).unwrap();
+        event.data_transfer().unwrap().items().add_file(&file).unwrap();
         assert_eq!(event.data_transfer().unwrap().items().len(), 2);
         assert_eq!(event.data_transfer().unwrap().items().iter().count(), 2);
         assert!(event.data_transfer().unwrap().items().index(2).is_none());
