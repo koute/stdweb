@@ -142,8 +142,8 @@ fn drop_filesystem_example() {
             let kind_str = match x.kind() {
                 DataTransferItemKind::String => String::from("a string"),
                 DataTransferItemKind::File => String::from("a file"),
-                DataTransferItemKind::Other(_) if x.kind().as_str() == "other" => String::from("an expected other kind"),
-                DataTransferItemKind::Other(_) => format!("an unexpected other kind \"{}\"", x.kind().as_str()),
+                ref kind if kind.as_str() == "other" => String::from("an expected other kind"),
+                kind => format!("an unexpected other kind \"{}\"", kind.as_str()),
             };
             js!(@{div.as_ref()}.innerHTML = @{format!("- {} of type {}", kind_str, x.ty())});
             dropzone().append_child(&div);

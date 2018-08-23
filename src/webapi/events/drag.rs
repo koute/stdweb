@@ -578,7 +578,7 @@ impl DataTransferItem {
         match kind.as_ref() {
             "string" => DataTransferItemKind::String,
             "file" => DataTransferItemKind::File,
-            other => DataTransferItemKind::Other(OtherKind { name: String::from(other) }),
+            other => DataTransferItemKind::__Other(OtherKind { name: String::from(other) }),
         }
     }
 
@@ -649,7 +649,7 @@ pub enum DataTransferItemKind {
     String,
     /// If the kind of drag data is something different (e.g. dragging an <img /> tag in Firefox)
     #[doc(hidden)]
-    Other(OtherKind),
+    __Other(OtherKind),
 }
 
 impl DataTransferItemKind {
@@ -659,7 +659,7 @@ impl DataTransferItemKind {
         match self {
             DataTransferItemKind::File => "file",
             DataTransferItemKind::String => "string",
-            DataTransferItemKind::Other(other_kind) => &other_kind.name,
+            DataTransferItemKind::__Other(other_kind) => &other_kind.name,
         }
     }
 }
