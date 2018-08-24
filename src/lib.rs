@@ -391,6 +391,25 @@ pub mod web {
             GamepadConnectedEvent,
             GamepadDisconnectedEvent,
         };
+
+        pub use webapi::events::drag::{
+            IDragEvent,
+            DragRelatedEvent,
+            DragEvent,
+            DragStartEvent,
+            DragEndEvent,
+            DragEnterEvent,
+            DragLeaveEvent,
+            DragOverEvent,
+            DragExitEvent,
+            DragDropEvent,
+            DataTransfer,
+            EffectAllowed,
+            DropEffect,
+            DataTransferItemList,
+            DataTransferItem,
+            DataTransferItemKind,
+        };
     }
 }
 
@@ -437,7 +456,8 @@ pub mod traits {
         IKeyboardEvent,
         IProgressEvent,
         IMessageEvent,
-        IFocusEvent
+        IFocusEvent,
+        IDragEvent,
     };
 }
 
