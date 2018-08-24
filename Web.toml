@@ -1,8 +1,2 @@
-[target.emscripten]
-prepend-js = ["src/webcore/runtime.js", "src/webcore/runtime_emscripten.js"]
-
-[target.wasm32-unknown-unknown]
-prepend-js = ["src/webcore/runtime.js", "src/webcore/runtime_wasm.js"]
-
 [cargo-web]
 minimum-version = "0.6.8"

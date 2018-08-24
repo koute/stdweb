@@ -1,0 +1,5 @@
+[target.emscripten]
+prepend-js = ["src/runtime.js", "src/runtime_emscripten.js"]
+
+[target.wasm32-unknown-unknown]
+prepend-js = ["src/runtime.js", "src/runtime_wasm.js"]

@@ -150,6 +150,8 @@ extern crate futures_channel;
 
 #[macro_use]
 extern crate stdweb_derive;
+#[macro_use]
+extern crate stdweb_internal_runtime;
 
 extern crate discard;
 

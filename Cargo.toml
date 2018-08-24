@@ -11,8 +11,6 @@ keywords = ["web", "asmjs", "webasm", "javascript"]
 categories = ["api-bindings", "gui", "web-programming"]
 description = "A standard library for the client-side Web"
 
-build = "build.rs"
-
 [dependencies]
 discard = "1.0.3"
 serde = { version = "1", optional = true }
@@ -22,6 +20,7 @@ futures-channel = { version = "0.2.0", optional = true }
 futures-util = { version = "0.2.0", optional = true }
 
 stdweb-derive = { version = "0.4", path = "stdweb-derive" }
+stdweb-internal-runtime = { version = "0.1", path = "stdweb-internal-runtime" }
 
 [dev-dependencies]
 serde_json = "1"

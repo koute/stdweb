@@ -1,0 +1,14 @@
+[package]
+name = "stdweb-internal-runtime"
+version = "0.1.0"
+authors = ["Jan Bujak <j@exia.io>"]
+repository = "https://github.com/koute/stdweb"
+homepage = "https://github.com/koute/stdweb"
+documentation = "https://docs.rs/stdweb/*/stdweb/"
+license = "MIT/Apache-2.0"
+readme = "README.md"
+keywords = ["web", "asmjs", "webasm", "javascript"]
+categories = ["api-bindings", "gui", "web-programming"]
+description = "Internal runtime for the `stdweb` crate"
+
+build = "build.rs"
