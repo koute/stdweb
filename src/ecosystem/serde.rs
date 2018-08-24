@@ -1242,6 +1242,17 @@ impl< 'de, T: Deserialize< 'de > > TryFrom< Value > for Serde< T > {
     }
 }
 
+impl< 'de, T: Deserialize< 'de > > TryFrom< Value > for Option< Serde< T > > {
+    type Error = ConversionError;
+    #[inline]
+    fn try_from( value: Value ) -> Result< Self, Self::Error > {
+        match value {
+            Value::Undefined | Value::Null => Ok( None ),
+            value => value.try_into().map( Some )
+        }
+    }
+}
+
 __js_serializable_boilerplate!( impl< T > for Serde< T > where T: Serialize );
 
 #[cfg(test)]
@@ -1491,6 +1502,24 @@ mod tests {
         let structure: Serde< Structure > = value.try_into().unwrap();
         assert_eq!( structure.0.number, 123 );
         assert_eq!( structure.0.string, "Hello!" );
+    }
+
+    #[test]
+    fn deserialization_into_option_through_newtype() {
+        let value = js! {
+            return {
+                number: 123,
+                string: "Hello!"
+            };
+        };
+
+        let structure: Option< Serde< Structure > > = value.try_into().unwrap();
+        let structure = structure.unwrap();
+        assert_eq!( structure.0.number, 123 );
+        assert_eq!( structure.0.string, "Hello!" );
+
+        let structure: Option< Serde< Structure > > = Value::Null.try_into().unwrap();
+        assert!( structure.is_none() );
     }
 
     #[test]
