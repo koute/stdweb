@@ -19,9 +19,8 @@ a high degree of interoperability between Rust and JavaScript.
 ## Patrons
 
 This software was brought to you thanks to these wonderful people:
-  * Daniel Norman
+  * Eduard Knyshov
   * Anselm Eickhoff
-  * Edward Knyshov
   * Ferran Pujol Camins
   * Johan Andersson
   * Stephen Sugden
