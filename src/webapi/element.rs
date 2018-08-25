@@ -1,6 +1,6 @@
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
-use webapi::dom_exception::{InvalidCharacterError, InvalidPointerId};
+use webapi::dom_exception::{InvalidCharacterError, InvalidPointerId, SyntaxError};
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
 use webapi::token_list::TokenList;
@@ -163,7 +163,45 @@ pub trait IElement: INode + IParentNode + IChildNode {
     fn has_pointer_capture( &self, pointer_id: i32 ) -> bool {
         js!( return @{self.as_ref()}.hasPointerCapture( @{pointer_id} ); ).try_into().unwrap()
     }
+
+    /// Insert nodes from HTML fragment into specified position.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML)
+    fn insert_adjacent_html( &self, position: &str, html: &str ) -> Result<(), SyntaxError> {
+        js_try!( @(no_return)
+            @{self.as_ref()}.insertAdjacentHTML( @{position}, @{html} );
+        ).unwrap()
+    }
+
+    /// Insert nodes from HTML fragment before element.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML)
+    fn insert_html_before_begin( &self, html: &str ) -> Result<(), SyntaxError> {
+        self.insert_adjacent_html("beforebegin", html)
+    }
+
+    /// Insert nodes from HTML fragment as the first children of the element.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML)
+    fn insert_html_after_begin( &self, html: &str ) -> Result<(), SyntaxError> {
+        self.insert_adjacent_html("afterbegin", html)
+    }
+
+    /// Insert nodes from HTML fragment as the last children of the element.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML)
+    fn insert_html_before_end( &self, html: &str ) -> Result<(), SyntaxError> {
+        self.insert_adjacent_html("beforeend", html)
+    }
+
+    /// Insert nodes from HTML fragment after element.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML)
+    fn insert_html_after_end( &self, html: &str ) -> Result<(), SyntaxError> {
+        self.insert_adjacent_html("afterend", html)
+    }
 }
+
 
 /// A reference to a JavaScript object which implements the [IElement](trait.IElement.html)
 /// interface.
@@ -181,3 +219,40 @@ impl IElement for Element {}
 
 impl< T: IElement > IParentNode for T {}
 impl< T: IElement > IChildNode for T {}
+
+#[cfg(all(test, feature = "web_test"))]
+mod tests {
+    use super::*;
+    use webapi::document::document;
+
+    #[test]
+    fn insert_adjacent_html() {
+        let root = document().create_element("div").unwrap();
+        let child = document().create_element("span").unwrap();
+        child.set_text_content("child");
+        root.append_child(&child);
+
+        child.insert_html_before_begin(" <button>before begin</button> foo ").unwrap();
+        child.insert_html_after_begin("<i>afterbegin").unwrap();
+        child.insert_html_before_end("<h1> Before end</h1>").unwrap();
+        child.insert_html_after_end("after end ").unwrap();
+
+        let html = js!(return @{root}.innerHTML);
+        assert_eq!(html, " <button>before begin</button> foo <span><i>afterbegin</i>child<h1> Before end</h1></span>after end ");
+    }
+
+    #[test]
+    fn insert_adjacent_html_empty() {
+        let root = document().create_element("div").unwrap();
+        root.insert_html_after_begin("").unwrap();
+
+        let html = js!(return @{root}.innerHTML);
+        assert_eq!(html, "");
+    }
+
+    #[test]
+    fn insert_adjacent_html_invalid_position() {
+        let root = document().create_element("div").unwrap();
+        assert!(root.insert_adjacent_html("foobar", "foo").is_err());
+    }
+}
