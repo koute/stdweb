@@ -192,6 +192,28 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
 [WebAssembly]: https://en.wikipedia.org/wiki/WebAssembly
 
 ## Changelog
+   * `0.4.9`
+      * Performance improvements; serialization through serde is now twice as fast
+      * New events:
+        * `ScrollEvent`
+        * `DragRelatedEvent`
+        * `DragEvent`
+        * `DragStartEvent`
+        * `DragEndEvent`
+        * `DragEnterEvent`
+        * `DragLeaveEvent`
+        * `DragOverEvent`
+        * `DragExitEvent`
+        * `DragDropEvent`
+      * New types:
+        * `DataTransfer`
+        * `EffectAllowed`
+        * `DropEffect`
+        * `DataTransferItemList`
+        * `DataTransferItem`
+        * `DataTransferItemKind`
+        * `IDragEvent`
+      * `Value`s can now be converted to `Option< Serde< T > >` with `try_into`
    * `0.4.8`
       * Fixed compilation on the newest nightly when targeting `wasm32-unknown-unknown`
       * New events:
