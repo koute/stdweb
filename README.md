@@ -214,6 +214,14 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
         * `DataTransferItemKind`
         * `IDragEvent`
       * `Value`s can now be converted to `Option< Serde< T > >` with `try_into`
+      * Deserialization of numbers through serde now works in the majority of cases
+        allowing types other than `i32` and `f64` to be used
+      * All of the events are now more strongly-typed
+          * Previously in was possible to deserialize e.g. a `keyup` event
+            as a `KeyDownEvent` since only the event's JS type was checked
+            and both `keyup` and `keydown` share the same JS type (`KeyboardEvent`).
+            From now on the `type` field of the event is also checked, so
+            such conversions are not allowed anymore.
    * `0.4.8`
       * Fixed compilation on the newest nightly when targeting `wasm32-unknown-unknown`
       * New events:
