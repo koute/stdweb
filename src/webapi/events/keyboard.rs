@@ -1,6 +1,6 @@
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
-use webapi::event::{IEvent, Event, ConcreteEvent};
+use webapi::event::{IEvent, Event};
 
 // Used by KeyboardEvent and MouseEvent to get the state of a modifier key.
 pub(crate) fn get_event_modifier_state< T: IEvent >( event: &T, key: ModifierKey ) -> bool {
@@ -208,15 +208,13 @@ impl IKeyboardEvent for KeyboardEvent {}
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/keypress)
 // https://w3c.github.io/uievents/#keypress
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "KeyboardEvent")] // TODO: Better type check.
+#[reference(instance_of = "KeyboardEvent")]
+#[reference(event = "keypress")]
 #[reference(subclass_of(Event, KeyboardEvent))]
 pub struct KeyPressEvent( Reference );
 
 impl IEvent for KeyPressEvent {}
 impl IKeyboardEvent for KeyPressEvent {}
-impl ConcreteEvent for KeyPressEvent {
-    const EVENT_TYPE: &'static str = "keypress";
-}
 
 /// The `KeyDownEvent` is fired when a key is pressed down.
 /// Unlike the `KeyPressEvent` event it's also fired for keys which
@@ -225,34 +223,31 @@ impl ConcreteEvent for KeyPressEvent {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/keydown)
 // https://w3c.github.io/uievents/#event-type-keydown
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "KeyboardEvent")] // TODO: Better type check.
+#[reference(instance_of = "KeyboardEvent")]
+#[reference(event = "keydown")]
 #[reference(subclass_of(Event, KeyboardEvent))]
 pub struct KeyDownEvent( Reference );
 
 impl IEvent for KeyDownEvent {}
 impl IKeyboardEvent for KeyDownEvent {}
-impl ConcreteEvent for KeyDownEvent {
-    const EVENT_TYPE: &'static str = "keydown";
-}
 
 /// The `KeyUpEvent` is fired when a key is released.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/keyup)
 // https://w3c.github.io/uievents/#event-type-keyup
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "KeyboardEvent")] // TODO: Better type check.
+#[reference(instance_of = "KeyboardEvent")]
+#[reference(event = "keyup")]
 #[reference(subclass_of(Event, KeyboardEvent))]
 pub struct KeyUpEvent( Reference );
 
 impl IEvent for KeyUpEvent {}
 impl IKeyboardEvent for KeyUpEvent {}
-impl ConcreteEvent for KeyUpEvent {
-    const EVENT_TYPE: &'static str = "keyup";
-}
 
 #[cfg(all(test, feature = "web_test"))]
 mod tests {
     use super::*;
+    use webapi::event::ConcreteEvent;
 
     #[test]
     fn test_keyboard_event() {
@@ -292,5 +287,18 @@ mod tests {
             return new KeyboardEvent( @{KeyPressEvent::EVENT_TYPE} );
         ).try_into().unwrap();
         assert_eq!( event.event_type(), KeyPressEvent::EVENT_TYPE );
+    }
+
+    #[test]
+    fn test_keydown_event_is_only_constructible_from_a_keydown_event() {
+        let event: Option< KeyDownEvent > = js!(
+            return new KeyboardEvent( "keydown" );
+        ).try_into().ok();
+        assert!( event.is_some() );
+
+        let event: Option< KeyDownEvent > = js!(
+            return new KeyboardEvent( "keyup" );
+        ).try_into().ok();
+        assert!( event.is_none() );
     }
 }

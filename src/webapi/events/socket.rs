@@ -5,14 +5,15 @@ use webcore::try_from::{TryFrom, TryInto};
 use webapi::blob::Blob;
 use webapi::array_buffer::ArrayBuffer;
 use webapi::web_socket::SocketCloseCode;
-use webapi::event::{IEvent, Event, ConcreteEvent};
+use webapi::event::{IEvent, Event};
 
 /// A SocketCloseEvent is sent to clients using WebSockets when the connection is closed.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/close)
 // https://html.spec.whatwg.org/multipage/web-sockets.html#closeevent
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "CloseEvent")] // TODO: Better type check.
+#[reference(instance_of = "CloseEvent")]
+#[reference(event = "close")]
 #[reference(subclass_of(Event))]
 pub struct SocketCloseEvent( Reference );
 
@@ -52,9 +53,6 @@ impl SocketCloseEvent {
 }
 
 impl IEvent for SocketCloseEvent {}
-impl ConcreteEvent for SocketCloseEvent {
-    const EVENT_TYPE: &'static str = "close";
-}
 
 /// The error event is fired when an error occurred; the exact circumstances vary,
 /// events by this name are used from a variety of APIs.
@@ -63,14 +61,12 @@ impl ConcreteEvent for SocketCloseEvent {
 // https://html.spec.whatwg.org/#event-error
 // https://html.spec.whatwg.org/multipage/web-sockets.html#handler-websocket-onerror
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "Event")] // TODO: Better type check.
+#[reference(instance_of = "Event")]
+#[reference(event = "error")]
 #[reference(subclass_of(Event))]
 pub struct SocketErrorEvent( Reference );
 
 impl IEvent for SocketErrorEvent {}
-impl ConcreteEvent for SocketErrorEvent {
-    const EVENT_TYPE: &'static str = "error";
-}
 
 /// An open event informs the target that a data connection, has been established.
 ///
@@ -78,14 +74,12 @@ impl ConcreteEvent for SocketErrorEvent {
 // https://html.spec.whatwg.org/#event-open
 // https://html.spec.whatwg.org/multipage/web-sockets.html#handler-websocket-onopen
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "Event")] // TODO: Better type check.
+#[reference(instance_of = "Event")]
+#[reference(event = "open")]
 #[reference(subclass_of(Event))]
 pub struct SocketOpenEvent( Reference );
 
 impl IEvent for SocketOpenEvent {}
-impl ConcreteEvent for SocketOpenEvent {
-    const EVENT_TYPE: &'static str = "open";
-}
 
 /// Represents the types of data which can be received on a web socket. Messages
 /// are transmitted tagged as either binary or text: text messages are always
@@ -210,6 +204,7 @@ pub trait IMessageEvent: IEvent where <Self::Data as TryFrom<Value>>::Error: Deb
 // https://html.spec.whatwg.org/#event-message
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "MessageEvent")]
+#[reference(event = "message")]
 #[reference(subclass_of(Event))]
 pub struct SocketMessageEvent( Reference );
 
@@ -219,13 +214,11 @@ impl IMessageEvent for SocketMessageEvent {
 }
 
 impl IEvent for SocketMessageEvent {}
-impl ConcreteEvent for SocketMessageEvent {
-    const EVENT_TYPE: &'static str = "message";
-}
 
 #[cfg(all(test, feature = "web_test"))]
 mod tests {
     use super::*;
+    use webapi::event::ConcreteEvent;
 
     #[test]
     fn test_close_event() {

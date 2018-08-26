@@ -1,6 +1,6 @@
 use webcore::value::{Reference, Value};
 use webcore::try_from::TryInto;
-use webapi::event::{IEvent, Event, ConcreteEvent};
+use webapi::event::{IEvent, Event};
 
 /// The `HashChangeEvent` is fired when the fragment
 /// identifier of the URL has changed (the part of the URL
@@ -11,13 +11,11 @@ use webapi::event::{IEvent, Event, ConcreteEvent};
 // https://html.spec.whatwg.org/#hashchangeevent
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "HashChangeEvent")]
+#[reference(event = "hashchange")]
 #[reference(subclass_of(Event))]
 pub struct HashChangeEvent( Reference );
 
 impl IEvent for HashChangeEvent {}
-impl ConcreteEvent for HashChangeEvent {
-    const EVENT_TYPE: &'static str = "hashchange";
-}
 
 impl HashChangeEvent {
     /// The previous URL from which the window was navigated.
@@ -61,7 +59,8 @@ impl HashChangeEvent {
 // https://html.spec.whatwg.org/#event-popstate
 // https://html.spec.whatwg.org/#popstateevent
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "Event")] // TODO: Better type check.
+#[reference(instance_of = "Event")]
+#[reference(event = "popstate")]
 #[reference(subclass_of(Event))]
 pub struct PopStateEvent(Reference);
 
@@ -83,13 +82,10 @@ impl PopStateEvent {
 
 impl IEvent for PopStateEvent {}
 
-impl ConcreteEvent for PopStateEvent {
-    const EVENT_TYPE: &'static str = "popstate";
-}
-
 #[cfg(all(test, feature = "web_test"))]
 mod tests {
     use super::*;
+    use webapi::event::ConcreteEvent;
 
     #[test]
     fn test_hash_change_event() {

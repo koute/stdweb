@@ -1,7 +1,7 @@
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
 use webapi::event_target::EventTarget;
-use webapi::event::{IEvent, Event, ConcreteEvent};
+use webapi::event::{IEvent, Event};
 
 /// The `IFocusEvent` interface represents focus-related
 /// events.
@@ -40,15 +40,13 @@ impl IFocusEvent for FocusRelatedEvent {}
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/focus)
 // https://w3c.github.io/uievents/#event-type-focus
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "FocusEvent")] // TODO: Better type check.
+#[reference(instance_of = "FocusEvent")]
+#[reference(event = "focus")]
 #[reference(subclass_of(Event, FocusRelatedEvent))]
 pub struct FocusEvent( Reference );
 
 impl IEvent for FocusEvent {}
 impl IFocusEvent for FocusEvent {}
-impl ConcreteEvent for FocusEvent {
-    const EVENT_TYPE: &'static str = "focus";
-}
 
 /// The `BlurEvent` is fired when an element has lost focus. The main difference
 /// between this event and focusout is that only the latter bubbles.
@@ -56,19 +54,18 @@ impl ConcreteEvent for FocusEvent {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/blur)
 // https://w3c.github.io/uievents/#event-type-blur
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "FocusEvent")] // TODO: Better type check.
+#[reference(instance_of = "FocusEvent")]
+#[reference(event = "blur")]
 #[reference(subclass_of(Event, FocusRelatedEvent))]
 pub struct BlurEvent( Reference );
 
 impl IEvent for BlurEvent {}
 impl IFocusEvent for BlurEvent {}
-impl ConcreteEvent for BlurEvent {
-    const EVENT_TYPE: &'static str = "blur";
-}
 
 #[cfg(all(test, feature = "web_test"))]
 mod tests {
     use super::*;
+    use webapi::event::ConcreteEvent;
 
     #[test]
     fn test_focus_event() {

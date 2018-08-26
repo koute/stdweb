@@ -1,6 +1,6 @@
 #[cfg(feature = "futures-support")]
 use futures_channel::oneshot;
-use webapi::event::{IEvent, IUiEvent, UiEvent, Event, ConcreteEvent};
+use webapi::event::{IEvent, IUiEvent, UiEvent, Event};
 use webapi::events::mouse::{IMouseEvent, MouseEvent};
 use webapi::file::File;
 use webcore::once::Once;
@@ -57,6 +57,7 @@ impl IDragEvent for DragRelatedEvent {}
 // https://www.w3.org/TR/html51/editing.html#eventdef-global-drag
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DragEvent")]
+#[reference(event = "drag")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, DragRelatedEvent))]
 pub struct DragEvent(Reference);
 
@@ -68,16 +69,13 @@ impl IMouseEvent for DragEvent {}
 
 impl IDragEvent for DragEvent {}
 
-impl ConcreteEvent for DragEvent {
-    const EVENT_TYPE: &'static str = "drag";
-}
-
 /// The dragstart event is fired when the user starts dragging an element or text selection.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/dragstart)
 // https://www.w3.org/TR/html51/editing.html#eventdef-global-dragstart
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DragEvent")]
+#[reference(event = "dragstart")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, DragRelatedEvent))]
 pub struct DragStartEvent(Reference);
 
@@ -89,16 +87,13 @@ impl IMouseEvent for DragStartEvent {}
 
 impl IDragEvent for DragStartEvent {}
 
-impl ConcreteEvent for DragStartEvent {
-    const EVENT_TYPE: &'static str = "dragstart";
-}
-
 /// The dragenter event is fired when a dragged element or text selection enters a valid drop target.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/dragenter)
 // https://www.w3.org/TR/html51/editing.html#eventdef-global-dragenter
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DragEvent")]
+#[reference(event = "dragenter")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, DragRelatedEvent))]
 pub struct DragEnterEvent(Reference);
 
@@ -110,10 +105,6 @@ impl IMouseEvent for DragEnterEvent {}
 
 impl IDragEvent for DragEnterEvent {}
 
-impl ConcreteEvent for DragEnterEvent {
-    const EVENT_TYPE: &'static str = "dragenter";
-}
-
 /// The dragexit event is fired when an element is no longer the drag operation's immediate
 /// selection target.
 ///
@@ -121,6 +112,7 @@ impl ConcreteEvent for DragEnterEvent {
 // https://www.w3.org/TR/html51/editing.html#eventdef-global-dragexit
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DragEvent")]
+#[reference(event = "dragexit")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, DragRelatedEvent))]
 pub struct DragExitEvent(Reference);
 
@@ -132,16 +124,13 @@ impl IMouseEvent for DragExitEvent {}
 
 impl IDragEvent for DragExitEvent {}
 
-impl ConcreteEvent for DragExitEvent {
-    const EVENT_TYPE: &'static str = "dragexit";
-}
-
 /// The dragleave event is fired when a dragged element or text selection leaves a valid drop target.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/dragleave)
 // https://www.w3.org/TR/html51/editing.html#eventdef-global-dragleave
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DragEvent")]
+#[reference(event = "dragleave")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, DragRelatedEvent))]
 pub struct DragLeaveEvent(Reference);
 
@@ -153,10 +142,6 @@ impl IMouseEvent for DragLeaveEvent {}
 
 impl IDragEvent for DragLeaveEvent {}
 
-impl ConcreteEvent for DragLeaveEvent {
-    const EVENT_TYPE: &'static str = "dragleave";
-}
-
 /// The dragover event is fired when an element or text selection is being dragged over a valid drop
 /// target (every few hundred milliseconds).
 ///
@@ -164,6 +149,7 @@ impl ConcreteEvent for DragLeaveEvent {
 // https://www.w3.org/TR/html51/editing.html#eventdef-global-dragover
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DragEvent")]
+#[reference(event = "dragover")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, DragRelatedEvent))]
 pub struct DragOverEvent(Reference);
 
@@ -175,16 +161,13 @@ impl IMouseEvent for DragOverEvent {}
 
 impl IDragEvent for DragOverEvent {}
 
-impl ConcreteEvent for DragOverEvent {
-    const EVENT_TYPE: &'static str = "dragover";
-}
-
 /// The drop event is fired when an element or text selection is dropped on a valid drop target.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/drop)
 // https://www.w3.org/TR/html51/editing.html#eventdef-global-drop
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DragEvent")]
+#[reference(event = "drop")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, DragRelatedEvent))]
 pub struct DragDropEvent(Reference);
 
@@ -196,10 +179,6 @@ impl IMouseEvent for DragDropEvent {}
 
 impl IDragEvent for DragDropEvent {}
 
-impl ConcreteEvent for DragDropEvent {
-    const EVENT_TYPE: &'static str = "drop";
-}
-
 /// The dragend event is fired when a drag operation is being ended (by releasing a mouse button or
 /// hitting the escape key).
 ///
@@ -207,6 +186,7 @@ impl ConcreteEvent for DragDropEvent {
 // https://www.w3.org/TR/html51/editing.html#eventdef-global-dragend
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "DragEvent")]
+#[reference(event = "dragend")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, DragRelatedEvent))]
 pub struct DragEndEvent(Reference);
 
@@ -217,10 +197,6 @@ impl IUiEvent for DragEndEvent {}
 impl IMouseEvent for DragEndEvent {}
 
 impl IDragEvent for DragEndEvent {}
-
-impl ConcreteEvent for DragEndEvent {
-    const EVENT_TYPE: &'static str = "dragend";
-}
 
 /// The DataTransfer object is used to hold the data that is being dragged during a drag and drop
 /// operation.
@@ -672,6 +648,7 @@ pub struct OtherKind {
 #[cfg(all(test, feature = "web_test"))]
 mod tests {
     use super::*;
+    use webapi::event::ConcreteEvent;
 
     #[test]
     fn test_drag_event() {
