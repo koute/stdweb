@@ -430,6 +430,7 @@ pub mod unstable {
 ///
 /// You should **only** import its contents through a wildcard, e.g.: `use stdweb::traits::*`.
 pub mod traits {
+    #[doc(hidden)]
     pub use super::web::{
         // Real interfaces.
         IEventTarget,
@@ -445,11 +446,13 @@ pub mod traits {
         IChildNode
     };
 
+    #[doc(hidden)]
     pub use super::web::error::{
         IDomException,
         IError
     };
 
+    #[doc(hidden)]
     pub use super::web::event::{
         IEvent,
         IUiEvent,
