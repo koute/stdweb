@@ -167,9 +167,10 @@ pub trait IElement: INode + IParentNode + IChildNode {
     /// Insert nodes from HTML fragment into specified position.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML)
-    fn insert_adjacent_html( &self, position: &str, html: &str ) -> Result<(), SyntaxError> {
+    // https://dom.spec.whatwg.org/#dom-element-insertadjacentelement
+    fn insert_adjacent_html( &self, position: &InsertPosition, html: &str ) -> Result<(), SyntaxError> {
         js_try!( @(no_return)
-            @{self.as_ref()}.insertAdjacentHTML( @{position}, @{html} );
+            @{self.as_ref()}.insertAdjacentHTML( @{position.keyword()}, @{html} );
         ).unwrap()
     }
 
@@ -177,28 +178,28 @@ pub trait IElement: INode + IParentNode + IChildNode {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML)
     fn insert_html_before_begin( &self, html: &str ) -> Result<(), SyntaxError> {
-        self.insert_adjacent_html("beforebegin", html)
+        self.insert_adjacent_html(&InsertPosition::BeforeBegin, html)
     }
 
     /// Insert nodes from HTML fragment as the first children of the element.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML)
     fn insert_html_after_begin( &self, html: &str ) -> Result<(), SyntaxError> {
-        self.insert_adjacent_html("afterbegin", html)
+        self.insert_adjacent_html(&InsertPosition::AfterBegin, html)
     }
 
     /// Insert nodes from HTML fragment as the last children of the element.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML)
     fn insert_html_before_end( &self, html: &str ) -> Result<(), SyntaxError> {
-        self.insert_adjacent_html("beforeend", html)
+        self.insert_adjacent_html(&InsertPosition::BeforeEnd, html)
     }
 
     /// Insert nodes from HTML fragment after element.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML)
     fn insert_html_after_end( &self, html: &str ) -> Result<(), SyntaxError> {
-        self.insert_adjacent_html("afterend", html)
+        self.insert_adjacent_html(&InsertPosition::AfterEnd, html)
     }
 }
 
@@ -219,6 +220,30 @@ impl IElement for Element {}
 
 impl< T: IElement > IParentNode for T {}
 impl< T: IElement > IChildNode for T {}
+
+
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+pub enum InsertPosition {
+    /// Insert into the parent directly before the reference element.
+    BeforeBegin,
+    /// Insert at the start of the reference element.
+    AfterBegin,
+    /// Insert at the end of the reference element.
+    BeforeEnd,
+    /// Insert into the parent directly after the reference element.
+    AfterEnd,
+}
+
+impl InsertPosition {
+	fn keyword(&self) -> &str {
+		match *self {
+			InsertPosition::BeforeBegin => "beforebegin",
+			InsertPosition::AfterBegin => "afterbegin",
+			InsertPosition::BeforeEnd => "beforeend",
+			InsertPosition::AfterEnd => "afterend",
+		}
+	}
+}
 
 #[cfg(all(test, feature = "web_test"))]
 mod tests {
@@ -248,11 +273,5 @@ mod tests {
 
         let html = js!(return @{root}.innerHTML);
         assert_eq!(html, "");
-    }
-
-    #[test]
-    fn insert_adjacent_html_invalid_position() {
-        let root = document().create_element("div").unwrap();
-        assert!(root.insert_adjacent_html("foobar", "foo").is_err());
     }
 }
