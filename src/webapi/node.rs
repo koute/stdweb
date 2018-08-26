@@ -875,9 +875,7 @@ mod tests {
 
     #[test]
     fn from_html_trimmed() {
-        let node = Node::from_html("
-          <div>Some text, horray!</div>
-        ").unwrap();
+        let node = Node::from_html("\n<div>Some text, horray!</div>\n").unwrap();
         let text = node.first_child().unwrap();
 
         assert_eq!(node.node_name(), "DIV");
