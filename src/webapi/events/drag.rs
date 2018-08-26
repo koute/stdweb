@@ -675,7 +675,7 @@ mod tests {
 
     #[test]
     fn test_drag_event() {
-        let event: DragEvent = js!(
+        let event: DragRelatedEvent = js!(
             return new DragEvent(
                 @{DragStartEvent::EVENT_TYPE},
                 {
