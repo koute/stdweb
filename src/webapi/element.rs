@@ -1,11 +1,12 @@
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
-use webapi::dom_exception::{InvalidCharacterError, InvalidPointerId, SyntaxError};
+use webapi::dom_exception::{InvalidCharacterError, InvalidPointerId, NoModificationAllowedError, SyntaxError};
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
 use webapi::token_list::TokenList;
 use webapi::parent_node::IParentNode;
 use webapi::child_node::IChildNode;
+use webcore::try_from::TryFrom;
 
 /// The `IElement` interface represents an object of a [Document](struct.Document.html).
 /// This interface describes methods and properties common to all
@@ -168,7 +169,7 @@ pub trait IElement: INode + IParentNode + IChildNode {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML)
     // https://dom.spec.whatwg.org/#dom-element-insertadjacentelement
-    fn insert_adjacent_html( &self, position: &InsertPosition, html: &str ) -> Result<(), SyntaxError> {
+    fn insert_adjacent_html( &self, position: &InsertPosition, html: &str ) -> Result<(), InsertAdjacentError> {
         js_try!( @(no_return)
             @{self.as_ref()}.insertAdjacentHTML( @{position.keyword()}, @{html} );
         ).unwrap()
@@ -177,28 +178,28 @@ pub trait IElement: INode + IParentNode + IChildNode {
     /// Insert nodes from HTML fragment before element.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML)
-    fn insert_html_before_begin( &self, html: &str ) -> Result<(), SyntaxError> {
+    fn insert_html_before_begin( &self, html: &str ) -> Result<(), InsertAdjacentError> {
         self.insert_adjacent_html(&InsertPosition::BeforeBegin, html)
     }
 
     /// Insert nodes from HTML fragment as the first children of the element.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML)
-    fn insert_html_after_begin( &self, html: &str ) -> Result<(), SyntaxError> {
+    fn insert_html_after_begin( &self, html: &str ) -> Result<(), InsertAdjacentError> {
         self.insert_adjacent_html(&InsertPosition::AfterBegin, html)
     }
 
     /// Insert nodes from HTML fragment as the last children of the element.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML)
-    fn insert_html_before_end( &self, html: &str ) -> Result<(), SyntaxError> {
+    fn insert_html_before_end( &self, html: &str ) -> Result<(), InsertAdjacentError> {
         self.insert_adjacent_html(&InsertPosition::BeforeEnd, html)
     }
 
     /// Insert nodes from HTML fragment after element.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML)
-    fn insert_html_after_end( &self, html: &str ) -> Result<(), SyntaxError> {
+    fn insert_html_after_end( &self, html: &str ) -> Result<(), InsertAdjacentError> {
         self.insert_adjacent_html(&InsertPosition::AfterEnd, html)
     }
 }
@@ -232,6 +233,12 @@ pub enum InsertPosition {
     BeforeEnd,
     /// Insert into the parent directly after the reference element.
     AfterEnd,
+}
+
+/// Errors thrown by `Element::insert_adjacent_html`.
+error_enum_boilerplate! {
+    InsertAdjacentError,
+    NoModificationAllowedError, SyntaxError
 }
 
 impl InsertPosition {
@@ -273,5 +280,14 @@ mod tests {
 
         let html = js!(return @{root}.innerHTML);
         assert_eq!(html, "");
+    }
+
+    #[test]
+    fn insert_adjacent_html_not_modifiable() {
+        let doc = document().document_element().unwrap();
+        assert!(match doc.insert_html_before_begin("foobar").unwrap_err() {
+            InsertAdjacentError::NoModificationAllowedError(_) => true,
+            _ => false,
+        });
     }
 }

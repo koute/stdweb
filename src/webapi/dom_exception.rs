@@ -44,6 +44,17 @@ impl IDomException for InvalidAccessError {}
 
 error_boilerplate! { InvalidAccessError, name = "InvalidAccessError" }
 
+/// Occurs when the object can not be modified.
+// NoModificationAllowedError
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(subclass_of(Error, DomException))]
+pub struct NoModificationAllowedError( Reference );
+
+impl IError for NoModificationAllowedError {}
+impl IDomException for NoModificationAllowedError {}
+
+error_boilerplate! { NoModificationAllowedError, name = "NoModificationAllowedError" }
+
 /// Occurs when the specified object cannot be found.
 // https://heycam.github.io/webidl/#notfounderror
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
