@@ -19,7 +19,7 @@ futures-core = { version = "0.2.0", optional = true }
 futures-channel = { version = "0.2.0", optional = true }
 futures-util = { version = "0.2.0", optional = true }
 
-stdweb-derive = { version = "0.4", path = "stdweb-derive" }
+stdweb-derive = { version = "= 0.5.0", path = "stdweb-derive" }
 stdweb-internal-runtime = { version = "0.1", path = "stdweb-internal-runtime" }
 
 [dev-dependencies]
