@@ -885,6 +885,10 @@ mod tests {
         assert_eq!(text.node_value().unwrap(), "Some text, horray!");
         assert!(text.first_child().is_none());
 
+        let text = Node::from_html(" Spaced text\n ").unwrap();
+        assert_eq!(text.node_name(), "#text");
+        assert_eq!(text.node_value().unwrap(), " Spaced text\n ");
+
         let err = Node::from_html("text <div>bar</div>").unwrap_err();
         assert!(format!("{}", err).contains("requires a single root node"));
 
