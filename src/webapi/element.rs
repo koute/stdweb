@@ -168,10 +168,10 @@ pub trait IElement: INode + IParentNode + IChildNode {
     /// Insert nodes from HTML fragment into specified position.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML)
-    // https://dom.spec.whatwg.org/#dom-element-insertadjacentelement
+    // https://dom.spec.whatwg.org/#ref-for-dom-element-insertadjacentelement
     fn insert_adjacent_html( &self, position: &InsertPosition, html: &str ) -> Result<(), InsertAdjacentError> {
         js_try!( @(no_return)
-            @{self.as_ref()}.insertAdjacentHTML( @{position.keyword()}, @{html} );
+            @{self.as_ref()}.insertAdjacentHTML( @{position.as_str()}, @{html} );
         ).unwrap()
     }
 
@@ -242,14 +242,14 @@ error_enum_boilerplate! {
 }
 
 impl InsertPosition {
-	fn keyword(&self) -> &str {
-		match *self {
-			InsertPosition::BeforeBegin => "beforebegin",
-			InsertPosition::AfterBegin => "afterbegin",
-			InsertPosition::BeforeEnd => "beforeend",
-			InsertPosition::AfterEnd => "afterend",
-		}
-	}
+    fn as_str(&self) -> &str {
+        match *self {
+            InsertPosition::BeforeBegin => "beforebegin",
+            InsertPosition::AfterBegin => "afterbegin",
+            InsertPosition::BeforeEnd => "beforeend",
+            InsertPosition::AfterEnd => "afterend",
+        }
+    }
 }
 
 #[cfg(all(test, feature = "web_test"))]

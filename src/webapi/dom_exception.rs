@@ -45,7 +45,7 @@ impl IDomException for InvalidAccessError {}
 error_boilerplate! { InvalidAccessError, name = "InvalidAccessError" }
 
 /// Occurs when the object can not be modified.
-// NoModificationAllowedError
+// https://heycam.github.io/webidl/#nomodificationallowederror
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(subclass_of(Error, DomException))]
 pub struct NoModificationAllowedError( Reference );
