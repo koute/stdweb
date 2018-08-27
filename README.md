@@ -192,7 +192,7 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
 [WebAssembly]: https://en.wikipedia.org/wiki/WebAssembly
 
 ## Changelog
-   * `0.4.9`
+   * `stdweb 0.4.9`, `stdweb-derive 0.5.0`
       * Performance improvements; serialization through serde is now twice as fast
       * New events:
         * `ScrollEvent`
