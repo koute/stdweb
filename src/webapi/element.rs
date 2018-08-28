@@ -169,7 +169,7 @@ pub trait IElement: INode + IParentNode + IChildNode {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML)
     // https://dom.spec.whatwg.org/#ref-for-dom-element-insertadjacentelement
-    fn insert_adjacent_html( &self, position: &InsertPosition, html: &str ) -> Result<(), InsertAdjacentError> {
+    fn insert_adjacent_html( &self, position: InsertPosition, html: &str ) -> Result<(), InsertAdjacentError> {
         js_try!( @(no_return)
             @{self.as_ref()}.insertAdjacentHTML( @{position.as_str()}, @{html} );
         ).unwrap()
@@ -179,28 +179,28 @@ pub trait IElement: INode + IParentNode + IChildNode {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML)
     fn insert_html_before_begin( &self, html: &str ) -> Result<(), InsertAdjacentError> {
-        self.insert_adjacent_html(&InsertPosition::BeforeBegin, html)
+        self.insert_adjacent_html(InsertPosition::BeforeBegin, html)
     }
 
     /// Insert nodes from HTML fragment as the first children of the element.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML)
     fn insert_html_after_begin( &self, html: &str ) -> Result<(), InsertAdjacentError> {
-        self.insert_adjacent_html(&InsertPosition::AfterBegin, html)
+        self.insert_adjacent_html(InsertPosition::AfterBegin, html)
     }
 
     /// Insert nodes from HTML fragment as the last children of the element.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML)
     fn insert_html_before_end( &self, html: &str ) -> Result<(), InsertAdjacentError> {
-        self.insert_adjacent_html(&InsertPosition::BeforeEnd, html)
+        self.insert_adjacent_html(InsertPosition::BeforeEnd, html)
     }
 
     /// Insert nodes from HTML fragment after element.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML)
     fn insert_html_after_end( &self, html: &str ) -> Result<(), InsertAdjacentError> {
-        self.insert_adjacent_html(&InsertPosition::AfterEnd, html)
+        self.insert_adjacent_html(InsertPosition::AfterEnd, html)
     }
 }
 
