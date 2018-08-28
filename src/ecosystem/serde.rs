@@ -1611,4 +1611,15 @@ mod tests {
         let structure: Serde< Struct > = js!( return { number: 1535164942454 }; ).try_into().unwrap();
         assert_eq!( structure.0.number, 1535164942454 );
     }
+
+    #[test]
+    fn deserialization_of_a_very_big_number() {
+        #[derive(Deserialize, Debug)]
+        struct Struct {
+            number: u64
+        }
+
+        let structure: Serde< Struct > = js!( return { number: 9223372049167088120 }; ).try_into().unwrap();
+        assert_eq!( structure.0.number, 9223372049167087616 );
+    }
 }
