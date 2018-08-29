@@ -16,6 +16,7 @@ pub fn initialize() {
         INITIALIZED = true;
     }
 
+    #[cfg(not(feature = "docs-rs"))]
     stdweb_internal_runtime_initialize!( __js_raw_asm );
 
     if cfg!( test ) == false {

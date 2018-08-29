@@ -12,3 +12,12 @@ categories = ["api-bindings", "gui", "web-programming"]
 description = "Internal runtime for the `stdweb` crate"
 
 build = "build.rs"
+
+[features]
+default = []
+"docs-rs" = []
+
+[package.metadata.docs.rs]
+features = ["docs-rs"]
+all-features = false
+no-default-features = true
