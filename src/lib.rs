@@ -274,7 +274,8 @@ pub mod web {
             SecurityError,
             SyntaxError,
             TypeError,
-            InvalidCharacterError
+            InvalidCharacterError,
+            AbortError
         };
         pub use webapi::error::{IError, Error};
         pub use webapi::rendering_context::{AddColorStopError, DrawImageError, GetImageDataError};

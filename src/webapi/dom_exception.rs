@@ -143,6 +143,17 @@ impl IDomException for InvalidPointerId {}
 
 error_boilerplate! { InvalidPointerId, name = "InvalidPointerId" }
 
+/// Used to indicate that the operation was aborted.
+// https://heycam.github.io/webidl/#aborterror
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(subclass_of(Error, DomException))]
+pub struct AbortError( Reference );
+
+impl IError for AbortError {}
+impl IDomException for AbortError {}
+
+error_boilerplate! { AbortError, name = "AbortError" }
+
 #[cfg(all(test, feature = "web_test"))]
 mod test {
     use super::*;
