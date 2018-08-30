@@ -190,7 +190,7 @@ pub use webcore::serialization::JsSerialize;
 pub use webcore::discard::DiscardOnDrop;
 
 #[cfg(feature = "experimental_features_which_may_break_on_minor_version_bumps")]
-pub use webcore::promise::{Promise, DoneHandle};
+pub use webcore::promise::{TypedPromise, Promise, DoneHandle};
 
 #[cfg(all(
     feature = "futures-support",
