@@ -414,6 +414,18 @@ pub mod web {
             DataTransferItemKind,
         };
     }
+
+    /// APIs related to MIDI.
+    pub mod midi {
+        pub use webapi::midi::{
+            MidiOptions,
+            MidiAccess,
+            MidiPort,
+            MidiInput,
+            MidiOutput,
+            IMidiPort
+        };
+    }
 }
 
 /// A module containing stable counterparts to currently
@@ -465,6 +477,9 @@ pub mod traits {
         IFocusEvent,
         IDragEvent,
     };
+
+    #[doc(hidden)]
+    pub use super::web::midi::IMidiPort;
 }
 
 #[doc(hidden)]
