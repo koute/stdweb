@@ -713,6 +713,20 @@ macro_rules! error_enum_boilerplate {
                 stringify!($error_name)
             }
         }
+
+        impl ::webcore::serialization::JsSerialize for $error_name {
+            #[doc(hidden)]
+            #[inline]
+            fn _into_js< 'a >( &'a self ) -> ::webcore::serialization::SerializedValue< 'a > {
+                let reference: &::webcore::value::Reference = match &self {
+                    $(
+                        &$error_name::$variant( variant ) => variant.as_ref(),
+                    )+
+                };
+
+                reference._into_js()
+            }
+        }
     }
 }
 
