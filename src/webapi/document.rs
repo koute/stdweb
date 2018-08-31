@@ -22,11 +22,6 @@ use webapi::dom_exception::{InvalidCharacterError, NamespaceError};
 pub struct Document( Reference );
 
 error_enum_boilerplate! {
-    CreateElementError,
-    InvalidCharacterError
-}
-
-error_enum_boilerplate! {
     CreateElementNsError,
     InvalidCharacterError,
     NamespaceError
@@ -63,7 +58,7 @@ impl Document {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement)
     // https://dom.spec.whatwg.org/#ref-for-dom-document-createelement
-    pub fn create_element( &self, tag: &str ) -> Result< Element, CreateElementError > {
+    pub fn create_element( &self, tag: &str ) -> Result< Element, InvalidCharacterError > {
         js_try!( return @{self}.createElement( @{tag} ); ).unwrap()
     }
 
@@ -196,7 +191,7 @@ mod web_tests {
     #[test]
     fn test_create_element_invalid_character() {
         match document().create_element("-invalid tag") {
-            Err(CreateElementError::InvalidCharacterError(_)) => (),
+            Err(InvalidCharacterError{..}) => (),
             v => panic!("expected InvalidCharacterError, got {:?}", v),
         }
     }
