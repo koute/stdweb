@@ -58,6 +58,19 @@ impl Document {
         }
     }
 
+    /// Creates an element with the specified namespace URI and qualified name.
+    /// To create an element without specifying a namespace URI, use the `createElement` method.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/createElementNS)
+    // https://dom.spec.whatwg.org/#ref-for-dom-document-createelementns
+    pub fn create_element_ns( &self, namespace_uri: &str, tag: &str ) -> Result< Element, TODO > {
+        unsafe {
+            Ok( js!(
+                return @{self}.createElementNS( @{namespace_uri}, @{tag} );
+            ).into_reference_unchecked().unwrap() )
+        }
+    }
+
     /// Creates a new text node.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/createTextNode)
