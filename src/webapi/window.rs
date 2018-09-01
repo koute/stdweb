@@ -228,7 +228,7 @@ impl Window {
     /// Returns a [Selection](struct.Selection.html) object representing the range of text selected
     /// by the user or the current position of the caret.
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Window/getSelection)
-    // https://w3c.github.io/selection-api/
+    // https://w3c.github.io/selection-api/#dom-document-getselection
     pub fn get_selection(&self) -> Option<Selection> {
         unsafe {
             js!(

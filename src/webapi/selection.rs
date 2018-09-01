@@ -1,7 +1,23 @@
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
-use webapi::node::Node;
+use webapi::node::{Node, INode};
+use webapi::dom_exception::{IndexSizeError, NotFoundError, InvalidStateError};
 use private::TODO;
+
+/// Possible values are:
+///
+/// * `None`: No selection has currently been made.
+/// * `Caret`: The selection is collapsed (i.e. the caret is placed on some text, but no
+/// range has been selected).
+/// * `Range`: A range has been selected.
+///
+/// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/type)
+#[derive(Debug)]
+pub enum SelectionType {
+    None,
+    Caret,
+    Range
+}
 
 /// Represents the range of text selected by the user or the current position of the caret. To
 /// obtain a Selection object for examination or modification, call
@@ -126,40 +142,45 @@ impl Selection {
     /// * `Range`: A range has been selected.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/type)
-    pub fn selection_type(&self) -> String {
-        js! (
+    pub fn selection_type(&self) -> SelectionType {
+        let selection: String = js! (
             return @{self}.type;
-        ).try_into().unwrap()
+        ).try_into().unwrap();
+
+        match selection.as_ref() {
+            "None" => SelectionType::None,
+            "Caret" => SelectionType::Caret,
+            "Range" => SelectionType::Range,
+            _ => panic!("Selection Type invalid!"),
+        }
     }
 
     /// Returns a [Range](struct.Range.html) object representing one of the ranges currently
     /// selected.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/getRangeAt)
-    pub fn get_range_at(&self, index: u32) -> Range {
-        js! (
+    pub fn get_range_at(&self, index: u32) -> Result<Range, IndexSizeError> {
+        js_try! (
             return @{self}.getRangeAt(@{index});
-        ).try_into().unwrap()
+        ).unwrap()
     }
 
     /// Adds a [Range](struct.Range.html) to the [Selection](struct.Selection.html).
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/addRange)
-    pub fn add_range(&self, range: Range) -> Result<(), TODO> {
+    pub fn add_range(&self, range: &Range) {
         js! { @(no_return)
             @{self}.addRange(@{range});
         };
-        Ok(())
     }
 
     /// Removes a [Range](struct.Range.html) from the [Selection](struct.Selection.html).
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/removeRange)
-    pub fn remove_range(&self, range: Range) -> Result<(), TODO> {
-        js! { @(no_return)
+    pub fn remove_range(&self, range: &Range) -> Result<(), NotFoundError> {
+        js_try! ( @(no_return)
             @{self}.removeRange(@{range});
-        };
-        Ok(())
+        ).unwrap()
     }
 
     /// Removes all ranges from the [Selection](struct.Selection.html), leaving the
@@ -168,22 +189,20 @@ impl Selection {
     /// `None` and leaving nothing selected.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/removeRange)
-    pub fn remove_all_ranges(&self) -> Result<(), TODO> {
+    pub fn remove_all_ranges(&self) {
         js! { @(no_return)
             @{self}.removeAllRanges();
         };
-        Ok(())
     }
 
     /// Collapses the [Selection](struct.Selection.html) to a single point. The document is not
     /// modified. If the content is focused or editable, the caret will blink there.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/collapse)
-    pub fn collapse(&self, node: Node, offset: Option<u32>) -> Result<(), TODO> {
-        js! { @(no_return)
+    pub fn collapse<N: INode>(&self, node: &N, offset: Option<u32>) -> Result<(), IndexSizeError> {
+        js_try! ( @(no_return)
             @{self}.collapse(@{node}, @{offset});
-        };
-        Ok(())
+        ).unwrap()
     }
 
     /// Collapses the [Selection](struct.Selection.html) to the start of the first range in the
@@ -191,11 +210,10 @@ impl Selection {
     ///
     /// [(Javascript
     /// docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/collapseToStart)
-    pub fn collapse_to_start(&self) -> Result<(), TODO> {
-        js! { @(no_return)
+    pub fn collapse_to_start(&self) -> Result<(), InvalidStateError> {
+        js_try! ( @(no_return)
             @{self}.collapseToStart();
-        };
-        Ok(())
+        ).unwrap()
     }
 
     /// Collapses the [Selection](struct.Selection.html) to the end of the last range in the
@@ -203,22 +221,20 @@ impl Selection {
     ///
     /// [(Javascript
     /// docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/collapseToEnd)
-    pub fn collapse_to_end(&self) -> Result<(), TODO> {
-        js! { @(no_return)
+    pub fn collapse_to_end(&self) -> Result<(), InvalidStateError> {
+        js_try! ( @(no_return)
             @{self}.collapseToEnd();
-        };
-        Ok(())
+        ).unwrap()
     }
 
     /// Moves the focus of the selection to a specified point. The anchor of the selection does not
     /// move. The selection will be from the anchor node to the new focus regardless of direction.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/extend)
-    pub fn extend(&self, node: Node, offset: Option<u32>) -> Result<(), TODO> {
-        js! { @(no_return)
+    pub fn extend<N: INode>(&self, node: &N, offset: Option<u32>) -> Result<(), InvalidStateError> {
+        js_try! ( @(no_return)
             @{self}.extend(@{node}, @{offset});
-        };
-        Ok(())
+        ).unwrap()
     }
 
     /// Sets the selection to be a range including all or parts of the two specified
@@ -226,23 +242,21 @@ impl Selection {
     ///
     /// [(Javascript
     /// docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/setBaseAndExtent)
-    pub fn set_base_and_extent(&self, anchor_node: Node, anchor_offset: Option<u32>, focus_node: Node, focus_offset: Option<u32>) -> Result<(), TODO> {
-        js! { @(no_return)
+    pub fn set_base_and_extent<N: INode>(&self, anchor_node: &N, anchor_offset: u32, focus_node: &N, focus_offset: u32) -> Result<(), InvalidStateError> {
+        js_try! ( @(no_return)
             @{self}.setBaseAndExtent(@{anchor_node}, @{anchor_offset}, @{focus_node}, @{focus_offset});
-        };
-        Ok(())
+        )
     }
 
     /// Adds all the children of the specified [Node](struct.Node.html) to the selection. Previous
     /// selection is lost.
     ///
     /// [(Javascript
-    /// docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/select_all_children)
-    pub fn select_all_children(&self, node: Node) -> Result<(), TODO> {
+    /// docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/selectAllChildren)
+    pub fn select_all_children<N: INode>(&self, node: &N) {
         js! { @(no_return)
             @{self}.selectAllChildren(@{node});
         };
-        Ok(())
     }
 
     /// Deletes the actual text being represented by the [Selection](struct.Selection.html) from
@@ -250,18 +264,17 @@ impl Selection {
     ///
     /// [(Javascript
     /// docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/deleteFromDocument)
-    pub fn delete_from_document(&self) -> Result<(), TODO> {
+    pub fn delete_from_document(&self) {
         js! { @(no_return)
             @{self}.deleteFromDocument();
         };
-        Ok(())
     }
 
     /// Indicates if the node is part of the selection.
     ///
     /// [(Javascript
     /// docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/containsNode)
-    pub fn contains_node(&self, node: Node, allow_partial_containment: bool) -> bool {
+    pub fn contains_node<N: INode>(&self, node: &N, allow_partial_containment: bool) -> bool {
         js! (
             return @{self}.containsNode(@{node}, @{allow_partial_containment});
         ).try_into().unwrap()
@@ -297,7 +310,7 @@ impl Range {
     ///
     /// [(Javascript
     /// docs)](https://developer.mozilla.org/en-US/docs/Web/API/Range/commonAncestorContainer)
-    pub fn common_ancestor_container(&self) -> Option<Node> {
+    pub fn common_ancestor_container(&self) -> Node {
         js! (
             return @{self}.commonAncestorContainer;
         ).try_into().unwrap()
@@ -306,7 +319,7 @@ impl Range {
     /// Returns the [Node](struct.Node.html) within which the [Range](struct.Range.html) ends.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Range/endContainer)
-    pub fn end_container(&self) -> Option<Node> {
+    pub fn end_container(&self) -> Node {
         js! (
             return @{self}.endContainer;
         ).try_into().unwrap()
@@ -324,7 +337,7 @@ impl Range {
     /// Returns the [Node](struct.Node.html) within which the [Range](struct.Range.html) starts.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Range/startContainer)
-    pub fn start_container(&self) -> Option<Node> {
+    pub fn start_container(&self) -> Node {
         js! (
             return @{self}.startContainer;
         ).try_into().unwrap()

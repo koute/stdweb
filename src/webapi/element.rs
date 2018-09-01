@@ -1,6 +1,6 @@
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
-use webapi::dom_exception::{InvalidCharacterError, InvalidPointerId};
+use webapi::dom_exception::{InvalidCharacterError, InvalidPointerId, SyntaxError};
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
 use webapi::token_list::TokenList;
@@ -138,11 +138,11 @@ pub trait IElement: INode + IParentNode + IChildNode {
     /// `None`.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/closest)
-    // https://dom.spec.whatwg.org/#dom-element-closest
-    fn closest( &self, selectors: String) -> Option<Element> {
-        js!(
+    // https://dom.spec.whatwg.org/#ref-for-dom-element-closest
+    fn closest( &self, selectors: &str) -> Result<Option<Element>, SyntaxError> {
+        js_try!(
             return @{self.as_ref()}.closest(@{selectors});
-        ).try_into().unwrap()
+        ).unwrap()
     }
 
     /// Designates a specific element as the capture target of future pointer events.
@@ -193,3 +193,42 @@ impl IElement for Element {}
 
 impl< T: IElement > IParentNode for T {}
 impl< T: IElement > IChildNode for T {}
+
+#[cfg(all(test, feature = "web_test"))]
+mod tests {
+    use super::*;
+    use webapi::document::document;
+
+    fn div() -> Node {
+        js!(
+            return document.createElement("div");
+        ).try_into().unwrap()
+    }
+
+    #[test]
+    fn test_closest_finds_ancestor() {
+        let parent = div();
+        let child = div();
+        parent.append_child(&child);
+
+        assert_eq!(child.closest("div").unwrap().unwrap().as_ref(), parent.as_ref());
+    }
+
+    #[test]
+    fn test_closest_not_found() {
+        let parent = div();
+        let child = div();
+        parent.append_child(&child);
+
+        assert!(child.closest("p").unwrap().is_none());
+    }
+
+    #[test]
+    fn test_closest_syntax_error() {
+        let parent = div();
+        let child = div();
+        parent.append_child(&child);
+
+        assert!(child.closest("invalid syntax +#8$()@!(#").is_err());
+    }
+}

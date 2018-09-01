@@ -167,28 +167,4 @@ impl Document {
             @{self}.exitPointerLock();
         );
     }
-
-    /// Returns a new Range object.
-    ///
-    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/createRange)
-    pub fn create_range( &self ) -> Range {
-        unsafe {
-            js!(
-                return @{self}.createRange();
-            ).into_reference_unchecked().unwrap()
-        }
-    }
-
-    /// The caretRangeFromPoint() method of the Document interface returns a Range object for the
-    /// document fragment under the specified coordinates.
-    ///
-    /// [(Javascript
-    /// docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/caretRangeFromPoint)
-    pub fn caret_range_from_point( &self, x: f32, y: f32) -> Option< Range > {
-        unsafe {
-            js!(
-                return @{self}.createRangeFromPoint(@{x}, @{y});
-            ).into_reference_unchecked()
-        }
-    }
 }
