@@ -199,7 +199,7 @@ mod tests {
     use super::*;
     use webapi::document::document;
 
-    fn div() -> Node {
+    fn div() -> Element {
         js!(
             return document.createElement("div");
         ).try_into().unwrap()
