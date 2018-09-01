@@ -4,6 +4,7 @@ extern crate proc_macro;
 extern crate syn;
 #[macro_use]
 extern crate quote;
+extern crate proc_macro2;
 
 use proc_macro::TokenStream;
 use syn::DeriveInput;
@@ -47,12 +48,14 @@ fn get_meta_items( attr: &syn::Attribute ) -> Option< Vec< syn::NestedMeta > > {
 /// ```
 #[proc_macro_derive(ReferenceType, attributes(reference))]
 pub fn derive_reference_type( input: TokenStream ) -> TokenStream {
-    let input: DeriveInput = syn::parse( input ).unwrap();
+    let input: proc_macro2::TokenStream = input.into();
+    let input: DeriveInput = syn::parse2( input ).unwrap();
 
     let name = input.ident;
     let generics_params = &input.generics.params;
 
     let mut instance_of = None;
+    let mut event = None;
     let mut subclass_of = Vec::new();
 
     for meta_items in input.attrs.iter().filter_map( get_meta_items ) {
@@ -69,13 +72,24 @@ pub fn derive_reference_type( input: TokenStream ) -> TokenStream {
                         panic!( "The value of '#[reference(instance_of = ...)]' is not a string!" );
                     }
                 },
+                syn::NestedMeta::Meta( syn::Meta::NameValue( ref meta ) ) if meta.ident == "event" => {
+                    if event.is_some() {
+                        panic!( "Duplicate '#[reference(event)]'!" );
+                    }
+
+                    if let syn::Lit::Str( ref str ) = meta.lit {
+                        event = Some( str.value() );
+                    } else {
+                        panic!( "The value of '#[reference(event = ...)]' is not a string!" );
+                    }
+                },
                 syn::NestedMeta::Meta( syn::Meta::List( ref meta ) ) if meta.ident == "subclass_of" => {
                     for nested in &meta.nested {
                         match *nested {
                             syn::NestedMeta::Meta( ref nested ) => {
                                 match *nested {
-                                    syn::Meta::Word( ident ) => {
-                                        subclass_of.push( ident );
+                                    syn::Meta::Word( ref ident ) => {
+                                        subclass_of.push( ident.clone() );
                                     },
                                     _ => panic!( "The value of '#[reference(subclass_of(...))]' is invalid!" )
                                 }
@@ -164,22 +178,50 @@ pub fn derive_reference_type( input: TokenStream ) -> TokenStream {
             _ => {}
         }
     }
+
     let default_args = quote! { #(#default_args),* };
-    let instance_of_impl = match instance_of {
-        Some( js_name ) => {
-            quote! {
-                impl #impl_generics ::stdweb::InstanceOf for #name #ty_generics {
-                    #[inline]
-                    fn instance_of( reference: &::stdweb::Reference ) -> bool {
-                        __js_raw_asm!(
-                            concat!( "return (Module.STDWEB_PRIVATE.acquire_js_reference( $0 ) instanceof ", #js_name, ") | 0;" ),
-                            reference.as_raw()
-                        ) == 1
-                    }
+
+    let mut instance_of_code = Vec::new();
+    if let Some( js_name ) = instance_of {
+        let code = format!( "o instanceof {}", js_name );
+        instance_of_code.push( code );
+    }
+
+    if let Some( ref event_name ) = event {
+        let code = format!( "o.type === \"{}\"", event_name );
+        instance_of_code.push( code );
+    }
+
+    let instance_of_impl = if !instance_of_code.is_empty() {
+        let mut code = String::new();
+        code.push_str( "var o = Module.STDWEB_PRIVATE.acquire_js_reference( $0 );" );
+        code.push_str( "return (" );
+        code.push_str( &instance_of_code.join( " && " ) );
+        code.push_str( ") | 0;" );
+
+        quote! {
+            impl #impl_generics ::stdweb::InstanceOf for #name #ty_generics {
+                #[inline]
+                fn instance_of( reference: &::stdweb::Reference ) -> bool {
+                    __js_raw_asm!(
+                        #code,
+                        reference.as_raw()
+                    ) == 1
                 }
             }
-        },
-        None => quote! {}
+        }
+    } else {
+        quote! {}
+    };
+
+    let concrete_event_impl = if let Some( event_name ) = event {
+        quote! {
+            impl #impl_generics ::stdweb::web::event::ConcreteEvent for #name #ty_generics {
+                const EVENT_TYPE: &'static str = #event_name;
+            }
+        }
+    } else {
+        quote! {}
     };
 
     let subclass_of_impl: Vec< _ > = subclass_of.into_iter().map( |target| {
@@ -211,6 +253,7 @@ pub fn derive_reference_type( input: TokenStream ) -> TokenStream {
     let expanded = quote! {
         #(#subclass_of_impl)*
         #instance_of_impl
+        #concrete_event_impl
 
         impl #impl_generics AsRef< ::stdweb::Reference > for #name #ty_generics #where_clause {
             #[inline]

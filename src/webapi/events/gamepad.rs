@@ -1,7 +1,7 @@
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
 
-use webapi::event::{IEvent, Event, ConcreteEvent};
+use webapi::event::{IEvent, Event};
 use webapi::gamepad::Gamepad;
 
 /// A GamepadEvent is fired on the window object, when a gamepad is connected or disconnected to the system.
@@ -38,14 +38,12 @@ impl IGamepadEvent for GamepadEvent {}
 // https://w3c.github.io/gamepad/#event-gamepadconnected
 #[derive(Clone, Debug, Eq, PartialEq, ReferenceType)]
 #[reference(instance_of = "GamepadEvent")]
+#[reference(event = "gamepadconnected")]
 #[reference(subclass_of(Event, GamepadEvent))]
 pub struct GamepadConnectedEvent( Reference );
 
 impl IEvent for GamepadConnectedEvent {}
 impl IGamepadEvent for GamepadConnectedEvent {}
-impl ConcreteEvent for GamepadConnectedEvent {
-    const EVENT_TYPE: &'static str = "gamepadconnected";
-}
 
 /// The `GamepadDisconnected` event is fired on the window object, when a gamepad is disconnected.
 ///
@@ -53,14 +51,12 @@ impl ConcreteEvent for GamepadConnectedEvent {
 // https://w3c.github.io/gamepad/#event-gamepaddisconnected
 #[derive(Clone, Debug, Eq, PartialEq, ReferenceType)]
 #[reference(instance_of = "GamepadEvent")]
+#[reference(event = "gamepaddisconnected")]
 #[reference(subclass_of(Event, GamepadEvent))]
 pub struct GamepadDisconnectedEvent( Reference );
 
 impl IEvent for GamepadDisconnectedEvent {}
 impl IGamepadEvent for GamepadDisconnectedEvent {}
-impl ConcreteEvent for GamepadDisconnectedEvent {
-    const EVENT_TYPE: &'static str = "gamepaddisconnected";
-}
 
 #[cfg(all(test, feature = "web_test"))]
 mod tests {

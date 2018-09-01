@@ -150,6 +150,8 @@ extern crate futures_channel;
 
 #[macro_use]
 extern crate stdweb_derive;
+#[macro_use]
+extern crate stdweb_internal_runtime;
 
 extern crate discard;
 
@@ -188,7 +190,7 @@ pub use webcore::serialization::JsSerialize;
 pub use webcore::discard::DiscardOnDrop;
 
 #[cfg(feature = "experimental_features_which_may_break_on_minor_version_bumps")]
-pub use webcore::promise::{Promise, DoneHandle};
+pub use webcore::promise::{TypedPromise, Promise, DoneHandle};
 
 #[cfg(all(
     feature = "futures-support",
@@ -273,7 +275,8 @@ pub mod web {
             SecurityError,
             SyntaxError,
             TypeError,
-            InvalidCharacterError
+            InvalidCharacterError,
+            AbortError
         };
         pub use webapi::error::{IError, Error};
         pub use webapi::rendering_context::{AddColorStopError, DrawImageError, GetImageDataError};
@@ -392,6 +395,37 @@ pub mod web {
             GamepadConnectedEvent,
             GamepadDisconnectedEvent,
         };
+
+        pub use webapi::events::drag::{
+            IDragEvent,
+            DragRelatedEvent,
+            DragEvent,
+            DragStartEvent,
+            DragEndEvent,
+            DragEnterEvent,
+            DragLeaveEvent,
+            DragOverEvent,
+            DragExitEvent,
+            DragDropEvent,
+            DataTransfer,
+            EffectAllowed,
+            DropEffect,
+            DataTransferItemList,
+            DataTransferItem,
+            DataTransferItemKind,
+        };
+    }
+
+    /// APIs related to MIDI.
+    pub mod midi {
+        pub use webapi::midi::{
+            MidiOptions,
+            MidiAccess,
+            MidiPort,
+            MidiInput,
+            MidiOutput,
+            IMidiPort
+        };
     }
 }
 
@@ -410,6 +444,7 @@ pub mod unstable {
 ///
 /// You should **only** import its contents through a wildcard, e.g.: `use stdweb::traits::*`.
 pub mod traits {
+    #[doc(hidden)]
     pub use super::web::{
         // Real interfaces.
         IEventTarget,
@@ -425,11 +460,13 @@ pub mod traits {
         IChildNode
     };
 
+    #[doc(hidden)]
     pub use super::web::error::{
         IDomException,
         IError
     };
 
+    #[doc(hidden)]
     pub use super::web::event::{
         IEvent,
         IUiEvent,
@@ -438,8 +475,12 @@ pub mod traits {
         IKeyboardEvent,
         IProgressEvent,
         IMessageEvent,
-        IFocusEvent
+        IFocusEvent,
+        IDragEvent,
     };
+
+    #[doc(hidden)]
+    pub use super::web::midi::IMidiPort;
 }
 
 #[doc(hidden)]
