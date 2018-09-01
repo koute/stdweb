@@ -9,7 +9,6 @@ use webapi::text_node::TextNode;
 use webapi::location::Location;
 use webapi::parent_node::IParentNode;
 use webapi::non_element_parent_node::INonElementParentNode;
-use webapi::selection::Range;
 use private::TODO;
 
 /// The `Document` interface represents any web page loaded in the browser and

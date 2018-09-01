@@ -1,8 +1,7 @@
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
-use webapi::node::{Node, INode};
+use webapi::node::{INode, Node};
 use webapi::dom_exception::{IndexSizeError, NotFoundError, InvalidStateError};
-use private::TODO;
 
 /// Possible values are:
 ///
@@ -201,7 +200,7 @@ impl Selection {
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/collapse)
     pub fn collapse<N: INode>(&self, node: &N, offset: Option<u32>) -> Result<(), IndexSizeError> {
         js_try! ( @(no_return)
-            @{self}.collapse(@{node}, @{offset});
+            @{self}.collapse(@{node.as_ref()}, @{offset});
         ).unwrap()
     }
 
@@ -233,7 +232,7 @@ impl Selection {
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/extend)
     pub fn extend<N: INode>(&self, node: &N, offset: Option<u32>) -> Result<(), InvalidStateError> {
         js_try! ( @(no_return)
-            @{self}.extend(@{node}, @{offset});
+            @{self}.extend(@{node.as_ref()}, @{offset});
         ).unwrap()
     }
 
@@ -244,8 +243,8 @@ impl Selection {
     /// docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/setBaseAndExtent)
     pub fn set_base_and_extent<N: INode>(&self, anchor_node: &N, anchor_offset: u32, focus_node: &N, focus_offset: u32) -> Result<(), InvalidStateError> {
         js_try! ( @(no_return)
-            @{self}.setBaseAndExtent(@{anchor_node}, @{anchor_offset}, @{focus_node}, @{focus_offset});
-        )
+            @{self}.setBaseAndExtent(@{anchor_node.as_ref()}, @{anchor_offset}, @{focus_node.as_ref()}, @{focus_offset});
+        ).unwrap()
     }
 
     /// Adds all the children of the specified [Node](struct.Node.html) to the selection. Previous
@@ -255,7 +254,7 @@ impl Selection {
     /// docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/selectAllChildren)
     pub fn select_all_children<N: INode>(&self, node: &N) {
         js! { @(no_return)
-            @{self}.selectAllChildren(@{node});
+            @{self}.selectAllChildren(@{node.as_ref()});
         };
     }
 
@@ -276,7 +275,7 @@ impl Selection {
     /// docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/containsNode)
     pub fn contains_node<N: INode>(&self, node: &N, allow_partial_containment: bool) -> bool {
         js! (
-            return @{self}.containsNode(@{node}, @{allow_partial_containment});
+            return @{self}.containsNode(@{node.as_ref()}, @{allow_partial_containment});
         ).try_into().unwrap()
     }
 }
