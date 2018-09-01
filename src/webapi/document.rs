@@ -1,5 +1,5 @@
 use webcore::value::{Reference, Value};
-use webcore::try_from::TryInto;
+use webcore::try_from::{TryInto, TryFrom};
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
 use webapi::element::Element;
@@ -9,7 +9,7 @@ use webapi::text_node::TextNode;
 use webapi::location::Location;
 use webapi::parent_node::IParentNode;
 use webapi::non_element_parent_node::INonElementParentNode;
-use private::TODO;
+use webapi::dom_exception::{InvalidCharacterError, NamespaceError};
 
 /// The `Document` interface represents any web page loaded in the browser and
 /// serves as an entry point into the web page's content, which is the DOM tree.
@@ -20,6 +20,17 @@ use private::TODO;
 #[reference(instance_of = "Document")]
 #[reference(subclass_of(EventTarget, Node))]
 pub struct Document( Reference );
+
+error_enum_boilerplate! {
+    CreateElementError,
+    InvalidCharacterError
+}
+
+error_enum_boilerplate! {
+    CreateElementNsError,
+    InvalidCharacterError,
+    NamespaceError
+}
 
 impl IEventTarget for Document {}
 impl IParentNode for Document {}
@@ -52,10 +63,8 @@ impl Document {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement)
     // https://dom.spec.whatwg.org/#ref-for-dom-document-createelement
-    pub fn create_element( &self, tag: &str ) -> Result< Element, TODO > {
-        unsafe {
-            Ok( js!( return @{self}.createElement( @{tag} ); ).into_reference_unchecked().unwrap() )
-        }
+    pub fn create_element( &self, tag: &str ) -> Result< Element, CreateElementError > {
+        js_try!( return @{self}.createElement( @{tag} ); ).unwrap()
     }
 
     /// Creates an element with the specified namespace URI and qualified name.
@@ -63,12 +72,10 @@ impl Document {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/createElementNS)
     // https://dom.spec.whatwg.org/#ref-for-dom-document-createelementns
-    pub fn create_element_ns( &self, namespace_uri: &str, tag: &str ) -> Result< Element, TODO > {
-        unsafe {
-            Ok( js!(
-                return @{self}.createElementNS( @{namespace_uri}, @{tag} );
-            ).into_reference_unchecked().unwrap() )
-        }
+    pub fn create_element_ns( &self, namespace_uri: &str, tag: &str ) -> Result< Element, CreateElementNsError > {
+        js_try!(
+            return @{self}.createElementNS( @{namespace_uri}, @{tag} );
+        ).unwrap()
     }
 
     /// Creates a new text node.
@@ -178,5 +185,35 @@ impl Document {
         js!( @(no_return)
             @{self}.exitPointerLock();
         );
+    }
+}
+
+
+#[cfg(all(test, feature = "web_test"))]
+mod web_tests {
+    use super::*;
+
+    #[test]
+    fn test_create_element_invalid_character() {
+        match document().create_element("-invalid tag") {
+            Err(CreateElementError::InvalidCharacterError(_)) => (),
+            v => panic!("expected InvalidCharacterError, got {:?}", v),
+        }
+    }
+
+    #[test]
+    fn test_create_element_ns_invalid_character() {
+        match document().create_element_ns("", "-invalid tag") {
+            Err(CreateElementNsError::InvalidCharacterError(_)) => (),
+            v => panic!("expected InvalidCharacterError, got {:?}", v),
+        }
+    }
+
+    #[test]
+    fn test_create_element_ns_namespace_error() {
+        match document().create_element_ns("", "illegal_prefix:svg") {
+            Err(CreateElementNsError::NamespaceError(_)) => (),
+            v => panic!("expected NamespaceError, got {:?}", v),
+        }
     }
 }

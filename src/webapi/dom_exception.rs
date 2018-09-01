@@ -154,6 +154,17 @@ impl IDomException for AbortError {}
 
 error_boilerplate! { AbortError, name = "AbortError" }
 
+/// Indicates an xml namespace-related feature was used incorrectly.
+// https://heycam.github.io/webidl/#namespaceerror
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(subclass_of(Error, DomException))]
+pub struct NamespaceError( Reference );
+
+impl IError for NamespaceError {}
+impl IDomException for NamespaceError {}
+
+error_boilerplate! { NamespaceError, name = "NamespaceError" }
+
 #[cfg(all(test, feature = "web_test"))]
 mod test {
     use super::*;
