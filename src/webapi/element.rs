@@ -205,10 +205,16 @@ mod tests {
         ).try_into().unwrap()
     }
 
+    fn h1() -> Element {
+        js!(
+            return document.createElement("h1");
+        ).try_into().unwrap()
+    }
+
     #[test]
     fn test_closest_finds_ancestor() {
         let parent = div();
-        let child = div();
+        let child = h1();
         parent.append_child(&child);
 
         assert_eq!(child.closest("div").unwrap().unwrap().as_ref(), parent.as_ref());
@@ -217,7 +223,7 @@ mod tests {
     #[test]
     fn test_closest_not_found() {
         let parent = div();
-        let child = div();
+        let child = h1();
         parent.append_child(&child);
 
         assert!(child.closest("p").unwrap().is_none());
