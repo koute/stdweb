@@ -694,20 +694,43 @@ impl ser::SerializeStructVariant for SerializeStructVariant {
     }
 }
 
+macro_rules! number_deserializer {
+    ($([$name:ident $visitor:ident $type:ty])+) => {
+        $(
+            #[inline]
+            fn $name< V: Visitor< 'de > >( self, visitor: V ) -> Result< V::Value, Self::Error > {
+                let value: $type = self.try_into()?;
+                visitor.$visitor( value )
+            }
+        )+
+    };
+}
+
 impl< 'de > de::Deserializer< 'de > for Number {
     type Error = ConversionError;
 
     #[inline]
     fn deserialize_any< V: Visitor< 'de > >( self, visitor: V ) -> Result< V::Value, Self::Error > {
-        // TODO: Consider dispatching the visitor based on the actual value?
         match *get_storage( &self ) {
             number::Storage::I32( value ) => visitor.visit_i32( value ),
             number::Storage::F64( value ) => visitor.visit_f64( value )
         }
     }
 
+    number_deserializer! {
+        [deserialize_i8 visit_i8 i8]
+        [deserialize_i16 visit_i16 i16]
+        [deserialize_i32 visit_i32 i32]
+        [deserialize_i64 visit_i64 i64]
+        [deserialize_u8 visit_u8 u8]
+        [deserialize_u16 visit_u16 u16]
+        [deserialize_u32 visit_u32 u32]
+        [deserialize_u64 visit_u64 u64]
+        [deserialize_f64 visit_f64 f64]
+    }
+
     forward_to_deserialize_any! {
-        bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string unit option
+        bool f32 char str string unit option
         seq bytes byte_buf map unit_struct newtype_struct
         tuple_struct struct identifier tuple enum ignored_any
     }
@@ -732,6 +755,20 @@ impl Value {
             Value::Reference( _ ) => de::Unexpected::Other( "reference to a JavaScript value" )
         }
     }
+}
+
+macro_rules! value_proxy_number_deserializer {
+    ($($name:ident)+) => {
+        $(
+            #[inline]
+            fn $name< V: Visitor< 'de > >( self, visitor: V ) -> Result< V::Value, Self::Error > {
+                match self {
+                    Value::Number( value ) => value.$name( visitor ),
+                    value => value.deserialize_any( visitor )
+                }
+            }
+        )+
+    };
 }
 
 impl< 'de > de::Deserializer< 'de > for Value {
@@ -776,6 +813,19 @@ impl< 'de > de::Deserializer< 'de > for Value {
                 }
             }
         }
+    }
+
+    value_proxy_number_deserializer! {
+        deserialize_i8
+        deserialize_i16
+        deserialize_i32
+        deserialize_i64
+        deserialize_u8
+        deserialize_u16
+        deserialize_u32
+        deserialize_u64
+        deserialize_f32
+        deserialize_f64
     }
 
     #[inline]
@@ -830,7 +880,7 @@ impl< 'de > de::Deserializer< 'de > for Value {
     }
 
     forward_to_deserialize_any! {
-        bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string unit seq
+        bool char str string unit seq
         bytes byte_buf map unit_struct tuple_struct struct
         identifier tuple ignored_any
     }
@@ -1242,6 +1292,17 @@ impl< 'de, T: Deserialize< 'de > > TryFrom< Value > for Serde< T > {
     }
 }
 
+impl< 'de, T: Deserialize< 'de > > TryFrom< Value > for Option< Serde< T > > {
+    type Error = ConversionError;
+    #[inline]
+    fn try_from( value: Value ) -> Result< Self, Self::Error > {
+        match value {
+            Value::Undefined | Value::Null => Ok( None ),
+            value => value.try_into().map( Some )
+        }
+    }
+}
+
 __js_serializable_boilerplate!( impl< T > for Serde< T > where T: Serialize );
 
 #[cfg(test)]
@@ -1494,6 +1555,24 @@ mod tests {
     }
 
     #[test]
+    fn deserialization_into_option_through_newtype() {
+        let value = js! {
+            return {
+                number: 123,
+                string: "Hello!"
+            };
+        };
+
+        let structure: Option< Serde< Structure > > = value.try_into().unwrap();
+        let structure = structure.unwrap();
+        assert_eq!( structure.0.number, 123 );
+        assert_eq!( structure.0.string, "Hello!" );
+
+        let structure: Option< Serde< Structure > > = Value::Null.try_into().unwrap();
+        assert!( structure.is_none() );
+    }
+
+    #[test]
     fn serialization_and_deserialization_of_btreemap_with_serializable_values() {
         let mut original = BTreeMap::new();
         original.insert( "key", StructureSerializable {
@@ -1520,5 +1599,27 @@ mod tests {
 
         assert_eq!( original.len(), deserialized.len() );
         assert_eq!( original[ 0 ], deserialized[ 0 ] );
+    }
+
+    #[test]
+    fn deserialization_of_a_big_number() {
+        #[derive(Deserialize, Debug)]
+        struct Struct {
+            number: u64
+        }
+
+        let structure: Serde< Struct > = js!( return { number: 1535164942454 }; ).try_into().unwrap();
+        assert_eq!( structure.0.number, 1535164942454 );
+    }
+
+    #[test]
+    fn deserialization_of_a_very_big_number() {
+        #[derive(Deserialize, Debug)]
+        struct Struct {
+            number: u64
+        }
+
+        let structure: Serde< Struct > = js!( return { number: 9223372049167088120 }; ).try_into().unwrap();
+        assert_eq!( structure.0.number, 9223372049167087616 );
     }
 }

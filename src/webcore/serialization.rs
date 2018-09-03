@@ -1519,6 +1519,19 @@ mod test_serialization {
     test_unsafe_typed_array!( test_unsafe_typed_array_f64, f64, Float64Array );
 }
 
+// TODO: Move this back inside the test module.
+//
+// This had to be temporarily moved here due to a bug in Rust
+// where the following error is generated if it's defined under
+// the module:
+//
+//    error: cannot determine resolution for the attribute macro `reference`
+//
+#[cfg(test)]
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "Error")]
+pub struct TestError( Reference );
+
 #[cfg(test)]
 mod test_reserialization {
     use super::*;
@@ -1680,9 +1693,7 @@ mod test_reserialization {
         assert_eq!( non_empty, Value::String( "死神はりんごしか食べない!".to_string() ) );
     }
 
-    #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-    #[reference(instance_of = "Error")]
-    pub struct Error( Reference );
+    type Error = TestError;
 
     #[test]
     fn closure_returning_reference_object() {

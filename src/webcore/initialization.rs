@@ -17,7 +17,7 @@ pub fn initialize() {
     }
 
     #[cfg(not(feature = "docs-rs"))]
-    include!( concat!( env!( "OUT_DIR" ), env!( "PATH_SEPARATOR" ), "runtime.rs" ) );
+    stdweb_internal_runtime_initialize!( __js_raw_asm );
 
     if cfg!( test ) == false {
         panic::set_hook( Box::new( |info| {

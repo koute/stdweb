@@ -1,6 +1,6 @@
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
-use webapi::event::{IEvent, IUiEvent, UiEvent, Event, ConcreteEvent};
+use webapi::event::{IEvent, IUiEvent, UiEvent, Event};
 use webapi::events::mouse::{IMouseEvent, MouseEvent};
 
 #[cfg(feature = "experimental_features_which_may_break_on_minor_version_bumps")]
@@ -173,7 +173,8 @@ impl IPointerEvent for PointerEvent {}
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/pointerover)
 // https://w3c.github.io/pointerevents/#the-pointerover-event
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "PointerEvent")] // TODO: Better type check.
+#[reference(instance_of = "PointerEvent")]
+#[reference(event = "pointerover")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, PointerEvent))]
 pub struct PointerOverEvent( Reference );
 
@@ -181,9 +182,6 @@ impl IEvent for PointerOverEvent {}
 impl IUiEvent for PointerOverEvent {}
 impl IMouseEvent for PointerOverEvent {}
 impl IPointerEvent for PointerOverEvent {}
-impl ConcreteEvent for PointerOverEvent {
-    const EVENT_TYPE: &'static str = "pointerover";
-}
 
 /// The `PointerEnterEvent` is fired when a pointing device is moved into
 /// the hit test boundaries of an element or its descendants. This event does not bubble.
@@ -191,7 +189,8 @@ impl ConcreteEvent for PointerOverEvent {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/pointerenter)
 // https://w3c.github.io/pointerevents/#the-pointerenter-event
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "PointerEvent")] // TODO: Better type check.
+#[reference(instance_of = "PointerEvent")]
+#[reference(event = "pointerenter")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, PointerEvent))]
 pub struct PointerEnterEvent( Reference );
 
@@ -199,16 +198,14 @@ impl IEvent for PointerEnterEvent {}
 impl IUiEvent for PointerEnterEvent {}
 impl IMouseEvent for PointerEnterEvent {}
 impl IPointerEvent for PointerEnterEvent {}
-impl ConcreteEvent for PointerEnterEvent {
-    const EVENT_TYPE: &'static str = "pointerenter";
-}
 
 /// The `PointerDownEvent` is fired when a pointer becomes active
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/pointerdown)
 // https://w3c.github.io/pointerevents/#the-pointerdown-event
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "PointerEvent")] // TODO: Better type check.
+#[reference(instance_of = "PointerEvent")]
+#[reference(event = "pointerdown")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, PointerEvent))]
 pub struct PointerDownEvent( Reference );
 
@@ -216,16 +213,14 @@ impl IEvent for PointerDownEvent {}
 impl IUiEvent for PointerDownEvent {}
 impl IMouseEvent for PointerDownEvent {}
 impl IPointerEvent for PointerDownEvent {}
-impl ConcreteEvent for PointerDownEvent {
-    const EVENT_TYPE: &'static str = "pointerdown";
-}
 
 /// The `PointerMoveEvent` is fired when a pointer changes coordinates
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/pointermove)
 // https://w3c.github.io/pointerevents/#the-pointermove-event
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "PointerEvent")] // TODO: Better type check.
+#[reference(instance_of = "PointerEvent")]
+#[reference(event = "pointermove")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, PointerEvent))]
 pub struct PointerMoveEvent( Reference );
 
@@ -233,9 +228,6 @@ impl IEvent for PointerMoveEvent {}
 impl IUiEvent for PointerMoveEvent {}
 impl IMouseEvent for PointerMoveEvent {}
 impl IPointerEvent for PointerMoveEvent {}
-impl ConcreteEvent for PointerMoveEvent {
-    const EVENT_TYPE: &'static str = "pointermove";
-}
 
 impl PointerMoveEvent
 {
@@ -256,7 +248,8 @@ impl PointerMoveEvent
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/pointerup)
 // https://w3c.github.io/pointerevents/#the-pointerup-event
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "PointerEvent")] // TODO: Better type check.
+#[reference(instance_of = "PointerEvent")]
+#[reference(event = "pointerup")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, PointerEvent))]
 pub struct PointerUpEvent( Reference );
 
@@ -264,9 +257,6 @@ impl IEvent for PointerUpEvent {}
 impl IUiEvent for PointerUpEvent {}
 impl IMouseEvent for PointerUpEvent {}
 impl IPointerEvent for PointerUpEvent {}
-impl ConcreteEvent for PointerUpEvent {
-    const EVENT_TYPE: &'static str = "pointerup";
-}
 
 /// The `PointerCancelEvent` is fired when a pointer will no longer produce events
 /// (for example the device is deactivated), or if the pointer starts a gesture after a pointerdown event
@@ -275,7 +265,8 @@ impl ConcreteEvent for PointerUpEvent {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/pointercancel)
 // https://w3c.github.io/pointerevents/#the-pointercancel-event
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "PointerEvent")] // TODO: Better type check.
+#[reference(instance_of = "PointerEvent")]
+#[reference(event = "pointercancel")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, PointerEvent))]
 pub struct PointerCancelEvent( Reference );
 
@@ -283,9 +274,6 @@ impl IEvent for PointerCancelEvent {}
 impl IUiEvent for PointerCancelEvent {}
 impl IMouseEvent for PointerCancelEvent {}
 impl IPointerEvent for PointerCancelEvent {}
-impl ConcreteEvent for PointerCancelEvent {
-    const EVENT_TYPE: &'static str = "pointercancel";
-}
 
 /// The `PointerOutEvent` is fired when the pointer moves out of the hit test boundaries of an element.
 /// This can include when a finger leaves a touch screen or a pen leaves the detectable hover range.
@@ -293,7 +281,8 @@ impl ConcreteEvent for PointerCancelEvent {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/pointerout)
 // https://w3c.github.io/pointerevents/#the-pointerout-event
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "PointerEvent")] // TODO: Better type check.
+#[reference(instance_of = "PointerEvent")]
+#[reference(event = "pointerout")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, PointerEvent))]
 pub struct PointerOutEvent( Reference );
 
@@ -301,9 +290,6 @@ impl IEvent for PointerOutEvent {}
 impl IUiEvent for PointerOutEvent {}
 impl IMouseEvent for PointerOutEvent {}
 impl IPointerEvent for PointerOutEvent {}
-impl ConcreteEvent for PointerOutEvent {
-    const EVENT_TYPE: &'static str = "pointerout";
-}
 
 /// The `PointerLeaveEvent` is fired when the pointer moves out of the hit test boundaries
 /// of an element and it's descendants. This can include when a finger leaves a touch screen
@@ -312,7 +298,8 @@ impl ConcreteEvent for PointerOutEvent {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/pointerleave)
 // https://w3c.github.io/pointerevents/#the-pointerleave-event
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "PointerEvent")] // TODO: Better type check.
+#[reference(instance_of = "PointerEvent")]
+#[reference(event = "pointerleave")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, PointerEvent))]
 pub struct PointerLeaveEvent( Reference );
 
@@ -320,16 +307,14 @@ impl IEvent for PointerLeaveEvent {}
 impl IUiEvent for PointerLeaveEvent {}
 impl IMouseEvent for PointerLeaveEvent {}
 impl IPointerEvent for PointerLeaveEvent {}
-impl ConcreteEvent for PointerLeaveEvent {
-    const EVENT_TYPE: &'static str = "pointerleave";
-}
 
 /// The `GotPointerCaptureEvent` fires when an element receives pointer capture
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/gotpointercapture)
 // https://w3c.github.io/pointerevents/#the-gotpointercapture-event
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "PointerEvent")] // TODO: Better type check.
+#[reference(instance_of = "PointerEvent")]
+#[reference(event = "gotpointercapture")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, PointerEvent))]
 pub struct GotPointerCaptureEvent( Reference );
 
@@ -337,16 +322,14 @@ impl IEvent for GotPointerCaptureEvent {}
 impl IUiEvent for GotPointerCaptureEvent {}
 impl IMouseEvent for GotPointerCaptureEvent {}
 impl IPointerEvent for GotPointerCaptureEvent {}
-impl ConcreteEvent for GotPointerCaptureEvent {
-    const EVENT_TYPE: &'static str = "gotpointercapture";
-}
 
 /// The `LostPointerCaptureEvent` fires when an element loses pointer capture
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/lostpointercapture)
 // https://w3c.github.io/pointerevents/#the-lostpointercapture-event
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "PointerEvent")] // TODO: Better type check.
+#[reference(instance_of = "PointerEvent")]
+#[reference(event = "lostpointercapture")]
 #[reference(subclass_of(Event, UiEvent, MouseEvent, PointerEvent))]
 pub struct LostPointerCaptureEvent( Reference );
 
@@ -354,41 +337,35 @@ impl IEvent for LostPointerCaptureEvent {}
 impl IUiEvent for LostPointerCaptureEvent {}
 impl IMouseEvent for LostPointerCaptureEvent {}
 impl IPointerEvent for LostPointerCaptureEvent {}
-impl ConcreteEvent for LostPointerCaptureEvent {
-    const EVENT_TYPE: &'static str = "lostpointercapture";
-}
 
 /// The `PointerLockChangeEvent` fires when the pointer is locked or unlocked
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/pointerlockchange)
 // http://www.w3.org/TR/pointerlock/#pointerlockchange-and-pointerlockerror-events
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "Event")] // TODO: Better type check.
+#[reference(instance_of = "Event")]
+#[reference(event = "pointerlockchange")]
 #[reference(subclass_of(Event))]
 pub struct PointerLockChangeEvent( Reference );
 
 impl IEvent for PointerLockChangeEvent {}
-impl ConcreteEvent for PointerLockChangeEvent {
-    const EVENT_TYPE: &'static str = "pointerlockchange";
-}
 
 /// The `PointerLockErrorEvent` fires when an error occurs locking a pointer
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/pointerlockerror)
 // http://www.w3.org/TR/pointerlock/#pointerlockchange-and-pointerlockerror-events
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "Event")] // TODO: Better type check.
+#[reference(instance_of = "Event")]
+#[reference(event = "pointerlockerror")]
 #[reference(subclass_of(Event))]
 pub struct PointerLockErrorEvent( Reference );
 
 impl IEvent for PointerLockErrorEvent {}
-impl ConcreteEvent for PointerLockErrorEvent {
-    const EVENT_TYPE: &'static str = "pointerlockerror";
-}
 
 #[cfg(all(test, feature = "web_test"))]
 mod tests {
     use super::*;
+    use webapi::event::ConcreteEvent;
 
     #[test]
     fn test_pointer_event() {

@@ -1,4 +1,5 @@
 pub mod dom;
+pub mod drag;
 pub mod focus;
 pub mod gamepad;
 pub mod history;

@@ -1,4 +1,7 @@
 use std;
+use std::fmt;
+use std::marker::PhantomData;
+
 use discard::Discard;
 use webcore::once::Once;
 use webcore::value::{Value, Reference};
@@ -294,5 +297,36 @@ impl Promise {
                 };
             } ),
         }
+    }
+}
+
+/// A statically typed `Promise`.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct TypedPromise< T, E >( Promise, PhantomData< (T, E) > );
+
+impl< T, E > TypedPromise< T, E >
+    where T: TryFrom< Value >,
+          E: TryFrom< Value >
+{
+    #[inline]
+    pub(crate) fn new( promise: Promise ) -> Self {
+        TypedPromise( promise, PhantomData )
+    }
+
+    /// A strongly typed version of [`Promise.done`](struct.Promise.html#method.done).
+    #[inline]
+    pub fn done< F >( &self, callback: F ) -> DiscardOnDrop< DoneHandle >
+        where F: FnOnce( Result< T, E > ) + 'static,
+              T::Error: fmt::Debug,
+              E::Error: fmt::Debug
+    {
+        self.0.done( move |result| callback( result ) )
+    }
+}
+
+impl< T, E > From< TypedPromise< T, E > > for Promise {
+    #[inline]
+    fn from( promise: TypedPromise< T, E > ) -> Promise {
+        promise.0
     }
 }
