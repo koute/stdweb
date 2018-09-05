@@ -11,7 +11,7 @@ use webapi::dom_exception::{IndexSizeError, NotFoundError, InvalidStateError};
 /// * `Range`: A range has been selected.
 ///
 /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/type)
-#[derive(Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum SelectionType {
     None,
     Caret,
@@ -141,7 +141,7 @@ impl Selection {
     /// * `Range`: A range has been selected.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/type)
-    pub fn selection_type(&self) -> SelectionType {
+    pub fn kind(&self) -> SelectionType {
         let selection: String = js! (
             return @{self}.type;
         ).try_into().unwrap();
