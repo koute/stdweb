@@ -163,6 +163,16 @@ impl From< f64 > for Number {
     }
 }
 
+impl From< Number > for f64 {
+    #[inline]
+    fn from( number: Number ) -> Self {
+        match number.0 {
+            Storage::I32( value ) => value as f64,
+            Storage::F64( value ) => value
+        }
+    }
+}
+
 macro_rules! impl_trivial_try_from {
     ($($kind:ty),+) => {
         $(
@@ -687,5 +697,13 @@ mod tests {
         use super::*;
         use webcore::try_from::TryInto;
         generate_conversion_tests! { u64 }
+    }
+
+    #[test]
+    fn test_number_into_f64() {
+        assert_eq!(f64::from(Number(Storage::F64(7.))), 7.);
+        assert_eq!(f64::from(Number(Storage::I32(7 ))), 7.);
+        assert_eq!({ let x : f64 = Number(Storage::F64(7.)).into(); x }, 7.);
+        assert_eq!({ let x : f64 = Number(Storage::I32(7 )).into(); x }, 7.);
     }
 }
