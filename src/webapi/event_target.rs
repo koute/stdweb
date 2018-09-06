@@ -46,7 +46,7 @@ pub trait IEventTarget: ReferenceType {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener)
     // https://dom.spec.whatwg.org/#ref-for-dom-eventtarget-addeventlistener%E2%91%A0
     fn add_event_listener< T, F >( &self, listener: F ) -> EventListenerHandle
-        where T: ConcreteEvent, F: FnMut( T ) + 'static
+        where T: ConcreteEvent, F: Fn( T ) + 'static
     {
         let reference = self.as_ref();
 

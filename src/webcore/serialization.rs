@@ -6,7 +6,7 @@ use std::marker::PhantomData;
 use std::hash::Hash;
 
 use webcore::ffi;
-use webcore::callfn::{CallOnce, CallMut};
+use webcore::callfn::{CallOnce, Call};
 use webcore::newtype::Newtype;
 use webcore::try_from::{TryFrom, TryInto};
 use webcore::number::Number;
@@ -759,7 +759,7 @@ trait FuncallAdapter< F > {
 macro_rules! impl_for_fn {
     ($next:tt => $($kind:ident),*) => {
         impl< $($kind: TryFrom< Value >,)* F > FuncallAdapter< F > for Newtype< (FunctionTag, ($($kind,)*)), F >
-            where F: CallMut< ($($kind,)*) > + 'static, F::Output: JsSerializeOwned
+            where F: Call< ($($kind,)*) > + 'static, F::Output: JsSerializeOwned
         {
             #[allow(unused_mut, unused_variables, non_snake_case)]
             extern fn funcall_adapter(
@@ -897,7 +897,7 @@ macro_rules! impl_for_fn {
         }
 
         impl< $($kind: TryFrom< Value >,)* F > JsSerializeOwned for Newtype< (FunctionTag, ($($kind,)*)), F >
-            where F: CallMut< ($($kind,)*) > + 'static, F::Output: JsSerializeOwned
+            where F: Call< ($($kind,)*) > + 'static, F::Output: JsSerializeOwned
         {
             #[inline]
             fn into_js_owned< 'a >( value: &'a mut Option< Self > ) -> SerializedValue< 'a > {
@@ -913,7 +913,7 @@ macro_rules! impl_for_fn {
         }
 
         impl< $($kind: TryFrom< Value >,)* F > JsSerializeOwned for Newtype< (FunctionTag, ($($kind,)*)), Option< F > >
-            where F: CallMut< ($($kind,)*) > + 'static, F::Output: JsSerializeOwned
+            where F: Call< ($($kind,)*) > + 'static, F::Output: JsSerializeOwned
         {
             #[inline]
             fn into_js_owned< 'a >( value: &'a mut Option< Self > ) -> SerializedValue< 'a > {
