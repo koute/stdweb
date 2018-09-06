@@ -178,28 +178,28 @@ pub trait IElement: INode + IParentNode + IChildNode {
     /// Insert nodes from HTML fragment before element.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML)
-    fn insert_html_before_begin( &self, html: &str ) -> Result<(), InsertAdjacentError> {
+    fn insert_html_before( &self, html: &str ) -> Result<(), InsertAdjacentError> {
         self.insert_adjacent_html(InsertPosition::BeforeBegin, html)
     }
 
     /// Insert nodes from HTML fragment as the first children of the element.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML)
-    fn insert_html_after_begin( &self, html: &str ) -> Result<(), InsertAdjacentError> {
+    fn prepend_html( &self, html: &str ) -> Result<(), InsertAdjacentError> {
         self.insert_adjacent_html(InsertPosition::AfterBegin, html)
     }
 
     /// Insert nodes from HTML fragment as the last children of the element.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML)
-    fn insert_html_before_end( &self, html: &str ) -> Result<(), InsertAdjacentError> {
+    fn append_html( &self, html: &str ) -> Result<(), InsertAdjacentError> {
         self.insert_adjacent_html(InsertPosition::BeforeEnd, html)
     }
 
     /// Insert nodes from HTML fragment after element.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML)
-    fn insert_html_after_end( &self, html: &str ) -> Result<(), InsertAdjacentError> {
+    fn insert_html_after( &self, html: &str ) -> Result<(), InsertAdjacentError> {
         self.insert_adjacent_html(InsertPosition::AfterEnd, html)
     }
 }
@@ -264,10 +264,10 @@ mod tests {
         child.set_text_content("child");
         root.append_child(&child);
 
-        child.insert_html_before_begin(" <button>before begin</button> foo ").unwrap();
-        child.insert_html_after_begin("<i>afterbegin").unwrap();
-        child.insert_html_before_end("<h1> Before end</h1>").unwrap();
-        child.insert_html_after_end("after end ").unwrap();
+        child.insert_html_before(" <button>before begin</button> foo ").unwrap();
+        child.prepend_html("<i>afterbegin").unwrap();
+        child.append_html("<h1> Before end</h1>").unwrap();
+        child.insert_html_after("after end ").unwrap();
 
         let html = js!(return @{root}.innerHTML);
         assert_eq!(html, " <button>before begin</button> foo <span><i>afterbegin</i>child<h1> Before end</h1></span>after end ");
@@ -276,7 +276,7 @@ mod tests {
     #[test]
     fn insert_adjacent_html_empty() {
         let root = document().create_element("div").unwrap();
-        root.insert_html_after_begin("").unwrap();
+        root.append_html("").unwrap();
 
         let html = js!(return @{root}.innerHTML);
         assert_eq!(html, "");
@@ -285,7 +285,7 @@ mod tests {
     #[test]
     fn insert_adjacent_html_not_modifiable() {
         let doc = document().document_element().unwrap();
-        assert!(match doc.insert_html_before_begin("foobar").unwrap_err() {
+        assert!(match doc.insert_html_before("foobar").unwrap_err() {
             InsertAdjacentError::NoModificationAllowedError(_) => true,
             _ => false,
         });
