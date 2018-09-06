@@ -168,7 +168,7 @@ pub trait IElement: INode + IParentNode + IChildNode {
     /// Insert nodes from HTML fragment into specified position.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML)
-    // https://dom.spec.whatwg.org/#ref-for-dom-element-insertadjacentelement
+    // https://w3c.github.io/DOM-Parsing/#widl-Element-insertAdjacentHTML-void-DOMString-position-DOMString-text
     fn insert_adjacent_html( &self, position: InsertPosition, html: &str ) -> Result<(), InsertAdjacentError> {
         js_try!( @(no_return)
             @{self.as_ref()}.insertAdjacentHTML( @{position.as_str()}, @{html} );
