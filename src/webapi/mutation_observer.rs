@@ -63,7 +63,7 @@ impl MutationObserver {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#Constructor)
     // https://dom.spec.whatwg.org/#ref-for-dom-mutationobserver-mutationobserver
     pub fn new< F >( callback: F ) -> MutationObserverHandle
-        where F: FnMut( Vec< MutationRecord >, Self ) + 'static {
+        where F: Fn( Vec< MutationRecord >, Self ) + 'static {
         let callback_reference: Reference = js! ( return @{callback}; ).try_into().unwrap();
 
         MutationObserverHandle {
