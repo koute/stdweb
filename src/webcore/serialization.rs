@@ -6,13 +6,14 @@ use std::marker::PhantomData;
 use std::hash::Hash;
 
 use webcore::ffi;
-use webcore::callfn::{CallOnce, Call};
+use webcore::callfn::{CallOnce, CallMut, Call};
 use webcore::newtype::Newtype;
 use webcore::try_from::{TryFrom, TryInto};
 use webcore::number::Number;
 use webcore::type_name::type_name;
 use webcore::symbol::Symbol;
 use webcore::unsafe_typed_array::UnsafeTypedArray;
+use webcore::mutfn::Mut;
 use webcore::once::Once;
 use webcore::global_arena;
 
@@ -37,6 +38,7 @@ pub enum Tag {
     Object = 8,
     Reference = 9,
     Function = 10,
+    FunctionMut = 12,
     FunctionOnce = 13,
     UnsafeTypedArray = 14,
     Symbol = 15
@@ -144,6 +146,14 @@ struct SerializedUntaggedReference {
 #[repr(C)]
 #[derive(Debug)]
 struct SerializedUntaggedFunction {
+    adapter_pointer: u32,
+    pointer: u32,
+    deallocator_pointer: u32
+}
+
+#[repr(C)]
+#[derive(Debug)]
+struct SerializedUntaggedFunctionMut {
     adapter_pointer: u32,
     pointer: u32,
     deallocator_pointer: u32
@@ -386,6 +396,7 @@ untagged_boilerplate!( test_array, as_array, Tag::Array, SerializedUntaggedArray
 untagged_boilerplate!( test_symbol, as_symbol, Tag::Symbol, SerializedUntaggedSymbol );
 untagged_boilerplate!( test_reference, as_reference, Tag::Reference, SerializedUntaggedReference );
 untagged_boilerplate!( test_function, as_function, Tag::Function, SerializedUntaggedFunction );
+untagged_boilerplate!( test_function_mut, as_function_mut, Tag::FunctionMut, SerializedUntaggedFunctionMut );
 untagged_boilerplate!( test_function_once, as_function_once, Tag::FunctionOnce, SerializedUntaggedFunctionOnce );
 untagged_boilerplate!( test_unsafe_typed_array, as_unsafe_typed_array, Tag::UnsafeTypedArray, SerializedUntaggedUnsafeTypedArray );
 
@@ -404,6 +415,7 @@ impl< 'a > SerializedValue< 'a > {
             Tag::Reference => self.as_reference().deserialize().into(),
             Tag::Symbol => self.as_symbol().deserialize().into(),
             Tag::Function |
+            Tag::FunctionMut |
             Tag::FunctionOnce |
             Tag::Object |
             Tag::Array |
@@ -875,6 +887,15 @@ macro_rules! impl_for_fn {
         
         impl_for_fn_and_modifier!(
             args: ($($kind),*),
+            trait: CallMut,
+            wrapped type: Mut<F>,
+            unwrap: f => {f.0},
+            serialized to: SerializedUntaggedFunctionMut,
+            call: f => { unsafe { &mut *f }.call_mut( ($($kind,)*) ) }
+        );
+        
+        impl_for_fn_and_modifier!(
+            args: ($($kind),*),
             trait: CallOnce,
             wrapped type: Once<F>,
             unwrap: f => {f.0},
@@ -1107,6 +1128,20 @@ mod test_deserialization {
     }
 
     #[test]
+    fn function_mut() {
+        let mut count = 0;
+        let callback = move || -> i32 {
+            count += 1;
+            count
+        };
+        let callback = js! { return @{Mut(callback)}; };
+        assert_eq!({ let x : i32 = js!{ return @{&callback}(); }.try_into().unwrap(); x }, 1);
+        assert_eq!({ let x : i32 = js!{ return @{&callback}(); }.try_into().unwrap(); x }, 2);
+        assert_eq!({ let x : i32 = js!{ return @{&callback}(); }.try_into().unwrap(); x }, 3);
+        js!{ @{callback}.drop(); };
+    }
+
+    #[test]
     fn function_once_cannot_be_called_twice() {
         fn call< F: FnOnce() + 'static >( callback: F ) -> Value {
             js!(
@@ -1181,6 +1216,99 @@ mod test_deserialization {
         }
 
         let result = call( move || {} );
+        assert_eq!( result, Value::Bool( true ) );
+    }
+
+    #[test]
+    fn issue_273() {
+        let mut count = 0;
+        let f = move |callback: ::stdweb::Value| {
+            count += 1;
+            js! {
+                @{callback}();
+            };
+        };
+
+        let result = js! {
+            let f = @{Mut(f)};
+
+            let caught = false;
+            
+            try {
+                f(function () {
+                    f(function() {});
+                });
+            } catch ( error ) {
+                if( error instanceof ReferenceError ) {
+                    caught = true;
+                }
+            }
+        
+            f.drop();
+
+            return caught;
+        };
+        assert_eq!( result, Value::Bool( true ) );
+    }
+
+    #[test]
+    fn issue_277() {
+        struct MyStruct {
+            was_dropped: bool
+        }
+        impl MyStruct {
+            fn consume(self) {}
+        }
+        impl Drop for MyStruct {
+            fn drop(&mut self) {
+                assert_eq!(self.was_dropped, false);
+                self.was_dropped = true;
+            }
+        }
+
+        let s = MyStruct { was_dropped: false };
+
+        let f = move || {
+            s.consume();
+            unreachable!(); // never actually called
+        };
+        
+        js! {
+            let f = @{Once(f)};
+
+            let drop = f.drop;
+            drop();
+            drop();
+        };
+    }
+
+    #[test]
+    fn issue_278() {
+        let f = |callback: ::stdweb::Value| {
+            js! {
+                @{callback}();
+            };
+        };
+
+        let result = js! {
+            let f = @{f};
+
+            let caught = false;
+            
+            try {
+                f(function () {
+                    f.drop();
+                });
+            } catch ( error ) {
+                if( error instanceof ReferenceError ) {
+                    caught = true;
+                }
+            }
+        
+            f.drop();
+
+            return caught;
+        };
         assert_eq!( result, Value::Bool( true ) );
     }
 }
