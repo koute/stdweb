@@ -1,5 +1,6 @@
 use std;
 use webcore::value::{Reference, Value, ConversionError};
+use webcore::mutfn::Mut;
 use webapi::node_list::NodeList;
 use webcore::try_from::{TryFrom, TryInto};
 use webapi::node::{INode, Node};
@@ -63,8 +64,8 @@ impl MutationObserver {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#Constructor)
     // https://dom.spec.whatwg.org/#ref-for-dom-mutationobserver-mutationobserver
     pub fn new< F >( callback: F ) -> MutationObserverHandle
-        where F: Fn( Vec< MutationRecord >, Self ) + 'static {
-        let callback_reference: Reference = js! ( return @{callback}; ).try_into().unwrap();
+        where F: FnMut( Vec< MutationRecord >, Self ) + 'static {
+        let callback_reference: Reference = js! ( return @{Mut(callback)}; ).try_into().unwrap();
 
         MutationObserverHandle {
             callback_reference: callback_reference.clone(),
