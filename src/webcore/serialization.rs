@@ -6,7 +6,7 @@ use std::marker::PhantomData;
 use std::hash::Hash;
 
 use webcore::ffi;
-use webcore::callfn::{CallOnce, CallMut, Call};
+use webcore::callfn::{CallOnce, CallMut};
 use webcore::newtype::Newtype;
 use webcore::try_from::{TryFrom, TryInto};
 use webcore::number::Number;
@@ -878,11 +878,11 @@ macro_rules! impl_for_fn {
     ($next:tt => $($kind:ident),*) => {
         impl_for_fn_and_modifier!(
             args: ($($kind),*),
-            trait: Call,
+            trait: CallMut,
             wrapped type: F,
             unwrap: f => f,
             serialized to: SerializedUntaggedFunction,
-            call: f => { unsafe { &mut *f }.call( ($($kind,)*) ) }
+            call: f => { unsafe { &mut *f }.call_mut( ($($kind,)*) ) }
         );
         
         impl_for_fn_and_modifier!(
