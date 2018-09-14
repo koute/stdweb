@@ -21,6 +21,6 @@ serde_derive = "1"
 proc-macro2 = "0.4"
 
 [dependencies.syn]
-version = "0.14"
+version = "0.15"
 default-features = false
 features = ["derive", "parsing", "printing"]

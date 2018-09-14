@@ -25,7 +25,7 @@ serde_json = "1"
 proc-macro2 = "0.4"
 
 [dependencies.syn]
-version = "0.14"
+version = "0.15"
 default-features = false
 features = ["full", "parsing", "printing", "clone-impls"]
 
