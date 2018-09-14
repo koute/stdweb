@@ -112,10 +112,6 @@
 )]
 #![cfg_attr(
     all(target_arch = "wasm32", target_os = "unknown"),
-    feature(proc_macro)
-)]
-#![cfg_attr(
-    all(target_arch = "wasm32", target_os = "unknown"),
     feature(use_extern_macros)
 )]
 #![cfg_attr(feature = "nightly", feature(core_intrinsics))]
