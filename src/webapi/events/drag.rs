@@ -632,10 +632,10 @@ impl DataTransferItemKind {
     /// Returns the string representation of this DataTransferItemKind
     /// Useful in case the browser returns a non-standard kind that you want to special case.
     pub fn as_str( &self ) -> &str {
-        match self {
+        match *self {
             DataTransferItemKind::File => "file",
             DataTransferItemKind::String => "string",
-            DataTransferItemKind::__Other(other_kind) => &other_kind.name,
+            DataTransferItemKind::__Other( ref other_kind ) => &other_kind.name
         }
     }
 }
