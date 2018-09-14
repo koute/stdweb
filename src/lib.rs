@@ -129,7 +129,7 @@ extern crate serde_json;
 #[macro_use]
 extern crate serde_derive;
 
-#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+#[cfg(rust_1_30_or_newer)]
 extern crate stdweb_internal_macros;
 
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
