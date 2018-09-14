@@ -3,6 +3,7 @@ use std::fmt;
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
 use webcore::reference_type::ReferenceType;
+use webcore::mutfn::Mut;
 use webapi::event::{ConcreteEvent, IEvent};
 use private::TODO;
 
@@ -51,7 +52,7 @@ pub trait IEventTarget: ReferenceType {
         let reference = self.as_ref();
 
         let listener_reference = js! {
-            var listener = @{listener};
+            var listener = @{Mut(listener)};
             @{reference}.addEventListener( @{T::EVENT_TYPE}, listener );
             return listener;
         }.try_into().unwrap();

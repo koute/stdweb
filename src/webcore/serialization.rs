@@ -13,6 +13,7 @@ use webcore::number::Number;
 use webcore::type_name::type_name;
 use webcore::symbol::Symbol;
 use webcore::unsafe_typed_array::UnsafeTypedArray;
+use webcore::mutfn::Mut;
 use webcore::once::Once;
 use webcore::global_arena;
 
@@ -37,6 +38,7 @@ pub enum Tag {
     Object = 8,
     Reference = 9,
     Function = 10,
+    FunctionMut = 12,
     FunctionOnce = 13,
     UnsafeTypedArray = 14,
     Symbol = 15
@@ -144,6 +146,14 @@ struct SerializedUntaggedReference {
 #[repr(C)]
 #[derive(Debug)]
 struct SerializedUntaggedFunction {
+    adapter_pointer: u32,
+    pointer: u32,
+    deallocator_pointer: u32
+}
+
+#[repr(C)]
+#[derive(Debug)]
+struct SerializedUntaggedFunctionMut {
     adapter_pointer: u32,
     pointer: u32,
     deallocator_pointer: u32
@@ -386,6 +396,7 @@ untagged_boilerplate!( test_array, as_array, Tag::Array, SerializedUntaggedArray
 untagged_boilerplate!( test_symbol, as_symbol, Tag::Symbol, SerializedUntaggedSymbol );
 untagged_boilerplate!( test_reference, as_reference, Tag::Reference, SerializedUntaggedReference );
 untagged_boilerplate!( test_function, as_function, Tag::Function, SerializedUntaggedFunction );
+untagged_boilerplate!( test_function_mut, as_function_mut, Tag::FunctionMut, SerializedUntaggedFunctionMut );
 untagged_boilerplate!( test_function_once, as_function_once, Tag::FunctionOnce, SerializedUntaggedFunctionOnce );
 untagged_boilerplate!( test_unsafe_typed_array, as_unsafe_typed_array, Tag::UnsafeTypedArray, SerializedUntaggedUnsafeTypedArray );
 
@@ -404,6 +415,7 @@ impl< 'a > SerializedValue< 'a > {
             Tag::Reference => self.as_reference().deserialize().into(),
             Tag::Symbol => self.as_symbol().deserialize().into(),
             Tag::Function |
+            Tag::FunctionMut |
             Tag::FunctionOnce |
             Tag::Object |
             Tag::Array |
@@ -756,18 +768,24 @@ trait FuncallAdapter< F > {
     extern fn deallocator( callback: *mut F );
 }
 
-macro_rules! impl_for_fn {
-    ($next:tt => $($kind:ident),*) => {
-        impl< $($kind: TryFrom< Value >,)* F > FuncallAdapter< F > for Newtype< (FunctionTag, ($($kind,)*)), F >
-            where F: CallMut< ($($kind,)*) > + 'static, F::Output: JsSerializeOwned
+macro_rules! impl_for_fn_and_modifier {
+    (
+        args: ($($kind:ident),*),
+        trait: $trait:ident,
+        wrapped type: $wrappedtype:ty,
+        unwrap: $wrapped:ident => $unwrap:expr,
+        serialized to: $serialized_to:tt,
+        call: $callback:ident => $call:expr
+    ) => {
+        impl< $($kind: TryFrom< Value >,)* F > FuncallAdapter< F > for Newtype< (FunctionTag, ($($kind,)*)), $wrappedtype >
+            where F: $trait< ($($kind,)*) > + 'static, F::Output: JsSerializeOwned
         {
             #[allow(unused_mut, unused_variables, non_snake_case)]
             extern fn funcall_adapter(
-                    callback: *mut F,
+                    $callback: *mut F,
                     raw_arguments: *mut SerializedUntaggedArray
                 )
             {
-                let callback = unsafe { &mut *callback };
                 let mut arguments = unsafe { &*raw_arguments }.deserialize();
 
                 unsafe {
@@ -798,7 +816,7 @@ macro_rules! impl_for_fn {
 
                 $crate::private::noop( &mut nth_argument );
 
-                let result = callback.call_mut( ($($kind,)*) );
+                let result = $call;
 
                 let mut result = Some( result );
                 let result = JsSerializeOwned::into_js_owned( &mut result );
@@ -817,78 +835,16 @@ macro_rules! impl_for_fn {
             }
         }
 
-        impl< $($kind: TryFrom< Value >,)* F > FuncallAdapter< F > for Newtype< (FunctionTag, ($($kind,)*)), Once< F > >
-            where F: CallOnce< ($($kind,)*) > + 'static, F::Output: JsSerializeOwned
-        {
-            #[allow(unused_mut, unused_variables, non_snake_case)]
-            extern fn funcall_adapter(
-                    callback: *mut F,
-                    raw_arguments: *mut SerializedUntaggedArray
-                )
-            {
-                debug_assert_ne!( callback, 0 as *mut F );
-
-                let callback = unsafe {
-                    Box::from_raw( callback )
-                };
-
-                let mut arguments = unsafe { &*raw_arguments }.deserialize();
-                unsafe {
-                    ffi::dealloc( raw_arguments as *mut u8, mem::size_of::< SerializedValue >() );
-                }
-
-                if arguments.len() != F::expected_argument_count() {
-                    // TODO: Should probably throw an exception into the JS world or something like that.
-                    panic!( "Expected {} arguments, got {}", F::expected_argument_count(), arguments.len() );
-                }
-
-                let mut arguments = arguments.drain( .. );
-                let mut nth_argument = 0;
-                $(
-                    let $kind = match arguments.next().unwrap().try_into() {
-                        Ok( value ) => value,
-                        Err( _ ) => {
-                            panic!(
-                                "Argument #{} is not convertible to '{}'",
-                                nth_argument + 1,
-                                type_name::< $kind >()
-                            );
-                        }
-                    };
-
-                    nth_argument += 1;
-                )*
-
-                $crate::private::noop( &mut nth_argument );
-
-                let result = callback.call_once( ($($kind,)*) );
-
-                let mut result = Some( result );
-                let result = JsSerializeOwned::into_js_owned( &mut result );
-                let result = &result as *const _;
-
-                // This is kinda hacky but I'm not sure how else to do it at the moment.
-                __js_raw_asm!( "Module.STDWEB_PRIVATE.tmp = Module.STDWEB_PRIVATE.to_js( $0 );", result );
-            }
-
-            extern fn deallocator( callback: *mut F ) {
-                let callback = unsafe {
-                    Box::from_raw( callback )
-                };
-
-                drop( callback );
-            }
-        }
-
-        impl< $($kind: TryFrom< Value >,)* F > JsSerializeOwned for Newtype< (FunctionTag, ($($kind,)*)), Once< F > >
-            where F: CallOnce< ($($kind,)*) > + 'static, F::Output: JsSerializeOwned
+        impl< $($kind: TryFrom< Value >,)* F > JsSerializeOwned for Newtype< (FunctionTag, ($($kind,)*)), $wrappedtype >
+            where F: $trait< ($($kind,)*) > + 'static, F::Output: JsSerializeOwned
         {
             #[inline]
             fn into_js_owned< 'a >( value: &'a mut Option< Self > ) -> SerializedValue< 'a > {
-                let callback: *mut F = Box::into_raw( Box::new( value.take().unwrap().unwrap_newtype().0 ) );
+                let $wrapped = value.take().unwrap().unwrap_newtype();
+                let callback: *mut F = Box::into_raw( Box::new( $unwrap ) );
                 let adapter_pointer = <Self as FuncallAdapter< F > >::funcall_adapter;
                 let deallocator_pointer = <Self as FuncallAdapter< F > >::deallocator;
-                SerializedUntaggedFunctionOnce {
+                $serialized_to {
                     adapter_pointer: adapter_pointer as u32,
                     pointer: callback as u32,
                     deallocator_pointer: deallocator_pointer as u32
@@ -896,32 +852,16 @@ macro_rules! impl_for_fn {
             }
         }
 
-        impl< $($kind: TryFrom< Value >,)* F > JsSerializeOwned for Newtype< (FunctionTag, ($($kind,)*)), F >
-            where F: CallMut< ($($kind,)*) > + 'static, F::Output: JsSerializeOwned
+        impl< $($kind: TryFrom< Value >,)* F > JsSerializeOwned for Newtype< (FunctionTag, ($($kind,)*)), Option< $wrappedtype > >
+            where F: $trait< ($($kind,)*) > + 'static, F::Output: JsSerializeOwned
         {
             #[inline]
             fn into_js_owned< 'a >( value: &'a mut Option< Self > ) -> SerializedValue< 'a > {
-                let callback: *mut F = Box::into_raw( Box::new( value.take().unwrap().unwrap_newtype() ) );
-                let adapter_pointer = <Self as FuncallAdapter< F > >::funcall_adapter;
-                let deallocator_pointer = <Self as FuncallAdapter< F > >::deallocator;
-                SerializedUntaggedFunction {
-                    adapter_pointer: adapter_pointer as u32,
-                    pointer: callback as u32,
-                    deallocator_pointer: deallocator_pointer as u32
-                }.into()
-            }
-        }
-
-        impl< $($kind: TryFrom< Value >,)* F > JsSerializeOwned for Newtype< (FunctionTag, ($($kind,)*)), Option< F > >
-            where F: CallMut< ($($kind,)*) > + 'static, F::Output: JsSerializeOwned
-        {
-            #[inline]
-            fn into_js_owned< 'a >( value: &'a mut Option< Self > ) -> SerializedValue< 'a > {
-                if let Some( value ) = value.take().unwrap().unwrap_newtype() {
-                    let callback: *mut F = Box::into_raw( Box::new( value ) );
-                    let adapter_pointer = <Newtype< (FunctionTag, ($($kind,)*)), F > as FuncallAdapter< F > >::funcall_adapter;
-                    let deallocator_pointer = <Newtype< (FunctionTag, ($($kind,)*)), F > as FuncallAdapter< F > >::deallocator;
-                    SerializedUntaggedFunction {
+                if let Some( $wrapped ) = value.take().unwrap().unwrap_newtype() {
+                    let callback: *mut F = Box::into_raw( Box::new( $unwrap ) );
+                    let adapter_pointer = <Newtype< (FunctionTag, ($($kind,)*)), $wrappedtype > as FuncallAdapter< F > >::funcall_adapter;
+                    let deallocator_pointer = <Newtype< (FunctionTag, ($($kind,)*)), $wrappedtype > as FuncallAdapter< F > >::deallocator;
+                    $serialized_to {
                         adapter_pointer: adapter_pointer as u32,
                         pointer: callback as u32,
                         deallocator_pointer: deallocator_pointer as u32
@@ -931,7 +871,38 @@ macro_rules! impl_for_fn {
                 }
             }
         }
+    }
+}
 
+macro_rules! impl_for_fn {
+    ($next:tt => $($kind:ident),*) => {
+        impl_for_fn_and_modifier!(
+            args: ($($kind),*),
+            trait: CallMut,
+            wrapped type: F,
+            unwrap: f => f,
+            serialized to: SerializedUntaggedFunction,
+            call: f => { unsafe { &mut *f }.call_mut( ($($kind,)*) ) }
+        );
+        
+        impl_for_fn_and_modifier!(
+            args: ($($kind),*),
+            trait: CallMut,
+            wrapped type: Mut<F>,
+            unwrap: f => {f.0},
+            serialized to: SerializedUntaggedFunctionMut,
+            call: f => { unsafe { &mut *f }.call_mut( ($($kind,)*) ) }
+        );
+        
+        impl_for_fn_and_modifier!(
+            args: ($($kind),*),
+            trait: CallOnce,
+            wrapped type: Once<F>,
+            unwrap: f => {f.0},
+            serialized to: SerializedUntaggedFunctionOnce,
+            call: f => { unsafe { Box::from_raw( f ) }.call_once( ($($kind,)*) ) }
+        );
+        
         next! { $next }
     }
 }
@@ -1157,6 +1128,20 @@ mod test_deserialization {
     }
 
     #[test]
+    fn function_mut() {
+        let mut count = 0;
+        let callback = move || -> i32 {
+            count += 1;
+            count
+        };
+        let callback = js! { return @{Mut(callback)}; };
+        assert_eq!({ let x : i32 = js!{ return @{&callback}(); }.try_into().unwrap(); x }, 1);
+        assert_eq!({ let x : i32 = js!{ return @{&callback}(); }.try_into().unwrap(); x }, 2);
+        assert_eq!({ let x : i32 = js!{ return @{&callback}(); }.try_into().unwrap(); x }, 3);
+        js!{ @{callback}.drop(); };
+    }
+
+    #[test]
     fn function_once_cannot_be_called_twice() {
         fn call< F: FnOnce() + 'static >( callback: F ) -> Value {
             js!(
@@ -1231,6 +1216,99 @@ mod test_deserialization {
         }
 
         let result = call( move || {} );
+        assert_eq!( result, Value::Bool( true ) );
+    }
+
+    #[test]
+    fn issue_273() {
+        let mut count = 0;
+        let f = move |callback: ::stdweb::Value| {
+            count += 1;
+            js! {
+                @{callback}();
+            };
+        };
+
+        let result = js! {
+            let f = @{Mut(f)};
+
+            let caught = false;
+            
+            try {
+                f(function () {
+                    f(function() {});
+                });
+            } catch ( error ) {
+                if( error instanceof ReferenceError ) {
+                    caught = true;
+                }
+            }
+        
+            f.drop();
+
+            return caught;
+        };
+        assert_eq!( result, Value::Bool( true ) );
+    }
+
+    #[test]
+    fn issue_277() {
+        struct MyStruct {
+            was_dropped: bool
+        }
+        impl MyStruct {
+            fn consume(self) {}
+        }
+        impl Drop for MyStruct {
+            fn drop(&mut self) {
+                assert_eq!(self.was_dropped, false);
+                self.was_dropped = true;
+            }
+        }
+
+        let s = MyStruct { was_dropped: false };
+
+        let f = move || {
+            s.consume();
+            unreachable!(); // never actually called
+        };
+        
+        js! {
+            let f = @{Once(f)};
+
+            let drop = f.drop;
+            drop();
+            drop();
+        };
+    }
+
+    #[test]
+    fn issue_278() {
+        let f = |callback: ::stdweb::Value| {
+            js! {
+                @{callback}();
+            };
+        };
+
+        let result = js! {
+            let f = @{f};
+
+            let caught = false;
+            
+            try {
+                f(function () {
+                    f.drop();
+                });
+            } catch ( error ) {
+                if( error instanceof ReferenceError ) {
+                    caught = true;
+                }
+            }
+        
+            f.drop();
+
+            return caught;
+        };
         assert_eq!( result, Value::Bool( true ) );
     }
 }

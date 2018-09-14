@@ -13,6 +13,7 @@ pub mod array;
 pub mod symbol;
 pub mod type_name;
 pub mod unsafe_typed_array;
+pub mod mutfn;
 pub mod once;
 pub mod instance_of;
 pub mod reference_type;
