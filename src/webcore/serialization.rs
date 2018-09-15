@@ -1268,7 +1268,7 @@ mod test_deserialization {
 
         let s = MyStruct { was_dropped: false };
 
-        let f = move || {
+        let f = move || -> () {
             s.consume();
             unreachable!(); // never actually called
         };
