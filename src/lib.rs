@@ -114,6 +114,10 @@
     all(target_arch = "wasm32", target_os = "unknown"),
     feature(use_extern_macros)
 )]
+#![cfg_attr(
+    all(test, rust_1_30_or_newer, rust_nightly),
+    feature(linkage) // Needed for async tests.
+)]
 #![cfg_attr(feature = "nightly", feature(core_intrinsics))]
 #![cfg_attr(feature = "nightly", feature(never_type))]
 #![recursion_limit="1500"]
