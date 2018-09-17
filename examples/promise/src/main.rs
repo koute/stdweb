@@ -41,7 +41,7 @@ async fn future_main() -> Result< (), Error > {
         let b = print( "Test 2" );
 
         // Runs multiple Futures in parallel
-        let (a, b) = join!( a, b );
+        let ( a, b ) = join!( a, b );
 
         console!( log, "Done", a, b );
     }
@@ -51,10 +51,10 @@ async fn future_main() -> Result< (), Error > {
         let b = javascript_promise();
 
         // Runs multiple Futures (which can error) in parallel
-        let (a, b) = try_join!( a, b )?;
+        let ( a, b ) = try_join!( a, b )?;
 
-        console!(log, a);
-        console!(log, b);
+        console!( log, a );
+        console!( log, b );
     }
 
     Ok( () )
