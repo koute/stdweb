@@ -12,16 +12,19 @@ use webcore::discard::DiscardOnDrop;
 use webcore::serialization::JsSerialize;
 
 #[cfg(feature = "futures-support")]
+use futures_core::TryFuture;
+
+#[cfg(feature = "futures-support")]
+use futures_util::{FutureExt, TryFutureExt};
+
+#[cfg(feature = "futures-support")]
+use futures_util::future::ready;
+
+#[cfg(feature = "futures-support")]
 use futures_channel::oneshot::channel;
 
 #[cfg(feature = "futures-support")]
-use futures_core::IntoFuture;
-
-#[cfg(feature = "futures-support")]
-use futures_util::FutureExt;
-
-#[cfg(feature = "futures-support")]
-use super::promise_future::PromiseFuture;
+use super::promise_future::{PromiseFuture, spawn_local};
 
 
 /// This is used to cleanup the [`done`](struct.Promise.html#method.done) callback.
@@ -134,9 +137,8 @@ impl Promise {
     // https://www.ecma-international.org/ecma-262/6.0/#sec-promise-executor
     #[cfg(feature = "futures-support")]
     pub fn from_future< A >( future: A ) -> Self
-        where A: IntoFuture,
-              A::Future: 'static,
-              A::Item: JsSerialize,
+        where A: TryFuture + 'static,
+              A::Ok: JsSerialize,
               A::Error: JsSerialize {
 
         let future = future.into_future();
@@ -147,13 +149,14 @@ impl Promise {
         }
 
         let callback = move |success: Reference, error: Reference| {
-            PromiseFuture::spawn_local(
+            spawn_local(
                 future.then( move |result| {
                     match result {
                         Ok( a ) => call( success, a ),
                         Err( a ) => call( error, a ),
                     }
-                    Ok( () )
+
+                    ready( () )
                 } )
             );
         };

@@ -1,10 +1,11 @@
 use std::sync::{Arc, Mutex};
+use std::pin::PinMut;
 use webcore::once::Once;
 use webcore::value::Value;
-use webapi::error::Error;
-use futures_core::{Future, Poll, Async};
+use futures_core::{Future, Poll};
 use futures_core::task::{Waker, Context};
 use futures_core::stream::Stream;
+use futures_util::FutureExt;
 use futures_channel::oneshot;
 
 
@@ -61,13 +62,12 @@ impl Wait {
 }
 
 impl Future for Wait {
-    type Item = ();
-    // TODO use Void instead
-    type Error = Error;
+    type Output = ();
 
     #[inline]
-    fn poll( &mut self, cx: &mut Context ) -> Poll< Self::Item, Self::Error > {
-        self.receiver.poll( cx ).map_err( |_| unreachable!() )
+    fn poll( mut self: PinMut< Self >, cx: &mut Context ) -> Poll< Self::Output > {
+        // TODO is this unwrap correct ?
+        self.receiver.poll_unpin( cx ).map( |x| x.unwrap() )
     }
 }
 
@@ -155,20 +155,18 @@ impl IntervalBuffered {
 
 impl Stream for IntervalBuffered {
     type Item = ();
-    // TODO use Void instead
-    type Error = Error;
 
-    fn poll_next( &mut self, cx: &mut Context ) -> Poll< Option< Self::Item >, Self::Error > {
+    fn poll_next( self: PinMut< Self >, cx: &mut Context ) -> Poll< Option< Self::Item > > {
         let mut lock = self.state.lock().unwrap();
 
         if lock.count == 0 {
             lock.waker = Some( cx.waker().clone() );
-            Ok( Async::Pending )
+            Poll::Pending
 
         } else {
             lock.count -= 1;
 
-            Ok( Async::Ready( Some( () ) ) )
+            Poll::Ready( Some( () ) )
         }
     }
 }
