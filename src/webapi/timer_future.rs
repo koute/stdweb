@@ -19,8 +19,8 @@ fn convert_to_i32( ms: u32 ) -> i32 {
 }
 
 
-/// The [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html) which is returned by
-/// [`wait`](fn.wait.html).
+/// The [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html)
+/// which is returned by [`wait`](fn.wait.html).
 // This isn't implemented as a PromiseFuture because Promises do not support cancellation
 #[derive( Debug )]
 pub struct Wait {
@@ -82,8 +82,8 @@ impl Drop for Wait {
     }
 }
 
-/// Creates a [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html) which
-/// will return `()` after `ms` milliseconds have passed.
+/// Creates a [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html)
+/// which will return `()` after `ms` milliseconds have passed.
 ///
 /// It might return a long time *after* `ms` milliseconds have passed, but it
 /// will never return *before* `ms` milliseconds have passed.
@@ -182,8 +182,8 @@ impl Drop for IntervalBuffered {
     }
 }
 
-/// Creates a [`Stream`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/stream/trait.Stream.html) which
-/// will continuously output `()` every `ms` milliseconds, until it is dropped.
+/// Creates a [`Stream`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/stream/trait.Stream.html)
+/// which will continuously output `()` every `ms` milliseconds, until it is dropped.
 ///
 /// It might output `()` a long time *after* `ms` milliseconds have passed, but it
 /// will never output `()` *before* `ms` milliseconds have passed.

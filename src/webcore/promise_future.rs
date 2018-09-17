@@ -13,12 +13,12 @@ use webcore::serialization::JsSerialize;
 use super::promise::{Promise, DoneHandle};
 
 
-/// Asynchronously runs the [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html) on the current thread
-/// and then immediately returns. This does *not* block the current thread.
+/// Asynchronously runs the [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html)
+/// on the current thread and then immediately returns. This does *not* block the current thread.
 ///
-/// This function should normally be called only once in `main`, it is usually not needed to call it multiple times. If you want to run multiple Futures in
-/// parallel you should use [`join`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/macro.join.html) or
-/// [`try_join`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/macro.try_join.html).
+/// This function should normally be called only once in `main`, it is usually not needed to call it multiple times. If you want to run
+/// multiple Futures in parallel you should use [`join`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/macro.join.html)
+/// or [`try_join`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/macro.try_join.html).
 ///
 /// ----
 ///
@@ -130,12 +130,17 @@ pub fn print_error_panic< A: JsSerialize >( value: A ) -> ! {
     panic!();
 }
 
-/// Takes in an input [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html) (which returns `Result<A, B>`)
-/// and returns a new [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html) (which returns `A`).
+/// Takes in an input
+/// [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html)
+/// (which returns `Result<A, B>`) and returns a new
+/// [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html)
+/// (which returns `A`).
 ///
 /// If `future` returns `Err(error)`, then it prints `error` to the console and then panics.
 ///
-/// Otherwise if `future` returns `Ok(value)` then the output [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html) returns `value`.
+/// Otherwise if `future` returns `Ok(value)` then the output
+/// [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html)
+/// returns `value`.
 ///
 /// See the documentation for [`spawn_local`](fn.spawn_local.html) for more details.
 ///
@@ -149,13 +154,16 @@ pub fn unwrap_future< F >( future: F ) -> impl Future< Output = F::Ok >
 }
 
 
-/// Converts a JavaScript [`Promise`](struct.Promise.html) into a Rust [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html).
+/// Converts a JavaScript [`Promise`](struct.Promise.html) into a Rust
+/// [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html).
 ///
-/// The preferred way to create a `PromiseFuture` is to use [`value.try_into()`](unstable/trait.TryInto.html) on a JavaScript [`Value`](enum.Value.html).
+/// The preferred way to create a `PromiseFuture` is to use [`value.try_into()`](unstable/trait.TryInto.html) on a
+/// JavaScript [`Value`](enum.Value.html).
 ///
-/// After creating a `PromiseFuture` you can use all of the [`FutureExt`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.FutureExt.html)
-/// and [`TryFutureExt`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.TryFutureExt.html) methods on it, and
-/// you can spawn it by using [`spawn_local`](fn.spawn_local.html).
+/// After creating a `PromiseFuture` you can use all of the
+/// [`FutureExt`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.FutureExt.html)
+/// and [`TryFutureExt`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.TryFutureExt.html)
+/// methods on it, and you can spawn it by using [`spawn_local`](fn.spawn_local.html).
 ///
 /// # Examples
 ///
