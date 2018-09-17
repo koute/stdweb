@@ -35,13 +35,6 @@ struct TaskInner {
     executor: EventLoopExecutor,
 }
 
-/*impl ::std::fmt::Debug for TaskInner {
-    fn fmt( &self, fmt: &mut ::std::fmt::Formatter ) -> Result< (), ::std::fmt::Error > {
-        fmt.debug_struct( "TaskInner" )
-            .finish()
-    }
-}*/
-
 
 #[derive(Debug)]
 struct Task {
@@ -165,7 +158,7 @@ impl EventLoopQueue {
 
     // Poll the queue until it is empty
     fn drain( &self ) {
-        let _enter = enter().expect("EventLoopExecutor is already draining");
+        let _enter = enter().expect( "EventLoopExecutor is already draining" );
 
         if !self.is_draining.replace( true ) {
             let maybe_realloc_capacity = self.estimate_realloc_capacity();
