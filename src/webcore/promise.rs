@@ -111,9 +111,7 @@ impl Promise {
     ///
     /// If you simply want to use a JavaScript Promise inside Rust, then you
     /// don't need to use this function: you should use
-    /// [`PromiseFuture`](struct.PromiseFuture.html) and the
-    /// [`FutureExt`](https://docs.rs/futures/0.2.*/futures/future/trait.FutureExt.html)
-    /// methods instead.
+    /// [`PromiseFuture`](struct.PromiseFuture.html) instead.
     ///
     /// # Examples
     ///
@@ -269,7 +267,7 @@ impl Promise {
         } )
     }
 
-    /// This method converts the `Promise` into a [`PromiseFuture`](struct.PromiseFuture.html), so that it can be used as a Rust [`Future`](https://docs.rs/futures/0.2.*/futures/future/trait.Future.html).
+    /// This method converts the `Promise` into a [`PromiseFuture`](struct.PromiseFuture.html), so that it can be used as a Rust [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html).
     ///
     /// This method should rarely be needed, instead use [`value.try_into()`](unstable/trait.TryInto.html) to convert directly from a [`Value`](enum.Value.html) into a [`PromiseFuture`](struct.PromiseFuture.html).
     ///

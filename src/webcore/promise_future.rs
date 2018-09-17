@@ -13,59 +13,101 @@ use webcore::serialization::JsSerialize;
 use super::promise::{Promise, DoneHandle};
 
 
-/// Asynchronously runs the [`Future`](https://docs.rs/futures/0.2.*/futures/future/trait.Future.html) on the current thread
+/// Asynchronously runs the [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html) on the current thread
 /// and then immediately returns. This does *not* block the current thread.
 ///
-/// This function is normally called once in `main`, it is usually not needed to call it multiple times.
+/// This function should normally be called only once in `main`, it is usually not needed to call it multiple times. If you want to run multiple Futures in
+/// parallel you should use [`join`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/macro.join.html) or
+/// [`try_join`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/macro.try_join.html).
 ///
-/// The only way to retrieve the value of the future is to use the various
-/// [`FutureExt`](https://docs.rs/futures/0.2.*/futures/future/trait.FutureExt.html) methods, such as
-/// [`map`](https://docs.rs/futures/0.2.*/futures/future/trait.FutureExt.html#method.map) or
-/// [`inspect`](https://docs.rs/futures/0.2.*/futures/future/trait.FutureExt.html#method.inspect).
+/// ----
 ///
-/// In addition, you must handle all errors yourself. Because the errors happen asynchronously, the only way to catch them is
-/// to use a [`FutureExt`](https://docs.rs/futures/0.2.*/futures/future/trait.FutureExt.html) method, such as
-/// [`map_err`](https://docs.rs/futures/0.2.*/futures/future/trait.FutureExt.html#method.map_err).
+/// There are two types of Futures:
 ///
-/// It is very common to want to print the errors to the console. You can do that by using `.map_err(print_error_panic)`
+/// 1. By default Futures do not have any sort of error handling, and so they can be spawned directly:
 ///
-/// # Examples
+///    ```rust
+///    use stdweb::spawn_local;
 ///
-/// Asynchronously run a future in `main`, printing any errors to the console:
+///    fn main() {
+///        spawn_local(
+///            create_some_future()
+///        );
+///    }
+///    ```
 ///
-/// ```rust
-/// fn main() {
-///     spawn_local(
-///         create_some_future()
-///             .map_err(print_error_panic)
-///     );
-/// }
-/// ```
+///    If you want to retrieve the return value of the Future, you can use the various asynchronous
+///    [`FutureExt`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.FutureExt.html)
+///    methods, such as [`map`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.FutureExt.html#method.map) or
+///    [`inspect`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.FutureExt.html#method.inspect):
 ///
-/// Use the output value of the future:
+///    ```rust
+///    use stdweb::spawn_local;
+///    use futures::future::FutureExt;
 ///
-/// ```rust
-/// fn main() {
-///     spawn_local(
-///         create_some_future()
-///             .map(|x| {
-///                 println!("Future finished with value: {:#?}", x);
-///             })
-///             .map_err(print_error_panic)
-///     );
-/// }
-/// ```
+///    fn main() {
+///        spawn_local(
+///            create_some_future()
+///                .map(|x| {
+///                    println!("Future finished with value: {:#?}", x);
+///                })
+///        );
+///    }
+///    ```
 ///
-/// Catch errors and handle them yourself:
+/// 2. However, some Futures return `Result`, and in that case you will need to deal with the `Result` somehow.
 ///
-/// ```rust
-/// fn main() {
-///     spawn_local(
-///         create_some_future()
-///             .map_err(|e| handle_error_somehow(e))
-///     );
-/// }
-/// ```
+///    This is very common, because JavaScript Promises always return `Result` (because they might error).
+///
+///    In that case you can use the various asynchronous
+///    [`TryFutureExt`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.TryFutureExt.html)
+///    methods, such as [`map_ok`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.TryFutureExt.html#method.map_ok),
+///    [`map_err`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.TryFutureExt.html#method.map_err), or
+///    [`unwrap_or_else`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.TryFutureExt.html#method.unwrap_or_else):
+///
+///    ```rust
+///    use stdweb::spawn_local;
+///    use futures::future::TryFutureExt;
+///
+///    fn main() {
+///        spawn_local(
+///            create_some_future()
+///                .map_ok(|x| {
+///                    println!("Future finished with value: {:#?}", x);
+///                })
+///                .unwrap_or_else(|e| handle_error_somehow(e))
+///        );
+///    }
+///    ```
+///
+///    It is very common to want to print the errors to the console, and so as a convenience you can use the [`unwrap_future`](fn.unwrap_future.html) function:
+///
+///    ```rust
+///    use stdweb::{spawn_local, unwrap_future};
+///    use futures::future::TryFutureExt;
+///
+///    fn main() {
+///        spawn_local(
+///            unwrap_future(create_some_future()
+///                .map_ok(|x| {
+///                    println!("Future finished with value: {:#?}", x);
+///                }))
+///        );
+///    }
+///    ```
+///
+///    If you don't need the return value from the Future, then it is even easier, since you don't need
+///    [`map_ok`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.TryFutureExt.html#method.map_ok):
+///
+///    ```rust
+///    use stdweb::{spawn_local, unwrap_future};
+///
+///    fn main() {
+///        spawn_local(
+///            unwrap_future(create_some_future())
+///        );
+///    }
+///    ```
 #[inline]
 pub fn spawn_local< F >( future: F ) where F: Future< Output = () > + 'static {
     // TODO does this need to use PinBox instead ?
@@ -76,7 +118,7 @@ pub fn spawn_local< F >( future: F ) where F: Future< Output = () > + 'static {
 
 /// Prints an error to the console and then panics.
 ///
-/// See the documentation for [`spawn_local`](#method.spawn_local) for more details.
+/// If you're using Futures, it's more convenient to use [`unwrap_future`](fn.unwrap_future.html) instead.
 ///
 /// # Panics
 /// This function *always* panics.
@@ -88,12 +130,17 @@ pub fn print_error_panic< A: JsSerialize >( value: A ) -> ! {
     panic!();
 }
 
-/// Prints an error to the console and then panics.
+/// Takes in an input [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html) (which returns `Result<A, B>`)
+/// and returns a new [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html) (which returns `A`).
 ///
-/// See the documentation for [`spawn_local`](#method.spawn_local) for more details.
+/// If `future` returns `Err(error)`, then it prints `error` to the console and then panics.
+///
+/// Otherwise if `future` returns `Ok(value)` then the output [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html) returns `value`.
+///
+/// See the documentation for [`spawn_local`](fn.spawn_local.html) for more details.
 ///
 /// # Panics
-/// This function *always* panics.
+/// It panics if `future` returns `Err`.
 #[inline]
 pub fn unwrap_future< F >( future: F ) -> impl Future< Output = F::Ok >
     where F: TryFuture,
@@ -102,16 +149,22 @@ pub fn unwrap_future< F >( future: F ) -> impl Future< Output = F::Ok >
 }
 
 
-/// This allows you to use a JavaScript [`Promise`](struct.Promise.html) as if it is a Rust [`Future`](https://docs.rs/futures/0.2.*/futures/future/trait.Future.html).
+/// Converts a JavaScript [`Promise`](struct.Promise.html) into a Rust [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html).
 ///
 /// The preferred way to create a `PromiseFuture` is to use [`value.try_into()`](unstable/trait.TryInto.html) on a JavaScript [`Value`](enum.Value.html).
+///
+/// After creating a `PromiseFuture` you can use all of the [`FutureExt`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.FutureExt.html)
+/// and [`TryFutureExt`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.TryFutureExt.html) methods on it, and
+/// you can spawn it by using [`spawn_local`](fn.spawn_local.html).
 ///
 /// # Examples
 ///
 /// Convert a JavaScript `Promise` into a `PromiseFuture`:
 ///
 /// ```rust
-/// let future: PromiseFuture<String> = js!( return Promise.resolve("foo"); ).try_into().unwrap();
+/// fn foo() -> PromiseFuture<String> {
+///     js!( return Promise.resolve("foo"); ).try_into().unwrap()
+/// }
 /// ```
 pub struct PromiseFuture< Value, Error = error::Error > {
     pub(crate) future: Receiver< Result< Value, Error > >,
