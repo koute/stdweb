@@ -51,8 +51,7 @@ async fn future_main() -> Result< (), Error > {
         // Runs multiple Futures (which can error) in parallel
         let ( a, b ) = try_join!( a, b )?;
 
-        console!( log, a );
-        console!( log, b );
+        console!( log, a, b );
     }
 
     Ok( () )
