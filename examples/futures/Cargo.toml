@@ -1,6 +1,5 @@
 [package]
-name = "promise"
-edition = "2018"
+name = "futures"
 version = "0.1.0"
 authors = ["Jan Bujak <j@exia.io>"]
 

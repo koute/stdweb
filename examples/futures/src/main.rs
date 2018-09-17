@@ -2,6 +2,7 @@
 
 #[macro_use]
 extern crate stdweb;
+extern crate futures;
 
 use futures::{join, try_join};
 use stdweb::{PromiseFuture, spawn_local, unwrap_future};
