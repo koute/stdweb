@@ -383,13 +383,27 @@ impl Node {
         js_try!(
             var span = document.createElement("span");
             span.innerHTML = @{html};
-            if( span.childNodes.length != 1 ) {
+
+            // Fast path, if we have one childNode just return it.
+            if( span.childNodes.length > 1 ) {
+                // We will drop one leading and training whitespace-only text node.
+                if( span.firstChild.nodeType == Node.TEXT_NODE &&
+                    !span.firstChild.textContent.trim() ) {
+                    span.removeChild(span.firstChild);
+                }
+                if( span.lastChild.nodeType == Node.TEXT_NODE &&
+                    !span.lastChild.textContent.trim() ) {
+                    span.removeChild(span.lastChild);
+                }
+            }
+
+            if( span.childNodes.length != 1) {
                 throw new DOMException(
                     "Node::from_html requires a single root node but has: "
                     + span.childNodes.length,
                     "SyntaxError");
             }
-            return span.childNodes[0];
+            return span.firstChild;
         ).unwrap()
     }
 }
@@ -857,5 +871,31 @@ mod tests {
         let err = Node::from_html("<div>foo</div><div>bar</div>").unwrap_err();
         assert!(format!("{}", err).contains("requires a single root node"));
         assert!(Node::from_html("<di").is_err());
+    }
+
+    #[test]
+    fn from_html_trimmed() {
+        let node = Node::from_html("\n<div>Some text, horray!</div>\n").unwrap();
+        let text = node.first_child().unwrap();
+
+        assert_eq!(node.node_name(), "DIV");
+        assert_eq!(node.last_child().unwrap(), text);
+
+        assert_eq!(text.node_name(), "#text");
+        assert_eq!(text.node_value().unwrap(), "Some text, horray!");
+        assert!(text.first_child().is_none());
+
+        let text = Node::from_html(" Spaced text\n ").unwrap();
+        assert_eq!(text.node_name(), "#text");
+        assert_eq!(text.node_value().unwrap(), " Spaced text\n ");
+
+        let err = Node::from_html("text <div>bar</div>").unwrap_err();
+        assert!(format!("{}", err).contains("requires a single root node"));
+
+        let err = Node::from_html("<div>bar</div> text").unwrap_err();
+        assert!(format!("{}", err).contains("requires a single root node"));
+
+        let err = Node::from_html("this <div>and</div> that").unwrap_err();
+        assert!(format!("{}", err).contains("requires a single root node"));
     }
 }
