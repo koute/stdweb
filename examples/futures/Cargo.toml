@@ -1,5 +1,6 @@
 [package]
 name = "futures"
+edition = "2018"
 version = "0.1.0"
 authors = ["Jan Bujak <j@exia.io>"]
 
