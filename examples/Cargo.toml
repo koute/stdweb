@@ -1,2 +1,6 @@
 [workspace]
+[target.'cfg(nightly)']
 members = ["canvas", "drag", "echo", "futures", "gamepad", "hasher", "minimal", "todomvc", "webgl"]
+
+[target.'cfg(not(nightly))']
+members = ["canvas", "drag", "echo", "gamepad", "hasher", "minimal", "todomvc", "webgl"]
