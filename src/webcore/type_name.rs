@@ -1,12 +1,18 @@
 #[cfg(rust_nightly)]
-pub fn type_name< T >() -> &'static str {
+pub fn type_name_opt< T >() -> Option< &'static str > {
     use std::intrinsics;
-    unsafe {
+    let name = unsafe {
         intrinsics::type_name::< T >()
-    }
+    };
+
+    Some( name )
 }
 
 #[cfg(not(rust_nightly))]
+pub fn type_name_opt< T >() -> Option< &'static str > {
+    None
+}
+
 pub fn type_name< T >() -> &'static str {
-    "<Rust type (compile with Rust nightly to see the actual type)>"
+    type_name_opt::< T >().unwrap_or( "<Rust type (compile with Rust nightly to see the actual type)>" )
 }

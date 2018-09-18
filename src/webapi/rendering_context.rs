@@ -271,7 +271,7 @@ impl TryFrom<Value> for CanvasStyle {
         if let Ok(v) = CanvasPattern::try_from(value.clone()) {
             return Ok(CanvasStyle::CanvasPattern(v));
         }
-        Err(::webcore::value::ConversionError::type_mismatch( &value ))
+        Err(::webcore::value::ConversionError::type_mismatch( &value, "String, CanvasGradient or CanvasPattern".into() ))
     }
 }
 

@@ -24,13 +24,11 @@ impl TryFrom<Value> for GamepadMappingType {
     type Error = ConversionError;
 
     fn try_from(v: Value) -> Result<Self, Self::Error> {
-        match v {
-            Value::String(s) => match s.as_ref() {
-                "" => Ok(GamepadMappingType::NoMapping),
-                "standard" => Ok(GamepadMappingType::Standard),
-                s => Err(ConversionError::Custom(format!("invalid gamepad mapping type \"{}\"", s))),
-            },
-            _ => Err(ConversionError::type_mismatch(&v)),
+        let value: String = v.try_into()?;
+        match value.as_ref() {
+            "" => Ok(GamepadMappingType::NoMapping),
+            "standard" => Ok(GamepadMappingType::Standard),
+            s => Err(ConversionError::Custom(format!("invalid gamepad mapping type \"{}\"", s))),
         }
     }
 }
