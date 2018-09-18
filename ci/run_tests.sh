@@ -51,7 +51,7 @@ if [ "$IS_NIGHTLY" = "1" ]; then
     popd > /dev/null
 fi
 
-NIGHTLY_EXAMPLES=(hasher)
+NIGHTLY_EXAMPLES=(hasher futures)
 STABLE_EXAMPLES=(canvas echo minimal todomvc webgl)
 if [ "$IS_NIGHTLY" = "1" ]; then
     EXAMPLES=( "${NIGHTLY_EXAMPLES[@]}" "${STABLE_EXAMPLES[@]}" )
