@@ -12,6 +12,7 @@ use webcore::serialization::JsSerialize;
 use webcore::reference_type::ReferenceType;
 use webcore::instance_of::InstanceOf;
 use webcore::symbol::Symbol;
+use webapi::error::TypeError;
 
 /// A unit type representing JavaScript's `undefined`.
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Debug)]
@@ -876,6 +877,18 @@ impl From< number::ConversionError > for ConversionError {
 impl From< Void > for ConversionError {
     fn from( _: Void ) -> Self {
         unreachable!();
+    }
+}
+
+impl From< ConversionError > for TypeError {
+    fn from( error: ConversionError ) -> TypeError {
+        (&error).into()
+    }
+}
+
+impl< 'a > From< &'a ConversionError > for TypeError {
+    fn from( error: &'a ConversionError ) -> TypeError {
+        js!( return new TypeError( @{format!( "{}", error )} ); ).try_into().unwrap()
     }
 }
 

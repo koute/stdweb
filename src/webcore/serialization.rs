@@ -21,8 +21,11 @@ use webcore::value::{
     Null,
     Undefined,
     Reference,
-    Value
+    Value,
+    ConversionError
 };
+
+use webapi::error::TypeError;
 
 #[repr(u8)]
 #[derive(Copy, Clone, PartialEq, Debug)]
@@ -914,6 +917,16 @@ impl< 'a, T: ?Sized + JsSerialize > JsSerialize for &'a T {
     #[inline]
     fn _into_js< 'x >( &'x self ) -> SerializedValue< 'x > {
         T::_into_js( *self )
+    }
+}
+
+impl JsSerialize for ConversionError {
+    #[doc(hidden)]
+    fn _into_js< 'x >( &'x self ) -> SerializedValue< 'x > {
+        let type_error: TypeError = self.into();
+        let reference: Reference = type_error.into();
+        let value: Value = reference.into();
+        global_arena::serialize_value( value )
     }
 }
 
