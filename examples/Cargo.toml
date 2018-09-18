@@ -1,4 +1,2 @@
 [workspace]
-members = ["canvas", "drag", "echo", "futures", "gamepad", "hasher", "minimal", "todomvc", "webgl"]
-default-members = ["canvas", "drag", "echo", "gamepad", "hasher", "minimal", "todomvc", "webgl"]
-exclude = ["futures"]
+members = ["canvas", "drag", "echo", "gamepad", "hasher", "minimal", "todomvc", "webgl"]
