@@ -277,11 +277,16 @@ pub mod web {
             NotSupportedError,
             SecurityError,
             SyntaxError,
-            TypeError,
             InvalidCharacterError,
             AbortError
         };
-        pub use webapi::error::{IError, Error};
+
+        pub use webapi::error::{
+            IError,
+            Error,
+            TypeError
+        };
+
         pub use webapi::rendering_context::{AddColorStopError, DrawImageError, GetImageDataError};
         pub use webapi::html_elements::UnknownValueError;
     }

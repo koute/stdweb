@@ -111,17 +111,6 @@ impl IDomException for InvalidStateError {}
 error_boilerplate! { InvalidStateError, name = "InvalidStateError" }
 
 /// Used to indicate an unsuccessful operation when none of the other NativeError objects are an appropriate indication of the failure cause.
-// https://tc39.github.io/ecma262/#sec-native-error-types-used-in-this-standard-typeerror
-#[derive(Clone, Debug, ReferenceType)]
-#[reference(subclass_of(Error, DomException))]
-pub struct TypeError( Reference );
-
-impl IError for TypeError {}
-impl IDomException for TypeError {}
-
-error_boilerplate! { TypeError, name = "TypeError" }
-
-/// Used to indicate an unsuccessful operation when none of the other NativeError objects are an appropriate indication of the failure cause.
 // https://heycam.github.io/webidl/#notsupportederror
 #[derive(Clone, Debug, ReferenceType)]
 #[reference(subclass_of(Error, DomException))]

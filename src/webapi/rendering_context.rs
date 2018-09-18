@@ -3,7 +3,8 @@ use webcore::try_from::{TryFrom, TryInto};
 use webcore::value::{Undefined, Value};
 use webapi::html_elements::{CanvasElement, ImageElement};
 use webapi::html_element::IHtmlElement;
-use webapi::dom_exception::{SyntaxError, IndexSizeError, InvalidStateError, TypeError, SecurityError, NotSupportedError};
+use webapi::dom_exception::{SyntaxError, IndexSizeError, InvalidStateError, SecurityError, NotSupportedError};
+use webapi::error::TypeError;
 
 /// Trait implemented by rendering contexts which can be obtained from a canvas.
 pub trait RenderingContext {

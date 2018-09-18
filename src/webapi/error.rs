@@ -54,6 +54,17 @@ impl IError for Error {}
 
 error_boilerplate! { Error }
 
+/// Used to indicate an unsuccessful operation when none of the other NativeError objects are an appropriate indication of the failure cause.
+// https://tc39.github.io/ecma262/#sec-native-error-types-used-in-this-standard-typeerror
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(subclass_of(Error))]
+#[reference(instance_of = "TypeError")]
+pub struct TypeError( Reference );
+
+impl IError for TypeError {}
+
+error_boilerplate! { TypeError }
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -73,5 +84,10 @@ mod test {
         write!(&mut text, "{}", error).unwrap();
         assert_eq!(&text, "Error: foo");
         assert_eq!(::std::error::Error::description(&error), "Error");
+    }
+
+    #[test]
+    fn test_type_error() {
+        let _: TypeError = js!( return new TypeError( "Big bad wolf" ); ).try_into().unwrap();
     }
 }
