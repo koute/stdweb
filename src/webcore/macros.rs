@@ -539,7 +539,7 @@ macro_rules! error_boilerplate {
         }
     };
 
-    ($type_name:ident, name = $error_name:expr) => {
+    ($type_name:ident, dom_exception = $error_name:expr) => {
         impl ::InstanceOf for $type_name {
             #[inline]
             fn instance_of( reference: &Reference ) -> bool {
