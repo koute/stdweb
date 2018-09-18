@@ -884,7 +884,7 @@ macro_rules! impl_for_fn {
             serialized to: SerializedUntaggedFunction,
             call: f => { unsafe { &mut *f }.call_mut( ($($kind,)*) ) }
         );
-        
+
         impl_for_fn_and_modifier!(
             args: ($($kind),*),
             trait: CallMut,
@@ -893,7 +893,7 @@ macro_rules! impl_for_fn {
             serialized to: SerializedUntaggedFunctionMut,
             call: f => { unsafe { &mut *f }.call_mut( ($($kind,)*) ) }
         );
-        
+
         impl_for_fn_and_modifier!(
             args: ($($kind),*),
             trait: CallOnce,
@@ -902,7 +902,7 @@ macro_rules! impl_for_fn {
             serialized to: SerializedUntaggedFunctionOnce,
             call: f => { unsafe { Box::from_raw( f ) }.call_once( ($($kind,)*) ) }
         );
-        
+
         next! { $next }
     }
 }
@@ -1233,7 +1233,7 @@ mod test_deserialization {
             let f = @{Mut(f)};
 
             let caught = false;
-            
+
             try {
                 f(function () {
                     f(function() {});
@@ -1243,7 +1243,7 @@ mod test_deserialization {
                     caught = true;
                 }
             }
-        
+
             f.drop();
 
             return caught;
@@ -1272,7 +1272,7 @@ mod test_deserialization {
             s.consume();
             unreachable!(); // never actually called
         };
-        
+
         js! {
             let f = @{Once(f)};
 
@@ -1294,7 +1294,7 @@ mod test_deserialization {
             let f = @{f};
 
             let caught = false;
-            
+
             try {
                 f(function () {
                     f.drop();
@@ -1304,7 +1304,7 @@ mod test_deserialization {
                     caught = true;
                 }
             }
-        
+
             f.drop();
 
             return caught;
