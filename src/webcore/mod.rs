@@ -21,14 +21,15 @@ pub mod promise;
 pub mod discard;
 pub mod global_arena;
 
-#[cfg(feature = "futures-support")]
+#[cfg(all(feature = "futures-support", feature = "nightly"))]
 pub mod promise_future;
 
-#[cfg(feature = "futures-support")]
+#[cfg(all(feature = "futures-support", feature = "nightly"))]
 pub mod executor;
 
 #[cfg(feature = "nightly")]
 pub mod void {
+	/// An uninhabited type for use in statically impossible cases.
     pub type Void = !;
 }
 

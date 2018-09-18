@@ -40,5 +40,5 @@ pub mod child_node;
 pub mod gamepad;
 pub mod midi;
 
-#[cfg(feature = "futures-support")]
+#[cfg(all(feature = "futures-support", feature = "nightly"))]
 pub mod timer_future;

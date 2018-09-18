@@ -120,7 +120,7 @@
 )]
 #![cfg_attr(feature = "nightly", feature(core_intrinsics))]
 #![cfg_attr(feature = "nightly", feature(never_type))]
-#![cfg_attr(feature = "futures-support", feature(futures_api, pin, arbitrary_self_types))]
+#![cfg_attr(all(feature = "futures-support", feature = "nightly"), feature(futures_api, pin, arbitrary_self_types))]
 #![recursion_limit="1500"]
 
 #[cfg(feature = "serde")]
@@ -143,16 +143,16 @@ pub use stdweb_internal_macros::js_export;
 #[cfg(rust_1_30_or_newer)]
 pub use stdweb_internal_macros::async_test;
 
-#[cfg(feature = "futures-support")]
+#[cfg(all(feature = "futures-support", feature = "nightly"))]
 extern crate futures_core;
 
-#[cfg(feature = "futures-support")]
+#[cfg(all(feature = "futures-support", feature = "nightly"))]
 extern crate futures_util;
 
-#[cfg(feature = "futures-support")]
+#[cfg(all(feature = "futures-support", feature = "nightly"))]
 extern crate futures_channel;
 
-#[cfg(feature = "futures-support")]
+#[cfg(all(feature = "futures-support", feature = "nightly"))]
 extern crate futures_executor;
 
 #[macro_use]
@@ -202,7 +202,8 @@ pub use webcore::promise::{TypedPromise, Promise, DoneHandle};
 
 #[cfg(all(
     feature = "futures-support",
-    feature = "experimental_features_which_may_break_on_minor_version_bumps"
+    feature = "experimental_features_which_may_break_on_minor_version_bumps",
+    feature = "nightly"
 ))]
 pub use webcore::promise_future::{PromiseFuture, spawn_local, print_error_panic, unwrap_future};
 
@@ -217,7 +218,7 @@ pub mod serde {
 
 /// A module with bindings to the Web APIs.
 pub mod web {
-    #[cfg(feature = "futures-support")]
+    #[cfg(all(feature = "futures-support", feature = "nightly"))]
     pub use webapi::timer_future::{
         Wait,
         wait,

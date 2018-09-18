@@ -1,4 +1,4 @@
-#[cfg(feature = "futures-support")]
+#[cfg(all(feature = "futures-support", feature = "nightly"))]
 use futures_channel::oneshot;
 use webapi::event::{IEvent, IUiEvent, UiEvent, Event};
 use webapi::events::mouse::{IMouseEvent, MouseEvent};
@@ -594,7 +594,7 @@ impl DataTransferItem {
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItem/getAsString)
     // https://www.w3.org/TR/html51/editing.html#ref-for-dom-datatransferitem-getasstring-1
-    #[cfg(feature = "futures-support")]
+    #[cfg(all(feature = "futures-support", feature = "nightly"))]
     pub fn get_as_string_future( &self ) -> oneshot::Receiver<String> {
         let (sender, receiver) = oneshot::channel();
         let callback = |s: String| {
