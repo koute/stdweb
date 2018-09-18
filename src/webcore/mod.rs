@@ -29,7 +29,7 @@ pub mod executor;
 
 #[cfg(feature = "nightly")]
 pub mod void {
-	/// An uninhabited type for use in statically impossible cases.
+    /// An uninhabited type for use in statically impossible cases.
     pub type Void = !;
 }
 
