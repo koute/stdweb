@@ -8,22 +8,22 @@ use webcore::value::{Value, Reference};
 use webcore::try_from::{TryInto, TryFrom};
 use webcore::discard::DiscardOnDrop;
 
-#[cfg(all(feature = "futures-support", feature = "nightly"))]
+#[cfg(feature = "futures-support")]
 use webcore::serialization::JsSerialize;
 
-#[cfg(all(feature = "futures-support", feature = "nightly"))]
+#[cfg(feature = "futures-support")]
 use futures_core::TryFuture;
 
-#[cfg(all(feature = "futures-support", feature = "nightly"))]
+#[cfg(feature = "futures-support")]
 use futures_util::{FutureExt, TryFutureExt};
 
-#[cfg(all(feature = "futures-support", feature = "nightly"))]
+#[cfg(feature = "futures-support")]
 use futures_util::future::ready;
 
-#[cfg(all(feature = "futures-support", feature = "nightly"))]
+#[cfg(feature = "futures-support")]
 use futures_channel::oneshot::channel;
 
-#[cfg(all(feature = "futures-support", feature = "nightly"))]
+#[cfg(feature = "futures-support")]
 use super::promise_future::{PromiseFuture, spawn_local};
 
 
@@ -133,7 +133,7 @@ impl Promise {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise#Syntax)
     // https://www.ecma-international.org/ecma-262/6.0/#sec-promise-executor
-    #[cfg(all(feature = "futures-support", feature = "nightly"))]
+    #[cfg(feature = "futures-support")]
     pub fn from_future< A >( future: A ) -> Self
         where A: TryFuture + 'static,
               A::Ok: JsSerialize,
@@ -280,7 +280,7 @@ impl Promise {
     /// ```
     // We can't use the IntoFuture trait because Promise doesn't have a type argument
     // TODO explain more why we can't use the IntoFuture trait
-    #[cfg(all(feature = "futures-support", feature = "nightly"))]
+    #[cfg(feature = "futures-support")]
     pub fn to_future< A, B >( &self ) -> PromiseFuture< A, B >
          where A: TryFrom< Value > + 'static,
                B: TryFrom< Value > + 'static,

@@ -21,10 +21,10 @@ pub mod promise;
 pub mod discard;
 pub mod global_arena;
 
-#[cfg(all(feature = "futures-support", feature = "nightly"))]
+#[cfg(feature = "futures-support")]
 pub mod promise_future;
 
-#[cfg(all(feature = "futures-support", feature = "nightly"))]
+#[cfg(feature = "futures-support")]
 pub mod executor;
 
 #[cfg(feature = "nightly")]
