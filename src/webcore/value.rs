@@ -3,6 +3,7 @@ use std::hash::Hash;
 use std::fmt;
 use std::error;
 use std::mem;
+use std::borrow::Cow;
 use webcore::void::Void;
 use webcore::try_from::{TryFrom, TryInto};
 use webcore::number::{self, Number};
@@ -12,6 +13,8 @@ use webcore::serialization::JsSerialize;
 use webcore::reference_type::ReferenceType;
 use webcore::instance_of::InstanceOf;
 use webcore::symbol::Symbol;
+use webcore::type_name::type_name_opt;
+use webapi::error::TypeError;
 
 /// A unit type representing JavaScript's `undefined`.
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Debug)]
@@ -826,29 +829,32 @@ impl_partial_eq_boilerplate! {
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum ConversionError {
     TypeMismatch {
-        actual_type: &'static str
+        expected: Cow< 'static, str >,
+        actual: Cow< 'static, str >
     },
     NumericConversionError( number::ConversionError ),
     ValueConversionError( Box< ConversionError > ),
     Custom( String )
 }
 
-fn value_type_name( value: &Value ) -> &'static str {
+fn extract_type_name( value: &Value ) -> Cow< 'static, str > {
     match *value {
-        Value::Undefined => "Undefined",
-        Value::Null => "Null",
-        Value::Bool( _ ) => "Bool",
-        Value::Number( _ ) => "Number",
-        Value::Symbol( _ ) => "Symbol",
-        Value::String( _ ) => "String",
-        Value::Reference( _ ) => "Reference"
+        Value::Undefined => "undefined".into(),
+        Value::Null => "null".into(),
+        Value::Bool( _ ) => "bool".into(),
+        Value::Number( _ ) => "Number".into(),
+        Value::Symbol( _ ) => "Symbol".into(),
+        Value::String( _ ) => "String".into(),
+        Value::Reference( _ ) => "Reference".into()
     }
 }
 
 impl fmt::Display for ConversionError {
     fn fmt( &self, formatter: &mut fmt::Formatter ) -> Result< (), fmt::Error > {
         match *self {
-            ConversionError::TypeMismatch { actual_type } => write!( formatter, "type mismatch; actual type is {}", actual_type ),
+            ConversionError::TypeMismatch { ref expected, ref actual } => {
+                write!( formatter, "type mismatch; expected {}, got {}", expected, actual )
+            },
             ConversionError::NumericConversionError( ref inner ) => write!( formatter, "{}", inner ),
             ConversionError::ValueConversionError( ref inner ) => write!( formatter, "value conversion error: {}", inner ),
             ConversionError::Custom( ref message ) => write!( formatter, "{}", message )
@@ -879,11 +885,24 @@ impl From< Void > for ConversionError {
     }
 }
 
+impl From< ConversionError > for TypeError {
+    fn from( error: ConversionError ) -> TypeError {
+        (&error).into()
+    }
+}
+
+impl< 'a > From< &'a ConversionError > for TypeError {
+    fn from( error: &'a ConversionError ) -> TypeError {
+        js!( return new TypeError( @{format!( "{}", error )} ); ).try_into().unwrap()
+    }
+}
+
 impl ConversionError {
     #[inline]
-    pub(crate) fn type_mismatch( actual_value: &Value ) -> Self {
+    pub(crate) fn type_mismatch( actual_value: &Value, expected: Cow< 'static, str > ) -> Self {
         ConversionError::TypeMismatch {
-            actual_type: value_type_name( actual_value )
+            actual: extract_type_name( actual_value ),
+            expected
         }
     }
 
@@ -900,7 +919,7 @@ impl TryFrom< Value > for Undefined {
     fn try_from( value: Value ) -> Result< Self, Self::Error > {
         match value {
             Value::Undefined => Ok( Undefined ),
-            _ => Err( ConversionError::type_mismatch( &value ) )
+            _ => Err( ConversionError::type_mismatch( &value, "undefined".into() ) )
         }
     }
 }
@@ -912,7 +931,7 @@ impl TryFrom< Value > for Null {
     fn try_from( value: Value ) -> Result< Self, Self::Error > {
         match value {
             Value::Null => Ok( Null ),
-            _ => Err( ConversionError::type_mismatch( &value ) )
+            _ => Err( ConversionError::type_mismatch( &value, "null".into() ) )
         }
     }
 }
@@ -924,7 +943,7 @@ impl TryFrom< Value > for () {
     fn try_from( value: Value ) -> Result< Self, Self::Error > {
         match value {
             Value::Null | Value::Undefined => Ok( () ),
-            _ => Err( ConversionError::type_mismatch( &value ) )
+            _ => Err( ConversionError::type_mismatch( &value, "null or undefined".into() ) )
         }
     }
 }
@@ -936,7 +955,7 @@ impl TryFrom< Value > for bool {
     fn try_from( value: Value ) -> Result< Self, Self::Error > {
         match value {
             Value::Bool( value ) => Ok( value ),
-            _ => Err( ConversionError::type_mismatch( &value ) )
+            _ => Err( ConversionError::type_mismatch( &value, "bool".into() ) )
         }
     }
 }
@@ -954,7 +973,10 @@ macro_rules! impl_try_into_number {
                             let result: Result< Self, _ > = value.try_into();
                             result.map_err( |error| error.into() )
                         },
-                        _ => Err( ConversionError::type_mismatch( &value ) )
+                        _ => {
+                            let expected = concat!( "Number which fits into ", stringify!( $kind ) );
+                            Err( ConversionError::type_mismatch( &value, expected.into() ) )
+                        }
                     }
                 }
             }
@@ -974,7 +996,14 @@ impl< E: Into< ConversionError >, V: TryFrom< Value, Error = E > > TryFrom< Valu
                 let object: Object = reference.try_into()?;
                 object.try_into()
             },
-            _ => Err( ConversionError::type_mismatch( &value ) )
+            _ => {
+                let expected = match type_name_opt::< V >() {
+                    Some( type_name ) => format!( "Object with values of type {}", type_name ).into(),
+                    None => "Object".into()
+                };
+
+                Err( ConversionError::type_mismatch( &value, expected ) )
+            }
         }
     }
 }
@@ -989,7 +1018,14 @@ impl< E: Into< ConversionError >, V: TryFrom< Value, Error = E > > TryFrom< Valu
                 let object: Object = reference.try_into()?;
                 object.try_into()
             },
-            _ => Err( ConversionError::type_mismatch( &value ) )
+            _ => {
+                let expected = match type_name_opt::< V >() {
+                    Some( type_name ) => format!( "Object with values of type {}", type_name ).into(),
+                    None => "Object".into()
+                };
+
+                Err( ConversionError::type_mismatch( &value, expected ) )
+            }
         }
     }
 }
@@ -1004,7 +1040,14 @@ impl< E: Into< ConversionError >, T: TryFrom< Value, Error = E > > TryFrom< Valu
                 let array: Array = reference.try_into()?;
                 array.try_into()
             },
-            _ => Err( ConversionError::type_mismatch( &value ) )
+            _ => {
+                let expected = match type_name_opt::< T >() {
+                    Some( type_name ) => format!( "Array with elements of type {}", type_name ).into(),
+                    None => "Array".into()
+                };
+
+                Err( ConversionError::type_mismatch( &value, expected ) )
+            }
         }
     }
 }
@@ -1016,7 +1059,7 @@ impl TryFrom< Value > for String {
     fn try_from( value: Value ) -> Result< Self, Self::Error > {
         match value {
             Value::String( value ) => Ok( value ),
-            _ => Err( ConversionError::type_mismatch( &value ) )
+            _ => Err( ConversionError::type_mismatch( &value, "String".into() ) )
         }
     }
 }
@@ -1028,7 +1071,7 @@ impl TryFrom< Value > for Symbol {
     fn try_from( value: Value ) -> Result< Self, Self::Error > {
         match value {
             Value::Symbol( value ) => Ok( value ),
-            _ => Err( ConversionError::type_mismatch( &value ) )
+            _ => Err( ConversionError::type_mismatch( &value, "Symbol".into() ) )
         }
     }
 }
@@ -1040,7 +1083,7 @@ impl TryFrom< Value > for Reference {
     fn try_from( value: Value ) -> Result< Self, Self::Error > {
         match value {
             Value::Reference( value ) => Ok( value ),
-            _ => Err( ConversionError::type_mismatch( &value ) )
+            _ => Err( ConversionError::type_mismatch( &value, "Reference".into() ) )
         }
     }
 }
@@ -1052,7 +1095,7 @@ impl< 'a > TryFrom< &'a Value > for &'a str {
     fn try_from( value: &'a Value ) -> Result< Self, Self::Error > {
         match *value {
             Value::String( ref value ) => Ok( value ),
-            _ => Err( ConversionError::type_mismatch( &value ) )
+            _ => Err( ConversionError::type_mismatch( &value, "String".into() ) )
         }
     }
 }
@@ -1064,7 +1107,7 @@ impl< 'a > TryFrom< &'a Value > for &'a Symbol {
     fn try_from( value: &'a Value ) -> Result< Self, Self::Error > {
         match *value {
             Value::Symbol( ref value ) => Ok( value ),
-            _ => Err( ConversionError::type_mismatch( &value ) )
+            _ => Err( ConversionError::type_mismatch( &value, "Symbol".into() ) )
         }
     }
 }
@@ -1076,7 +1119,7 @@ impl< 'a > TryFrom< &'a Value > for &'a Reference {
     fn try_from( value: &'a Value ) -> Result< Self, Self::Error > {
         match *value {
             Value::Reference( ref value ) => Ok( value ),
-            _ => Err( ConversionError::type_mismatch( &value ) )
+            _ => Err( ConversionError::type_mismatch( &value, "Reference".into() ) )
         }
     }
 }
@@ -1174,7 +1217,7 @@ impl< T: TryFrom< Value, Error = ConversionError > + AsRef< Reference > > TryFro
 
 #[cfg(test)]
 mod tests {
-    use super::{Value, Reference};
+    use super::{Value, Reference, ConversionError};
     use webcore::try_from::TryInto;
 
     #[test]
@@ -1360,5 +1403,26 @@ mod tests {
 
         drop(obj2);
         assert!(!is_known_reference(refid));
+    }
+
+    #[test]
+    fn conversion_error_string_into_bool() {
+        let a = Value::String( "Piggy".into() );
+        let b: Result< bool, ConversionError > = a.try_into();
+        assert_eq!(
+            format!( "{}", b.unwrap_err() ),
+            "type mismatch; expected bool, got String"
+        );
+    }
+
+    #[cfg(rust_nightly)]
+    #[test]
+    fn conversion_error_string_into_vec_of_bools() {
+        let a = Value::String( "Piggy".into() );
+        let b: Result< Vec< bool >, ConversionError > = a.try_into();
+        assert_eq!(
+            format!( "{}", b.unwrap_err() ),
+            "type mismatch; expected Array with elements of type bool, got String"
+        );
     }
 }

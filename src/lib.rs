@@ -112,13 +112,13 @@
 )]
 #![cfg_attr(
     all(target_arch = "wasm32", target_os = "unknown"),
-    feature(proc_macro)
-)]
-#![cfg_attr(
-    all(target_arch = "wasm32", target_os = "unknown"),
     feature(use_extern_macros)
 )]
-#![cfg_attr(feature = "nightly", feature(core_intrinsics))]
+#![cfg_attr(
+    all(test, rust_1_30_or_newer, rust_nightly),
+    feature(linkage) // Needed for async tests.
+)]
+#![cfg_attr(rust_nightly, feature(core_intrinsics))]
 #![cfg_attr(feature = "nightly", feature(never_type))]
 #![recursion_limit="1500"]
 
@@ -133,11 +133,14 @@ extern crate serde_json;
 #[macro_use]
 extern crate serde_derive;
 
-#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+#[cfg(rust_1_30_or_newer)]
 extern crate stdweb_internal_macros;
 
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 pub use stdweb_internal_macros::js_export;
+
+#[cfg(rust_1_30_or_newer)]
+pub use stdweb_internal_macros::async_test;
 
 #[cfg(feature = "futures-support")]
 extern crate futures_core;
@@ -182,6 +185,7 @@ pub use webcore::array::Array;
 pub use webcore::symbol::Symbol;
 
 pub use webcore::unsafe_typed_array::UnsafeTypedArray;
+pub use webcore::mutfn::Mut;
 pub use webcore::once::Once;
 pub use webcore::instance_of::InstanceOf;
 pub use webcore::reference_type::ReferenceType;
@@ -299,11 +303,16 @@ pub mod web {
             NotSupportedError,
             SecurityError,
             SyntaxError,
-            TypeError,
             InvalidCharacterError,
             AbortError
         };
-        pub use webapi::error::{IError, Error};
+
+        pub use webapi::error::{
+            IError,
+            Error,
+            TypeError
+        };
+
         pub use webapi::rendering_context::{AddColorStopError, DrawImageError, GetImageDataError};
         pub use webapi::html_elements::UnknownValueError;
     }

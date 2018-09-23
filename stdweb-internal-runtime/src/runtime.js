@@ -85,61 +85,61 @@ Module.STDWEB_PRIVATE.to_js = function to_js( address ) {
         return output;
     } else if( kind === 9 ) {
         return Module.STDWEB_PRIVATE.acquire_js_reference( HEAP32[ address / 4 ] );
-    } else if( kind === 10 ) {
+    } else if( kind === 10 || kind === 12 || kind === 13 ) {
         var adapter_pointer = HEAPU32[ address / 4 ];
         var pointer = HEAPU32[ (address + 4) / 4 ];
         var deallocator_pointer = HEAPU32[ (address + 8) / 4 ];
+        var num_ongoing_calls = 0;
         var output = function() {
             if( pointer === 0 ) {
-                throw new ReferenceError( "Already dropped Rust function called!" );
+                if (kind === 10) {
+                    throw new ReferenceError( "Already dropped Rust function called!" );
+                } else if (kind === 12) {
+                    throw new ReferenceError( "Already dropped FnMut function called!" );
+                } else {
+                    throw new ReferenceError( "Already called or dropped FnOnce function called!" );
+                }
+            }
+            
+            var function_pointer = pointer;
+            if (kind === 13) {
+                output.drop = Module.STDWEB_PRIVATE.noop;
+                pointer = 0;
+            }
+
+            if (num_ongoing_calls !== 0) {
+                if (kind === 12 || kind === 13) {
+                    throw new ReferenceError( "FnMut function called multiple times concurrently!" );
+                }
             }
 
             var args = Module.STDWEB_PRIVATE.alloc( 16 );
             Module.STDWEB_PRIVATE.serialize_array( args, arguments );
-            Module.STDWEB_PRIVATE.dyncall( "vii", adapter_pointer, [pointer, args] );
-            var result = Module.STDWEB_PRIVATE.tmp;
-            Module.STDWEB_PRIVATE.tmp = null;
+
+            try {
+                num_ongoing_calls += 1;
+                Module.STDWEB_PRIVATE.dyncall( "vii", adapter_pointer, [function_pointer, args] );
+                var result = Module.STDWEB_PRIVATE.tmp;
+                Module.STDWEB_PRIVATE.tmp = null;
+            } finally {
+                num_ongoing_calls -= 1;
+            }
 
             return result;
         };
 
         output.drop = function() {
-            output.drop = Module.STDWEB_PRIVATE.noop;
-            var function_pointer = pointer;
-            pointer = 0;
-
-            Module.STDWEB_PRIVATE.dyncall( "vi", deallocator_pointer, [function_pointer] );
-        };
-
-        return output;
-    } else if( kind === 13 ) {
-        var adapter_pointer = HEAPU32[ address / 4 ];
-        var pointer = HEAPU32[ (address + 4) / 4 ];
-        var deallocator_pointer = HEAPU32[ (address + 8) / 4 ];
-        var output = function() {
-            if( pointer === 0 ) {
-                throw new ReferenceError( "Already called or dropped FnOnce function called!" );
+            if (num_ongoing_calls !== 0) {
+                throw new ReferenceError( "Rust function dropped while called!" );
             }
 
             output.drop = Module.STDWEB_PRIVATE.noop;
             var function_pointer = pointer;
             pointer = 0;
 
-            var args = Module.STDWEB_PRIVATE.alloc( 16 );
-            Module.STDWEB_PRIVATE.serialize_array( args, arguments );
-            Module.STDWEB_PRIVATE.dyncall( "vii", adapter_pointer, [function_pointer, args] );
-            var result = Module.STDWEB_PRIVATE.tmp;
-            Module.STDWEB_PRIVATE.tmp = null;
-
-            return result;
-        };
-
-        output.drop = function() {
-            output.drop = Module.STDWEB_PRIVATE.noop;
-            var function_pointer = pointer;
-            pointer = 0;
-
-            Module.STDWEB_PRIVATE.dyncall( "vi", deallocator_pointer, [function_pointer] );
+            if (function_pointer != 0) {
+                Module.STDWEB_PRIVATE.dyncall( "vi", deallocator_pointer, [function_pointer] );
+            }
         };
 
         return output;

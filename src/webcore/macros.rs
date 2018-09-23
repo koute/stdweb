@@ -539,7 +539,7 @@ macro_rules! error_boilerplate {
         }
     };
 
-    ($type_name:ident, name = $error_name:expr) => {
+    ($type_name:ident, dom_exception = $error_name:expr) => {
         impl ::InstanceOf for $type_name {
             #[inline]
             fn instance_of( reference: &Reference ) -> bool {
@@ -675,6 +675,28 @@ macro_rules! js_try {
     }};
 }
 
+macro_rules! comma_join {
+    ($a:ident) => {
+        stringify!( $a )
+    };
+
+    ($a:ident $b:ident) => {
+        concat!(
+            stringify!( $a ),
+            " or ",
+            stringify!( $b ),
+        )
+    };
+
+    ($a:ident $($item:ident)+) => {
+        concat!(
+            stringify!( $a ),
+            ", ",
+            comma_join!( $($item)+ )
+        )
+    };
+}
+
 macro_rules! error_enum_boilerplate {
     ($( #[ $error_meta:meta ] )* $error_name:ident, $( $( #[ $variant_meta:meta ] )* $variant:ident),*) => {
         $( #[ $error_meta ] )*
@@ -696,7 +718,8 @@ macro_rules! error_enum_boilerplate {
                     }
                 )*
 
-                Err(::webcore::value::ConversionError::type_mismatch( &value ))
+                let expected = comma_join!( $($variant)+ ).into();
+                Err( ::webcore::value::ConversionError::type_mismatch( &value, expected ) )
             }
         }
 
@@ -718,9 +741,9 @@ macro_rules! error_enum_boilerplate {
             #[doc(hidden)]
             #[inline]
             fn _into_js< 'a >( &'a self ) -> ::webcore::serialization::SerializedValue< 'a > {
-                let reference: &::webcore::value::Reference = match &self {
+                let reference: &::webcore::value::Reference = match self {
                     $(
-                        &$error_name::$variant( variant ) => variant.as_ref(),
+                        &$error_name::$variant( ref variant ) => variant.as_ref(),
                     )+
                 };
 
@@ -732,7 +755,7 @@ macro_rules! error_enum_boilerplate {
 
 #[cfg(test)]
 mod tests {
-    use webcore::value::{ConversionError, Value};
+    use webcore::value::Value;
 
     macro_rules! stringify_js {
         ($($token:tt)*) => {
@@ -789,16 +812,10 @@ mod tests {
         assert_eq!( v, Err(3.3) );
 
         let v: Result< Result<i32, i32>, _ > = js_try!( return "f"; );
-        match v {
-            Err(ConversionError::TypeMismatch { actual_type: _ }) => (),
-            _ => panic!("Expected ConversionError::TypeMistmatch, got {:?}", v),
-        }
+        assert!( v.is_err() );
 
         let v: Result< Result<i32, i32>, _ > = js_try!( throw "Broken"; );
-        match v {
-            Err(ConversionError::TypeMismatch { actual_type: _ }) => (),
-            _ => panic!("Expected ConversionError::TypeMistmatch, got {:?}", v),
-        }
+        assert!( v.is_err() );
     }
 
     #[test]
