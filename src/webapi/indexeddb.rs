@@ -1,7 +1,8 @@
 use webcore::value::{Value, Reference};
 use webcore::try_from::{TryFrom, TryInto};
 use webapi::event_target::{IEventTarget, EventTarget};
-use webapi::dom_exception::{DomException, InvalidStateError, TypeError, TransactionInactiveError, DataError, InvalidAccessError, ReadOnlyError, DataCloneError, ConstraintError, NotFoundError};
+use webapi::dom_exception::{DomException, InvalidStateError, TransactionInactiveError, DataError, InvalidAccessError, ReadOnlyError, DataCloneError, ConstraintError, NotFoundError};
+use webapi::error::TypeError;
 use webapi::dom_string_list::DOMStringList;
 
 /// Used to represent the state of an IDBRequest.

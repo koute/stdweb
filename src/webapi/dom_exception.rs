@@ -151,7 +151,7 @@ pub struct TransactionInactiveError( Reference );
 impl IError for TransactionInactiveError {}
 impl IDomException for TransactionInactiveError {}
 
-error_boilerplate! { TransactionInactiveError, name = "TransactionInactiveError" }
+error_boilerplate! { TransactionInactiveError, dom_exception = "TransactionInactiveError" }
 
 /// The key was not valid in the context it was used.
 #[derive(Clone, Debug, ReferenceType)]
@@ -161,7 +161,7 @@ pub struct DataError( Reference );
 impl IError for DataError {}
 impl IDomException for DataError {}
 
-error_boilerplate! { DataError, name = "DataError" }
+error_boilerplate! { DataError, dom_exception = "DataError" }
 
 /// The transaction mode is read only.
 #[derive(Clone, Debug, ReferenceType)]
@@ -171,7 +171,7 @@ pub struct ReadOnlyError( Reference );
 impl IError for ReadOnlyError {}
 impl IDomException for ReadOnlyError {}
 
-error_boilerplate! { ReadOnlyError, name = "ReadOnlyError" }
+error_boilerplate! { ReadOnlyError, dom_exception = "ReadOnlyError" }
 
 /// The data being stored could not be cloned by the internal structured cloning algorithm.
 #[derive(Clone, Debug, ReferenceType)]
@@ -181,7 +181,7 @@ pub struct DataCloneError( Reference );
 impl IError for DataCloneError {}
 impl IDomException for DataCloneError {}
 
-error_boilerplate! { DataCloneError, name = "DataCloneError" }
+error_boilerplate! { DataCloneError, dom_exception = "DataCloneError" }
 
 /// An index or an object store already has this name
 #[derive(Clone, Debug, ReferenceType)]
@@ -191,18 +191,7 @@ pub struct ConstraintError( Reference );
 impl IError for ConstraintError {}
 impl IDomException for ConstraintError {}
 
-error_boilerplate! { ConstraintError, name = "ConstraintError" }
-/*
-/// There is no index with the given name (case-sensitive) in the database.
-#[derive(Clone, Debug, ReferenceType)]
-#[reference(subclass_of(Error, DomException))]
-pub struct NotFoundError( Reference );
-
-impl IError for NotFoundError {}
-impl IDomException for NotFoundError {}
-
-error_boilerplate! { NotFoundError, name = "NotFoundError" }
-*/
+error_boilerplate! { ConstraintError, dom_exception = "ConstraintError" }
 
 /// Used to indicate that the operation was aborted.
 // https://heycam.github.io/webidl/#aborterror
