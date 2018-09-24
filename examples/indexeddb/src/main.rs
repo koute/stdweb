@@ -106,7 +106,7 @@ fn display_data_inner(db: &IDBDatabase) {
                 delete_btn.add_event_listener( delete_item );
 
                 // Iterate to the next item in the cursor
-                cursor.advance(1); // Todo this was continue
+                cursor.advance(1).unwrap(); // Todo this was continue
                 
             } else {
                 // Again, if list item is empty, display a 'No notes stored' message
@@ -141,7 +141,7 @@ fn delete_item( e: ClickEvent ) {
         if let Some(ref db) = *db_cell.borrow_mut()  {
             let transaction = db.transaction(vec!["notes"], IDBTransactionMode::ReadWrite);
             let object_store = transaction.object_store("notes").unwrap();
-            object_store.delete(note_id.try_into().unwrap());
+            object_store.delete(note_id.try_into().unwrap()).unwrap();
             
             // report that the data item has been deleted
             transaction.add_event_listener( move |_e: IDBCompleteEvent| {
