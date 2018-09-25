@@ -15,6 +15,17 @@ use webcore::try_from::TryFrom;
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element)
 // https://dom.spec.whatwg.org/#element
 pub trait IElement: INode + IParentNode + IChildNode {
+    /// The Element.namespaceURI read-only property returns the namespace URI
+    /// of the element, or null if the element is not in a namespace.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/namespaceURI)
+    // https://dom.spec.whatwg.org/#ref-for-dom-element-namespaceuri
+    fn namespace_uri( &self ) -> Option< String > {
+        js!(
+            return @{self.as_ref()}.namespaceURI;
+        ).try_into().unwrap()
+    }
+
     /// The Element.classList is a read-only property which returns a live
     /// [TokenList](struct.TokenList.html) collection of the class attributes
     /// of the element.
