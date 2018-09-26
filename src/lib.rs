@@ -1,3 +1,4 @@
+#![feature(proc_macro_non_items)]
 //! The goal of this crate is to provide Rust bindings to the Web APIs and to allow
 //! a high degree of interoperability between Rust and JavaScript.
 //!

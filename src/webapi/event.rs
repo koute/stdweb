@@ -280,7 +280,7 @@ mod tests {
     fn test_ui_event() {
         use webapi::events::mouse::ClickEvent;
 
-        let event: UiEvent = js!(
+        let event: UiEvent = js_new!(
             return new UIEvent(
                 @{ClickEvent::EVENT_TYPE},
                 {

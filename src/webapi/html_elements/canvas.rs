@@ -56,7 +56,7 @@ impl CanvasElement {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/width)
     // https://html.spec.whatwg.org/#the-canvas-element:dom-canvas-width
     pub fn width( &self ) -> u32 {
-        js! (
+        js_new! (
             return @{self}.width;
         ).try_into().unwrap()
     }
