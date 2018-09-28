@@ -58,8 +58,7 @@ impl Selection {
     /// This number is zero-based. If the selection begins with the first character in the
     /// [anchor_node](struct.Selection.html#method.anchor_node), 0 is returned.
     ///
-    /// [(Javascript
-    /// docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/anchorOffset)
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/anchorOffset)
     pub fn anchor_offset(&self) -> u32 {
         js! (
             return @{self}.anchorOffset;
@@ -198,7 +197,17 @@ impl Selection {
     /// modified. If the content is focused or editable, the caret will blink there.
     ///
     /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/collapse)
-    pub fn collapse<N: INode>(&self, node: &N, offset: Option<u32>) -> Result<(), IndexSizeError> {
+    pub fn collapse<N: INode>(&self, node: &N) {
+        js! { @(no_return)
+            @{self}.collapse(@{node.as_ref()});
+        }
+    }
+
+    /// Collapses the [Selection](struct.Selection.html) to a single point. The document is not
+    /// modified. If the content is focused or editable, the caret will blink there.
+    ///
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/collapse)
+    pub fn collapse_with_offset<N: INode>(&self, node: &N, offset: Option<u32>) -> Result<(), IndexSizeError> {
         js_try! ( @(no_return)
             @{self}.collapse(@{node.as_ref()}, @{offset});
         ).unwrap()
@@ -207,8 +216,7 @@ impl Selection {
     /// Collapses the [Selection](struct.Selection.html) to the start of the first range in the
     /// selection. If the content is focused or editable, the caret will blink there.
     ///
-    /// [(Javascript
-    /// docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/collapseToStart)
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/collapseToStart)
     pub fn collapse_to_start(&self) -> Result<(), InvalidStateError> {
         js_try! ( @(no_return)
             @{self}.collapseToStart();
@@ -218,8 +226,7 @@ impl Selection {
     /// Collapses the [Selection](struct.Selection.html) to the end of the last range in the
     /// selection. If the content is focused or editable, the caret will blink there.
     ///
-    /// [(Javascript
-    /// docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/collapseToEnd)
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/collapseToEnd)
     pub fn collapse_to_end(&self) -> Result<(), InvalidStateError> {
         js_try! ( @(no_return)
             @{self}.collapseToEnd();
@@ -241,7 +248,7 @@ impl Selection {
     ///
     /// [(Javascript
     /// docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/setBaseAndExtent)
-    pub fn set_base_and_extent<N: INode>(&self, anchor_node: &N, anchor_offset: u32, focus_node: &N, focus_offset: u32) -> Result<(), InvalidStateError> {
+    pub fn set_base_and_extent<N: INode, M: INode>(&self, anchor_node: &N, anchor_offset: u32, focus_node: &M, focus_offset: u32) -> Result<(), IndexSizeError> {
         js_try! ( @(no_return)
             @{self}.setBaseAndExtent(@{anchor_node.as_ref()}, @{anchor_offset}, @{focus_node.as_ref()}, @{focus_offset});
         ).unwrap()
@@ -250,8 +257,7 @@ impl Selection {
     /// Adds all the children of the specified [Node](struct.Node.html) to the selection. Previous
     /// selection is lost.
     ///
-    /// [(Javascript
-    /// docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/selectAllChildren)
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/selectAllChildren)
     pub fn select_all_children<N: INode>(&self, node: &N) {
         js! { @(no_return)
             @{self}.selectAllChildren(@{node.as_ref()});
@@ -261,21 +267,28 @@ impl Selection {
     /// Deletes the actual text being represented by the [Selection](struct.Selection.html) from
     /// the document's DOM.
     ///
-    /// [(Javascript
-    /// docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/deleteFromDocument)
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/deleteFromDocument)
     pub fn delete_from_document(&self) {
         js! { @(no_return)
             @{self}.deleteFromDocument();
         };
     }
 
-    /// Indicates if the node is part of the selection.
+    /// Indicates if the entire node is part of the selection.
     ///
-    /// [(Javascript
-    /// docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/containsNode)
-    pub fn contains_node<N: INode>(&self, node: &N, allow_partial_containment: bool) -> bool {
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/containsNode)
+    pub fn contains_whole<N: INode>(&self, node: &N) -> bool {
         js! (
-            return @{self}.containsNode(@{node.as_ref()}, @{allow_partial_containment});
+            return @{self}.containsNode(@{node.as_ref()}, false);
+        ).try_into().unwrap()
+    }
+
+    /// Indicates if atleast some of the node is part of the selection.
+    ///
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Selection/containsNode)
+    pub fn contains_part_of<N: INode>(&self, node: &N) -> bool {
+        js! (
+            return @{self}.containsNode(@{node.as_ref()}, true);
         ).try_into().unwrap()
     }
 }
