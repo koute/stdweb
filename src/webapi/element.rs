@@ -316,6 +316,7 @@ mod tests {
         parent.append_child(&child);
 
         assert!(child.closest("invalid syntax +#8$()@!(#").is_err());
+    }
 
     #[test]
     fn insert_adjacent_html() {
