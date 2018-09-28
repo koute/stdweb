@@ -1,4 +1,3 @@
-#![feature(proc_macro_non_items)]
 //! The goal of this crate is to provide Rust bindings to the Web APIs and to allow
 //! a high degree of interoperability between Rust and JavaScript.
 //!
@@ -121,6 +120,7 @@
 )]
 #![cfg_attr(rust_nightly, feature(core_intrinsics))]
 #![cfg_attr(feature = "nightly", feature(never_type))]
+#![cfg_attr(rust_1_30_or_newer, feature(proc_macro_non_items))]
 #![recursion_limit="1500"]
 
 #[cfg(feature = "serde")]
@@ -135,6 +135,7 @@ extern crate serde_json;
 extern crate serde_derive;
 
 #[cfg(rust_1_30_or_newer)]
+#[macro_use]
 extern crate stdweb_internal_macros;
 
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
@@ -142,6 +143,9 @@ pub use stdweb_internal_macros::js_export;
 
 #[cfg(rust_1_30_or_newer)]
 pub use stdweb_internal_macros::async_test;
+
+#[cfg(rust_1_30_or_newer)]
+pub use stdweb_internal_macros::js_new;
 
 #[cfg(feature = "futures-support")]
 extern crate futures_core;
