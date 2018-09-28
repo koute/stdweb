@@ -391,7 +391,7 @@ mod tests {
     #[test]
     fn test_set_base_and_extent() {
         let parent = div();
-        parent.append_child(text("ab"));
+        parent.append_child(&text("ab"));
 
         assert!(selection().set_base_and_extend(&parent, 0, &parent, 0).ok());
     }
@@ -399,7 +399,7 @@ mod tests {
     #[test]
     fn test_anchor() {
         let parent = div();
-        parent.append_child(text("ab"));
+        parent.append_child(&text("ab"));
         assert!(selection().set_base_and_extend(&parent, 0, &parent, 0).ok());
         assert_eq!(selection().anchor_node().as_ref(), Some(parent.as_ref()));
         assert_eq!(selection().anchor_offset(), 0);
@@ -408,7 +408,7 @@ mod tests {
     #[test]
     fn test_focus() {
         let parent = div();
-        parent.append_child(text("ab"));
+        parent.append_child(&text("ab"));
         assert!(selection().set_base_and_extend(&parent, 0, &parent, 0).ok());
         assert_eq!(selection().focus_node().as_ref(), Some(parent.as_ref()));
         assert_eq!(selection().focus_offset(), 0);
@@ -417,7 +417,7 @@ mod tests {
     #[test]
     fn test_is_collapsed() {
         let parent = div();
-        parent.append_child(text("ab"));
+        parent.append_child(&text("ab"));
         assert!(selection().set_base_and_extend(&parent, 0, &parent, 0).ok());
         assert!(selection().is_collapsed());
     }
@@ -425,7 +425,7 @@ mod tests {
     #[test]
     fn test_contains_part_of() {
         let parent = div();
-        parent.append_child(text("ab"));
+        parent.append_child(&text("ab"));
         assert!(selection().set_base_and_extend(&parent, 0, &parent, 0).ok());
         assert!(selection().contains_part_of(&parent));
     }
@@ -433,7 +433,7 @@ mod tests {
     #[test]
     fn test_contains_whole() {
         let parent = div();
-        parent.append_child(text("ab"));
+        parent.append_child(&text("ab"));
         selection().select_all_children(&parent);
         assert!(selection().contains_whole(&parent));
     }
