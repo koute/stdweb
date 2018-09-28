@@ -364,3 +364,77 @@ impl Range {
         ).try_into().unwrap()
     }
 }
+
+#[cfg(all(test, feature = "web_test"))]
+mod tests {
+    use super::*;
+    use webapi::document::document;
+    use webapi::window::window;
+    use webcore::value::Value;
+
+    fn div() -> Node {
+        js!(
+            return document.createElement("div");
+        ).try_into().unwrap()
+    }
+
+    fn text(text: &str) -> Node {
+        js!(
+            return new Text(@{text});
+        ).try_into().unwrap()
+    }
+
+    fn selection() -> Selection {
+        window().get_selection().unwrap()
+    }
+
+    #[test]
+    fn test_set_base_and_extent() {
+        let parent = div();
+        parent.append_child("ab");
+
+        assert!(selection().set_base_and_extend(&parent, 0, &parent, 0).ok());
+    }
+
+    #[test]
+    fn test_anchor() {
+        let parent = div();
+        parent.append_child("ab");
+        assert!(selection().set_base_and_extend(&parent, 0, &parent, 0).ok());
+        assert_eq!(selection().anchor_node().as_ref(), Some(parent.as_ref()));
+        assert_eq!(selection().anchor_offset(), 0);
+    }
+
+    #[test]
+    fn test_focus() {
+        let parent = div();
+        parent.append_child("ab");
+        assert!(selection().set_base_and_extend(&parent, 0, &parent, 0).ok());
+        assert_eq!(selection().focus_node().as_ref(), Some(parent.as_ref()));
+        assert_eq!(selection().focus_offset(), 0);
+    }
+
+    #[test]
+    fn test_is_collapsed() {
+        let parent = div();
+        parent.append_child("ab");
+        assert!(selection().set_base_and_extend(&parent, 0, &parent, 0).ok());
+        assert!(selection().is_collapsed());
+    }
+
+    #[test]
+    fn test_contains_part_of() {
+        let parent = div();
+        parent.append_child("ab");
+        assert!(selection().set_base_and_extend(&parent, 0, &parent, 0).ok());
+        assert!(selection().contains_part_of(&parent));
+    }
+
+    #[test]
+    fn test_contains_whole() {
+        let parent = div();
+        parent.append_child("ab");
+        selection().select_all_children(&parent);
+        assert!(selection().contains_whole(&parent));
+    }
+}
