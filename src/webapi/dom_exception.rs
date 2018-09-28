@@ -31,7 +31,7 @@ pub struct HierarchyRequestError( Reference );
 impl IError for HierarchyRequestError {}
 impl IDomException for HierarchyRequestError {}
 
-error_boilerplate! { HierarchyRequestError, name = "HierarchyRequestError" }
+error_boilerplate! { HierarchyRequestError, dom_exception = "HierarchyRequestError" }
 
 /// Occurs when an object does not support an operation or argument.
 // https://heycam.github.io/webidl/#invalidaccesserror
@@ -42,7 +42,18 @@ pub struct InvalidAccessError( Reference );
 impl IError for InvalidAccessError {}
 impl IDomException for InvalidAccessError {}
 
-error_boilerplate! { InvalidAccessError, name = "InvalidAccessError" }
+error_boilerplate! { InvalidAccessError, dom_exception = "InvalidAccessError" }
+
+/// Occurs when the object can not be modified.
+// https://heycam.github.io/webidl/#nomodificationallowederror
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(subclass_of(Error, DomException))]
+pub struct NoModificationAllowedError( Reference );
+
+impl IError for NoModificationAllowedError {}
+impl IDomException for NoModificationAllowedError {}
+
+error_boilerplate! { NoModificationAllowedError, dom_exception = "NoModificationAllowedError" }
 
 /// Occurs when the specified object cannot be found.
 // https://heycam.github.io/webidl/#notfounderror
@@ -53,7 +64,7 @@ pub struct NotFoundError( Reference );
 impl IError for NotFoundError {}
 impl IDomException for NotFoundError {}
 
-error_boilerplate! { NotFoundError, name = "NotFoundError" }
+error_boilerplate! { NotFoundError, dom_exception = "NotFoundError" }
 
 /// Occurs when the requested operation is insecure.
 // https://heycam.github.io/webidl/#securityerror
@@ -64,7 +75,7 @@ pub struct SecurityError( Reference );
 impl IError for SecurityError {}
 impl IDomException for SecurityError {}
 
-error_boilerplate! { SecurityError, name = "SecurityError" }
+error_boilerplate! { SecurityError, dom_exception = "SecurityError" }
 
 /// Occurs when an argument does not match the expected pattern.
 // https://heycam.github.io/webidl/#syntaxerror
@@ -75,7 +86,7 @@ pub struct SyntaxError( Reference );
 impl IError for SyntaxError {}
 impl IDomException for SyntaxError {}
 
-error_boilerplate! { SyntaxError, name = "SyntaxError" }
+error_boilerplate! { SyntaxError, dom_exception = "SyntaxError" }
 
 /// Occurs when an argument is out of range.
 // https://heycam.github.io/webidl/#indexsizeerror
@@ -86,7 +97,7 @@ pub struct IndexSizeError( Reference );
 impl IError for IndexSizeError {}
 impl IDomException for IndexSizeError {}
 
-error_boilerplate! { IndexSizeError, name = "IndexSizeError" }
+error_boilerplate! { IndexSizeError, dom_exception = "IndexSizeError" }
 
 /// Occurs when an object is in an invalid state.
 // https://heycam.github.io/webidl/#invalidstateerror
@@ -97,18 +108,7 @@ pub struct InvalidStateError( Reference );
 impl IError for InvalidStateError {}
 impl IDomException for InvalidStateError {}
 
-error_boilerplate! { InvalidStateError, name = "InvalidStateError" }
-
-/// Used to indicate an unsuccessful operation when none of the other NativeError objects are an appropriate indication of the failure cause.
-// https://tc39.github.io/ecma262/#sec-native-error-types-used-in-this-standard-typeerror
-#[derive(Clone, Debug, ReferenceType)]
-#[reference(subclass_of(Error, DomException))]
-pub struct TypeError( Reference );
-
-impl IError for TypeError {}
-impl IDomException for TypeError {}
-
-error_boilerplate! { TypeError, name = "TypeError" }
+error_boilerplate! { InvalidStateError, dom_exception = "InvalidStateError" }
 
 /// Used to indicate an unsuccessful operation when none of the other NativeError objects are an appropriate indication of the failure cause.
 // https://heycam.github.io/webidl/#notsupportederror
@@ -119,7 +119,7 @@ pub struct NotSupportedError( Reference );
 impl IError for NotSupportedError {}
 impl IDomException for NotSupportedError {}
 
-error_boilerplate! { NotSupportedError, name = "NotSupportedError" }
+error_boilerplate! { NotSupportedError, dom_exception = "NotSupportedError" }
 
 /// Used to indicate the string contains one or more characters which are invalid.
 // https://heycam.github.io/webidl/#invalidcharactererror
@@ -130,7 +130,7 @@ pub struct InvalidCharacterError( Reference );
 impl IError for InvalidCharacterError {}
 impl IDomException for InvalidCharacterError {}
 
-error_boilerplate! { InvalidCharacterError, name = "InvalidCharacterError" }
+error_boilerplate! { InvalidCharacterError, dom_exception = "InvalidCharacterError" }
 
 /// Used to indicate that a pointer id passed as an argument was for some reason invalid.
 // https://w3c.github.io/pointerevents/#extensions-to-the-element-interface
@@ -141,7 +141,7 @@ pub struct InvalidPointerId( Reference );
 impl IError for InvalidPointerId {}
 impl IDomException for InvalidPointerId {}
 
-error_boilerplate! { InvalidPointerId, name = "InvalidPointerId" }
+error_boilerplate! { InvalidPointerId, dom_exception = "InvalidPointerId" }
 
 /// Used to indicate that the operation was aborted.
 // https://heycam.github.io/webidl/#aborterror
@@ -152,7 +152,18 @@ pub struct AbortError( Reference );
 impl IError for AbortError {}
 impl IDomException for AbortError {}
 
-error_boilerplate! { AbortError, name = "AbortError" }
+error_boilerplate! { AbortError, dom_exception = "AbortError" }
+
+/// Indicates an xml namespace-related feature was used incorrectly.
+// https://heycam.github.io/webidl/#namespaceerror
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(subclass_of(Error, DomException))]
+pub struct NamespaceError( Reference );
+
+impl IError for NamespaceError {}
+impl IDomException for NamespaceError {}
+
+error_boilerplate! { NamespaceError, dom_exception = "NamespaceError" }
 
 #[cfg(all(test, feature = "web_test"))]
 mod test {

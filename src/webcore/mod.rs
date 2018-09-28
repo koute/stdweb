@@ -13,6 +13,7 @@ pub mod array;
 pub mod symbol;
 pub mod type_name;
 pub mod unsafe_typed_array;
+pub mod mutfn;
 pub mod once;
 pub mod instance_of;
 pub mod reference_type;
@@ -28,6 +29,7 @@ pub mod executor;
 
 #[cfg(feature = "nightly")]
 pub mod void {
+    /// An uninhabited type for use in statically impossible cases.
     pub type Void = !;
 }
 

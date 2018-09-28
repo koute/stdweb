@@ -12,16 +12,19 @@ use webcore::discard::DiscardOnDrop;
 use webcore::serialization::JsSerialize;
 
 #[cfg(feature = "futures-support")]
+use futures_core::TryFuture;
+
+#[cfg(feature = "futures-support")]
+use futures_util::{FutureExt, TryFutureExt};
+
+#[cfg(feature = "futures-support")]
+use futures_util::future::ready;
+
+#[cfg(feature = "futures-support")]
 use futures_channel::oneshot::channel;
 
 #[cfg(feature = "futures-support")]
-use futures_core::IntoFuture;
-
-#[cfg(feature = "futures-support")]
-use futures_util::FutureExt;
-
-#[cfg(feature = "futures-support")]
-use super::promise_future::PromiseFuture;
+use super::promise_future::{PromiseFuture, spawn_local};
 
 
 /// This is used to cleanup the [`done`](struct.Promise.html#method.done) callback.
@@ -108,9 +111,7 @@ impl Promise {
     ///
     /// If you simply want to use a JavaScript Promise inside Rust, then you
     /// don't need to use this function: you should use
-    /// [`PromiseFuture`](struct.PromiseFuture.html) and the
-    /// [`FutureExt`](https://docs.rs/futures/0.2.*/futures/future/trait.FutureExt.html)
-    /// methods instead.
+    /// [`PromiseFuture`](struct.PromiseFuture.html) instead.
     ///
     /// # Examples
     ///
@@ -134,9 +135,8 @@ impl Promise {
     // https://www.ecma-international.org/ecma-262/6.0/#sec-promise-executor
     #[cfg(feature = "futures-support")]
     pub fn from_future< A >( future: A ) -> Self
-        where A: IntoFuture,
-              A::Future: 'static,
-              A::Item: JsSerialize,
+        where A: TryFuture + 'static,
+              A::Ok: JsSerialize,
               A::Error: JsSerialize {
 
         let future = future.into_future();
@@ -147,13 +147,14 @@ impl Promise {
         }
 
         let callback = move |success: Reference, error: Reference| {
-            PromiseFuture::spawn_local(
+            spawn_local(
                 future.then( move |result| {
                     match result {
                         Ok( a ) => call( success, a ),
                         Err( a ) => call( error, a ),
                     }
-                    Ok( () )
+
+                    ready( () )
                 } )
             );
         };
@@ -266,9 +267,11 @@ impl Promise {
         } )
     }
 
-    /// This method converts the `Promise` into a [`PromiseFuture`](struct.PromiseFuture.html), so that it can be used as a Rust [`Future`](https://docs.rs/futures/0.2.*/futures/future/trait.Future.html).
+    /// This method converts the `Promise` into a [`PromiseFuture`](struct.PromiseFuture.html), so that it can be used as a Rust
+    /// [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html).
     ///
-    /// This method should rarely be needed, instead use [`value.try_into()`](unstable/trait.TryInto.html) to convert directly from a [`Value`](enum.Value.html) into a [`PromiseFuture`](struct.PromiseFuture.html).
+    /// This method should rarely be needed, instead use [`value.try_into()`](unstable/trait.TryInto.html) to convert directly
+    /// from a [`Value`](enum.Value.html) into a [`PromiseFuture`](struct.PromiseFuture.html).
     ///
     /// # Examples
     ///

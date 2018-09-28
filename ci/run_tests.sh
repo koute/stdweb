@@ -16,6 +16,10 @@ set -e
 
 echo "Is Rust from nightly: $IS_NIGHTLY"
 
+pushd stdweb-internal-macros > /dev/null
+cargo test
+popd > /dev/null
+
 echo "Testing for asmjs-unknown-emscripten..."
 $CARGO_WEB test --features web_test --target=asmjs-unknown-emscripten
 
