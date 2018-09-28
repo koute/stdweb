@@ -2,10 +2,14 @@
 // onto the JavaScript event loop.
 //
 // TODO: Verify that this works correctly for multiple threads.
+// TODO: verify that this works correctly with pinned futures
+// TODO: use FuturesUnordered (similar to LocalPool)
 
-use futures_core::{Future, Async, Never};
-use futures_core::executor::{Executor, SpawnError};
-use futures_core::task::{LocalMap, Wake, Waker, Context};
+use futures_core::{Future, Poll};
+use futures_core::future::{FutureObj, LocalFutureObj};
+use futures_executor::enter;
+use futures_core::task::{local_waker, Wake, Context, Spawn, SpawnObjError};
+use std::pin::PinMut;
 use std::rc::Rc;
 use std::cell::{Cell, RefCell};
 use std::sync::Arc;
@@ -23,25 +27,15 @@ const INITIAL_QUEUE_CAPACITY: usize = 10;
 const QUEUE_SHRINK_DELAY: usize = 10;
 
 
-type BoxedFuture = Box< Future< Item = (), Error = Never > + 'static >;
+pub(crate) type BoxedFuture = LocalFutureObj< 'static, () >;
 
+#[derive(Debug)]
 struct TaskInner {
-    map: LocalMap,
-    future: Option< BoxedFuture >,
+    future: BoxedFuture,
     executor: EventLoopExecutor,
 }
 
-impl ::std::fmt::Debug for TaskInner {
-    fn fmt( &self, fmt: &mut ::std::fmt::Formatter ) -> Result< (), ::std::fmt::Error > {
-        fmt.debug_struct( "TaskInner" )
-            .field( "map", &self.map )
-            .field( "future", &self.future.as_ref().map( |_| "BoxedFuture" ) )
-            .finish()
-    }
-}
 
-
-// TODO is it possible to avoid the Mutex ?
 #[derive(Debug)]
 struct Task {
     is_queued: Cell< bool >,
@@ -57,8 +51,7 @@ impl Task {
         Arc::new( Self {
             is_queued: Cell::new( true ),
             inner: RefCell::new( TaskInner {
-                map: LocalMap::new(),
-                future: Some( future ),
+                future,
                 executor,
             } ),
         } )
@@ -70,28 +63,27 @@ impl Task {
         // This is needed in order to borrow disjoint struct fields
         let lock = &mut *lock;
 
-        // Take the future so that if we panic it gets dropped
-        if let Some( mut future ) = lock.future.take() {
-            // Clear `is_queued` flag so that it will re-queue if poll calls waker.wake()
-            arc.is_queued.set( false );
+        // Clear `is_queued` flag so that it will re-queue if poll calls waker.wake()
+        arc.is_queued.set( false );
 
-            let poll = {
-                // TODO is there some way of saving these so they don't need to be recreated all the time ?
-                let waker = Waker::from( arc.clone() );
+        // The `unsafe` is needed for `local_waker`
+        // It is safe because JavaScript is always single-threaded
+        let poll = unsafe {
+            // TODO is there some way of saving these so they don't need to be recreated all the time ?
+            // TODO maybe use local_waker_from_nonlocal instead ?
+            let waker = local_waker( arc.clone() );
 
-                let mut cx = Context::new( &mut lock.map, &waker, &mut lock.executor );
+            let mut cx = Context::new( &waker, &mut lock.executor );
 
-                future.poll( &mut cx )
-            };
+            // TODO what if poll panics ?
+            // TODO is this PinMut correct ?
+            PinMut::new( &mut lock.future ).poll( &mut cx )
+        };
 
-            if let Ok( Async::Pending ) = poll {
-                // Future was not ready, so put it back
-                lock.future = Some( future );
-
-                // It was woken up during the poll, so we requeue it
-                if arc.is_queued.get() {
-                    lock.executor.0.push_task( arc.clone() );
-                }
+        if let Poll::Pending = poll {
+            // It was woken up during the poll, so we requeue it
+            if arc.is_queued.get() {
+                lock.executor.0.push_task( arc.clone() );
             }
         }
     }
@@ -108,8 +100,8 @@ impl Task {
 
 impl Wake for Task {
     #[inline]
-    fn wake( arc: &Arc< Self > ) {
-        Task::push_task( arc );
+    fn wake( arc_self: &Arc< Self > ) {
+        Task::push_task( arc_self );
     }
 }
 
@@ -166,6 +158,8 @@ impl EventLoopQueue {
 
     // Poll the queue until it is empty
     fn drain( &self ) {
+        let _enter = enter().expect( "EventLoopExecutor is already draining" );
+
         if !self.is_draining.replace( true ) {
             let maybe_realloc_capacity = self.estimate_realloc_capacity();
 
@@ -327,20 +321,19 @@ impl EventLoopExecutor {
     }
 }
 
-impl Executor for EventLoopExecutor {
+impl Spawn for EventLoopExecutor {
     #[inline]
-    fn spawn( &mut self, f: Box< Future< Item = (), Error = Never > + Send + 'static > ) -> Result< (), SpawnError > {
-        self.spawn_local( f );
+    fn spawn_obj( &mut self,  future: FutureObj< 'static, () > ) -> Result< (), SpawnObjError > {
+        self.spawn_local( future.into() );
         Ok( () )
     }
 }
 
 
-thread_local! {
-    static EVENT_LOOP: EventLoopExecutor = EventLoopExecutor::new();
-}
+pub(crate) fn spawn_local( future: BoxedFuture ) {
+    thread_local! {
+        static EVENT_LOOP: EventLoopExecutor = EventLoopExecutor::new();
+    }
 
-#[inline]
-pub fn spawn_local< F >( future: F ) where F: Future< Item = (), Error = Never > + 'static {
-    EVENT_LOOP.with( |event_loop| event_loop.spawn_local( Box::new( future ) ) )
+    EVENT_LOOP.with( |event_loop| event_loop.spawn_local( future ) )
 }

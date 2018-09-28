@@ -4,4 +4,4 @@ version = "0.1.0"
 authors = ["Willy Blandin <wblandin@gmail.com>"]
 
 [dependencies]
-stdweb = { path = "../..", features = ["futures-support", "experimental_features_which_may_break_on_minor_version_bumps"] }
+stdweb = { path = "../.." }

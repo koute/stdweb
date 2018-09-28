@@ -120,6 +120,7 @@
 )]
 #![cfg_attr(rust_nightly, feature(core_intrinsics))]
 #![cfg_attr(feature = "nightly", feature(never_type))]
+#![cfg_attr(feature = "futures-support", feature(futures_api, pin, arbitrary_self_types))]
 #![cfg_attr(rust_1_30_or_newer, feature(proc_macro_non_items))]
 #![recursion_limit="1500"]
 
@@ -155,6 +156,9 @@ extern crate futures_util;
 
 #[cfg(feature = "futures-support")]
 extern crate futures_channel;
+
+#[cfg(feature = "futures-support")]
+extern crate futures_executor;
 
 #[macro_use]
 extern crate stdweb_derive;
@@ -205,7 +209,7 @@ pub use webcore::promise::{TypedPromise, Promise, DoneHandle};
     feature = "futures-support",
     feature = "experimental_features_which_may_break_on_minor_version_bumps"
 ))]
-pub use webcore::promise_future::PromiseFuture;
+pub use webcore::promise_future::{PromiseFuture, spawn_local, print_error_panic, unwrap_future};
 
 #[cfg(feature = "serde")]
 /// A module with serde-related APIs.
