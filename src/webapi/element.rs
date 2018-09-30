@@ -145,6 +145,18 @@ pub trait IElement: INode + IParentNode + IChildNode {
         ).try_into().unwrap()
     }
 
+    /// Returns the closest ancestor of the element (or the element itself) which matches the selectors 
+    /// given in parameter. If there isn't such an ancestor, it returns
+    /// `None`.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/closest)
+    // https://dom.spec.whatwg.org/#ref-for-dom-element-closest
+    fn closest( &self, selectors: &str) -> Result<Option<Element>, SyntaxError> {
+        js_try!(
+            return @{self.as_ref()}.closest(@{selectors});
+        ).unwrap()
+    }
+
     /// Designates a specific element as the capture target of future pointer events.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/setPointerCapture)
@@ -233,7 +245,6 @@ impl IElement for Element {}
 impl< T: IElement > IParentNode for T {}
 impl< T: IElement > IChildNode for T {}
 
-
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum InsertPosition {
     /// Insert into the parent directly before the reference element.
@@ -267,6 +278,45 @@ impl InsertPosition {
 mod tests {
     use super::*;
     use webapi::document::document;
+
+    fn div() -> Element {
+        js!(
+            return document.createElement("div");
+        ).try_into().unwrap()
+    }
+
+    fn h1() -> Element {
+        js!(
+            return document.createElement("h1");
+        ).try_into().unwrap()
+    }
+
+    #[test]
+    fn test_closest_finds_ancestor() {
+        let parent = div();
+        let child = h1();
+        parent.append_child(&child);
+
+        assert_eq!(child.closest("div").unwrap().unwrap().as_ref(), parent.as_ref());
+    }
+
+    #[test]
+    fn test_closest_not_found() {
+        let parent = div();
+        let child = h1();
+        parent.append_child(&child);
+
+        assert!(child.closest("p").unwrap().is_none());
+    }
+
+    #[test]
+    fn test_closest_syntax_error() {
+        let parent = div();
+        let child = div();
+        parent.append_child(&child);
+
+        assert!(child.closest("invalid syntax +#8$()@!(#").is_err());
+    }
 
     #[test]
     fn insert_adjacent_html() {
