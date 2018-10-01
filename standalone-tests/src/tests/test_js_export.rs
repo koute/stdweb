@@ -27,6 +27,9 @@ pub mod exports {
     fn f64_to_f64( value: f64 ) -> f64 { value * 2.0 }
 
     #[js_export]
+    fn add_two_u32( a: u32, b: u32 ) -> u32 { a + b }
+
+    #[js_export]
     fn rstr_to_string( string: &str ) -> String {
         format!( "{}...", string )
     }
@@ -104,6 +107,8 @@ pub fn run() {
     test( "u16_to_ui6", || { js! { assert.strictEqual( Module.exports.u16_to_u16( 33 ), 34 ); }});
     test( "u32_to_u32", || { js! { assert.strictEqual( Module.exports.u32_to_u32( 33 ), 34 ); }});
     test( "f64_to_f64", || { js! { assert.strictEqual( Module.exports.f64_to_f64( 3.33 ), 6.66 ); }});
+
+    test( "add_two_u32", || { js! { assert.strictEqual( Module.exports.add_two_u32( 123, 1000 ), 1123 ); }});
 
     test( "rstr_to_string", || { js! {
         assert.strictEqual( Module.exports.rstr_to_string( "ABC" ), "ABC..." );
