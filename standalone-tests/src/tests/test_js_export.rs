@@ -45,6 +45,15 @@ pub mod exports {
     }
 
     #[js_export]
+    fn join_two_strings( first: &str, second: &str ) -> String {
+        let mut result = String::new();
+        result.push_str( first );
+        result.push_str( second );
+
+        result
+    }
+
+    #[js_export]
     fn bool_to_bool( value: bool ) -> bool {
         !value
     }
@@ -120,6 +129,10 @@ pub fn run() {
 
     test( "rstr", || { js! {
         assert.strictEqual( Module.exports.rstr(), "A string" );
+    }});
+
+    test( "join_two_strings", || { js! {
+        assert.strictEqual( Module.exports.join_two_strings( "ABC", "DEFGH" ), "ABCDEFGH" );
     }});
 
     test( "bool_to_bool", || { js! {
