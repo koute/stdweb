@@ -8,8 +8,8 @@
 use futures_core::{Future, Poll};
 use futures_core::future::{FutureObj, LocalFutureObj};
 use futures_executor::enter;
-use futures_core::task::{local_waker, Wake, Context, Spawn, SpawnObjError};
-use std::pin::PinMut;
+use futures_core::task::{local_waker, Wake, Spawn, SpawnError};
+use std::pin::Pin;
 use std::rc::Rc;
 use std::cell::{Cell, RefCell};
 use std::sync::Arc;
@@ -67,17 +67,15 @@ impl Task {
         arc.is_queued.set( false );
 
         // The `unsafe` is needed for `local_waker`
-        // It is safe because JavaScript is always single-threaded
+        // It is safe because JavaScript is (currently) always single-threaded
         let poll = unsafe {
             // TODO is there some way of saving these so they don't need to be recreated all the time ?
             // TODO maybe use local_waker_from_nonlocal instead ?
             let waker = local_waker( arc.clone() );
 
-            let mut cx = Context::new( &waker, &mut lock.executor );
-
             // TODO what if poll panics ?
-            // TODO is this PinMut correct ?
-            PinMut::new( &mut lock.future ).poll( &mut cx )
+            // TODO is this Pin correct ?
+            Pin::new( &mut lock.future ).poll( &waker )
         };
 
         if let Poll::Pending = poll {
@@ -323,7 +321,7 @@ impl EventLoopExecutor {
 
 impl Spawn for EventLoopExecutor {
     #[inline]
-    fn spawn_obj( &mut self,  future: FutureObj< 'static, () > ) -> Result< (), SpawnObjError > {
+    fn spawn_obj( &mut self,  future: FutureObj< 'static, () > ) -> Result< (), SpawnError > {
         self.spawn_local( future.into() );
         Ok( () )
     }
