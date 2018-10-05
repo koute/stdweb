@@ -753,6 +753,66 @@ macro_rules! error_enum_boilerplate {
     }
 }
 
+macro_rules! js_translate_function {
+    ( $(#[$attr:meta])* $rust_name:ident : $js_name:ident none => $translation:ident : $return:ty ) => {
+        $( #[ $attr ] )*
+        fn $rust_name( &self ) -> $return {
+            __js_translate_function_inner!{ self, $translation, $js_name none }
+        }
+    };
+    (
+        $(#[$attr:meta])*
+            $rust_name:ident : $js_name:ident
+            ($($arg_name:ident : $arg_type:ty),*) => $translation:ident : $return:ty
+    ) => {
+        $( #[ $attr ] )*
+        fn $rust_name( &self, $($arg_name : $arg_type),* ) -> $return {
+            __js_translate_function_inner!{ self, $translation, $js_name ($($arg_name),*) }
+        }
+    };
+}
+
+macro_rules! __js_translate_function_inner {
+    ( $_self:ident, noreturn, $js_name:ident none ) => {
+        js! { @(no_return)
+            @{$_self.as_ref()}.$js_name ;
+        };
+        return ();
+    };
+    ( $_self:ident, noreturn, $js_name:ident ( $( $arg_name:ident ),* ) ) => {
+        js! { @(no_return)
+            @{$_self.as_ref()}.$js_name ( $( @{ $arg_name } ),* );
+        };
+        return ();
+    };
+
+    ( $_self:ident, reference, $js_name:ident none ) => {
+        unsafe {
+            js! (
+                return @{$_self.as_ref()}.$js_name ;
+            ).into_reference_unchecked().unwrap()
+        }
+    };
+    ( $_self:ident, reference, $js_name:ident ( $( $arg_name:ident ),* ) ) => {
+        unsafe {
+            js! (
+                return @{$_self.as_ref()}.$js_name ( $( @{ $arg_name } ),* ) ;
+            ).into_reference_unchecked().unwrap()
+        }
+    };
+
+    ( $_self:ident, into, $js_name:ident none ) => {
+        js! (
+            return @{$_self.as_ref()}.$js_name ;
+        ).try_into().unwrap()
+    };
+    ( $_self:ident, into, $js_name:ident ( $( $arg_name:ident ),* ) ) => {
+        js! (
+            return @{$_self.as_ref()}.$js_name ( $( @{ $arg_name } ),* ) ;
+        ).try_into().unwrap()
+    };
+}
+
 #[cfg(test)]
 mod tests {
     use webcore::value::Value;
