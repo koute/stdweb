@@ -40,6 +40,7 @@ pub mod child_node;
 pub mod gamepad;
 pub mod selection;
 pub mod midi;
+pub mod slotable;
 
 #[cfg(feature = "futures-support")]
 pub mod timer_future;

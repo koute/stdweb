@@ -6,6 +6,7 @@ use webapi::node::{INode, Node};
 use webapi::token_list::TokenList;
 use webapi::parent_node::IParentNode;
 use webapi::child_node::IChildNode;
+use webapi::slotable::ISlotable;
 use webcore::try_from::TryFrom;
 
 /// The `IElement` interface represents an object of a [Document](struct.Document.html).
@@ -225,6 +226,17 @@ pub trait IElement: INode + IParentNode + IChildNode {
     fn insert_html_after( &self, html: &str ) -> Result<(), InsertAdjacentError> {
         self.insert_adjacent_html(InsertPosition::AfterEnd, html)
     }
+
+    /// The slot property of the Element interface returns the name of the shadow DOM
+    /// slot the element is inserted in.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/slot)
+    // https://dom.spec.whatwg.org/#dom-element-slot
+    fn slot( &self ) -> String {
+        js!(
+            return @{self.as_ref()}.slot;
+        ).try_into().unwrap()
+    }
 }
 
 
@@ -241,6 +253,7 @@ pub struct Element( Reference );
 impl IEventTarget for Element {}
 impl INode for Element {}
 impl IElement for Element {}
+impl ISlotable for Element {}
 
 impl< T: IElement > IParentNode for T {}
 impl< T: IElement > IChildNode for T {}

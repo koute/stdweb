@@ -1,6 +1,7 @@
 use webcore::value::Reference;
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
+use webapi::slotable::ISlotable;
 
 /// The `TextNode` represents the textual content of an [IElement](trait.IElement.html)
 ///
@@ -18,3 +19,4 @@ pub struct TextNode( Reference );
 
 impl IEventTarget for TextNode {}
 impl INode for TextNode {}
+impl ISlotable for TextNode {}
