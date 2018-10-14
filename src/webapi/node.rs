@@ -12,6 +12,7 @@ use private::TODO;
 /// An enum which determines whenever the DOM [Node](trait.INode.html)'s children will also be cloned or not.
 ///
 /// Mainly used in [INode::clone_node](trait.INode.html#method.clone_node).
+/// Also used in [Document::import_node](struct.Document.html#method.import_node).
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum CloneKind {
     /// Will not clone the children.

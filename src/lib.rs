@@ -304,6 +304,7 @@ pub mod web {
         pub use webapi::html_elements::CanvasElement;
         pub use webapi::html_elements::SelectElement;
         pub use webapi::html_elements::OptionElement;
+        pub use webapi::html_elements::TemplateElement;
     }
 
     /// A module containing JavaScript DOM events.

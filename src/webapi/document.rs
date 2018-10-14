@@ -1,7 +1,7 @@
 use webcore::value::{Reference, Value};
 use webcore::try_from::{TryInto, TryFrom};
 use webapi::event_target::{IEventTarget, EventTarget};
-use webapi::node::{INode, Node};
+use webapi::node::{INode, Node, CloneKind};
 use webapi::element::Element;
 use webapi::html_element::HtmlElement;
 use webapi::document_fragment::DocumentFragment;
@@ -180,6 +180,20 @@ impl Document {
         js!( @(no_return)
             @{self}.exitPointerLock();
         );
+    }
+
+    /// Import node from another document
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/importNode)
+    pub fn import_node<N: INode>( &self, n: N, kind: CloneKind ) -> Node {
+        let deep = match kind {
+            CloneKind::Deep => true,
+            CloneKind::Shallow => false,
+        };
+
+        js!(
+            return @{self}.importNode( @{n.as_ref()}, @{deep} );
+        ).try_into().unwrap()
     }
 }
 
