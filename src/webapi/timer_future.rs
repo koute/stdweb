@@ -1,10 +1,11 @@
 use std::sync::{Arc, Mutex};
+use std::pin::Pin;
 use webcore::once::Once;
 use webcore::value::Value;
-use webapi::error::Error;
-use futures_core::{Future, Poll, Async};
-use futures_core::task::{Waker, Context};
+use futures_core::{Future, Poll};
+use futures_core::task::{Waker, LocalWaker};
 use futures_core::stream::Stream;
+use futures_util::FutureExt;
 use futures_channel::oneshot;
 
 
@@ -18,8 +19,8 @@ fn convert_to_i32( ms: u32 ) -> i32 {
 }
 
 
-/// The [`Future`](https://docs.rs/futures/0.2.*/futures/future/trait.Future.html) which is returned by
-/// [`wait`](fn.wait.html).
+/// The [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html)
+/// which is returned by [`wait`](fn.wait.html).
 // This isn't implemented as a PromiseFuture because Promises do not support cancellation
 #[derive( Debug )]
 pub struct Wait {
@@ -61,13 +62,12 @@ impl Wait {
 }
 
 impl Future for Wait {
-    type Item = ();
-    // TODO use Void instead
-    type Error = Error;
+    type Output = ();
 
     #[inline]
-    fn poll( &mut self, cx: &mut Context ) -> Poll< Self::Item, Self::Error > {
-        self.receiver.poll( cx ).map_err( |_| unreachable!() )
+    fn poll( mut self: Pin< &mut Self >, waker: &LocalWaker ) -> Poll< Self::Output > {
+        // TODO is this unwrap correct ?
+        self.receiver.poll_unpin( waker ).map( |x| x.unwrap() )
     }
 }
 
@@ -82,8 +82,8 @@ impl Drop for Wait {
     }
 }
 
-/// Creates a [`Future`](https://docs.rs/futures/0.2.*/futures/future/trait.Future.html) which
-/// will return `()` after `ms` milliseconds have passed.
+/// Creates a [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html)
+/// which will return `()` after `ms` milliseconds have passed.
 ///
 /// It might return a long time *after* `ms` milliseconds have passed, but it
 /// will never return *before* `ms` milliseconds have passed.
@@ -102,7 +102,7 @@ struct IntervalBufferedState {
     count: usize,
 }
 
-/// The [`Stream`](https://docs.rs/futures/0.2.*/futures/stream/trait.Stream.html)
+/// The [`Stream`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/stream/trait.Stream.html)
 /// which is returned by [`interval_buffered`](fn.interval_buffered.html).
 #[derive( Debug )]
 pub struct IntervalBuffered {
@@ -155,20 +155,19 @@ impl IntervalBuffered {
 
 impl Stream for IntervalBuffered {
     type Item = ();
-    // TODO use Void instead
-    type Error = Error;
 
-    fn poll_next( &mut self, cx: &mut Context ) -> Poll< Option< Self::Item >, Self::Error > {
+    fn poll_next( self: Pin< &mut Self >, waker: &LocalWaker ) -> Poll< Option< Self::Item > > {
         let mut lock = self.state.lock().unwrap();
 
         if lock.count == 0 {
-            lock.waker = Some( cx.waker().clone() );
-            Ok( Async::Pending )
+            // TODO is this `into()` correct ?
+            lock.waker = Some( waker.clone().into() );
+            Poll::Pending
 
         } else {
             lock.count -= 1;
 
-            Ok( Async::Ready( Some( () ) ) )
+            Poll::Ready( Some( () ) )
         }
     }
 }
@@ -184,18 +183,20 @@ impl Drop for IntervalBuffered {
     }
 }
 
-/// Creates a [`Stream`](https://docs.rs/futures/0.2.*/futures/stream/trait.Stream.html) which
-/// will continuously output `()` every `ms` milliseconds, until it is dropped.
+/// Creates a [`Stream`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/stream/trait.Stream.html)
+/// which will continuously output `()` every `ms` milliseconds, until it is dropped.
 ///
 /// It might output `()` a long time *after* `ms` milliseconds have passed, but it
 /// will never output `()` *before* `ms` milliseconds have passed.
 ///
-/// If the consumer isn't ready to receive the `()`, it will be put into a queue.
+/// If the consumer isn't ready to receive the `()`, it will be put into a queue
+/// (this queue is ***very*** fast, it can handle a very large number of elements).
+///
 /// When the consumer is ready, it will output all of the `()` from the queue.
 ///
 /// That means that if the consumer is too slow, it might receive multiple `()` at the same time.
 /// Or it might receive another `()` before `ms` milliseconds have passed for the consumer
-/// (that happens because `ms` milliseconds *have* passed for the [`IntervalBuffered`](struct.IntervalBuffered.html)).
+/// (because `ms` milliseconds *have* passed for the [`IntervalBuffered`](struct.IntervalBuffered.html)).
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setInterval)
 // https://html.spec.whatwg.org/multipage/webappapis.html#dom-setinterval

@@ -27,6 +27,9 @@ pub mod exports {
     fn f64_to_f64( value: f64 ) -> f64 { value * 2.0 }
 
     #[js_export]
+    fn add_two_u32( a: u32, b: u32 ) -> u32 { a + b }
+
+    #[js_export]
     fn rstr_to_string( string: &str ) -> String {
         format!( "{}...", string )
     }
@@ -39,6 +42,15 @@ pub mod exports {
     #[js_export]
     fn rstr() -> &'static str {
         "A string"
+    }
+
+    #[js_export]
+    fn join_two_strings( first: &str, second: &str ) -> String {
+        let mut result = String::new();
+        result.push_str( first );
+        result.push_str( second );
+
+        result
     }
 
     #[js_export]
@@ -105,6 +117,8 @@ pub fn run() {
     test( "u32_to_u32", || { js! { assert.strictEqual( Module.exports.u32_to_u32( 33 ), 34 ); }});
     test( "f64_to_f64", || { js! { assert.strictEqual( Module.exports.f64_to_f64( 3.33 ), 6.66 ); }});
 
+    test( "add_two_u32", || { js! { assert.strictEqual( Module.exports.add_two_u32( 123, 1000 ), 1123 ); }});
+
     test( "rstr_to_string", || { js! {
         assert.strictEqual( Module.exports.rstr_to_string( "ABC" ), "ABC..." );
     }});
@@ -115,6 +129,10 @@ pub fn run() {
 
     test( "rstr", || { js! {
         assert.strictEqual( Module.exports.rstr(), "A string" );
+    }});
+
+    test( "join_two_strings", || { js! {
+        assert.strictEqual( Module.exports.join_two_strings( "ABC", "DEFGH" ), "ABCDEFGH" );
     }});
 
     test( "bool_to_bool", || { js! {
