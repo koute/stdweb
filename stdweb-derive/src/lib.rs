@@ -108,6 +108,7 @@ pub fn derive_reference_type( input: TokenStream ) -> TokenStream {
 
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
+    let mut default_args = Vec::new();
     match input.data {
         syn::Data::Struct( ref data ) => {
             match data.fields {
@@ -117,8 +118,14 @@ pub fn derive_reference_type( input: TokenStream ) -> TokenStream {
                     }
 
                     let fields = &fields.unnamed;
-                    if fields.len() != 1 && fields.len() != 2 {
-                        invalid_structure();
+                    match fields.len() {
+                        1 => {},
+                        2 => {
+                            default_args.push( quote! {
+                                ::std::default::Default::default()
+                            });
+                        },
+                        _ => invalid_structure()
                     }
 
                     let mut fields_iter = fields.iter();
@@ -167,18 +174,6 @@ pub fn derive_reference_type( input: TokenStream ) -> TokenStream {
         _ => panic!( "Only tuple structures are supported!" )
     }
 
-    let mut default_args = Vec::new();
-    for param in input.generics.params.iter() {
-        match *param {
-            syn::GenericParam::Type( _ ) => {
-                default_args.push( quote! {
-                    ::std::default::Default::default()
-                });
-            },
-            _ => {}
-        }
-    }
-
     let default_args = quote! { #(#default_args),* };
 
     let mut instance_of_code = Vec::new();
@@ -200,7 +195,7 @@ pub fn derive_reference_type( input: TokenStream ) -> TokenStream {
         code.push_str( ") | 0;" );
 
         quote! {
-            impl #impl_generics ::stdweb::InstanceOf for #name #ty_generics {
+            impl #impl_generics ::stdweb::InstanceOf for #name #ty_generics #where_clause {
                 #[inline]
                 fn instance_of( reference: &::stdweb::Reference ) -> bool {
                     __js_raw_asm!(
