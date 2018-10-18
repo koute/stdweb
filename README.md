@@ -192,6 +192,32 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
 [WebAssembly]: https://en.wikipedia.org/wiki/WebAssembly
 
 ## Changelog
+   * `stdweb 0.4.10`, `stdweb-derive 0.5.1`
+      * New methods:
+        * `IElement::insert_adjacent_html`
+        * `IElement::insert_html_before`
+        * `IElement::insert_html_after`
+        * `IElement::prepend_html`
+        * `IElement::append_html`
+        * `IElement::namespace_uri`
+        * `IElement::closest`
+        * `Document::create_element_ns`
+        * `Window::get_selection`
+      * New types:
+        * `AbortError`
+        * `SelectionType`
+        * `Selection`
+        * `Range`
+      * The error messages for failed type conversions are now improved
+      * The error type of failed conversions (when using `.try_into()`/`.try_from()`) is now convertible into a `TypeError`
+      * Aggregate error types (like, e.g. `DrawImageError`) are now serializable through the `js!` macro
+      * `TypeError` is now fixed (it was incorrectly treated as a `DOMException`)
+      * `Number` can now be converted into `f64` with `.into()`/`.from()`
+      * Added `Mut`, which is a new wrapper type for safely passing `FnMut` closures into the `js!` macro;
+        it is optional for now, however the usage of this wrapper type **will be mandatory** in the future!
+      * `#[derive(ReferenceType)]` now supports a limited subset of generic types
+      * Asynchronous unit tests are now supported with a new `#[async_test]` attribute macro (nightly only)
+      * Updated to `futures 0.3` (nightly only)
    * `stdweb 0.4.9`, `stdweb-derive 0.5.0`
       * Performance improvements; serialization through serde is now twice as fast
       * New events:
