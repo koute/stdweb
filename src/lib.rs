@@ -429,6 +429,7 @@ pub mod web {
         };
     }
 
+    #[cfg(feature = "experimental_features_which_may_break_on_minor_version_bumps")]
     /// APIs related to MIDI.
     pub mod midi {
         pub use webapi::midi::{
@@ -492,6 +493,7 @@ pub mod traits {
         IDragEvent,
     };
 
+    #[cfg(feature = "experimental_features_which_may_break_on_minor_version_bumps")]
     #[doc(hidden)]
     pub use super::web::midi::IMidiPort;
 }
