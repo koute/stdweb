@@ -269,6 +269,7 @@ pub mod web {
     pub use webapi::child_node::IChildNode;
     pub use webapi::gamepad::{Gamepad, GamepadButton, GamepadMappingType};
     pub use webapi::selection::Selection;
+    pub use webapi::shadow_root::{IShadowRoot, ShadowRoot};
 
     /// A module containing error types.
     pub mod error {
@@ -470,6 +471,7 @@ pub mod traits {
         IElement,
         IHtmlElement,
         IBlob,
+        IShadowRoot,
 
         // Mixins.
         IWindowOrWorker,

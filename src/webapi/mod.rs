@@ -41,6 +41,7 @@ pub mod gamepad;
 pub mod selection;
 pub mod midi;
 pub mod slotable;
+pub mod shadow_root;
 
 #[cfg(feature = "futures-support")]
 pub mod timer_future;

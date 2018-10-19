@@ -1,5 +1,5 @@
 use webcore::value::Reference;
-use webcore::try_from::TryInto;
+use webcore::try_from::{TryFrom, TryInto};
 use webapi::dom_exception::{InvalidCharacterError, InvalidPointerId, NoModificationAllowedError, SyntaxError};
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
@@ -7,7 +7,7 @@ use webapi::token_list::TokenList;
 use webapi::parent_node::IParentNode;
 use webapi::child_node::IChildNode;
 use webapi::slotable::ISlotable;
-use webcore::try_from::TryFrom;
+use webapi::shadow_root::{ShadowRootMode, ShadowRoot};
 
 /// The `IElement` interface represents an object of a [Document](struct.Document.html).
 /// This interface describes methods and properties common to all
@@ -236,6 +236,29 @@ pub trait IElement: INode + IParentNode + IChildNode {
         js!(
             return @{self.as_ref()}.slot;
         ).try_into().unwrap()
+    }
+
+    /// Attach a shadow DOM tree to the specified element and returns a reference to its `ShadowRoot`.
+    /// It returns a shadow root if successfully attached or `None` if the element cannot be attached.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/attachShadow)
+    // https://dom.spec.whatwg.org/#dom-element-attachshadow
+    fn attach_shadow( &self, mode: ShadowRootMode ) -> Option<ShadowRoot> {
+        js!(
+            return @{self.as_ref()}.attachShadow( { mode: @{mode.as_str()}} );
+        ).into_reference().and_then(|u| u.downcast())
+    }
+
+    /// Returns the shadow root of the current element or `None`.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/shadowRoot)
+    // https://dom.spec.whatwg.org/#dom-element-shadowroot
+    fn shadow_root( &self ) -> Option<ShadowRoot> {
+        unsafe {
+            js!(
+                return @{self.as_ref()}.shadowRoot;
+            ).into_reference_unchecked()
+        }
     }
 }
 
