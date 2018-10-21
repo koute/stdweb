@@ -215,6 +215,7 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
       * `Number` can now be converted into `f64` with `.into()`/`.from()`
       * Added `Mut`, which is a new wrapper type for safely passing `FnMut` closures into the `js!` macro;
         it is optional for now, however the usage of this wrapper type **will be mandatory** in the future!
+      * `FnMut` closures cannot be called recursively anymore
       * `#[derive(ReferenceType)]` now supports a limited subset of generic types
       * Asynchronous unit tests are now supported with a new `#[async_test]` attribute macro (nightly only)
       * Updated to `futures 0.3` (nightly only)
