@@ -1294,36 +1294,6 @@ mod test_deserialization {
             drop();
         };
     }
-
-    #[test]
-    fn issue_278() {
-        let f = |callback: ::stdweb::Value| {
-            js! {
-                @{callback}();
-            };
-        };
-
-        let result = js! {
-            let f = @{f};
-
-            let caught = false;
-
-            try {
-                f(function () {
-                    f.drop();
-                });
-            } catch ( error ) {
-                if( error instanceof ReferenceError ) {
-                    caught = true;
-                }
-            }
-
-            f.drop();
-
-            return caught;
-        };
-        assert_eq!( result, Value::Bool( true ) );
-    }
 }
 
 #[cfg(test)]
