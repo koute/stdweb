@@ -90,8 +90,9 @@ Module.STDWEB_PRIVATE.to_js = function to_js( address ) {
         var pointer = HEAPU32[ (address + 4) / 4 ];
         var deallocator_pointer = HEAPU32[ (address + 8) / 4 ];
         var num_ongoing_calls = 0;
+        var drop_queued = false;
         var output = function() {
-            if( pointer === 0 ) {
+            if( pointer === 0 || drop_queued === true ) {
                 if (kind === 10) {
                     throw new ReferenceError( "Already dropped Rust function called!" );
                 } else if (kind === 12) {
@@ -100,7 +101,7 @@ Module.STDWEB_PRIVATE.to_js = function to_js( address ) {
                     throw new ReferenceError( "Already called or dropped FnOnce function called!" );
                 }
             }
-            
+
             var function_pointer = pointer;
             if (kind === 13) {
                 output.drop = Module.STDWEB_PRIVATE.noop;
@@ -125,12 +126,17 @@ Module.STDWEB_PRIVATE.to_js = function to_js( address ) {
                 num_ongoing_calls -= 1;
             }
 
+            if( drop_queued === true && num_ongoing_calls === 0 ) {
+                output.drop();
+            }
+
             return result;
         };
 
         output.drop = function() {
             if (num_ongoing_calls !== 0) {
-                throw new ReferenceError( "Rust function dropped while called!" );
+                drop_queued = true;
+                return;
             }
 
             output.drop = Module.STDWEB_PRIVATE.noop;

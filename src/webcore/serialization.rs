@@ -933,7 +933,7 @@ impl JsSerialize for ConversionError {
 #[cfg(test)]
 mod test_deserialization {
     use std::rc::Rc;
-    use std::cell::Cell;
+    use std::cell::{Cell, RefCell};
     use super::*;
 
     #[test]
@@ -1293,6 +1293,77 @@ mod test_deserialization {
             drop();
             drop();
         };
+    }
+
+    #[test]
+    fn test_closure_dropped_while_being_called_is_dropped_after_it_returns() {
+        struct MarkTrueOnDrop( Rc< Cell< bool > > );
+        impl Drop for MarkTrueOnDrop {
+            fn drop( &mut self ) {
+                self.0.set( true );
+            }
+        }
+
+        let was_dropped = Rc::new( Cell::new( false ) );
+        let was_dropped_clone = was_dropped.clone();
+        let callback = move |itself: Value, check_if_dropped: Value| {
+            let _mark_true_on_drop = MarkTrueOnDrop( was_dropped_clone.clone() );
+            js!(
+                @{itself}.drop();
+                @{check_if_dropped}();
+            );
+        };
+
+        let check_if_dropped = move || {
+            assert_eq!( was_dropped.get(), false );
+        };
+
+        js!(
+            var callback = @{callback};
+            callback( callback, @{Once( check_if_dropped )} );
+        );
+    }
+
+    #[test]
+    fn test_dropping_the_closure_while_it_is_being_called_will_make_future_calls_throw() {
+        #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+        #[reference(instance_of = "ReferenceError")]
+        pub struct ReferenceError( Reference );
+
+        let counter = Rc::new( Cell::new( 0 ) );
+        let counter_clone = counter.clone();
+        let caught_value = Rc::new( RefCell::new( Value::Null ) );
+        let caught_value_clone = caught_value.clone();
+        let callback = move |itself: Value| {
+            let value = counter_clone.get();
+            counter_clone.set( value + 1 );
+
+            if value == 0 {
+                let caught = js!(
+                    var callback = @{itself};
+                    callback.drop();
+
+                    var caught = null;
+                    try {
+                        callback( callback );
+                    } catch( error ) {
+                        caught = error;
+                    }
+
+                    return caught;
+                );
+                *caught_value_clone.borrow_mut() = caught;
+            }
+        };
+
+        js!(
+            var callback = @{callback};
+            callback( callback );
+        );
+
+        assert_eq!( counter.get(), 1 );
+        let reference_error: Result< ReferenceError, _ > = caught_value.borrow().clone().try_into();
+        assert!( reference_error.is_ok() );
     }
 }
 
