@@ -8,6 +8,12 @@ use webapi::parent_node::IParentNode;
 use webapi::child_node::IChildNode;
 use webapi::slotable::ISlotable;
 use webapi::shadow_root::{ShadowRootMode, ShadowRoot};
+use webapi::dom_exception::{NotSupportedError, InvalidStateError};
+
+error_enum_boilerplate! {
+    AttachShadowError,
+    NotSupportedError, InvalidStateError
+}
 
 /// The `IElement` interface represents an object of a [Document](struct.Document.html).
 /// This interface describes methods and properties common to all
@@ -231,7 +237,7 @@ pub trait IElement: INode + IParentNode + IChildNode {
     /// slot the element is inserted in.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/slot)
-    // https://dom.spec.whatwg.org/#dom-element-slot
+    // https://dom.spec.whatwg.org/#ref-for-dom-element-slot
     fn slot( &self ) -> String {
         js!(
             return @{self.as_ref()}.slot;
@@ -242,17 +248,17 @@ pub trait IElement: INode + IParentNode + IChildNode {
     /// It returns a shadow root if successfully attached or `None` if the element cannot be attached.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/attachShadow)
-    // https://dom.spec.whatwg.org/#dom-element-attachshadow
-    fn attach_shadow( &self, mode: ShadowRootMode ) -> Option<ShadowRoot> {
-        js!(
-            return @{self.as_ref()}.attachShadow( { mode: @{mode.as_str()}} );
-        ).into_reference().and_then(|u| u.downcast())
+    // https://dom.spec.whatwg.org/#ref-for-dom-element-attachshadow
+    fn attach_shadow( &self, mode: ShadowRootMode ) -> Result<ShadowRoot, AttachShadowError> {
+            js_try!(
+                return @{self.as_ref()}.attachShadow( { mode: @{mode.as_str()}} )
+            ).unwrap()
     }
 
     /// Returns the shadow root of the current element or `None`.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/shadowRoot)
-    // https://dom.spec.whatwg.org/#dom-element-shadowroot
+    // https://dom.spec.whatwg.org/#ref-for-dom-element-shadowroot
     fn shadow_root( &self ) -> Option<ShadowRoot> {
         unsafe {
             js!(

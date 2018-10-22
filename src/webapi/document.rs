@@ -185,7 +185,8 @@ impl Document {
     /// Import node from another document
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/importNode)
-    pub fn import_node<N: INode>( &self, n: N, kind: CloneKind ) -> Node {
+    // https://dom.spec.whatwg.org/#ref-for-dom-document-importnode
+    pub fn import_node<N: INode>( &self, n: &N, kind: CloneKind ) -> Node {
         let deep = match kind {
             CloneKind::Deep => true,
             CloneKind::Shallow => false,

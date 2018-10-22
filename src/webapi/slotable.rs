@@ -10,7 +10,7 @@ pub trait ISlotable: ReferenceType {
     /// returns an HTMLSlotElement representing the <slot> element the node is inserted in.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Slotable/assignedSlot)
-    // https://dom.spec.whatwg.org/#dom-slotable-assignedslot
+    // https://dom.spec.whatwg.org/#ref-for-dom-slotable-assignedslot
     fn assigned_slot( &self ) -> Option< SlotElement > {
         unsafe {
             js!( return @{self.as_ref()}.assignedSlot; ).into_reference_unchecked()

@@ -44,7 +44,7 @@ impl SlotElement {
     /// Returns slot's assigned nodes.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedNodes)
-    // https://html.spec.whatwg.org/multipage/scripting.html#dom-slot-assignednodes
+    // https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element:dom-slot-assignednodes
     pub fn assigned_nodes( &self, flatten: bool ) -> Vec<Node> {
         if flatten {
             js! (
@@ -60,6 +60,7 @@ impl SlotElement {
     /// Similar to [assigned_nodes()](#method.assigned_nodes) but limited result to only elements.
     ///
     /// [(Spec)](https://html.spec.whatwg.org/multipage/scripting.html#dom-slot-assignedelements)
+    // https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element:dom-slot-assignedelements
     pub fn assigned_elements( &self, flatten: bool ) -> Vec<Element> {
         if flatten {
             js! (

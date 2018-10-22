@@ -26,7 +26,7 @@ impl TemplateElement {
     /// The content of the current template
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLTemplateElement/content)
-    // https://html.spec.whatwg.org/multipage/scripting.html#dom-template-content
+    // https://html.spec.whatwg.org/multipage/scripting.html#the-template-element:documentfragment
     #[inline]
     pub fn content ( &self ) -> DocumentFragment {
         js! (

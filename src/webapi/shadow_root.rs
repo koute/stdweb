@@ -17,7 +17,7 @@ pub enum ShadowRootMode {
 }
 
 impl ShadowRootMode {
-    pub fn as_str(&self) -> &'static str {
+    pub(crate) fn as_str(&self) -> &'static str {
         match *self {
             ShadowRootMode::Open => "open",
             ShadowRootMode::Closed => "closed",
@@ -41,7 +41,7 @@ pub trait IShadowRoot: ReferenceType {
         match mode_string.as_str() {
             "open" => ShadowRootMode::Open,
             "closed" => ShadowRootMode::Closed,
-            _ => unreachable!("not gonna happen."),
+            _ => unreachable!("mode can only be `open` or `closed`"),
         }
     }
 
