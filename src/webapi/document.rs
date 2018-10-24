@@ -9,7 +9,7 @@ use webapi::text_node::TextNode;
 use webapi::location::Location;
 use webapi::parent_node::IParentNode;
 use webapi::non_element_parent_node::INonElementParentNode;
-use webapi::dom_exception::{InvalidCharacterError, NamespaceError};
+use webapi::dom_exception::{InvalidCharacterError, NamespaceError, NotSupportedError};
 
 /// The `Document` interface represents any web page loaded in the browser and
 /// serves as an entry point into the web page's content, which is the DOM tree.
@@ -186,15 +186,15 @@ impl Document {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/importNode)
     // https://dom.spec.whatwg.org/#ref-for-dom-document-importnode
-    pub fn import_node<N: INode>( &self, n: &N, kind: CloneKind ) -> Node {
+    pub fn import_node<N: INode>( &self, n: &N, kind: CloneKind ) -> Result<Node, NotSupportedError> {
         let deep = match kind {
             CloneKind::Deep => true,
             CloneKind::Shallow => false,
         };
 
-        js!(
+        js_try!(
             return @{self}.importNode( @{n.as_ref()}, @{deep} );
-        ).try_into().unwrap()
+        ).unwrap()
     }
 }
 
@@ -202,6 +202,9 @@ impl Document {
 #[cfg(all(test, feature = "web_test"))]
 mod web_tests {
     use super::*;
+    use webapi::node::{Node, CloneKind};
+    use webapi::html_elements::TemplateElement;
+    use webapi::html_element::HtmlElement;
 
     #[test]
     fn test_create_element_invalid_character() {
@@ -225,5 +228,23 @@ mod web_tests {
             Err(CreateElementNsError::NamespaceError(_)) => (),
             v => panic!("expected NamespaceError, got {:?}", v),
         }
+    }
+
+    #[test]
+    fn test_import_node() {
+        let document = document();
+        let tpl: TemplateElement = Node::from_html("<template><span>aaabbbcccddd</span></template>")
+            .unwrap()
+            .try_into()
+            .unwrap();
+
+        let n = document.import_node(&tpl.content(), CloneKind::Deep).unwrap();
+        let child_nodes = n.child_nodes();
+        assert_eq!(child_nodes.len(), 1);
+
+        let span_element: HtmlElement = child_nodes.iter().next().unwrap().try_into().unwrap();
+
+        assert_eq!(span_element.node_name(), "span");
+        assert_eq!(js!( return @{span_element}.innerHTML; ), "aaabbbcccddd");
     }
 }

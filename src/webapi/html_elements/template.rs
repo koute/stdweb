@@ -35,3 +35,27 @@ impl TemplateElement {
     }
 }
 
+
+#[cfg(all(test, feature = "web_test"))]
+mod tests {
+    use super::*;
+    use webapi::html_element::HtmlElement;
+    use webapi::node::{Node, CloneKind};
+
+    #[test]
+    fn test_template_content_with_clone_node() {
+        let tpl: TemplateElement = Node::from_html("<template><span>aaabbbcccddd</span></template>")
+            .unwrap()
+            .try_into()
+            .unwrap();
+
+        let n = tpl.content.clone_node(CloneKind::Deep);
+        let mut child_nodes = n.child_nodes();
+        assert_eq!(child_nodes.len(), 1);
+
+        let span_element: HtmlElement = child_nodes.next().unwrap().try_into().unwrap();
+
+        assert_eq!(span_element.node_name(), "span");
+        assert_eq!(js!( return @{span_element}.innerHTML; ), "aaabbbcccddd");
+    }
+}
