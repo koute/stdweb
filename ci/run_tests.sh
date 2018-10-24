@@ -51,6 +51,49 @@ if [ "$IS_NIGHTLY" = "1" ]; then
     popd > /dev/null
 fi
 
+echo "Checking whenever the old version still works with the newest runtime..."
+
+if [ ! -d target/old-version ]; then
+    cd target
+    git clone .. old-version
+    cd ..
+fi
+
+cd target/old-version
+git checkout 0.4.9
+
+set +e
+grep -q 'path = "../../stdweb-internal-runtime"' Cargo.toml
+if [ "$?" = "0" ]; then
+    ALREADY_PATCHED=1
+else
+    ALREADY_PATCHED=0
+fi
+set -e
+
+if [ "$ALREADY_PATCHED" = "0" ]; then
+    sed 's/path = "stdweb-internal-runtime"/path = "..\/..\/stdweb-internal-runtime"/' -i Cargo.toml
+    # Sanity check to make sure the replacement was done successfully.
+    grep -q 'path = "../../stdweb-internal-runtime"' Cargo.toml
+fi
+
+echo "Testing old version on asmjs-unknown-emscripten..."
+$CARGO_WEB test --features web_test --target=asmjs-unknown-emscripten
+if [ "$IS_NIGHTLY" = "1" ]; then
+    echo "Testing old version on wasm32-unknown-unknown..."
+    $CARGO_WEB test --nodejs --target=wasm32-unknown-unknown
+
+    echo "Building old standalone tests..."
+    pushd standalone-tests > /dev/null
+    $CARGO_WEB build --release --target=wasm32-unknown-unknown
+
+    echo "Running old standalone tests..."
+    node target/wasm32-unknown-unknown/release/standalone-tests.js
+    popd > /dev/null
+fi
+
+echo "The runtime is compatible!"
+
 NIGHTLY_EXAMPLES=(hasher)
 STABLE_EXAMPLES=(canvas echo minimal todomvc webgl)
 if [ "$IS_NIGHTLY" = "1" ]; then
