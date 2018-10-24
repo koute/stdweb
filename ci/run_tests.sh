@@ -56,6 +56,8 @@ if [ "$SKIP_RUNTIME_COMPATIBILITY_CHECK" == "0" ]; then
     echo "Checking whenever the old version still works with the newest runtime..."
 
     if [ ! -d target/old-version ]; then
+        git fetch origin refs/tags/0.4.9:refs/tags/0.4.9
+
         pushd target > /dev/null
         git clone .. old-version
         popd > /dev/null
