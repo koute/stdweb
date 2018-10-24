@@ -56,12 +56,12 @@ if [ "$SKIP_RUNTIME_COMPATIBILITY_CHECK" == "0" ]; then
     echo "Checking whenever the old version still works with the newest runtime..."
 
     if [ ! -d target/old-version ]; then
-        cd target
+        pushd target > /dev/null
         git clone .. old-version
-        cd ..
+        popd > /dev/null
     fi
 
-    cd target/old-version
+    pushd target/old-version > /dev/null
     git checkout 0.4.9
 
     set +e
@@ -95,6 +95,7 @@ if [ "$SKIP_RUNTIME_COMPATIBILITY_CHECK" == "0" ]; then
     fi
 
     echo "The runtime is compatible!"
+    popd > /dev/null
 fi
 
 NIGHTLY_EXAMPLES=(hasher)
