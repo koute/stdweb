@@ -244,7 +244,7 @@ mod web_tests {
 
         let span_element: HtmlElement = child_nodes.iter().next().unwrap().try_into().unwrap();
 
-        assert_eq!(span_element.node_name(), "span");
+        assert_eq!(span_element.node_name().to_lowercase(), "span");
         assert_eq!(js!( return @{span_element}.innerHTML; ), "aaabbbcccddd");
     }
 }
