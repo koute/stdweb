@@ -9,13 +9,13 @@ use webapi::slotable::ISlotable;
 /// An enum which determines whether
 /// [SlotElement::assigned_nodes](struct.SlotElement.html#method.assigned_nodes) /
 /// [SlotElement::assigned_elements](struct.SlotElement.html#method.assigned_elements) will
-/// return the content assigned or its fallback content.
+/// return the fallback content when nothing has been assigned to the slot.
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum SlotContentKind {
-    /// Will return the content assigned.
-    Default,
-    /// Will return the fallback content.
-    Fallback,
+    /// Will only return content assigned.
+    AssignedOnly,
+    /// Will return the fallback content if nothing has been assigned.
+    WithFallback,
 }
 
 /// The HTML `<slot>` element represents a placeholder inside a web component that
@@ -61,8 +61,8 @@ impl SlotElement {
     // https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element:dom-slot-assignednodes
     pub fn assigned_nodes( &self, kind: SlotContentKind ) -> Vec<Node> {
         let is_flatten = match kind {
-            SlotContentKind::Default => false,
-            SlotContentKind::Fallback => true,
+            SlotContentKind::AssignedOnly => false,
+            SlotContentKind::WithFallback => true,
         };
 
         js! (
@@ -76,8 +76,8 @@ impl SlotElement {
     // https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element:dom-slot-assignedelements
     pub fn assigned_elements( &self, kind: SlotContentKind ) -> Vec<Element> {
         let is_flatten = match kind {
-            SlotContentKind::Default => false,
-            SlotContentKind::Fallback => true,
+            SlotContentKind::AssignedOnly => false,
+            SlotContentKind::WithFallback => true,
         };
 
         js! (

@@ -202,7 +202,7 @@ impl Document {
 #[cfg(all(test, feature = "web_test"))]
 mod web_tests {
     use super::*;
-    use webapi::node::{Node, CloneKind};
+    use webapi::node::{Node, INode, CloneKind};
     use webapi::html_elements::TemplateElement;
     use webapi::html_element::HtmlElement;
 

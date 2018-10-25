@@ -42,7 +42,7 @@ impl TemplateElement {
 mod tests {
     use super::*;
     use webapi::html_element::HtmlElement;
-    use webapi::node::{Node, CloneKind};
+    use webapi::node::{Node, INode, CloneKind};
 
     #[test]
     fn test_template_content_with_clone_node() {
@@ -51,11 +51,11 @@ mod tests {
             .try_into()
             .unwrap();
 
-        let n = tpl.content().clone_node(CloneKind::Deep);
-        let mut child_nodes = n.child_nodes();
+        let n = tpl.content().clone_node(CloneKind::Deep).unwrap();
+        let child_nodes = n.child_nodes();
         assert_eq!(child_nodes.len(), 1);
 
-        let span_element: HtmlElement = child_nodes.next().unwrap().try_into().unwrap();
+        let span_element: HtmlElement = child_nodes.iter().next().unwrap().try_into().unwrap();
 
         assert_eq!(span_element.node_name(), "span");
         assert_eq!(js!( return @{span_element}.innerHTML; ), "aaabbbcccddd");
