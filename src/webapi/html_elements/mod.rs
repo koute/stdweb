@@ -14,6 +14,6 @@ pub use self::textarea::TextAreaElement;
 pub use self::select::SelectElement;
 pub use self::option::OptionElement;
 pub use self::template::TemplateElement;
-pub use self::slot::SlotElement;
+pub use self::slot::{SlotElement, SlotContentKind};
 
 pub use self::select::UnknownValueError;

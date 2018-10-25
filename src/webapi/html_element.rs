@@ -4,6 +4,7 @@ use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
 use webapi::element::{IElement, Element};
 use webapi::string_map::StringMap;
+use webapi::slotable::ISlotable;
 
 /// Represents a rectangle.
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DOMRect)
@@ -182,6 +183,7 @@ impl IEventTarget for HtmlElement {}
 impl INode for HtmlElement {}
 impl IElement for HtmlElement {}
 impl IHtmlElement for HtmlElement {}
+impl ISlotable for HtmlElement {}
 
 #[cfg(all(test, feature = "web_test"))]
 mod tests {

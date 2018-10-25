@@ -250,9 +250,9 @@ pub trait IElement: INode + IParentNode + IChildNode {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/attachShadow)
     // https://dom.spec.whatwg.org/#ref-for-dom-element-attachshadow
     fn attach_shadow( &self, mode: ShadowRootMode ) -> Result<ShadowRoot, AttachShadowError> {
-            js_try!(
-                return @{self.as_ref()}.attachShadow( { mode: @{mode.as_str()}} )
-            ).unwrap()
+        js_try!(
+            return @{self.as_ref()}.attachShadow( { mode: @{mode.as_str()}} )
+        ).unwrap()
     }
 
     /// Returns the shadow root of the current element or `None`.

@@ -4,6 +4,7 @@ use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
 use webapi::element::{IElement, Element};
 use webapi::html_element::{IHtmlElement, HtmlElement};
+use webapi::slotable::ISlotable;
 
 /// The HTML input element is used to create interactive controls
 /// for web-based forms in order to accept data from the user.
@@ -19,6 +20,7 @@ impl IEventTarget for InputElement {}
 impl INode for InputElement {}
 impl IElement for InputElement {}
 impl IHtmlElement for InputElement {}
+impl ISlotable for InputElement {}
 
 impl InputElement {
     /// The value of the control. This attribute is optional except when the input is a radio button or a checkbox.

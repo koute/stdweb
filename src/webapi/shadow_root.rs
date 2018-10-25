@@ -34,7 +34,7 @@ pub trait IShadowRoot: ReferenceType {
     /// The mode property of the `ShadowRoot` specifies its mode.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ShadowRoot/mode)
-    // https://dom.spec.whatwg.org/#dom-shadowroot-mode
+    // https://dom.spec.whatwg.org/#ref-for-dom-shadowroot-mode
     fn mode( &self ) -> ShadowRootMode {
         let mode_string: String = js!( return @{self.as_ref()}.mode; ).try_into().unwrap();
 
@@ -49,7 +49,7 @@ pub trait IShadowRoot: ReferenceType {
     /// the ShadowRoot is attached to.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ShadowRoot/host)
-    // https://dom.spec.whatwg.org/#dom-shadowroot-host
+    // https://dom.spec.whatwg.org/#ref-for-dom-shadowroot-host
     fn host( &self ) -> Element {
         js!( return @{self.as_ref()}.host; ).try_into().unwrap()
     }

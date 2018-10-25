@@ -270,6 +270,7 @@ pub mod web {
     pub use webapi::gamepad::{Gamepad, GamepadButton, GamepadMappingType};
     pub use webapi::selection::Selection;
     pub use webapi::shadow_root::{IShadowRoot, ShadowRoot};
+    pub use webapi::html_elements::SlotContentKind;
 
     /// A module containing error types.
     pub mod error {

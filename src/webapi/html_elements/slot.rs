@@ -4,13 +4,26 @@ use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
 use webapi::element::{IElement, Element};
 use webapi::html_element::{IHtmlElement, HtmlElement};
+use webapi::slotable::ISlotable;
+
+/// An enum which determines whether
+/// [SlotElement::assigned_nodes](struct.SlotElement.html#method.assigned_nodes) /
+/// [SlotElement::assigned_elements](struct.SlotElement.html#method.assigned_elements) will
+/// return the content assigned or its fallback content.
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+pub enum SlotContentKind {
+    /// Will return the content assigned.
+    Default,
+    /// Will return the fallback content.
+    Fallback,
+}
 
 /// The HTML `<slot>` element represents a placeholder inside a web component that
 /// you can fill with your own markup, which lets you create separate DOM trees and
 /// present them together.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot)
-// https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element
+// https://html.spec.whatwg.org/multipage/scripting.html#htmlslotelement
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "HTMLSlotElement")]
 #[reference(subclass_of(EventTarget, Node, Element, HtmlElement))]
@@ -20,6 +33,7 @@ impl IEventTarget for SlotElement {}
 impl INode for SlotElement {}
 impl IElement for SlotElement {}
 impl IHtmlElement for SlotElement {}
+impl ISlotable for SlotElement {}
 
 impl SlotElement {
     /// The slot's name
@@ -35,9 +49,9 @@ impl SlotElement {
 
     /// Setter of name.
     #[inline]
-    pub fn set_name<S: AsRef<str>>( &self, new_name: S ) {
+    pub fn set_name( &self, new_name: &str ) {
         js! ( @(no_return)
-            @{self}.name = @{new_name.as_ref()};
+            @{self}.name = @{new_name};
         );
     }
 
@@ -45,33 +59,30 @@ impl SlotElement {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedNodes)
     // https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element:dom-slot-assignednodes
-    pub fn assigned_nodes( &self, flatten: bool ) -> Vec<Node> {
-        if flatten {
-            js! (
-                return @{self}.assignedNodes( { flatten: true } );
-            ).try_into().unwrap()
-        } else {
-            js! (
-                return @{self}.assignedNodes();
-            ).try_into().unwrap()
-        }
+    pub fn assigned_nodes( &self, kind: SlotContentKind ) -> Vec<Node> {
+        let is_flatten = match kind {
+            SlotContentKind::Default => false,
+            SlotContentKind::Fallback => true,
+        };
+
+        js! (
+            return @{self}.assignedNodes( { flatten: @{is_flatten} } );
+        ).try_into().unwrap()
     }
 
     /// Similar to [assigned_nodes()](#method.assigned_nodes) but limited result to only elements.
     ///
     /// [(Spec)](https://html.spec.whatwg.org/multipage/scripting.html#dom-slot-assignedelements)
     // https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element:dom-slot-assignedelements
-    pub fn assigned_elements( &self, flatten: bool ) -> Vec<Element> {
-        if flatten {
-            js! (
-                return @{self}.assignedElements( { flatten: true } );
-            ).try_into().unwrap()
-        } else {
-            js! (
-                return @{self}.assignedElements();
-            ).try_into().unwrap()
-        }
+    pub fn assigned_elements( &self, kind: SlotContentKind ) -> Vec<Element> {
+        let is_flatten = match kind {
+            SlotContentKind::Default => false,
+            SlotContentKind::Fallback => true,
+        };
+
+        js! (
+            return @{self}.assignedElements( { flatten: @{is_flatten} } );
+        ).try_into().unwrap()
     }
 
 }
-

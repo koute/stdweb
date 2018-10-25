@@ -4,6 +4,7 @@ use webapi::html_element::{HtmlElement, IHtmlElement};
 use webapi::node::{INode, Node};
 use webcore::try_from::TryInto;
 use webcore::value::Reference;
+use webapi::slotable::ISlotable;
 
 /// The HTML `<option>` element is used to define an item contained in a `<select>`,
 /// an `<optgroup>`, or a `<datalist>` element.
@@ -19,6 +20,7 @@ impl IEventTarget for OptionElement {}
 impl INode for OptionElement {}
 impl IElement for OptionElement {}
 impl IHtmlElement for OptionElement {}
+impl ISlotable for OptionElement {}
 
 impl OptionElement {
     /// The position of the option within the list of options it belongs to, in tree-order.

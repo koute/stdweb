@@ -5,6 +5,7 @@ use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
 use webapi::element::{IElement, Element};
 use webapi::html_element::{IHtmlElement, HtmlElement};
+use webapi::slotable::ISlotable;
 use webapi::blob::Blob;
 use webapi::rendering_context::RenderingContext;
 use private::TODO;
@@ -23,6 +24,7 @@ impl IEventTarget for CanvasElement {}
 impl INode for CanvasElement {}
 impl IElement for CanvasElement {}
 impl IHtmlElement for CanvasElement {}
+impl ISlotable for CanvasElement {}
 
 impl CanvasElement {
     /// Returns a positive integer reflecting the height HTML attribute of the <canvas> element
