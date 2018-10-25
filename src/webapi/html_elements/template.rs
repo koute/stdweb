@@ -51,7 +51,7 @@ mod tests {
             .try_into()
             .unwrap();
 
-        let n = tpl.content.clone_node(CloneKind::Deep);
+        let n = tpl.content().clone_node(CloneKind::Deep);
         let mut child_nodes = n.child_nodes();
         assert_eq!(child_nodes.len(), 1);
 
