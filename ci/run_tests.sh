@@ -3,6 +3,8 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+export RUST_BACKTRACE=1
+
 CARGO_WEB=${CARGO_WEB:-cargo-web}
 
 set +e

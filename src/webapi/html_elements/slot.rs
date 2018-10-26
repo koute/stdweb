@@ -81,5 +81,4 @@ impl SlotElement {
             return @{self}.assignedElements( { flatten: @{kind.to_bool()} } );
         ).try_into().unwrap()
     }
-
 }

@@ -75,7 +75,6 @@ impl ShadowRoot {
 mod tests {
     use super::*;
     use webapi::document::document;
-    use webapi::document_fragment::DocumentFragment;
     use webapi::element::{Element, IElement};
     use webapi::html_elements::{SlotContentKind, SlotElement, TemplateElement};
     use webapi::node::{CloneKind, INode, Node};
@@ -90,14 +89,14 @@ mod tests {
     #[test]
     fn test_shadow_dom() {
         let div: Element = Node::from_html(r#"
-<div id="div">
+<div>
   <span id="span1" slot="slot1"></span>
 </div>"#)
             .unwrap()
             .try_into()
             .unwrap();
         let tpl: TemplateElement = Node::from_html(r#"
-<template id="tpl">
+<template>
   <slot name="slot1" id="slot1"><span id="span2"></span></slot><br>
   <slot name="slot2" id="slot2"><span id="span3"></span></slot><br>
 </template>"#)
