@@ -89,26 +89,22 @@ mod tests {
     }
     #[test]
     fn test_shadow_dom() {
-        let html_content: DocumentFragment = Node::from_html(
-            r#"
-<template id="tpl">
-  <slot name="slot1" id="slot1"><span id="span2"></span></slot><br>
-  <slot name="slot2" id="slot2"><span id="span3"></span></slot><br>
-</template>
+        let div: Element = Node::from_html(r#"
 <div id="div">
   <span id="span1" slot="slot1"></span>
-</div>"#,
-        ).unwrap()
-        .try_into()
-        .unwrap();
-
-        let div = html_content.query_selector("#div").unwrap().unwrap();
-        let tpl: TemplateElement = html_content
-            .query_selector("#tpl")
-            .unwrap()
+</div>"#)
             .unwrap()
             .try_into()
             .unwrap();
+        let tpl: TemplateElement = Node::from_html(r#"
+<template id="tpl">
+  <slot name="slot1" id="slot1"><span id="span2"></span></slot><br>
+  <slot name="slot2" id="slot2"><span id="span3"></span></slot><br>
+</template>"#)
+            .unwrap()
+            .try_into()
+            .unwrap();
+
         let span1 = div.query_selector("#span1").unwrap().unwrap();
 
         let shadow_root = div.attach_shadow(ShadowRootMode::Open).unwrap();
