@@ -397,7 +397,7 @@ mod tests {
 
     #[test]
     fn test_attach_shadow_mode_open() {
-        let element = document().create_element("div").try_into().unwrap();
+        let element = document().create_element("div").unwrap();
         let shadow_root = element.attach_shadow(ShadowRootMode::Open).unwrap();
         assert_eq!(shadow_root.mode(), ShadowRootMode::Open);
         assert_eq!(element.shadow_root(), Some(shadow_root));
@@ -405,7 +405,7 @@ mod tests {
 
     #[test]
     fn test_attach_shadow_mode_closed() {
-        let element = document().create_element("div").try_into().unwrap();
+        let element = document().create_element("div").unwrap();
         let shadow_root = element.attach_shadow(ShadowRootMode::Closed).unwrap();
         assert_eq!(shadow_root.mode(), ShadowRootMode::Closed);
         assert!(element.shadow_root().is_none());

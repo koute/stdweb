@@ -1,10 +1,10 @@
-use webcore::value::Reference;
-use webcore::try_from::TryInto;
-use webapi::element::Element;
-use webapi::event_target::{IEventTarget, EventTarget};
-use webapi::node::{INode, Node};
 use webapi::document_fragment::DocumentFragment;
+use webapi::element::Element;
+use webapi::event_target::{EventTarget, IEventTarget};
+use webapi::node::{INode, Node};
 use webapi::parent_node::IParentNode;
+use webcore::try_from::TryInto;
+use webcore::value::Reference;
 
 /// The mode associated to a shadow root.
 /// Mainly used in [IElement::attach_shadow](trait.IElement.html#method.attach_shadow) and
@@ -35,7 +35,7 @@ impl ShadowRootMode {
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "ShadowRoot")]
 #[reference(subclass_of(EventTarget, Node, DocumentFragment))]
-pub struct ShadowRoot( Reference );
+pub struct ShadowRoot(Reference);
 
 impl IEventTarget for ShadowRoot {}
 impl INode for ShadowRoot {}
@@ -51,7 +51,7 @@ impl ShadowRoot {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ShadowRoot/mode)
     // https://dom.spec.whatwg.org/#ref-for-dom-shadowroot-mode
-    pub fn mode( &self ) -> ShadowRootMode {
+    pub fn mode(&self) -> ShadowRootMode {
         let mode_string: String = js!( return @{self.as_ref()}.mode; ).try_into().unwrap();
 
         match mode_string.as_str() {
@@ -66,7 +66,7 @@ impl ShadowRoot {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ShadowRoot/host)
     // https://dom.spec.whatwg.org/#ref-for-dom-shadowroot-host
-    pub fn host( &self ) -> Element {
+    pub fn host(&self) -> Element {
         js!( return @{self.as_ref()}.host; ).try_into().unwrap()
     }
 }
@@ -74,36 +74,37 @@ impl ShadowRoot {
 #[cfg(all(test, feature = "web_test"))]
 mod tests {
     use super::*;
-    use webapi::html_element::HtmlElement;
-    use webapi::node::{Node, INode, CloneKind};
-    use webapi::document_fragment::DocumentFragment;
     use webapi::document::document;
+    use webapi::document_fragment::DocumentFragment;
+    use webapi::element::{Element, IElement};
+    use webapi::html_elements::{SlotContentKind, SlotElement, TemplateElement};
+    use webapi::node::{CloneKind, INode, Node};
     use webapi::parent_node::IParentNode;
-    use webapi::html_elements::{SlotElement, SlotContentKind};
-    use webapi::element::IElement;
 
     #[test]
     fn test_shadow_root_host() {
-        let element: HtmlElement = document().create_element("div").try_into().unwrap();
+        let element = document().create_element("div").unwrap();
         let shadow_root = element.attach_shadow(ShadowRootMode::Open).unwrap();
         assert_eq!(shadow_root.host(), element);
     }
     #[test]
     fn test_shadow_dom() {
-        let html_content: DocumentFragment = Node::from_html(r#"
+        let html_content: DocumentFragment = Node::from_html(
+            r#"
 <template id="tpl">
   <slot name="slot1" id="slot1"><span id="span2"></span></slot><br>
   <slot name="slot2" id="slot2"><span id="span3"></span></slot><br>
 </template>
 <div id="div">
   <span id="span1" slot="slot1"></span>
-</div>"#)
-            .unwrap()
-            .try_into()
-            .unwrap();
+</div>"#,
+        ).unwrap()
+        .try_into()
+        .unwrap();
 
         let div = html_content.query_selector("#div").unwrap().unwrap();
-        let tpl: TemplateElement = html_content.query_selector("#tpl")
+        let tpl: TemplateElement = html_content
+            .query_selector("#tpl")
             .unwrap()
             .unwrap()
             .try_into()
@@ -112,7 +113,6 @@ mod tests {
 
         let shadow_root = div.attach_shadow(ShadowRootMode::Open).unwrap();
         let n = tpl.content().clone_node(CloneKind::Deep).unwrap();
-
 
         shadow_root.append_child(&n);
 
@@ -129,21 +129,44 @@ mod tests {
             .try_into()
             .unwrap();
 
-        let span1_node: Node = span1.try_into().unwrap();
-
-        assert_eq!(slot1.assigned_nodes(SlotContentKind::AssignedOnly), &[span1_node]);
+        assert_eq!(
+            slot1
+                .assigned_nodes(SlotContentKind::AssignedOnly)
+                .iter()
+                .map(|m| m.try_into().unwrap())
+                .collect::<Vec<Element>>(),
+            &[span1]
+        );
         assert_eq!(slot2.assigned_nodes(SlotContentKind::AssignedOnly).len(), 0);
 
-        assert_eq!(slot1.assigned_elements(SlotContentKind::AssignedOnly), &[span1]);
-        assert_eq!(slot2.assigned_elements(SlotContentKind::AssignedOnly).len(), 0);
+        assert_eq!(
+            slot1.assigned_elements(SlotContentKind::AssignedOnly),
+            &[span1]
+        );
+        assert_eq!(
+            slot2.assigned_elements(SlotContentKind::AssignedOnly).len(),
+            0
+        );
 
-        assert_eq!(slot1.assigned_nodes(SlotContentKind::WithFallback), &[span1_node]);
-        assert_eq!(slot1.assigned_elements(SlotContentKind::WithFallback), &[span1]);
+        assert_eq!(
+            slot1.assigned_nodes(SlotContentKind::WithFallback),
+            &[span1_node]
+        );
+        assert_eq!(
+            slot1.assigned_elements(SlotContentKind::WithFallback),
+            &[span1]
+        );
 
         let slot2_nodes = slot2.assigned_nodes(SlotContentKind::WithFallback);
         let slot2_elements = slot2.assigned_elements(SlotContentKind::WithFallback);
 
-        assert_eq!(slot2_nodes, slot2_elements.iter().map(|m| m.try_into().unwrap()).collect::<Vec<Node>>());
+        assert_eq!(
+            slot2_nodes
+                .iter()
+                .map(|m| m.try_into().unwrap())
+                .collect::<Vec<Element>>(),
+            slot2_elements
+        );
         assert_eq!(slot2_nodes.len(), 1);
         let fallback_span = slot2_nodes[0];
 
