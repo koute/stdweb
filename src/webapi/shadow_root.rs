@@ -77,8 +77,10 @@ mod tests {
     use webapi::html_element::HtmlElement;
     use webapi::node::{Node, INode, CloneKind};
     use webapi::document_fragment::DocumentFragment;
+    use webapi::document::document;
     use webapi::parent_node::IParentNode;
     use webapi::html_elements::{SlotElement, SlotContentKind};
+    use webapi::element::IElement;
 
     #[test]
     fn test_shadow_root_host() {
@@ -127,21 +129,23 @@ mod tests {
             .try_into()
             .unwrap();
 
-        assert_eq!(slot1.assigned_nodes(SlotContentKind::AssignedOnly), &[span1]);
+        let span1_node: Node = span1.try_into().unwrap();
+
+        assert_eq!(slot1.assigned_nodes(SlotContentKind::AssignedOnly), &[span1_node]);
         assert_eq!(slot2.assigned_nodes(SlotContentKind::AssignedOnly).len(), 0);
 
         assert_eq!(slot1.assigned_elements(SlotContentKind::AssignedOnly), &[span1]);
         assert_eq!(slot2.assigned_elements(SlotContentKind::AssignedOnly).len(), 0);
 
-        assert_eq!(slot1.assigned_nodes(SlotContentKind::WithFallback), &[span1]);
+        assert_eq!(slot1.assigned_nodes(SlotContentKind::WithFallback), &[span1_node]);
         assert_eq!(slot1.assigned_elements(SlotContentKind::WithFallback), &[span1]);
 
         let slot2_nodes = slot2.assigned_nodes(SlotContentKind::WithFallback);
         let slot2_elements = slot2.assigned_elements(SlotContentKind::WithFallback);
 
-        assert_eq!(slot2_nodes, slot2_elements);
-        assert_eq!(slot2.len(), 1);
-        let fallback_span = slot2[0];
+        assert_eq!(slot2_nodes, slot2_elements.iter().map(|m| m.try_into().unwrap()).collect::<Vec<Node>>());
+        assert_eq!(slot2_nodes.len(), 1);
+        let fallback_span = slot2_nodes[0];
 
         assert_eq!(js!( return @{fallback_span}.id; ), "span3");
     }

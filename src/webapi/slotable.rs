@@ -21,14 +21,20 @@ pub trait ISlotable: ReferenceType {
 #[cfg(all(test, feature = "web_test"))]
 mod tests {
     use super::*;
-    use webapi::document::document;
     use webapi::node::{Node, INode, CloneKind};
     use webapi::parent_node::IParentNode;
-    use webapi::html_elements::SlotElement;
+    use webapi::html_elements::{SlotElement, TemplateElement};
+    use webapi::shadow_root::ShadowRootMode;
+    use webapi::html_element::HtmlElement;
+    use webcore::try_from::TryInto;
+    use webapi::element::IElement;
 
     #[test]
     fn test_assigned_slot() {
-        let div = Node::from_html("<div><span></span></div>").unwrap();
+        let div: HtmlElement = Node::from_html("<div><span></span></div>")
+            .unwrap()
+            .try_into()
+            .unwrap();
         let span = div.query_selector("span").unwrap().unwrap();
         let tpl: TemplateElement = Node::from_html("<template><slot></slot></template>")
             .unwrap()
