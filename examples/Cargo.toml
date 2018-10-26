@@ -1,2 +1,2 @@
 [workspace]
-members = ["canvas", "drag", "echo", "gamepad", "hasher", "minimal", "todomvc", "webgl"]
+members = ["canvas", "drag", "echo", "gamepad", "hasher", "minimal", "todomvc", "webgl", "web-components"]

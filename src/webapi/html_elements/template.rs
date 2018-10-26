@@ -35,7 +35,6 @@ impl TemplateElement {
     }
 }
 
-
 #[cfg(all(test, feature = "web_test"))]
 mod tests {
     use super::*;

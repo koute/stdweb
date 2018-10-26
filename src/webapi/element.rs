@@ -21,7 +21,7 @@ error_enum_boilerplate! {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element)
 // https://dom.spec.whatwg.org/#element
-pub trait IElement: INode + IParentNode + IChildNode {
+pub trait IElement: INode + IParentNode + IChildNode + ISlotable {
     /// The Element.namespaceURI read-only property returns the namespace URI
     /// of the element, or null if the element is not in a namespace.
     ///
@@ -320,6 +320,7 @@ impl InsertPosition {
 mod tests {
     use super::*;
     use webapi::document::document;
+    use webapi::shadow_root::{ShadowRootMode, ShadowRoot};
 
     fn div() -> Element {
         js!(
@@ -392,5 +393,21 @@ mod tests {
             InsertAdjacentError::NoModificationAllowedError(_) => true,
             _ => false,
         });
+    }
+
+    #[test]
+    fn test_attach_shadow_mode_open() {
+        let element: HtmlElement = document().create_element("div").try_into().unwrap();
+        let shadow_root = element.attach_shadow(ShadowRootMode::Open).unwrap();
+        assert_eq!(shadow_root.mode(), ShadowRootMode::Open);
+        assert_eq!(element.shadow_root(), Some(shadow_root));
+    }
+
+    #[test]
+    fn test_attach_shadow_mode_closed() {
+        let element: HtmlElement = document().create_element("div").try_into().unwrap();
+        let shadow_root = element.attach_shadow(ShadowRootMode::Closed).unwrap();
+        assert_eq!(shadow_root.mode(), ShadowRootMode::Closed);
+        assert!(element.shadow_root().is_none());
     }
 }
