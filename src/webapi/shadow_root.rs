@@ -133,15 +133,15 @@ mod tests {
             slot1
                 .assigned_nodes(SlotContentKind::AssignedOnly)
                 .iter()
-                .map(|m| m.try_into().unwrap())
+                .map(|m| m.clone().try_into().unwrap())
                 .collect::<Vec<Element>>(),
-            &[span1]
+            &[span1.clone()]
         );
         assert_eq!(slot2.assigned_nodes(SlotContentKind::AssignedOnly).len(), 0);
 
         assert_eq!(
             slot1.assigned_elements(SlotContentKind::AssignedOnly),
-            &[span1]
+            &[span1.clone()]
         );
         assert_eq!(
             slot2.assigned_elements(SlotContentKind::AssignedOnly).len(),
@@ -149,12 +149,16 @@ mod tests {
         );
 
         assert_eq!(
-            slot1.assigned_nodes(SlotContentKind::WithFallback),
-            &[span1_node]
+            slot1
+                .assigned_nodes(SlotContentKind::WithFallback)
+                .iter()
+                .map(|m| m.clone().try_into().unwrap())
+                .collect::<Vec<Element>>(),
+            &[span1.clone()]
         );
         assert_eq!(
             slot1.assigned_elements(SlotContentKind::WithFallback),
-            &[span1]
+            &[span1.clone()]
         );
 
         let slot2_nodes = slot2.assigned_nodes(SlotContentKind::WithFallback);
@@ -163,12 +167,12 @@ mod tests {
         assert_eq!(
             slot2_nodes
                 .iter()
-                .map(|m| m.try_into().unwrap())
+                .map(|m| m.clone().try_into().unwrap())
                 .collect::<Vec<Element>>(),
             slot2_elements
         );
         assert_eq!(slot2_nodes.len(), 1);
-        let fallback_span = slot2_nodes[0];
+        let fallback_span = slot2_nodes[0].clone();
 
         assert_eq!(js!( return @{fallback_span}.id; ), "span3");
     }
