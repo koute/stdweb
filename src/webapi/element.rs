@@ -282,10 +282,10 @@ pub struct Element( Reference );
 impl IEventTarget for Element {}
 impl INode for Element {}
 impl IElement for Element {}
-impl ISlotable for Element {}
 
 impl< T: IElement > IParentNode for T {}
 impl< T: IElement > IChildNode for T {}
+impl< T: IElement > ISlotable for T {}
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum InsertPosition {

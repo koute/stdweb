@@ -6,7 +6,6 @@ use webcore::try_from::TryInto;
 use webcore::value::Reference;
 use webapi::html_collection::HtmlCollection;
 use webapi::html_elements::OptionElement;
-use webapi::slotable::ISlotable;
 
 /// Indicates that an invalid value is setted to an `SelectElement`.
 /// It means there is no `<option>` element that has the given value.
@@ -38,7 +37,6 @@ impl IEventTarget for SelectElement {}
 impl INode for SelectElement {}
 impl IElement for SelectElement {}
 impl IHtmlElement for SelectElement {}
-impl ISlotable for SelectElement {}
 
 impl SelectElement {
     /// Returns the value attribute of the first selected `<option>` element or

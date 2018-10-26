@@ -4,7 +4,6 @@ use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
 use webapi::element::{IElement, Element};
 use webapi::html_element::{IHtmlElement, HtmlElement};
-use webapi::slotable::ISlotable;
 
 /// The HTML `<textarea>` element represents a multi-line plain-text editing control.
 ///
@@ -19,7 +18,6 @@ impl IEventTarget for TextAreaElement {}
 impl INode for TextAreaElement {}
 impl IElement for TextAreaElement {}
 impl IHtmlElement for TextAreaElement {}
-impl ISlotable for TextAreaElement {}
 
 impl TextAreaElement {
     /// The value of the control.

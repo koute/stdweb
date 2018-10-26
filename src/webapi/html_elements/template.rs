@@ -5,7 +5,6 @@ use webapi::node::{INode, Node};
 use webapi::element::{IElement, Element};
 use webapi::html_element::{IHtmlElement, HtmlElement};
 use webapi::document_fragment::DocumentFragment;
-use webapi::slotable::ISlotable;
 
 /// The HTML `<template>` element represents a mechanism for holding client-side content
 /// that is not to be rendered when a page is loaded but may subsequently be instantiated
@@ -22,7 +21,6 @@ impl IEventTarget for TemplateElement {}
 impl INode for TemplateElement {}
 impl IElement for TemplateElement {}
 impl IHtmlElement for TemplateElement {}
-impl ISlotable for TemplateElement {}
 
 impl TemplateElement {
     /// The content of the current template

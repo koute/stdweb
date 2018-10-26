@@ -5,7 +5,6 @@ use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
 use webapi::element::{IElement, Element};
 use webapi::html_element::{IHtmlElement, HtmlElement};
-use webapi::slotable::ISlotable;
 
 /// The HTML image element is used to manipulate the layout and presentation of
 /// `<img>` elements.
@@ -21,7 +20,6 @@ impl IEventTarget for ImageElement {}
 impl INode for ImageElement {}
 impl IElement for ImageElement {}
 impl IHtmlElement for ImageElement {}
-impl ISlotable for ImageElement {}
 
 impl ImageElement {
     /// Constructs a new ImageElement.

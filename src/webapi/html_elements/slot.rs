@@ -4,7 +4,6 @@ use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
 use webapi::element::{IElement, Element};
 use webapi::html_element::{IHtmlElement, HtmlElement};
-use webapi::slotable::ISlotable;
 
 /// An enum which determines whether
 /// [SlotElement::assigned_nodes](struct.SlotElement.html#method.assigned_nodes) /
@@ -16,6 +15,15 @@ pub enum SlotContentKind {
     AssignedOnly,
     /// Will return the fallback content if nothing has been assigned.
     WithFallback,
+}
+
+impl SlotContentKind {
+    fn to_bool(&self) -> bool {
+        match *self {
+            SlotContentKind::AssignedOnly => false,
+            SlotContentKind::WithFallback => true,
+        }
+    }
 }
 
 /// The HTML `<slot>` element represents a placeholder inside a web component that
@@ -33,7 +41,6 @@ impl IEventTarget for SlotElement {}
 impl INode for SlotElement {}
 impl IElement for SlotElement {}
 impl IHtmlElement for SlotElement {}
-impl ISlotable for SlotElement {}
 
 impl SlotElement {
     /// The slot's name
@@ -60,13 +67,8 @@ impl SlotElement {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedNodes)
     // https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element:dom-slot-assignednodes
     pub fn assigned_nodes( &self, kind: SlotContentKind ) -> Vec<Node> {
-        let is_flatten = match kind {
-            SlotContentKind::AssignedOnly => false,
-            SlotContentKind::WithFallback => true,
-        };
-
         js! (
-            return @{self}.assignedNodes( { flatten: @{is_flatten} } );
+            return @{self}.assignedNodes( { flatten: @{kind.to_bool()} } );
         ).try_into().unwrap()
     }
 
@@ -75,13 +77,8 @@ impl SlotElement {
     /// [(Spec)](https://html.spec.whatwg.org/multipage/scripting.html#dom-slot-assignedelements)
     // https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element:dom-slot-assignedelements
     pub fn assigned_elements( &self, kind: SlotContentKind ) -> Vec<Element> {
-        let is_flatten = match kind {
-            SlotContentKind::AssignedOnly => false,
-            SlotContentKind::WithFallback => true,
-        };
-
         js! (
-            return @{self}.assignedElements( { flatten: @{is_flatten} } );
+            return @{self}.assignedElements( { flatten: @{kind.to_bool()} } );
         ).try_into().unwrap()
     }
 
