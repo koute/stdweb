@@ -1,10 +1,10 @@
-#[macro_use]
 extern crate stdweb;
 
 use stdweb::unstable::TryInto;
 use stdweb::traits::*;
-use web::html_element::{SlotElement, TemplateElement};
-use web::{CloneKind, ShadowRootMode, SlotContentKind};
+use stdweb::web;
+use web::html_element::TemplateElement;
+use web::{CloneKind, ShadowRootMode};
 
 fn main() {
     stdweb::initialize();

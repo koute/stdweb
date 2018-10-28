@@ -88,15 +88,13 @@ mod tests {
     }
     #[test]
     fn test_shadow_dom() {
-        let div: Element = Node::from_html(r#"
-<div>
+        let div: Element = Node::from_html(r#"<div>
   <span id="span1" slot="slot1"></span>
 </div>"#)
             .unwrap()
             .try_into()
             .unwrap();
-        let tpl: TemplateElement = Node::from_html(r#"
-<template>
+        let tpl: TemplateElement = Node::from_html(r#"<template>
   <slot name="slot1" id="slot1"><span id="span2"></span></slot><br>
   <slot name="slot2" id="slot2"><span id="span3"></span></slot><br>
 </template>"#)
