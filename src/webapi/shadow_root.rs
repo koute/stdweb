@@ -27,8 +27,8 @@ impl ShadowRootMode {
     }
 }
 
-/// A reference to a JavaScript object which implements the [IShadowRoot](trait.IShadowRoot.html)
-/// interface.
+/// The `ShadowRoot` interface of the Shadow DOM API is the root node of a DOM
+/// subtree that is rendered separately from a document's main DOM tree.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ShadowRoot)
 // https://dom.spec.whatwg.org/#interface-shadowroot
@@ -41,11 +41,6 @@ impl IEventTarget for ShadowRoot {}
 impl INode for ShadowRoot {}
 impl IParentNode for ShadowRoot {}
 
-/// The `ShadowRoot` interface of the Shadow DOM API is the root node of a DOM
-/// subtree that is rendered separately from a document's main DOM tree.
-///
-/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ShadowRoot)
-// https://dom.spec.whatwg.org/#interface-shadowroot
 impl ShadowRoot {
     /// The mode property of the `ShadowRoot` specifies its mode.
     ///
@@ -86,6 +81,7 @@ mod tests {
         let shadow_root = element.attach_shadow(ShadowRootMode::Open).unwrap();
         assert_eq!(shadow_root.host(), element);
     }
+
     #[test]
     fn test_shadow_dom() {
         let div: Element = Node::from_html(r#"<div>
@@ -132,15 +128,6 @@ mod tests {
         );
         assert_eq!(slot2.assigned_nodes(SlotContentKind::AssignedOnly).len(), 0);
 
-        // assert_eq!(
-        //     slot1.assigned_elements(SlotContentKind::AssignedOnly),
-        //     &[span1.clone()]
-        // );
-        // assert_eq!(
-        //     slot2.assigned_elements(SlotContentKind::AssignedOnly).len(),
-        //     0
-        // );
-
         assert_eq!(
             slot1
                 .assigned_nodes(SlotContentKind::WithFallback)
@@ -149,21 +136,8 @@ mod tests {
                 .collect::<Vec<Element>>(),
             &[span1.clone()]
         );
-        // assert_eq!(
-        //     slot1.assigned_elements(SlotContentKind::WithFallback),
-        //     &[span1.clone()]
-        // );
 
         let slot2_nodes = slot2.assigned_nodes(SlotContentKind::WithFallback);
-        // let slot2_elements = slot2.assigned_elements(SlotContentKind::WithFallback);
-
-        // assert_eq!(
-        //     slot2_nodes
-        //         .iter()
-        //         .map(|m| m.clone().try_into().unwrap())
-        //         .collect::<Vec<Element>>(),
-        //     slot2_elements
-        // );
         assert_eq!(slot2_nodes.len(), 1);
         let fallback_span = slot2_nodes[0].clone();
 

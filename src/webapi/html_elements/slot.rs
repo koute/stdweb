@@ -82,3 +82,101 @@ impl SlotElement {
         ).try_into().unwrap()
     }
 }
+
+// Remove unused imports when `#[ignore]` below is removed.
+#[allow(unused_imports)]
+#[cfg(all(test, feature = "web_test"))]
+mod tests {
+    use super::*;
+    use webapi::element::{Element, IElement};
+    use webapi::html_elements::TemplateElement;
+    use webapi::node::{CloneKind, INode, Node};
+    use webapi::parent_node::IParentNode;
+    use webapi::shadow_root::ShadowRootMode;
+
+    // `#[ignore]`ed because travis keeps complaining.
+    #[test]
+    #[ignore]
+    fn test_assigned_elements() {
+        let div: Element = Node::from_html(r#"<div>
+  <span id="span1" slot="slot1"></span>
+</div>"#)
+            .unwrap()
+            .try_into()
+            .unwrap();
+        let tpl: TemplateElement = Node::from_html(r#"<template>
+  <slot name="slot1" id="slot1"><span id="span2"></span></slot><br>
+  <slot name="slot2" id="slot2"><span id="span3"></span></slot><br>
+</template>"#)
+            .unwrap()
+            .try_into()
+            .unwrap();
+
+        let span1 = div.query_selector("#span1").unwrap().unwrap();
+
+        let shadow_root = div.attach_shadow(ShadowRootMode::Open).unwrap();
+        let n = tpl.content().clone_node(CloneKind::Deep).unwrap();
+
+        shadow_root.append_child(&n);
+
+        let slot1: SlotElement = shadow_root
+            .query_selector("#slot1")
+            .unwrap()
+            .unwrap()
+            .try_into()
+            .unwrap();
+        let slot2: SlotElement = shadow_root
+            .query_selector("#slot2")
+            .unwrap()
+            .unwrap()
+            .try_into()
+            .unwrap();
+
+        assert_eq!(
+            slot1
+                .assigned_nodes(SlotContentKind::AssignedOnly)
+                .iter()
+                .map(|m| m.clone().try_into().unwrap())
+                .collect::<Vec<Element>>(),
+            &[span1.clone()]
+        );
+        assert_eq!(slot2.assigned_nodes(SlotContentKind::AssignedOnly).len(), 0);
+
+        assert_eq!(
+            slot1.assigned_elements(SlotContentKind::AssignedOnly),
+            &[span1.clone()]
+        );
+        assert_eq!(
+            slot2.assigned_elements(SlotContentKind::AssignedOnly).len(),
+            0
+        );
+
+        assert_eq!(
+            slot1
+                .assigned_nodes(SlotContentKind::WithFallback)
+                .iter()
+                .map(|m| m.clone().try_into().unwrap())
+                .collect::<Vec<Element>>(),
+            &[span1.clone()]
+        );
+        assert_eq!(
+            slot1.assigned_elements(SlotContentKind::WithFallback),
+            &[span1.clone()]
+        );
+
+        let slot2_nodes = slot2.assigned_nodes(SlotContentKind::WithFallback);
+        let slot2_elements = slot2.assigned_elements(SlotContentKind::WithFallback);
+
+        assert_eq!(
+            slot2_nodes
+                .iter()
+                .map(|m| m.clone().try_into().unwrap())
+                .collect::<Vec<Element>>(),
+            slot2_elements
+        );
+        assert_eq!(slot2_nodes.len(), 1);
+        let fallback_span = slot2_nodes[0].clone();
+
+        assert_eq!(js!( return @{fallback_span}.id; ), "span3");
+    }
+}

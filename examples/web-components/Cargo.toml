@@ -1,7 +1,0 @@
-[package]
-name = "web-components"
-version = "0.1.0"
-authors = ["Kaede Hoshikawa <futursolo@icloud.com>"]
-
-[dependencies]
-stdweb = { path = "../.." }
