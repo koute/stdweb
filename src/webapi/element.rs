@@ -1,12 +1,19 @@
 use webcore::value::Reference;
-use webcore::try_from::TryInto;
+use webcore::try_from::{TryFrom, TryInto};
 use webapi::dom_exception::{InvalidCharacterError, InvalidPointerId, NoModificationAllowedError, SyntaxError};
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
 use webapi::token_list::TokenList;
 use webapi::parent_node::IParentNode;
 use webapi::child_node::IChildNode;
-use webcore::try_from::TryFrom;
+use webapi::slotable::ISlotable;
+use webapi::shadow_root::{ShadowRootMode, ShadowRoot};
+use webapi::dom_exception::{NotSupportedError, InvalidStateError};
+
+error_enum_boilerplate! {
+    AttachShadowError,
+    NotSupportedError, InvalidStateError
+}
 
 /// The `IElement` interface represents an object of a [Document](struct.Document.html).
 /// This interface describes methods and properties common to all
@@ -14,7 +21,7 @@ use webcore::try_from::TryFrom;
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element)
 // https://dom.spec.whatwg.org/#element
-pub trait IElement: INode + IParentNode + IChildNode {
+pub trait IElement: INode + IParentNode + IChildNode + ISlotable {
     /// The Element.namespaceURI read-only property returns the namespace URI
     /// of the element, or null if the element is not in a namespace.
     ///
@@ -225,6 +232,40 @@ pub trait IElement: INode + IParentNode + IChildNode {
     fn insert_html_after( &self, html: &str ) -> Result<(), InsertAdjacentError> {
         self.insert_adjacent_html(InsertPosition::AfterEnd, html)
     }
+
+    /// The slot property of the Element interface returns the name of the shadow DOM
+    /// slot the element is inserted in.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/slot)
+    // https://dom.spec.whatwg.org/#ref-for-dom-element-slot
+    fn slot( &self ) -> String {
+        js!(
+            return @{self.as_ref()}.slot;
+        ).try_into().unwrap()
+    }
+
+    /// Attach a shadow DOM tree to the specified element and returns a reference to its `ShadowRoot`.
+    /// It returns a shadow root if successfully attached or `None` if the element cannot be attached.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/attachShadow)
+    // https://dom.spec.whatwg.org/#ref-for-dom-element-attachshadow
+    fn attach_shadow( &self, mode: ShadowRootMode ) -> Result<ShadowRoot, AttachShadowError> {
+        js_try!(
+            return @{self.as_ref()}.attachShadow( { mode: @{mode.as_str()}} )
+        ).unwrap()
+    }
+
+    /// Returns the shadow root of the current element or `None`.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/shadowRoot)
+    // https://dom.spec.whatwg.org/#ref-for-dom-element-shadowroot
+    fn shadow_root( &self ) -> Option<ShadowRoot> {
+        unsafe {
+            js!(
+                return @{self.as_ref()}.shadowRoot;
+            ).into_reference_unchecked()
+        }
+    }
 }
 
 
@@ -244,6 +285,7 @@ impl IElement for Element {}
 
 impl< T: IElement > IParentNode for T {}
 impl< T: IElement > IChildNode for T {}
+impl< T: IElement > ISlotable for T {}
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum InsertPosition {
@@ -278,6 +320,7 @@ impl InsertPosition {
 mod tests {
     use super::*;
     use webapi::document::document;
+    use webapi::shadow_root::ShadowRootMode;
 
     fn div() -> Element {
         js!(
@@ -350,5 +393,21 @@ mod tests {
             InsertAdjacentError::NoModificationAllowedError(_) => true,
             _ => false,
         });
+    }
+
+    #[test]
+    fn test_attach_shadow_mode_open() {
+        let element = document().create_element("div").unwrap();
+        let shadow_root = element.attach_shadow(ShadowRootMode::Open).unwrap();
+        assert_eq!(shadow_root.mode(), ShadowRootMode::Open);
+        assert_eq!(element.shadow_root(), Some(shadow_root));
+    }
+
+    #[test]
+    fn test_attach_shadow_mode_closed() {
+        let element = document().create_element("div").unwrap();
+        let shadow_root = element.attach_shadow(ShadowRootMode::Closed).unwrap();
+        assert_eq!(shadow_root.mode(), ShadowRootMode::Closed);
+        assert!(element.shadow_root().is_none());
     }
 }
