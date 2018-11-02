@@ -274,6 +274,7 @@ pub mod web {
     pub use webapi::html_element::{IHtmlElement, HtmlElement, Rect};
     pub use webapi::window_or_worker::IWindowOrWorker;
     pub use webapi::parent_node::IParentNode;
+    pub use webapi::slotable::ISlotable;
     pub use webapi::non_element_parent_node::INonElementParentNode;
     pub use webapi::token_list::TokenList;
     pub use webapi::node_list::NodeList;
@@ -294,6 +295,8 @@ pub mod web {
     pub use webapi::child_node::IChildNode;
     pub use webapi::gamepad::{Gamepad, GamepadButton, GamepadMappingType};
     pub use webapi::selection::Selection;
+    pub use webapi::shadow_root::{ShadowRootMode, ShadowRoot};
+    pub use webapi::html_elements::SlotContentKind;
 
     /// A module containing error types.
     pub mod error {
@@ -330,6 +333,8 @@ pub mod web {
         pub use webapi::html_elements::CanvasElement;
         pub use webapi::html_elements::SelectElement;
         pub use webapi::html_elements::OptionElement;
+        pub use webapi::html_elements::TemplateElement;
+        pub use webapi::html_elements::SlotElement;
     }
 
     /// A module containing JavaScript DOM events.
@@ -460,8 +465,11 @@ pub mod web {
             DataTransferItem,
             DataTransferItemKind,
         };
+
+        pub use webapi::events::slot::SlotChangeEvent;
     }
 
+    #[cfg(feature = "experimental_features_which_may_break_on_minor_version_bumps")]
     /// APIs related to MIDI.
     pub mod midi {
         pub use webapi::midi::{
@@ -503,7 +511,8 @@ pub mod traits {
         IWindowOrWorker,
         IParentNode,
         INonElementParentNode,
-        IChildNode
+        IChildNode,
+        ISlotable,
     };
 
     #[doc(hidden)]
@@ -525,6 +534,7 @@ pub mod traits {
         IDragEvent,
     };
 
+    #[cfg(feature = "experimental_features_which_may_break_on_minor_version_bumps")]
     #[doc(hidden)]
     pub use super::web::midi::IMidiPort;
 }

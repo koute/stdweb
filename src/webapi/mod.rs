@@ -41,7 +41,10 @@ pub mod html_collection;
 pub mod child_node;
 pub mod gamepad;
 pub mod selection;
+#[cfg(feature = "experimental_features_which_may_break_on_minor_version_bumps")]
 pub mod midi;
+pub mod slotable;
+pub mod shadow_root;
 
 #[cfg(feature = "futures-support")]
 pub mod timer_future;

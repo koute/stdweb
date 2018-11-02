@@ -1,6 +1,7 @@
 use webcore::value::Reference;
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
+use webapi::parent_node::IParentNode;
 
 /// A reference to a JavaScript object DocumentFragment.
 ///
@@ -13,3 +14,4 @@ pub struct DocumentFragment( Reference );
 
 impl IEventTarget for DocumentFragment {}
 impl INode for DocumentFragment {}
+impl IParentNode for DocumentFragment {}
