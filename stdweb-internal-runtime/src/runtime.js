@@ -207,18 +207,37 @@ Module.STDWEB_PRIVATE.serialize_array = function serialize_array( address, value
     }
 };
 
-Module.STDWEB_PRIVATE.to_utf8_string = function ( address, value ) {
-    var length = Module.STDWEB_PRIVATE.utf8_len( value );
-    var pointer = 0;
+if ( typeof TextEncoder === "function" ) {
+    var cachedEncoder = new TextEncoder( "utf-8" );
 
-    if( length > 0 ) {
-        pointer = Module.STDWEB_PRIVATE.alloc( length );
-        Module.STDWEB_PRIVATE.to_utf8( value, pointer );
-    }
+    Module.STDWEB_PRIVATE.to_utf8_string = function to_utf8_string( address, value ) {
+        var buffer = cachedEncoder.encode( value );
+        var length = buffer.length;
+        var pointer = 0;
 
-    HEAPU32[ address / 4 ] = pointer;
-    HEAPU32[ (address + 4) / 4 ] = length;
-};
+        if ( length > 0 ) {
+            pointer = Module.STDWEB_PRIVATE.alloc( length );
+            HEAPU8.set( buffer, pointer );
+        }
+
+        HEAPU32[ address / 4 ] = pointer;
+        HEAPU32[ (address + 4) / 4 ] = length;
+    };
+
+} else {
+    Module.STDWEB_PRIVATE.to_utf8_string = function to_utf8_string( address, value ) {
+        var length = Module.STDWEB_PRIVATE.utf8_len( value );
+        var pointer = 0;
+
+        if ( length > 0 ) {
+            pointer = Module.STDWEB_PRIVATE.alloc( length );
+            Module.STDWEB_PRIVATE.to_utf8( value, pointer );
+        }
+
+        HEAPU32[ address / 4 ] = pointer;
+        HEAPU32[ (address + 4) / 4 ] = length;
+    };
+}
 
 Module.STDWEB_PRIVATE.from_js = function from_js( address, value ) {
     var kind = Object.prototype.toString.call( value );
@@ -252,48 +271,57 @@ Module.STDWEB_PRIVATE.from_js = function from_js( address, value ) {
     }
 };
 
-// This is ported from Rust's stdlib; it's faster than
-// the string conversion from Emscripten.
-Module.STDWEB_PRIVATE.to_js_string = function to_js_string( index, length ) {
-    index = index|0;
-    length = length|0;
-    var end = (index|0) + (length|0);
-    var output = "";
-    while( index < end ) {
-        var x = HEAPU8[ index++ ];
-        if( x < 128 ) {
-            output += String.fromCharCode( x );
+if ( typeof TextDecoder === "function" ) {
+    var cachedDecoder = new TextDecoder( "utf-8" );
+
+    Module.STDWEB_PRIVATE.to_js_string = function to_js_string( index, length ) {
+        return cachedDecoder.decode( HEAPU8.subarray( index, index + length ) );
+    };
+
+} else {
+    // This is ported from Rust's stdlib; it's faster than
+    // the string conversion from Emscripten.
+    Module.STDWEB_PRIVATE.to_js_string = function to_js_string( index, length ) {
+        index = index|0;
+        length = length|0;
+        var end = (index|0) + (length|0);
+        var output = "";
+        while( index < end ) {
+            var x = HEAPU8[ index++ ];
+            if( x < 128 ) {
+                output += String.fromCharCode( x );
+                continue;
+            }
+            var init = (x & (0x7F >> 2));
+            var y = 0;
+            if( index < end ) {
+                y = HEAPU8[ index++ ];
+            }
+            var ch = (init << 6) | (y & 63);
+            if( x >= 0xE0 ) {
+                var z = 0;
+                if( index < end ) {
+                    z = HEAPU8[ index++ ];
+                }
+                var y_z = ((y & 63) << 6) | (z & 63);
+                ch = init << 12 | y_z;
+                if( x >= 0xF0 ) {
+                    var w = 0;
+                    if( index < end ) {
+                        w = HEAPU8[ index++ ];
+                    }
+                    ch = (init & 7) << 18 | ((y_z << 6) | (w & 63));
+
+                    output += String.fromCharCode( 0xD7C0 + (ch >> 10) );
+                    ch = 0xDC00 + (ch & 0x3FF);
+                }
+            }
+            output += String.fromCharCode( ch );
             continue;
         }
-        var init = (x & (0x7F >> 2));
-        var y = 0;
-        if( index < end ) {
-            y = HEAPU8[ index++ ];
-        }
-        var ch = (init << 6) | (y & 63);
-        if( x >= 0xE0 ) {
-            var z = 0;
-            if( index < end ) {
-                z = HEAPU8[ index++ ];
-            }
-            var y_z = ((y & 63) << 6) | (z & 63);
-            ch = init << 12 | y_z;
-            if( x >= 0xF0 ) {
-                var w = 0;
-                if( index < end ) {
-                    w = HEAPU8[ index++ ];
-                }
-                ch = (init & 7) << 18 | ((y_z << 6) | (w & 63));
-
-                output += String.fromCharCode( 0xD7C0 + (ch >> 10) );
-                ch = 0xDC00 + (ch & 0x3FF);
-            }
-        }
-        output += String.fromCharCode( ch );
-        continue;
-    }
-    return output;
-};
+        return output;
+    };
+}
 
 Module.STDWEB_PRIVATE.id_to_ref_map = {};
 Module.STDWEB_PRIVATE.id_to_refcount_map = {};
