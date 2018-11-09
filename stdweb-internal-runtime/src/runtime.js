@@ -189,13 +189,8 @@ Module.STDWEB_PRIVATE.serialize_object = function serialize_object( address, val
     HEAPU32[ (address + 8) / 4 ] = key_array_pointer;
     for( var i = 0; i < length; ++i ) {
         var key = keys[ i ];
-        var key_length = Module.STDWEB_PRIVATE.utf8_len( key );
-        var key_pointer = Module.STDWEB_PRIVATE.alloc( key_length );
-        Module.STDWEB_PRIVATE.to_utf8( key, key_pointer );
-
         var key_address = key_array_pointer + i * 8;
-        HEAPU32[ key_address / 4 ] = key_pointer;
-        HEAPU32[ (key_address + 4) / 4 ] = key_length;
+        Module.STDWEB_PRIVATE.to_utf8_string( key_address, key );
 
         Module.STDWEB_PRIVATE.from_js( value_array_pointer + i * 16, value[ key ] );
     }
@@ -212,18 +207,24 @@ Module.STDWEB_PRIVATE.serialize_array = function serialize_array( address, value
     }
 };
 
+Module.STDWEB_PRIVATE.to_utf8_string = function ( address, value ) {
+    var length = Module.STDWEB_PRIVATE.utf8_len( value );
+    var pointer = 0;
+
+    if( length > 0 ) {
+        pointer = Module.STDWEB_PRIVATE.alloc( length );
+        Module.STDWEB_PRIVATE.to_utf8( value, pointer );
+    }
+
+    HEAPU32[ address / 4 ] = pointer;
+    HEAPU32[ (address + 4) / 4 ] = length;
+};
+
 Module.STDWEB_PRIVATE.from_js = function from_js( address, value ) {
     var kind = Object.prototype.toString.call( value );
     if( kind === "[object String]" ) {
-        var length = Module.STDWEB_PRIVATE.utf8_len( value );
-        var pointer = 0;
-        if( length > 0 ) {
-            pointer = Module.STDWEB_PRIVATE.alloc( length );
-            Module.STDWEB_PRIVATE.to_utf8( value, pointer );
-        }
         HEAPU8[ address + 12 ] = 4;
-        HEAPU32[ address / 4 ] = pointer;
-        HEAPU32[ (address + 4) / 4 ] = length;
+        Module.STDWEB_PRIVATE.to_utf8_string( address, value );
     } else if( kind === "[object Number]" ) {
         if( value === (value|0) ) {
             HEAPU8[ address + 12 ] = 2;
