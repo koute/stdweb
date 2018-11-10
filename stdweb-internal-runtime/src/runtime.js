@@ -207,9 +207,16 @@ Module.STDWEB_PRIVATE.serialize_array = function serialize_array( address, value
     }
 };
 
-if ( typeof TextEncoder === "function" ) {
-    var cachedEncoder = new TextEncoder( "utf-8" );
+// New browsers and recent Node
+var cachedEncoder = ( typeof TextEncoder === "function"
+    ? new TextEncoder( "utf-8" )
+    // Old Node
+    : ( util && typeof util === "object" && typeof util.TextEncoder === "function"
+        ? new util.TextEncoder( "utf-8" )
+        // Old browsers
+        : null ) );
 
+if ( cachedEncoder != null ) {
     Module.STDWEB_PRIVATE.to_utf8_string = function to_utf8_string( address, value ) {
         var buffer = cachedEncoder.encode( value );
         var length = buffer.length;
@@ -271,9 +278,16 @@ Module.STDWEB_PRIVATE.from_js = function from_js( address, value ) {
     }
 };
 
-if ( typeof TextDecoder === "function" ) {
-    var cachedDecoder = new TextDecoder( "utf-8" );
+// New browsers and recent Node
+var cachedDecoder = ( typeof TextDecoder === "function"
+    ? new TextDecoder( "utf-8" )
+    // Old Node
+    : ( util && typeof util === "object" && typeof util.TextDecoder === "function"
+        ? new util.TextDecoder( "utf-8" )
+        // Old browsers
+        : null ) );
 
+if ( cachedDecoder != null ) {
     Module.STDWEB_PRIVATE.to_js_string = function to_js_string( index, length ) {
         return cachedDecoder.decode( HEAPU8.subarray( index, index + length ) );
     };
