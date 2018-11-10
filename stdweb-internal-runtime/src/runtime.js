@@ -211,7 +211,7 @@ Module.STDWEB_PRIVATE.serialize_array = function serialize_array( address, value
 var cachedEncoder = ( typeof TextEncoder === "function"
     ? new TextEncoder( "utf-8" )
     // Old Node (before v11)
-    : ( util && typeof util === "object" && typeof util.TextEncoder === "function"
+    : ( typeof util === "object" && util && typeof util.TextEncoder === "function"
         ? new util.TextEncoder( "utf-8" )
         // Old browsers
         : null ) );
@@ -282,7 +282,7 @@ Module.STDWEB_PRIVATE.from_js = function from_js( address, value ) {
 var cachedDecoder = ( typeof TextDecoder === "function"
     ? new TextDecoder( "utf-8" )
     // Old Node (before v11)
-    : ( util && typeof util === "object" && typeof util.TextDecoder === "function"
+    : ( typeof util === "object" && util && typeof util.TextDecoder === "function"
         ? new util.TextDecoder( "utf-8" )
         // Old browsers
         : null ) );
