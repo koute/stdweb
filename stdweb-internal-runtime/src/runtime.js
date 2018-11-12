@@ -189,13 +189,8 @@ Module.STDWEB_PRIVATE.serialize_object = function serialize_object( address, val
     HEAPU32[ (address + 8) / 4 ] = key_array_pointer;
     for( var i = 0; i < length; ++i ) {
         var key = keys[ i ];
-        var key_length = Module.STDWEB_PRIVATE.utf8_len( key );
-        var key_pointer = Module.STDWEB_PRIVATE.alloc( key_length );
-        Module.STDWEB_PRIVATE.to_utf8( key, key_pointer );
-
         var key_address = key_array_pointer + i * 8;
-        HEAPU32[ key_address / 4 ] = key_pointer;
-        HEAPU32[ (key_address + 4) / 4 ] = key_length;
+        Module.STDWEB_PRIVATE.to_utf8_string( key_address, key );
 
         Module.STDWEB_PRIVATE.from_js( value_array_pointer + i * 16, value[ key ] );
     }
@@ -212,18 +207,50 @@ Module.STDWEB_PRIVATE.serialize_array = function serialize_array( address, value
     }
 };
 
-Module.STDWEB_PRIVATE.from_js = function from_js( address, value ) {
-    var kind = Object.prototype.toString.call( value );
-    if( kind === "[object String]" ) {
+// New browsers and recent Node
+var cachedEncoder = ( typeof TextEncoder === "function"
+    ? new TextEncoder( "utf-8" )
+    // Old Node (before v11)
+    : ( typeof util === "object" && util && typeof util.TextEncoder === "function"
+        ? new util.TextEncoder( "utf-8" )
+        // Old browsers
+        : null ) );
+
+if ( cachedEncoder != null ) {
+    Module.STDWEB_PRIVATE.to_utf8_string = function to_utf8_string( address, value ) {
+        var buffer = cachedEncoder.encode( value );
+        var length = buffer.length;
+        var pointer = 0;
+
+        if ( length > 0 ) {
+            pointer = Module.STDWEB_PRIVATE.alloc( length );
+            HEAPU8.set( buffer, pointer );
+        }
+
+        HEAPU32[ address / 4 ] = pointer;
+        HEAPU32[ (address + 4) / 4 ] = length;
+    };
+
+} else {
+    Module.STDWEB_PRIVATE.to_utf8_string = function to_utf8_string( address, value ) {
         var length = Module.STDWEB_PRIVATE.utf8_len( value );
         var pointer = 0;
-        if( length > 0 ) {
+
+        if ( length > 0 ) {
             pointer = Module.STDWEB_PRIVATE.alloc( length );
             Module.STDWEB_PRIVATE.to_utf8( value, pointer );
         }
-        HEAPU8[ address + 12 ] = 4;
+
         HEAPU32[ address / 4 ] = pointer;
         HEAPU32[ (address + 4) / 4 ] = length;
+    };
+}
+
+Module.STDWEB_PRIVATE.from_js = function from_js( address, value ) {
+    var kind = Object.prototype.toString.call( value );
+    if( kind === "[object String]" ) {
+        HEAPU8[ address + 12 ] = 4;
+        Module.STDWEB_PRIVATE.to_utf8_string( address, value );
     } else if( kind === "[object Number]" ) {
         if( value === (value|0) ) {
             HEAPU8[ address + 12 ] = 2;
@@ -251,48 +278,64 @@ Module.STDWEB_PRIVATE.from_js = function from_js( address, value ) {
     }
 };
 
-// This is ported from Rust's stdlib; it's faster than
-// the string conversion from Emscripten.
-Module.STDWEB_PRIVATE.to_js_string = function to_js_string( index, length ) {
-    index = index|0;
-    length = length|0;
-    var end = (index|0) + (length|0);
-    var output = "";
-    while( index < end ) {
-        var x = HEAPU8[ index++ ];
-        if( x < 128 ) {
-            output += String.fromCharCode( x );
+// New browsers and recent Node
+var cachedDecoder = ( typeof TextDecoder === "function"
+    ? new TextDecoder( "utf-8" )
+    // Old Node (before v11)
+    : ( typeof util === "object" && util && typeof util.TextDecoder === "function"
+        ? new util.TextDecoder( "utf-8" )
+        // Old browsers
+        : null ) );
+
+if ( cachedDecoder != null ) {
+    Module.STDWEB_PRIVATE.to_js_string = function to_js_string( index, length ) {
+        return cachedDecoder.decode( HEAPU8.subarray( index, index + length ) );
+    };
+
+} else {
+    // This is ported from Rust's stdlib; it's faster than
+    // the string conversion from Emscripten.
+    Module.STDWEB_PRIVATE.to_js_string = function to_js_string( index, length ) {
+        index = index|0;
+        length = length|0;
+        var end = (index|0) + (length|0);
+        var output = "";
+        while( index < end ) {
+            var x = HEAPU8[ index++ ];
+            if( x < 128 ) {
+                output += String.fromCharCode( x );
+                continue;
+            }
+            var init = (x & (0x7F >> 2));
+            var y = 0;
+            if( index < end ) {
+                y = HEAPU8[ index++ ];
+            }
+            var ch = (init << 6) | (y & 63);
+            if( x >= 0xE0 ) {
+                var z = 0;
+                if( index < end ) {
+                    z = HEAPU8[ index++ ];
+                }
+                var y_z = ((y & 63) << 6) | (z & 63);
+                ch = init << 12 | y_z;
+                if( x >= 0xF0 ) {
+                    var w = 0;
+                    if( index < end ) {
+                        w = HEAPU8[ index++ ];
+                    }
+                    ch = (init & 7) << 18 | ((y_z << 6) | (w & 63));
+
+                    output += String.fromCharCode( 0xD7C0 + (ch >> 10) );
+                    ch = 0xDC00 + (ch & 0x3FF);
+                }
+            }
+            output += String.fromCharCode( ch );
             continue;
         }
-        var init = (x & (0x7F >> 2));
-        var y = 0;
-        if( index < end ) {
-            y = HEAPU8[ index++ ];
-        }
-        var ch = (init << 6) | (y & 63);
-        if( x >= 0xE0 ) {
-            var z = 0;
-            if( index < end ) {
-                z = HEAPU8[ index++ ];
-            }
-            var y_z = ((y & 63) << 6) | (z & 63);
-            ch = init << 12 | y_z;
-            if( x >= 0xF0 ) {
-                var w = 0;
-                if( index < end ) {
-                    w = HEAPU8[ index++ ];
-                }
-                ch = (init & 7) << 18 | ((y_z << 6) | (w & 63));
-
-                output += String.fromCharCode( 0xD7C0 + (ch >> 10) );
-                ch = 0xDC00 + (ch & 0x3FF);
-            }
-        }
-        output += String.fromCharCode( ch );
-        continue;
-    }
-    return output;
-};
+        return output;
+    };
+}
 
 Module.STDWEB_PRIVATE.id_to_ref_map = {};
 Module.STDWEB_PRIVATE.id_to_refcount_map = {};
