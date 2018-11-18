@@ -217,7 +217,6 @@ pub mod serde {
 
 /// A module with bindings to the Web APIs.
 pub mod web {
-
     #[cfg(feature = "futures-support")]
     pub use webapi::timer_future::{
         Wait,
@@ -227,7 +226,7 @@ pub mod web {
     };
 
 
-    /// This is a module
+    /// A module containing the IndexedDB API
     pub mod indexeddb {
         pub use webapi::indexeddb::{
             IDBOpenDBRequest,
