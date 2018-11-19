@@ -1,5 +1,3 @@
-#![feature(use_extern_macros)]
-
 #[macro_use]
 extern crate stdweb;
 extern crate sha1;
