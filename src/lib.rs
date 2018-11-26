@@ -111,10 +111,6 @@
     unused_qualifications
 )]
 #![cfg_attr(
-    all(target_arch = "wasm32", target_os = "unknown"),
-    feature(use_extern_macros)
-)]
-#![cfg_attr(
     all(test, rust_1_30_or_newer, rust_nightly),
     feature(linkage) // Needed for async tests.
 )]
@@ -137,7 +133,11 @@ extern crate serde_derive;
 #[cfg(rust_1_30_or_newer)]
 extern crate stdweb_internal_macros;
 
-#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+#[cfg(all(
+    rust_1_30_or_newer,
+    target_arch = "wasm32",
+    target_os = "unknown"
+))]
 pub use stdweb_internal_macros::js_export;
 
 #[cfg(rust_1_30_or_newer)]

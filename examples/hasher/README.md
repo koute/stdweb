@@ -27,8 +27,6 @@ them from JavaScript, either in the browser or from Nodejs.
 which can be used to mark arbitrary functions for export, e.g.:
 
 ```rust
-#![feature(use_extern_macros)]
-
 #[macro_use]
 extern crate stdweb;
 extern crate sha1;
