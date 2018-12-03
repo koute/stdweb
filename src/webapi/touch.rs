@@ -1,6 +1,13 @@
 use webapi::event_target::EventTarget;
-use webcore::try_from::TryInto;
-use webcore::value::Reference;
+use webcore::try_from::{
+    TryFrom,
+    TryInto,
+};
+use webcore::value::{
+    ConversionError,
+    Reference,
+    Value,
+};
 
 /// The Touch interface represents a single contact point on a touch-sensitive
 /// device. The contact point is commonly a finger or stylus and the device may
@@ -144,5 +151,62 @@ impl Touch {
         js!(
             return @{self.as_ref()}.force;
         ).try_into().unwrap()
+    }
+
+    /// The altitude (in radians) of a stylus, in the range 0 (parallel to the surface) to π/2 (perpendicular to the surface). The value 0 should be used for devices which do not support this property.
+    ///
+    /// TODO: f32 is not yet supported
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Touch/altitudeAngle)
+    // https://w3c.github.io/touch-events/#touch-interface
+    #[inline]
+    pub fn altitude_angle(&self) -> f64 {
+        js!(
+            return @{self.as_ref()}.altitudeAngle;
+        ).try_into().unwrap()
+    }
+
+    /// The azimuth angle (in radians) of a stylus, in the range 0 to 2π. 0 represents a stylus whose cap is pointing in the direction of increasing screenX values. π/2 represents a stylus whose cap is pointing in the direction of increasing screenY values. The value 0 should be used for devices which do not support this property.
+    ///
+    /// TODO: f32 is not yet supported
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Touch/azimuthAngle)
+    // https://w3c.github.io/touch-events/#touch-interface
+    #[inline]
+    pub fn azimuth_angle(&self) -> f64 {
+        js!(
+            return @{self.as_ref()}.azimuthAngle;
+        ).try_into().unwrap()
+    }
+
+    ///
+    #[inline]
+    pub fn touch_type(&self) -> TouchType {
+        js!(
+            return @{self.as_ref()}.touchType;
+        ).try_into().unwrap()
+    }
+}
+
+/// An enumeration representing the different types of possible touch input.
+///
+/// [(JavaScript docs)]()
+// https://w3c.github.io/touch-events/#touch-interface
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum TouchType {
+    Direct,
+    Stylus,
+}
+
+impl TryFrom<Value> for TouchType {
+    type Error = ConversionError;
+
+    fn try_from(v: Value) -> Result<Self, Self::Error> {
+        let value: String = v.try_into()?;
+        match value.as_ref() {
+            "stylus" => Ok(TouchType::Stylus),
+            "direct" => Ok(TouchType::Direct),
+            s => Err(ConversionError::Custom(format!("invalid touchtype mapping type \"{}\"", s))),
+        }
     }
 }

@@ -268,7 +268,7 @@ pub mod web {
     pub use webapi::html_collection::HtmlCollection;
     pub use webapi::child_node::IChildNode;
     pub use webapi::gamepad::{Gamepad, GamepadButton, GamepadMappingType};
-    pub use webapi::touch::Touch;
+    pub use webapi::touch::{Touch, TouchType};
     pub use webapi::selection::Selection;
     pub use webapi::shadow_root::{ShadowRootMode, ShadowRoot};
     pub use webapi::html_elements::SlotContentKind;
