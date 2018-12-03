@@ -170,8 +170,8 @@ impl Touch {
     ///
     /// TODO: f32 is not yet supported
     ///
-    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Touch/azimuthAngle)
-    // https://w3c.github.io/touch-events/#touch-interface
+    /// [(JavaScript docs)](https://w3c.github.io/touch-events/#touch-interface)
+    //
     #[inline]
     pub fn azimuth_angle(&self) -> f64 {
         js!(
@@ -179,7 +179,9 @@ impl Touch {
         ).try_into().unwrap()
     }
 
+    /// The type of device used to trigger the touch.
     ///
+    // https://w3c.github.io/touch-events/#touch-interface
     #[inline]
     pub fn touch_type(&self) -> TouchType {
         js!(
@@ -190,8 +192,7 @@ impl Touch {
 
 /// An enumeration representing the different types of possible touch input.
 ///
-/// [(JavaScript docs)]()
-// https://w3c.github.io/touch-events/#touch-interface
+/// [(JavaScript docs)](https://w3c.github.io/touch-events/#touch-interface)
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum TouchType {
     Direct,
