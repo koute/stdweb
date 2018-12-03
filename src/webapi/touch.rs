@@ -195,7 +195,9 @@ impl Touch {
 /// [(JavaScript docs)](https://w3c.github.io/touch-events/#touch-interface)
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum TouchType {
+    /// A direct touch from a finger on the screen.
     Direct,
+    /// A touch from a stylus or pen device.
     Stylus,
 }
 
