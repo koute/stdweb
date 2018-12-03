@@ -206,7 +206,7 @@ mod tests {
 
     #[test]
     fn test_touch_event() {
-        let event: Event = js!(
+        let event: TouchEvent = js!(
             return new TouchEvent(
                 @{TouchMove::EVENT_TYPE},
                 {
