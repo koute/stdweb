@@ -1,4 +1,4 @@
-use webapi::element::Element;
+use webapi::event_target::EventTarget;
 use webcore::try_from::TryInto;
 use webcore::value::Reference;
 
@@ -20,7 +20,7 @@ impl Touch {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Touch/identifier)
     #[inline]
-    pub fn identifier(&self) -> f64 {
+    pub fn identifier(&self) -> i64 {
         js!(
             return @{self.as_ref()}.identifier;
         ).try_into().unwrap()
@@ -90,13 +90,17 @@ impl Touch {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Touch/target)
     #[inline]
-    pub fn target(&self) -> Element {
+    pub fn target(&self) -> EventTarget {
         js!(
             return @{self.as_ref()}.target;
         ).try_into().unwrap()
     }
 
+
+
     /// Returns the X radius of the ellipse that most closely circumscribes the area of contact with the screen. The value is in pixels of the same scale as screenX.
+    ///
+    /// TODO: f32 is not yet supported
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Touch/radiusX)
     #[inline]
@@ -108,6 +112,8 @@ impl Touch {
 
     /// Returns the Y radius of the ellipse that most closely circumscribes the area of contact with the screen. The value is in pixels of the same scale as screenY.
     ///
+    /// TODO: f32 is not yet supported
+    ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Touch/radiusY)
     #[inline]
     pub fn radius_y(&self) -> f64 {
@@ -118,6 +124,8 @@ impl Touch {
 
     /// Returns the angle (in degrees) that the ellipse described by radiusX and radiusY must be rotated, clockwise, to most accurately cover the area of contact between the user and the surface.
     ///
+    /// TODO: f32 is not yet supported
+    ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Touch/rotationAngle)
     #[inline]
     pub fn rotation_angle(&self) -> f64 {
@@ -127,6 +135,8 @@ impl Touch {
     }
 
     /// Returns the amount of pressure being applied to the surface by the user, as a float between 0.0 (no pressure) and 1.0 (maximum pressure).
+    ///
+    /// TODO: f32 is not yet supported
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Touch/force)
     #[inline]

@@ -7,12 +7,12 @@ use webapi::touch::Touch;
 /// interacting with a touch device (such as a phone).
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent)
-// https://w3c.github.io/uievents/#touchevent
+// https://w3c.github.io/touch-events/#idl-def-touchevent
 pub trait ITouchEvent: IUiEvent {
     /// Returns whether the Alt key was down when this event was fired.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent/altKey)
-    // https://w3c.github.io/uievents/#ref-for-dom-touchevent-altkey-1
+    // https://w3c.github.io/touch-events/#touchevent-interface
     #[inline]
     fn alt_key( &self ) -> bool {
         js!(
@@ -23,7 +23,7 @@ pub trait ITouchEvent: IUiEvent {
     /// Indicates whether the Ctrl key was down when this event fired.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent/ctrlKey)
-    // https://w3c.github.io/uievents/#ref-for-dom-mouseevent-ctrlkey-1
+    // https://w3c.github.io/touch-events/#touchevent-interface
     #[inline]
     fn ctrl_key( &self ) -> bool {
         js!(
@@ -34,7 +34,7 @@ pub trait ITouchEvent: IUiEvent {
     /// Indicates whether the Meta key was down when this event fired.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent/metaKey)
-    // https://w3c.github.io/uievents/#ref-for-dom-mouseevent-metakey-1
+    // https://w3c.github.io/touch-events/#touchevent-interface
     #[inline]
     fn meta_key( &self ) -> bool {
         js!(
@@ -45,7 +45,7 @@ pub trait ITouchEvent: IUiEvent {
     /// Indicates whether the Shift key was down when this event was fired.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent/shiftKey)
-    // https://w3c.github.io/uievents/#ref-for-dom-mouseevent-shiftkey-1
+    // https://w3c.github.io/touch-events/#touchevent-interface
     #[inline]
     fn shift_key( &self ) -> bool {
         js!(
@@ -56,6 +56,7 @@ pub trait ITouchEvent: IUiEvent {
     /// A list of Touches for every point of contact currently touching the surface.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent/touches)
+    // https://w3c.github.io/touch-events/#touchevent-interface
     #[inline]
     fn touches( &self ) -> Vec<Touch> {
         js!(
@@ -67,6 +68,7 @@ pub trait ITouchEvent: IUiEvent {
     /// on the element that is the target of the current event.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent/targetTouches)
+    // https://w3c.github.io/touch-events/#touchevent-interface
     #[inline]
     fn target_touches( &self ) -> Vec<Touch> {
         js!(
@@ -77,6 +79,7 @@ pub trait ITouchEvent: IUiEvent {
     /// A list of Touches, one for each touch touch point that just became active with the current event.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent/changedTouches)
+    // https://w3c.github.io/touch-events/#touchevent-interface
     #[inline]
     fn changed_touches( &self ) -> Vec<Touch> {
         js!(
@@ -90,7 +93,7 @@ pub trait ITouchEvent: IUiEvent {
 /// interface.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent)
-// https://w3c.github.io/uievents/#mouseevent
+// https://w3c.github.io/touch-events/#idl-def-touchevent
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "TouchEvent")]
 #[reference(subclass_of(Event, UiEvent))]
@@ -104,7 +107,7 @@ impl ITouchEvent for TouchEvent {}
 /// touch surface.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/touchmove)
-// https://w3c.github.io/uievents/#event-type-mousedown
+// https://w3c.github.io/touch-events/#event-touchmove
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "TouchEvent")]
 #[reference(event = "touchmove")]
@@ -118,8 +121,10 @@ impl ITouchEvent for TouchMove {}
 /// The `TouchLeave` event is fired when a touch point is moved off the
 /// interactive area of an element.
 ///
+/// Warning: This event was a proposal in an early version of the specification
+/// and has not been implemented. Do not rely on it.
+///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/touchleave)
-// https://w3c.github.io/uievents/#event-type-mousemove
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "TouchEvent")]
 #[reference(event = "touchleave")]
@@ -133,8 +138,10 @@ impl ITouchEvent for TouchLeave {}
 /// The `TouchEnter` event is fired when a touch point is moved onto the
 /// interactive area of an element.
 ///
+/// Warning: This event was a proposal in an early version of the specification
+/// and has not been implemented. Do not rely on it.
+///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/touchenter)
-// https://w3c.github.io/uievents/#event-type-mouseover
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "TouchEvent")]
 #[reference(event = "touchenter")]
@@ -149,7 +156,7 @@ impl ITouchEvent for TouchEnter {}
 /// from the touch surface.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/touchend)
-// https://w3c.github.io/uievents/#event-type-mouseout
+// https://w3c.github.io/touch-events/#event-touchend
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "TouchEvent")]
 #[reference(event = "touchend")]
@@ -165,7 +172,7 @@ impl ITouchEvent for TouchEnd {}
 /// points are created).
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/touchcancel)
-// https://w3c.github.io/uievents/#event-type-touchcancel
+// https://w3c.github.io/touch-events/#event-touchcancel
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "TouchEvent")]
 #[reference(event = "touchcancel")]
@@ -180,7 +187,7 @@ impl ITouchEvent for TouchCancel {}
 /// on the touch surface.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/touchstart)
-// https://w3c.github.io/uievents/#event-type-touchstart
+// https://w3c.github.io/touch-events/#event-touchstart
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "TouchEvent")]
 #[reference(event = "touchstart")]
