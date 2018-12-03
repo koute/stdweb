@@ -1,10 +1,6 @@
 use webapi::element::Element;
-use webcore::try_from::{
-    TryInto,
-};
-use webcore::value::{
-    Reference,
-};
+use webcore::try_from::TryInto;
+use webcore::value::Reference;
 
 /// The Touch interface represents a single contact point on a touch-sensitive
 /// device. The contact point is commonly a finger or stylus and the device may
