@@ -218,7 +218,7 @@ mod tests {
         assert!( event.alt_key() );
         assert!( event.shift_key() );
         assert!( event.meta_key() );
-        assert_eq!( event.touches() );
+        assert_eq!( event.touches(), vec![] );
         assert_eq!( event.target_touches(), vec![] );
         assert_eq!( event.changed_touches(), vec![] );
     }
