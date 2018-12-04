@@ -233,7 +233,7 @@ mod tests {
     #[test]
     fn test_touch_move_event() {
         let event: TouchMove = js!(
-            return new MouseEvent( @{TouchMove::EVENT_TYPE} );
+            return new TouchEvent( @{TouchMove::EVENT_TYPE} );
         ).try_into().unwrap();
         assert_eq!( event.event_type(), TouchMove::EVENT_TYPE );
     }
@@ -241,7 +241,7 @@ mod tests {
     #[test]
     fn test_touch_leave_event() {
         let event: TouchLeave = js!(
-            return new MouseEvent( @{TouchLeave::EVENT_TYPE} );
+            return new TouchEvent( @{TouchLeave::EVENT_TYPE} );
         ).try_into().unwrap();
         assert_eq!( event.event_type(), TouchLeave::EVENT_TYPE );
     }
@@ -250,7 +250,7 @@ mod tests {
     #[test]
     fn test_touch_enter_event() {
         let event: TouchEnter = js!(
-            return new MouseEvent( @{TouchEnter::EVENT_TYPE} );
+            return new TouchEvent( @{TouchEnter::EVENT_TYPE} );
         ).try_into().unwrap();
         assert_eq!( event.event_type(), TouchEnter::EVENT_TYPE );
     }
@@ -258,23 +258,23 @@ mod tests {
     #[test]
     fn test_touch_end_event() {
         let event: TouchEnd = js!(
-            return new MouseEvent( @{TouchEnd::EVENT_TYPE} );
+            return new TouchEvent( @{TouchEnd::EVENT_TYPE} );
         ).try_into().unwrap();
         assert_eq!( event.event_type(), TouchEnd::EVENT_TYPE );
     }
-
+   
     #[test]
     fn test_touch_cancel_event() {
         let event: TouchCancel = js!(
-            return new MouseEvent( @{TouchCancel::EVENT_TYPE} );
+            return new TouchEvent( @{TouchCancel::EVENT_TYPE} );
         ).try_into().unwrap();
         assert_eq!( event.event_type(), TouchCancel::EVENT_TYPE );
     }
-
+ 
     #[test]
     fn test_touch_start_event() {
         let event: TouchStart = js!(
-            return new MouseEvent( @{TouchStart::EVENT_TYPE} );
+            return new TouchEvent( @{TouchStart::EVENT_TYPE} );
         ).try_into().unwrap();
         assert_eq!( event.event_type(), TouchStart::EVENT_TYPE );
     }
