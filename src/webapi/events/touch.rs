@@ -211,7 +211,7 @@ mod tests {
                 @{TouchMove::EVENT_TYPE},
                 {
                     touches: [],
-                    targetTouches: []
+                    targetTouches: [],
                     changedTouches: [],
                     ctrlKey: true,
                     shiftKey: true,
