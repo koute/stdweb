@@ -192,6 +192,26 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
 [WebAssembly]: https://en.wikipedia.org/wiki/WebAssembly
 
 ## Changelog
+   * `stdweb 0.4.11`
+      * The minimum required Rust version is now 1.30.1
+      * The minimum required `cargo-web` version is now 0.6.16
+      * `wasm32-unknown-unknown` is now officially supported on stable Rust
+      * The `js!` macro on `wasm32-unknown-unknown` now uses custom sections
+      * String decoding/encoding is now a lot faster due to the use of native codec APIs
+      * New methods:
+        * `Document::import_node`
+        * `IElement::slot`
+        * `IElement::attach_shadow`
+        * `IElement::shadow_root`
+      * New types:
+        * `ISlotable`
+        * `ShadowRoot`
+        * `ShadowRootMode`
+        * `TemplateElement`
+        * `SlotElement`
+      * New events:
+        * `SlotChangeEvent`
+      * `IParentNode::query_selector` and `IParentNode::query_selector_all` now return proper error type
    * `stdweb 0.4.10`, `stdweb-derive 0.5.1`
       * New methods:
         * `IElement::insert_adjacent_html`
