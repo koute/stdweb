@@ -11,6 +11,9 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 
+#[cfg(test)]
+mod testutils;
+
 mod macro_js_export;
 mod macro_async_test;
 
