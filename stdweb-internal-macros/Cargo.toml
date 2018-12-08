@@ -11,8 +11,6 @@ keywords = ["web", "asmjs", "webasm", "javascript"]
 categories = ["api-bindings", "gui", "web-programming"]
 description = "Internal procedural macros for the `stdweb` crate"
 
-build = "build.rs"
-
 [lib]
 proc-macro = true
 
@@ -29,5 +27,3 @@ version = "0.15"
 default-features = false
 features = ["full", "parsing", "printing", "clone-impls"]
 
-[build-dependencies]
-rustc_version = "0.2"
