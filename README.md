@@ -172,7 +172,7 @@ Take a look at some of the examples:
 
 3. Go into `examples/todomvc` and start the example using one of these commands:
 
-    * Compile to [WebAssembly] using Rust's native WebAssembly backend (requires Rust nightly!):
+    * Compile to [WebAssembly] using Rust's native WebAssembly backend:
 
           $ cargo web start --target=wasm32-unknown-unknown
 
