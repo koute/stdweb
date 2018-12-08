@@ -23,7 +23,7 @@ futures-util-preview = { version = "0.3.0-alpha.7", optional = true }
 futures-executor-preview = { version = "0.3.0-alpha.7", optional = true }
 
 stdweb-derive = { version = "= 0.5.1", path = "stdweb-derive" }
-stdweb-internal-macros = { version = "= 0.2.2", path = "stdweb-internal-macros" }
+stdweb-internal-macros = { version = "= 0.2.3", path = "stdweb-internal-macros" }
 stdweb-internal-runtime = { version = "0.1", path = "stdweb-internal-runtime" }
 
 [dev-dependencies]
