@@ -526,6 +526,8 @@ pub mod private {
     pub use webcore::global_arena::ArenaRestorePoint;
     pub use webcore::global_arena::serialize_value;
 
+    pub use stdweb_internal_macros::{js_attr, js_no_return_attr, js_raw_attr};
+
     // This is to prevent an unused_mut warnings in macros, because an `allow` doesn't work apparently?
     #[allow(dead_code)]
     #[inline(always)]
