@@ -84,17 +84,6 @@ if [ "$SKIP_RUNTIME_COMPATIBILITY_CHECK" == "0" ]; then
     echo "Testing old version on asmjs-unknown-emscripten..."
     $CARGO_WEB test --features web_test --target=asmjs-unknown-emscripten
 
-    echo "Testing old version on wasm32-unknown-unknown..."
-    $CARGO_WEB test --nodejs --target=wasm32-unknown-unknown
-
-    echo "Building old standalone tests..."
-    pushd standalone-tests > /dev/null
-    $CARGO_WEB build --release --target=wasm32-unknown-unknown
-
-    echo "Running old standalone tests..."
-    node target/wasm32-unknown-unknown/release/standalone-tests.js
-    popd > /dev/null
-
     echo "The runtime is compatible!"
     popd > /dev/null
 fi
