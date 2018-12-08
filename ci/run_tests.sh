@@ -37,22 +37,20 @@ pushd examples/todomvc > /dev/null
 $CARGO_WEB build --release --target=wasm32-unknown-emscripten
 popd > /dev/null
 
-if [ "$IS_NIGHTLY" = "1" ]; then
-    echo "Testing for wasm32-unknown-unknown..."
-    $CARGO_WEB test --nodejs --target=wasm32-unknown-unknown
+echo "Testing for wasm32-unknown-unknown..."
+$CARGO_WEB test --nodejs --target=wasm32-unknown-unknown
 
-    pushd examples/todomvc > /dev/null
-    $CARGO_WEB build --release --target=wasm32-unknown-unknown
-    popd > /dev/null
+pushd examples/todomvc > /dev/null
+$CARGO_WEB build --release --target=wasm32-unknown-unknown
+popd > /dev/null
 
-    echo "Building standalone tests..."
-    pushd standalone-tests > /dev/null
-    $CARGO_WEB build --release --target=wasm32-unknown-unknown
+echo "Building standalone tests..."
+pushd standalone-tests > /dev/null
+$CARGO_WEB build --release --target=wasm32-unknown-unknown
 
-    echo "Running standalone tests..."
-    node target/wasm32-unknown-unknown/release/standalone-tests.js
-    popd > /dev/null
-fi
+echo "Running standalone tests..."
+node target/wasm32-unknown-unknown/release/standalone-tests.js
+popd > /dev/null
 
 if [ "$SKIP_RUNTIME_COMPATIBILITY_CHECK" == "0" ]; then
     echo "Checking whenever the old version still works with the newest runtime..."
@@ -85,18 +83,17 @@ if [ "$SKIP_RUNTIME_COMPATIBILITY_CHECK" == "0" ]; then
 
     echo "Testing old version on asmjs-unknown-emscripten..."
     $CARGO_WEB test --features web_test --target=asmjs-unknown-emscripten
-    if [ "$IS_NIGHTLY" = "1" ]; then
-        echo "Testing old version on wasm32-unknown-unknown..."
-        $CARGO_WEB test --nodejs --target=wasm32-unknown-unknown
 
-        echo "Building old standalone tests..."
-        pushd standalone-tests > /dev/null
-        $CARGO_WEB build --release --target=wasm32-unknown-unknown
+    echo "Testing old version on wasm32-unknown-unknown..."
+    $CARGO_WEB test --nodejs --target=wasm32-unknown-unknown
 
-        echo "Running old standalone tests..."
-        node target/wasm32-unknown-unknown/release/standalone-tests.js
-        popd > /dev/null
-    fi
+    echo "Building old standalone tests..."
+    pushd standalone-tests > /dev/null
+    $CARGO_WEB build --release --target=wasm32-unknown-unknown
+
+    echo "Running old standalone tests..."
+    node target/wasm32-unknown-unknown/release/standalone-tests.js
+    popd > /dev/null
 
     echo "The runtime is compatible!"
     popd > /dev/null
