@@ -1,13 +1,9 @@
 extern crate rustc_version;
-use rustc_version::{version, version_meta, Version, Channel};
+use rustc_version::{version, version_meta, Channel};
 
 fn main() {
     let mut current = version().unwrap();
     current.pre = Vec::new();
-
-    if current >= Version::parse( "1.30.0" ).unwrap() {
-        println!( "cargo:rustc-cfg=rust_1_30_or_newer" );
-    }
 
     if version_meta().unwrap().channel == Channel::Nightly {
         println!( "cargo:rustc-cfg=rust_nightly" );

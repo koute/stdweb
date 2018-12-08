@@ -111,7 +111,7 @@
     unused_qualifications
 )]
 #![cfg_attr(
-    all(test, rust_1_30_or_newer, rust_nightly),
+    all(test, rust_nightly),
     feature(linkage) // Needed for async tests.
 )]
 #![cfg_attr(rust_nightly, feature(core_intrinsics))]
@@ -130,17 +130,14 @@ extern crate serde_json;
 #[macro_use]
 extern crate serde_derive;
 
-#[cfg(rust_1_30_or_newer)]
 extern crate stdweb_internal_macros;
 
 #[cfg(all(
-    rust_1_30_or_newer,
     target_arch = "wasm32",
     target_os = "unknown"
 ))]
 pub use stdweb_internal_macros::js_export;
 
-#[cfg(rust_1_30_or_newer)]
 pub use stdweb_internal_macros::async_test;
 
 #[cfg(feature = "futures-support")]
