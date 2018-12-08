@@ -214,7 +214,7 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
         * `SlotElement`
       * New events:
         * `SlotChangeEvent`
-      * `IParentNode::query_selector` and `IParentNode::query_selector_all` now return proper error type
+      * `IParentNode::query_selector` and `IParentNode::query_selector_all` now return a proper error type
    * `stdweb 0.4.10`, `stdweb-derive 0.5.1`
       * New methods:
         * `IElement::insert_adjacent_html`
