@@ -199,7 +199,7 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
       * The minimum required Rust version is now 1.30.1
       * The minimum required `cargo-web` version is now 0.6.16
       * `wasm32-unknown-unknown` is now officially supported on stable Rust
-      * The `js!` macro on `wasm32-unknown-unknown` now uses custom sections
+      * The `js!` macro is now partially implemented using a procedural macro
       * String decoding/encoding is now a lot faster due to the use of native codec APIs
       * New methods:
         * `Document::import_node`
