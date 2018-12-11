@@ -27,6 +27,8 @@ mod attr_hack;
 mod js_stringify;
 mod js_shim;
 
+use utils::Target;
+
 fn emit( result: syn::parse::Result< proc_macro2::TokenStream > ) -> proc_macro::TokenStream {
     match result {
         Ok( stream ) => stream.into(),
@@ -45,21 +47,41 @@ pub fn async_test( attrs: proc_macro::TokenStream, input: proc_macro::TokenStrea
 }
 
 #[proc_macro]
-pub fn js_raw( input: proc_macro::TokenStream ) -> proc_macro::TokenStream {
-    emit( macro_js_raw::js_raw( input.into() ) )
+pub fn wasm32_unknown_unknown_js_raw( input: proc_macro::TokenStream ) -> proc_macro::TokenStream {
+    emit( macro_js_raw::js_raw( Target::NativeWebAssembly, input.into() ) )
 }
 
 #[proc_macro_attribute]
-pub fn js_raw_attr( _: proc_macro::TokenStream, input: proc_macro::TokenStream ) -> proc_macro::TokenStream {
-    emit( macro_js_raw::js_raw_attr( input.into() ) )
+pub fn wasm32_unknown_unknown_js_raw_attr( _: proc_macro::TokenStream, input: proc_macro::TokenStream ) -> proc_macro::TokenStream {
+    emit( macro_js_raw::js_raw_attr( Target::NativeWebAssembly, input.into() ) )
 }
 
 #[proc_macro_attribute]
-pub fn js_attr( _: proc_macro::TokenStream, input: proc_macro::TokenStream ) -> proc_macro::TokenStream {
-    emit( macro_js::js_attr( input.into(), false ) )
+pub fn wasm32_unknown_unknown_js_attr( _: proc_macro::TokenStream, input: proc_macro::TokenStream ) -> proc_macro::TokenStream {
+    emit( macro_js::js_attr( Target::NativeWebAssembly, input.into(), false ) )
 }
 
 #[proc_macro_attribute]
-pub fn js_no_return_attr( _: proc_macro::TokenStream, input: proc_macro::TokenStream ) -> proc_macro::TokenStream {
-    emit( macro_js::js_attr( input.into(), true ) )
+pub fn wasm32_unknown_unknown_js_no_return_attr( _: proc_macro::TokenStream, input: proc_macro::TokenStream ) -> proc_macro::TokenStream {
+    emit( macro_js::js_attr( Target::NativeWebAssembly, input.into(), true ) )
+}
+
+#[proc_macro]
+pub fn emscripten_js_raw( input: proc_macro::TokenStream ) -> proc_macro::TokenStream {
+    emit( macro_js_raw::js_raw( Target::Emscripten, input.into() ) )
+}
+
+#[proc_macro_attribute]
+pub fn emscripten_js_raw_attr( _: proc_macro::TokenStream, input: proc_macro::TokenStream ) -> proc_macro::TokenStream {
+    emit( macro_js_raw::js_raw_attr( Target::Emscripten, input.into() ) )
+}
+
+#[proc_macro_attribute]
+pub fn emscripten_js_attr( _: proc_macro::TokenStream, input: proc_macro::TokenStream ) -> proc_macro::TokenStream {
+    emit( macro_js::js_attr( Target::Emscripten, input.into(), false ) )
+}
+
+#[proc_macro_attribute]
+pub fn emscripten_js_no_return_attr( _: proc_macro::TokenStream, input: proc_macro::TokenStream ) -> proc_macro::TokenStream {
+    emit( macro_js::js_attr( Target::Emscripten, input.into(), true ) )
 }
