@@ -17,6 +17,8 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 
+extern crate dependency;
+
 use std::panic;
 
 #[macro_use]

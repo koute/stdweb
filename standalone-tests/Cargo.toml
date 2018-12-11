@@ -9,3 +9,5 @@ stdweb-derive = { path = "../stdweb-derive" }
 
 serde = "1"
 serde_derive = "1"
+
+dependency = { path = "dependency" }
