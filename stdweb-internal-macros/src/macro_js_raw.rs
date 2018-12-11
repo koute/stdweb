@@ -4,7 +4,7 @@ use syn::parse::{ParseStream, Parse, Result};
 
 use attr_hack::AttrHack;
 use js_shim::js_shim_extern_code;
-use utils::dummy_idents;
+use utils::{Target, dummy_idents};
 
 #[cfg(test)]
 use testutils::assert_code_eq;
@@ -68,8 +68,8 @@ impl Parse for JsRawInvocation {
     }
 }
 
-fn js_raw_code( js_raw: JsRawInvocation ) -> TokenStream {
-    let (shim_name, shim) = js_shim_extern_code( &js_raw.code, js_raw.args.len() );
+fn js_raw_code( target: Target, js_raw: JsRawInvocation ) -> TokenStream {
+    let (shim_name, shim) = js_shim_extern_code( target, &js_raw.code, js_raw.args.len() );
     let args = js_raw.args;
 
     quote! {{
@@ -80,18 +80,18 @@ fn js_raw_code( js_raw: JsRawInvocation ) -> TokenStream {
     }}
 }
 
-pub fn js_raw( input: TokenStream ) -> Result< TokenStream > {
+pub fn js_raw( target: Target, input: TokenStream ) -> Result< TokenStream > {
     let args = parse_js_raw( input )?;
-    Ok( js_raw_code( args ) )
+    Ok( js_raw_code( target, args ) )
 }
 
 // TODO: Delete this once expression procedural macros are stable.
-pub fn js_raw_attr( input: TokenStream ) -> Result< TokenStream > {
+pub fn js_raw_attr( target: Target, input: TokenStream ) -> Result< TokenStream > {
     let wrapper: AttrHack< JsRawInvocation > = syn::parse2( input )?;
     let wrapper_name = wrapper.fn_name;
     let js_raw = wrapper.inner;
 
-    let (shim_name, shim) = js_shim_extern_code( &js_raw.code, js_raw.args.len() );
+    let (shim_name, shim) = js_shim_extern_code( target, &js_raw.code, js_raw.args.len() );
 
     let prototype_args = dummy_idents( js_raw.args.len() ).map( |name| quote! { #name: *const u8 } );
     let call_args = dummy_idents( js_raw.args.len() ).map( |name| quote! { #name } );
@@ -190,5 +190,5 @@ fn test_js_raw_code_generation_succeeds() {
         arg.as_ref().as_raw()
     };
 
-    js_raw( input ).unwrap();
+    js_raw( Target::Emscripten, input ).unwrap();
 }

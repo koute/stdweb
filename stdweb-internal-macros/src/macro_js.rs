@@ -6,10 +6,10 @@ use proc_macro2::TokenStream;
 use attr_hack::AttrHack;
 use js_shim::js_shim_extern_code;
 use js_stringify::StringifiedCode;
-use utils::dummy_idents;
+use utils::{Target, dummy_idents};
 
 // TODO: Delete this once expression procedural macros are stable.
-pub fn js_attr( input: TokenStream, no_return: bool ) -> Result< TokenStream > {
+pub fn js_attr( target: Target, input: TokenStream, no_return: bool ) -> Result< TokenStream > {
     let wrapper: AttrHack< StringifiedCode > = syn::parse2( input )?;
     let wrapper_name = wrapper.fn_name;
     let snippet = wrapper.inner;
@@ -31,7 +31,7 @@ pub fn js_attr( input: TokenStream, no_return: bool ) -> Result< TokenStream > {
 
     code = format!( "{}{}", prelude, code );
 
-    let (shim_name, shim) = js_shim_extern_code( &code, arg_count );
+    let (shim_name, shim) = js_shim_extern_code( target, &code, arg_count );
 
     let prototype_args = dummy_idents( arg_count ).map( |name| quote! { #name: *const u8 } );
     let call_args = dummy_idents( arg_count ).map( |name| quote! { #name } );

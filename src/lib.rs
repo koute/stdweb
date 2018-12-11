@@ -526,7 +526,19 @@ pub mod private {
     pub use webcore::global_arena::ArenaRestorePoint;
     pub use webcore::global_arena::serialize_value;
 
-    pub use stdweb_internal_macros::{js_attr, js_no_return_attr, js_raw_attr};
+    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+    pub use stdweb_internal_macros::wasm32_unknown_unknown_js_attr as js_attr;
+    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+    pub use stdweb_internal_macros::wasm32_unknown_unknown_js_no_return_attr as js_no_return_attr;
+    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+    pub use stdweb_internal_macros::wasm32_unknown_unknown_js_raw_attr as js_raw_attr;
+
+    #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+    pub use stdweb_internal_macros::emscripten_js_attr as js_attr;
+    #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+    pub use stdweb_internal_macros::emscripten_js_no_return_attr as js_no_return_attr;
+    #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+    pub use stdweb_internal_macros::emscripten_js_raw_attr as js_raw_attr;
 
     // This is to prevent an unused_mut warnings in macros, because an `allow` doesn't work apparently?
     #[allow(dead_code)]
