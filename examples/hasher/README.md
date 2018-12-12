@@ -52,8 +52,8 @@ with `pub use another_module::*` into your `lib.rs`.
 
 If you compile this code with `cargo web build --target=wasm32-unknown-unknown` you'll get two files:
 
-   * `target/wasm32-unknown-unknown/release/hasher.js`
-   * `target/wasm32-unknown-unknown/release/hasher.wasm`
+   * `target/wasm32-unknown-unknown/debug/hasher.js`
+   * `target/wasm32-unknown-unknown/debug/hasher.wasm`
 
 You can copy them into your JavaScript project and load like any other JavaScript file:
 
