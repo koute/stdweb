@@ -88,8 +88,8 @@ if [ "$SKIP_RUNTIME_COMPATIBILITY_CHECK" == "0" ]; then
     popd > /dev/null
 fi
 
-NIGHTLY_EXAMPLES=(hasher)
-STABLE_EXAMPLES=(canvas echo minimal todomvc webgl)
+NIGHTLY_EXAMPLES=()
+STABLE_EXAMPLES=(canvas echo minimal todomvc webgl hasher)
 if [ "$IS_NIGHTLY" = "1" ]; then
     EXAMPLES=( "${NIGHTLY_EXAMPLES[@]}" "${STABLE_EXAMPLES[@]}" )
 else
@@ -104,12 +104,12 @@ for EXAMPLE in "${EXAMPLES[@]}"; do
     echo ""
 done
 
-if [ "$IS_NIGHTLY" = "1" ]; then
-    echo "Trying to run the hasher example..."
-    pushd examples/hasher > /dev/null
-    node example.js
-    popd > /dev/null
+echo "Trying to run the hasher example..."
+pushd examples/hasher > /dev/null
+node example.js
+popd > /dev/null
 
+if [ "$IS_NIGHTLY" = "1" ]; then
     echo "Trying to build with parcel..."
     pushd examples/hasher-parcel > /dev/null
     npm install
