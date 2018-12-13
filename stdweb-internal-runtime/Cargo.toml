@@ -1,6 +1,6 @@
 [package]
 name = "stdweb-internal-runtime"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["Jan Bujak <j@exia.io>"]
 repository = "https://github.com/koute/stdweb"
 homepage = "https://github.com/koute/stdweb"
