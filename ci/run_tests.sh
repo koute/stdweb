@@ -91,7 +91,9 @@ fi
 NIGHTLY_EXAMPLES=()
 STABLE_EXAMPLES=(canvas echo minimal todomvc webgl hasher)
 if [ "$IS_NIGHTLY" = "1" ]; then
+    set +u
     EXAMPLES=( "${NIGHTLY_EXAMPLES[@]}" "${STABLE_EXAMPLES[@]}" )
+    set -u
 else
     EXAMPLES=( "${STABLE_EXAMPLES[@]}" )
 fi
