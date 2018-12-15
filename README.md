@@ -195,6 +195,8 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
 [WebAssembly]: https://en.wikipedia.org/wiki/WebAssembly
 
 ## Changelog
+   * `stdweb 0.4.12`
+      * Improved diagnostics when trying to compile for the `wasm32-unknown-unknown` target without `cargo-web`
    * `stdweb 0.4.11`
       * The minimum required Rust version is now 1.30.1
       * The minimum required `cargo-web` version is now 0.6.22
