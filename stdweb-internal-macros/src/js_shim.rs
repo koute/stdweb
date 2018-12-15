@@ -22,7 +22,9 @@ fn hash( string: &str ) -> String {
 }
 
 fn database_path() -> PathBuf {
-    let target_path = env::var_os( "CARGO_WEB_TARGET_DIR" ).map( PathBuf::from ).unwrap();
+    let target_path = env::var_os( "CARGO_WEB_TARGET_DIR" )
+        .map( PathBuf::from )
+        .expect( "you need to use `cargo-web` to compile your project for the `wasm32-unknown-unknown` target" );
     assert!( target_path.exists() );
 
     target_path.join( ".cargo-web" ).join( "snippets" )
@@ -35,7 +37,7 @@ fn output_snippet( snippet: &Snippet ) {
     fs::create_dir_all( &directory ).expect( "failed to create a directory for the JS snippet database" );
     let path = directory.join( format!( "{}.json", hash ) );
 
-    let blob: Vec< u8 > = serde_json::to_string( &snippet ).unwrap().into_bytes();
+    let blob: Vec< u8 > = serde_json::to_string( &snippet ).expect( "failed to convert the JS snipped to JSON" ).into_bytes();
     if path.exists() {
         if let Ok( size ) = path.metadata().map( |metadata| metadata.len() ) {
             if size == blob.len() as u64 {
