@@ -85,7 +85,7 @@ impl XmlHttpRequest {
     /// Returns the type of the request as a [XhrResponseType](enum.XhrResponseType.html)
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseType)
-    // https://xhr.spec.whatwg.org/#dom-xmlhttprequest-responsetype
+    // https://xhr.spec.whatwg.org/#ref-for-dom-xmlhttprequest-responsetype
     pub fn response_type(&self) -> XhrResponseType {
         use self::XhrResponseType::*;
         let repsonse_type: String = js! ( return @{self}.responseType; ).try_into().unwrap();
@@ -102,7 +102,7 @@ impl XmlHttpRequest {
     /// Set the type that the XmlHttpRequest should return
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseType)
-    // https://xhr.spec.whatwg.org/#dom-xmlhttprequest-responsetype
+    // https://xhr.spec.whatwg.org/#ref-for-dom-xmlhttprequest-responsetype
     pub fn set_response_type(&self, type: XhrResponseType) {
         let respose_type = match {
             ArrayBuffer => "arraybuffer",
