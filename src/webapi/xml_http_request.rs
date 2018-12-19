@@ -99,6 +99,23 @@ impl XmlHttpRequest {
         }
     }
 
+    /// Set the type that the XmlHttpRequest should return
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseType)
+    // https://xhr.spec.whatwg.org/#dom-xmlhttprequest-responsetype
+    pub fn set_response_type(&self, type: XhrResponseType) {
+        let respose_type = match {
+            ArrayBuffer => "arraybuffer",
+            Blob => "blob",
+            Document => "document",
+            Json => "json",
+            Text => "text"
+        };
+        js! {
+            @{self}.responseType = @{response_type};
+        }
+    }
+
     /// Returns a string that contains the response to the request as text, or None
     /// if the request was unsuccessful or has not yet been sent.
     ///
