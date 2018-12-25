@@ -57,6 +57,10 @@ pub enum XhrResponseType {
 
 impl IEventTarget for XmlHttpRequest {}
 
+error_enum_boilerplate! {
+    SetResponseTypeError,
+    InvalidStateError, InvalidAccessError
+}
 
 impl XmlHttpRequest {
     /// Creates new `XmlHttpRequest`.
@@ -103,7 +107,7 @@ impl XmlHttpRequest {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseType)
     // https://xhr.spec.whatwg.org/#ref-for-dom-xmlhttprequest-responsetype
-    pub fn set_response_type(&self, type: XhrResponseType) {
+    pub fn set_response_type(&self, type: XhrResponseType) -> Result<(), SetResponseTypeError> {
         let respose_type = match {
             ArrayBuffer => "arraybuffer",
             Blob => "blob",
@@ -111,9 +115,9 @@ impl XmlHttpRequest {
             Json => "json",
             Text => "text"
         };
-        js! {
+        js_try! {
             @{self}.responseType = @{response_type};
-        }
+        }.unwrap()
     }
 
     /// Returns a string that contains the response to the request as text, or None
