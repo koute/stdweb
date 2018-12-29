@@ -14,12 +14,18 @@ pub struct StringifiedCode {
     chunks: Vec< Chunk >
 }
 
+fn can_trim_whitespace_next_to( ch: char ) -> bool {
+    ch.is_whitespace() || "=+-*/%<>&^|~?:{}()[];.,".contains( ch )
+}
+
 impl StringifiedCode {
     fn push( &mut self, string: &str ) {
         match self.chunks.last_mut() {
             None | Some( Chunk::Block( .. ) ) => {},
             Some( Chunk::Text( ref mut buffer ) ) => {
-                if buffer.chars().last().unwrap_or( ' ' ).is_alphanumeric() && string.chars().next().unwrap_or( ' ' ).is_alphanumeric() {
+                let l = buffer.chars().last().unwrap_or( ' ' );
+                let r = string.chars().next().unwrap_or( ' ' );
+                if !can_trim_whitespace_next_to( l ) && !can_trim_whitespace_next_to( r ) {
                     buffer.push( ' ' );
                 }
                 buffer.push_str( string );
@@ -136,6 +142,8 @@ mod tests {
         assert_stringify( quote! { i++ }, 0, "i++" );
         assert_stringify( quote! { --i }, 0, "--i" );
         assert_stringify( quote! { i-- }, 0, "i--" );
+        assert_stringify( quote! { return _.sum([1, 2]); }, 0, "return _.sum([1,2]);" );
+        assert_stringify( quote! { return $; }, 0, "return $;" );
         assert_stringify( quote! { ( @{1} ); }, 0, "(($0));" );
         assert_stringify(
             quote! { console.log( "Hello!", @{1234i32} ); },
