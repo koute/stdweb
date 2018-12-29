@@ -1,4 +1,5 @@
 use webapi::event_target::{IEventTarget, EventTarget};
+use webapi::dom_exception::{InvalidAccessError, InvalidStateError};
 use webcore::unsafe_typed_array::UnsafeTypedArray;
 use webcore::value::{
     Reference,
@@ -107,8 +108,8 @@ impl XmlHttpRequest {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseType)
     // https://xhr.spec.whatwg.org/#ref-for-dom-xmlhttprequest-responsetype
-    pub fn set_response_type(&self, type: XhrResponseType) -> Result<(), SetResponseTypeError> {
-        let respose_type = match {
+    pub fn set_response_type(&self, kind: XhrResponseType) -> Result<(), SetResponseTypeError> {
+        let respose_type = match kind {
             ArrayBuffer => "arraybuffer",
             Blob => "blob",
             Document => "document",
