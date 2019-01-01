@@ -5,7 +5,7 @@ use webcore::value::{
     Reference,
     Value,
 };
-use webcore::try_from::TryInto;
+use webcore::try_from::{TryFrom, TryInto};
 use private::TODO;
 
 /// Use XmlHttpRequest (XHR) objects to interact with servers.
@@ -109,7 +109,8 @@ impl XmlHttpRequest {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseType)
     // https://xhr.spec.whatwg.org/#ref-for-dom-xmlhttprequest-responsetype
     pub fn set_response_type(&self, kind: XhrResponseType) -> Result<(), SetResponseTypeError> {
-        let respose_type = match kind {
+        use self::XhrResponseType::*;
+        let response_type = match kind {
             ArrayBuffer => "arraybuffer",
             Blob => "blob",
             Document => "document",
