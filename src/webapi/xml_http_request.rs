@@ -116,9 +116,10 @@ impl XmlHttpRequest {
             Json => "json",
             Text => "text"
         };
-        js_try! {
+
+        js_try!(
             @{self}.responseType = @{response_type};
-        }.unwrap()
+        ).unwrap()
     }
 
     /// Returns a string that contains the response to the request as text, or None
