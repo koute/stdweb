@@ -9,3 +9,4 @@ pub mod pointer;
 pub mod progress;
 pub mod socket;
 pub mod slot;
+pub mod touch;
