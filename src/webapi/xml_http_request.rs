@@ -60,7 +60,7 @@ impl IEventTarget for XmlHttpRequest {}
 
 error_enum_boilerplate! {
     /// An error returned from `XmlHttpRequest::set_response_type`
-    SetResponseTypeError,
+    XhrSetResponseTypeError,
 
     #[allow(missing_docs)]
     InvalidStateError,
@@ -113,7 +113,7 @@ impl XmlHttpRequest {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseType)
     // https://xhr.spec.whatwg.org/#ref-for-dom-xmlhttprequest-responsetype
-    pub fn set_response_type(&self, kind: XhrResponseType) -> Result<(), SetResponseTypeError> {
+    pub fn set_response_type(&self, kind: XhrResponseType) -> Result<(), XhrSetResponseTypeError> {
         use self::XhrResponseType::*;
         let response_type = match kind {
             ArrayBuffer => "arraybuffer",
