@@ -295,6 +295,7 @@ pub mod web {
 
         pub use webapi::rendering_context::{AddColorStopError, DrawImageError, GetImageDataError};
         pub use webapi::html_elements::UnknownValueError;
+        pub use webapi::xml_http_request::SetResponseTypeError;
     }
 
     /// A module containing HTML DOM elements.
