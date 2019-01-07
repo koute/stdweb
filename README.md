@@ -195,6 +195,22 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
 [WebAssembly]: https://en.wikipedia.org/wiki/WebAssembly
 
 ## Changelog
+   * `stdweb 0.4.13`
+      * Fixed the procedural `js!` macro's whitespace handling
+      * New types:
+         * `ITouchEvent`
+         * `Touch`
+         * `TouchType`
+      * New events:
+         * `TouchEvent`
+         * `TouchMove`
+         * `TouchLeave`
+         * `TouchEnter`
+         * `TouchEnd`
+         * `TouchCancel`
+         * `TouchStart`
+      * New methods:
+         * `XmlHttpRequest::set_response_type`
    * `stdweb 0.4.12`
       * Improved diagnostics when trying to compile for the `wasm32-unknown-unknown` target without `cargo-web`
    * `stdweb 0.4.11`
