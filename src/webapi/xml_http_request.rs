@@ -59,8 +59,13 @@ pub enum XhrResponseType {
 impl IEventTarget for XmlHttpRequest {}
 
 error_enum_boilerplate! {
+    /// An error returned from `XmlHttpRequest::set_response_type`
     SetResponseTypeError,
-    InvalidStateError, InvalidAccessError
+
+    #[allow(missing_docs)]
+    InvalidStateError,
+    #[allow(missing_docs)]
+    InvalidAccessError
 }
 
 impl XmlHttpRequest {
