@@ -1,10 +1,11 @@
 use webapi::event_target::{IEventTarget, EventTarget};
+use webapi::dom_exception::{InvalidAccessError, InvalidStateError};
 use webcore::unsafe_typed_array::UnsafeTypedArray;
 use webcore::value::{
     Reference,
     Value,
 };
-use webcore::try_from::TryInto;
+use webcore::try_from::{TryFrom, TryInto};
 use private::TODO;
 
 /// Use XmlHttpRequest (XHR) objects to interact with servers.
@@ -57,6 +58,15 @@ pub enum XhrResponseType {
 
 impl IEventTarget for XmlHttpRequest {}
 
+error_enum_boilerplate! {
+    /// An error returned from `XmlHttpRequest::set_response_type`
+    XhrSetResponseTypeError,
+
+    #[allow(missing_docs)]
+    InvalidStateError,
+    #[allow(missing_docs)]
+    InvalidAccessError
+}
 
 impl XmlHttpRequest {
     /// Creates new `XmlHttpRequest`.
@@ -85,7 +95,7 @@ impl XmlHttpRequest {
     /// Returns the type of the request as a [XhrResponseType](enum.XhrResponseType.html)
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseType)
-    // https://xhr.spec.whatwg.org/#dom-xmlhttprequest-responsetype
+    // https://xhr.spec.whatwg.org/#ref-for-dom-xmlhttprequest-responsetype
     pub fn response_type(&self) -> XhrResponseType {
         use self::XhrResponseType::*;
         let repsonse_type: String = js! ( return @{self}.responseType; ).try_into().unwrap();
@@ -97,6 +107,25 @@ impl XmlHttpRequest {
             "text" | "" => Text,
             x => unreachable!( "Unexpected value of XMLHttpRequest::responseType:: {}", x)
         }
+    }
+
+    /// Set the type that the XmlHttpRequest should return
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseType)
+    // https://xhr.spec.whatwg.org/#ref-for-dom-xmlhttprequest-responsetype
+    pub fn set_response_type(&self, kind: XhrResponseType) -> Result<(), XhrSetResponseTypeError> {
+        use self::XhrResponseType::*;
+        let response_type = match kind {
+            ArrayBuffer => "arraybuffer",
+            Blob => "blob",
+            Document => "document",
+            Json => "json",
+            Text => "text"
+        };
+
+        js_try!(
+            @{self}.responseType = @{response_type};
+        ).unwrap()
     }
 
     /// Returns a string that contains the response to the request as text, or None

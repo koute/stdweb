@@ -111,7 +111,7 @@
     unused_qualifications
 )]
 #![cfg_attr(
-    all(test, rust_1_30_or_newer, rust_nightly),
+    all(test, rust_nightly),
     feature(linkage) // Needed for async tests.
 )]
 #![cfg_attr(rust_nightly, feature(core_intrinsics))]
@@ -130,17 +130,14 @@ extern crate serde_json;
 #[macro_use]
 extern crate serde_derive;
 
-#[cfg(rust_1_30_or_newer)]
 extern crate stdweb_internal_macros;
 
 #[cfg(all(
-    rust_1_30_or_newer,
     target_arch = "wasm32",
     target_os = "unknown"
 ))]
 pub use stdweb_internal_macros::js_export;
 
-#[cfg(rust_1_30_or_newer)]
 pub use stdweb_internal_macros::async_test;
 
 #[cfg(feature = "futures-support")]
@@ -293,6 +290,7 @@ pub mod web {
     pub use webapi::html_collection::HtmlCollection;
     pub use webapi::child_node::IChildNode;
     pub use webapi::gamepad::{Gamepad, GamepadButton, GamepadMappingType};
+    pub use webapi::touch::{Touch, TouchType};
     pub use webapi::selection::Selection;
     pub use webapi::shadow_root::{ShadowRootMode, ShadowRoot};
     pub use webapi::html_elements::SlotContentKind;
@@ -322,6 +320,7 @@ pub mod web {
 
         pub use webapi::rendering_context::{AddColorStopError, DrawImageError, GetImageDataError};
         pub use webapi::html_elements::UnknownValueError;
+        pub use webapi::xml_http_request::XhrSetResponseTypeError;
     }
 
     /// A module containing HTML DOM elements.
@@ -362,6 +361,17 @@ pub mod web {
             MouseWheelEvent,
             MouseWheelDeltaMode,
             MouseButton
+        };
+
+        pub use webapi::events::touch::{
+            ITouchEvent,
+            TouchEvent,
+            TouchMove,
+            TouchLeave,
+            TouchEnter,
+            TouchEnd,
+            TouchCancel,
+            TouchStart,
         };
 
         pub use webapi::events::pointer::{
@@ -531,6 +541,7 @@ pub mod traits {
         IMessageEvent,
         IFocusEvent,
         IDragEvent,
+        ITouchEvent,
     };
 
     #[cfg(feature = "experimental_features_which_may_break_on_minor_version_bumps")]
@@ -560,6 +571,20 @@ pub mod private {
 
     pub use webcore::global_arena::ArenaRestorePoint;
     pub use webcore::global_arena::serialize_value;
+
+    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+    pub use stdweb_internal_macros::wasm32_unknown_unknown_js_attr as js_attr;
+    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+    pub use stdweb_internal_macros::wasm32_unknown_unknown_js_no_return_attr as js_no_return_attr;
+    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+    pub use stdweb_internal_macros::wasm32_unknown_unknown_js_raw_attr as js_raw_attr;
+
+    #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+    pub use stdweb_internal_macros::emscripten_js_attr as js_attr;
+    #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+    pub use stdweb_internal_macros::emscripten_js_no_return_attr as js_no_return_attr;
+    #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+    pub use stdweb_internal_macros::emscripten_js_raw_attr as js_raw_attr;
 
     // This is to prevent an unused_mut warnings in macros, because an `allow` doesn't work apparently?
     #[allow(dead_code)]

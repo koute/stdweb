@@ -1,6 +1,6 @@
 [package]
 name = "stdweb-internal-macros"
-version = "0.2.2"
+version = "0.2.5"
 authors = ["Jan Bujak <j@exia.io>"]
 repository = "https://github.com/koute/stdweb"
 homepage = "https://github.com/koute/stdweb"
@@ -10,8 +10,6 @@ readme = "README.md"
 keywords = ["web", "asmjs", "webasm", "javascript"]
 categories = ["api-bindings", "gui", "web-programming"]
 description = "Internal procedural macros for the `stdweb` crate"
-
-build = "build.rs"
 
 [lib]
 proc-macro = true
@@ -23,11 +21,10 @@ serde = "1"
 serde_derive = "1"
 serde_json = "1"
 proc-macro2 = "0.4"
+sha1 = "0.6"
 
 [dependencies.syn]
 version = "0.15"
 default-features = false
 features = ["full", "parsing", "printing", "clone-impls"]
 
-[build-dependencies]
-rustc_version = "0.2"

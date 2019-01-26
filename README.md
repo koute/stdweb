@@ -19,10 +19,13 @@ a high degree of interoperability between Rust and JavaScript.
 ## Patrons
 
 This software was brought to you thanks to these wonderful people:
+  * Embark Studios
   * Eduard Knyshov
   * Anselm Eickhoff
   * Ferran Pujol Camins
+  * Isaac F Leonard
   * Johan Andersson
+  * Martin Kavík
   * Stephen Sugden
 
 Thank you!
@@ -169,7 +172,7 @@ Take a look at some of the examples:
 
 3. Go into `examples/todomvc` and start the example using one of these commands:
 
-    * Compile to [WebAssembly] using Rust's native WebAssembly backend (requires Rust nightly!):
+    * Compile to [WebAssembly] using Rust's native WebAssembly backend:
 
           $ cargo web start --target=wasm32-unknown-unknown
 
@@ -192,6 +195,45 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
 [WebAssembly]: https://en.wikipedia.org/wiki/WebAssembly
 
 ## Changelog
+   * `stdweb 0.4.13`
+      * Fixed the procedural `js!` macro's whitespace handling
+      * New types:
+         * `ITouchEvent`
+         * `Touch`
+         * `TouchType`
+      * New events:
+         * `TouchEvent`
+         * `TouchMove`
+         * `TouchLeave`
+         * `TouchEnter`
+         * `TouchEnd`
+         * `TouchCancel`
+         * `TouchStart`
+      * New methods:
+         * `XmlHttpRequest::set_response_type`
+   * `stdweb 0.4.12`
+      * Improved diagnostics when trying to compile for the `wasm32-unknown-unknown` target without `cargo-web`
+   * `stdweb 0.4.11`
+      * The minimum required Rust version is now 1.30.1
+      * The minimum required `cargo-web` version is now 0.6.22
+      * `wasm32-unknown-unknown` is now officially supported on stable Rust
+      * Debug builds on `wasm32-unknown-unknown` are now supported
+      * The `js!` macro is now partially implemented using a procedural macro
+      * String decoding/encoding is now a lot faster due to the use of native codec APIs
+      * New methods:
+        * `Document::import_node`
+        * `IElement::slot`
+        * `IElement::attach_shadow`
+        * `IElement::shadow_root`
+      * New types:
+        * `ISlotable`
+        * `ShadowRoot`
+        * `ShadowRootMode`
+        * `TemplateElement`
+        * `SlotElement`
+      * New events:
+        * `SlotChangeEvent`
+      * `IParentNode::query_selector` and `IParentNode::query_selector_all` now return a proper error type
    * `stdweb 0.4.10`, `stdweb-derive 0.5.1`
       * New methods:
         * `IElement::insert_adjacent_html`
