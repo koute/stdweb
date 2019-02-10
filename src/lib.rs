@@ -254,6 +254,7 @@ pub mod web {
     pub use webapi::location::Location;
     pub use webapi::array_buffer::ArrayBuffer;
     pub use webapi::typed_array::TypedArray;
+    pub use webapi::file::File;
     pub use webapi::file_reader::{FileReader, FileReaderResult, FileReaderReadyState};
     pub use webapi::file_list::FileList;
     pub use webapi::history::History;
