@@ -195,6 +195,13 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
 [WebAssembly]: https://en.wikipedia.org/wiki/WebAssembly
 
 ## Changelog
+   * `stdweb 0.4.14`
+      * The `js!` macro now generates slightly more efficient code
+        if you're not returning anything from your JS snippet. This makes
+        it unnecessary to add the `@(no_return)` annotation in the vast
+        majority of cases.
+      * New types:
+         * `File`
    * `stdweb 0.4.13`
       * Fixed the procedural `js!` macro's whitespace handling
       * New types:
