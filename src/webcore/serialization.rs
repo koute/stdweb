@@ -1365,6 +1365,45 @@ mod test_deserialization {
         let reference_error: Result< ReferenceError, _ > = caught_value.borrow().clone().try_into();
         assert!( reference_error.is_ok() );
     }
+
+    #[test]
+    fn no_return() {
+        let values = Rc::new( RefCell::new( Vec::new() ) );
+        let values_clone = values.clone();
+        let callback = move |value: i32| {
+            values_clone.borrow_mut().push( value );
+        };
+
+        let _: () = js!( @(no_return)
+            var cb = @{Mut( callback.clone() )};
+            cb( 1 );
+            cb.drop();
+        );
+
+        let _: () = js!( @(no_return)
+            var cb = @{Mut( callback.clone() )};
+            cb( 2 );
+            cb.drop();
+            return 20;
+        );
+
+        let a: Value = js!(
+            var cb = @{Mut( callback.clone() )};
+            cb( 3 );
+            cb.drop();
+        );
+
+        let b: Value = js!(
+            var cb = @{Mut( callback )};
+            cb( 4 );
+            cb.drop();
+            return 40;
+        );
+
+        assert_eq!( *values.borrow(), &[1, 2, 3, 4] );
+        assert_eq!( a, Value::Undefined );
+        assert_eq!( b, 40 )
+    }
 }
 
 #[cfg(test)]
