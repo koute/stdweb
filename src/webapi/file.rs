@@ -10,7 +10,7 @@ use webapi::blob::{IBlob, Blob};
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "File")]
 #[reference(subclass_of(Blob))]
-pub struct File( Reference );
+pub struct File( pub(crate) Reference );
 
 impl IBlob for File {}
 
