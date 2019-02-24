@@ -3,7 +3,7 @@ use std::pin::Pin;
 use webcore::once::Once;
 use webcore::value::Value;
 use futures_core::{Future, Poll};
-use futures_core::task::{Waker, LocalWaker};
+use futures_core::task::Waker;
 use futures_core::stream::Stream;
 use futures_util::FutureExt;
 use futures_channel::oneshot;
@@ -19,7 +19,7 @@ fn convert_to_i32( ms: u32 ) -> i32 {
 }
 
 
-/// The [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html)
+/// The [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.13/futures/future/trait.Future.html)
 /// which is returned by [`wait`](fn.wait.html).
 // This isn't implemented as a PromiseFuture because Promises do not support cancellation
 #[derive( Debug )]
@@ -65,7 +65,7 @@ impl Future for Wait {
     type Output = ();
 
     #[inline]
-    fn poll( mut self: Pin< &mut Self >, waker: &LocalWaker ) -> Poll< Self::Output > {
+    fn poll( mut self: Pin< &mut Self >, waker: &Waker ) -> Poll< Self::Output > {
         // TODO is this unwrap correct ?
         self.receiver.poll_unpin( waker ).map( |x| x.unwrap() )
     }
@@ -82,7 +82,7 @@ impl Drop for Wait {
     }
 }
 
-/// Creates a [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html)
+/// Creates a [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.13/futures/future/trait.Future.html)
 /// which will return `()` after `ms` milliseconds have passed.
 ///
 /// It might return a long time *after* `ms` milliseconds have passed, but it
@@ -102,7 +102,7 @@ struct IntervalBufferedState {
     count: usize,
 }
 
-/// The [`Stream`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/stream/trait.Stream.html)
+/// The [`Stream`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.13/futures/stream/trait.Stream.html)
 /// which is returned by [`interval_buffered`](fn.interval_buffered.html).
 #[derive( Debug )]
 pub struct IntervalBuffered {
@@ -156,12 +156,11 @@ impl IntervalBuffered {
 impl Stream for IntervalBuffered {
     type Item = ();
 
-    fn poll_next( self: Pin< &mut Self >, waker: &LocalWaker ) -> Poll< Option< Self::Item > > {
+    fn poll_next( self: Pin< &mut Self >, waker: &Waker ) -> Poll< Option< Self::Item > > {
         let mut lock = self.state.lock().unwrap();
 
         if lock.count == 0 {
-            // TODO is this `into()` correct ?
-            lock.waker = Some( waker.clone().into() );
+            lock.waker = Some( waker.clone() );
             Poll::Pending
 
         } else {
@@ -183,7 +182,7 @@ impl Drop for IntervalBuffered {
     }
 }
 
-/// Creates a [`Stream`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/stream/trait.Stream.html)
+/// Creates a [`Stream`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.13/futures/stream/trait.Stream.html)
 /// which will continuously output `()` every `ms` milliseconds, until it is dropped.
 ///
 /// It might output `()` a long time *after* `ms` milliseconds have passed, but it
