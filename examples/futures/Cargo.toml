@@ -6,4 +6,4 @@ authors = ["Jan Bujak <j@exia.io>"]
 
 [dependencies]
 stdweb = { path = "../..", features = ["experimental_features_which_may_break_on_minor_version_bumps", "nightly"] }
-futures-preview = "0.3.0-alpha.6"
+futures-preview = "0.3.0-alpha.13"

@@ -8,7 +8,8 @@
 use futures_core::{Future, Poll};
 use futures_core::future::{FutureObj, LocalFutureObj};
 use futures_executor::enter;
-use futures_core::task::{local_waker, Wake, Spawn, SpawnError};
+use futures_core::task::{Spawn, SpawnError};
+use futures_util::task::ArcWake;
 use std::pin::Pin;
 use std::rc::Rc;
 use std::cell::{Cell, RefCell};
@@ -43,6 +44,7 @@ struct Task {
 }
 
 // TODO fix these
+// It is safe because JavaScript is (currently) always single-threaded
 unsafe impl Send for Task {}
 unsafe impl Sync for Task {}
 
@@ -66,12 +68,9 @@ impl Task {
         // Clear `is_queued` flag so that it will re-queue if poll calls waker.wake()
         arc.is_queued.set( false );
 
-        // The `unsafe` is needed for `local_waker`
-        // It is safe because JavaScript is (currently) always single-threaded
-        let poll = unsafe {
+        let poll = {
             // TODO is there some way of saving these so they don't need to be recreated all the time ?
-            // TODO maybe use local_waker_from_nonlocal instead ?
-            let waker = local_waker( arc.clone() );
+            let waker = ArcWake::into_waker( arc.clone() );
 
             // TODO what if poll panics ?
             // TODO is this Pin correct ?
@@ -96,7 +95,7 @@ impl Task {
     }
 }
 
-impl Wake for Task {
+impl ArcWake for Task {
     #[inline]
     fn wake( arc_self: &Arc< Self > ) {
         Task::push_task( arc_self );

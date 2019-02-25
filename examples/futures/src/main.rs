@@ -1,4 +1,4 @@
-#![feature(async_await, await_macro, futures_api, pin)]
+#![feature(async_await, await_macro, futures_api)]
 
 #[macro_use]
 extern crate stdweb;
