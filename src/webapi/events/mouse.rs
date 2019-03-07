@@ -226,6 +226,7 @@ pub enum MouseButton {
 pub struct MouseButtonsState(u8);
 
 impl MouseButtonsState {
+    /// Check if a [MouseButton](enum.MouseButton.html) is currently pressed
     pub fn is_down(&self, button: MouseButton) -> bool {
         match button {
             MouseButton::Left => self.0 & 0b1 != 0,

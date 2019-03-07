@@ -337,7 +337,8 @@ pub mod web {
             MouseLeaveEvent,
             MouseWheelEvent,
             MouseWheelDeltaMode,
-            MouseButton
+            MouseButton,
+            MouseButtonsState
         };
 
         pub use webapi::events::touch::{
