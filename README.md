@@ -158,6 +158,9 @@ Take a look at some of the examples:
   * `examples/hasher-parcel` - shows how to import and call exported Rust functions in a [Parcel] project
   * [`pinky-web`] - an NES emulator; you can play with the [precompiled version here](http://koute.github.io/pinky-web/)
 
+API documentation:  
+[![Documentation](https://docs.rs/stdweb/badge.svg)](https://docs.rs/stdweb/*/stdweb/)
+
 [alert]: https://developer.mozilla.org/en-US/docs/Web/API/Window/alert
 [TodoMVC]: http://todomvc.com/
 [`pinky-web`]: https://github.com/koute/pinky/tree/master/pinky-web
