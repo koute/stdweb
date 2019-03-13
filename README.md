@@ -200,6 +200,14 @@ This crate is currently **not** compatible with `wasm-bindgen`,
 however adding such compatibility *is* planned in the near future.
 
 ## Changelog
+   * `stdweb 0.4.15`
+      * The unstable `futures`-related APIs were updated to work with the latest nightlies
+      * New types:
+         * `FormData`
+         * `FormDataEntry`
+         * `MouseButtonsState`
+      * New methods:
+         * `Blob::new`
    * `stdweb 0.4.14`
       * The `js!` macro now generates slightly more efficient code
         if you're not returning anything from your JS snippet. This makes
