@@ -222,6 +222,31 @@ pub mod web {
         interval_buffered
     };
 
+
+    /// A module containing the IndexedDB API
+    pub mod indexeddb {
+        pub use webapi::indexeddb::{
+            IDBOpenDBRequest,
+            IDBDatabase,
+            IDBRequestSharedMethods,
+            IDBRequest,
+            IDBIndex,
+            IDBObjectStore,
+            IDBTransaction,
+            IDBTransactionMode,
+            IDBFactory,
+            IDBObjectStoreIndexSharedMethods,
+            IDBCursorDirection,
+            IDBRequestReadyState,
+            IDBCursorSharedMethods,
+            IDBCursor,
+            IDBCursorWithValue,
+            IDBAddError
+        };
+    }
+
+    pub use webapi::dom_string_list::DOMStringList;
+
     pub use webapi::window::{
         Window,
         window
@@ -419,6 +444,13 @@ pub mod web {
             IFocusEvent,
             FocusEvent,
             BlurEvent
+        };
+
+        pub use webapi::events::indexeddb:: {
+            IDBSuccessEvent,
+            IDBVersionChangeEvent,
+            IDBCompleteEvent,
+            IDBErrorEvent
         };
 
         pub use webapi::events::gamepad::{

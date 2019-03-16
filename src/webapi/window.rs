@@ -8,6 +8,8 @@ use webapi::history::History;
 use webapi::selection::Selection;
 use webcore::once::Once;
 use webcore::value::Value;
+use webapi::indexeddb::IDBFactory;
+
 
 /// A handle to a pending animation frame request.
 #[derive(Debug)]
@@ -133,6 +135,13 @@ impl Window {
         RequestAnimationFrameHandle(values)
     }
 
+    /// This is a method
+    pub fn indexed_db( &self ) -> IDBFactory {
+        js! (
+            return window.indexedDB;
+        ).try_into().unwrap()
+    }
+ 
     /// Returns the global [History](struct.History.html) object, which provides methods to
     /// manipulate the browser history.
     ///
