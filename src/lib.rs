@@ -130,6 +130,9 @@ extern crate serde_json;
 #[macro_use]
 extern crate serde_derive;
 
+#[cfg(feature = "wasm-bindgen")]
+extern crate wasm_bindgen;
+
 extern crate stdweb_internal_macros;
 
 #[cfg(all(
@@ -522,6 +525,12 @@ pub mod traits {
 
 #[doc(hidden)]
 pub mod private {
+    #[cfg(feature = "wasm-bindgen")]
+    pub extern crate wasm_bindgen;
+
+    #[cfg(feature = "wasm-bindgen")]
+    pub use webcore::ffi::get_module;
+
     pub use webcore::ffi::exports::*;
     pub use webcore::serialization::{
         JsSerialize,
@@ -543,12 +552,19 @@ pub mod private {
     pub use webcore::global_arena::ArenaRestorePoint;
     pub use webcore::global_arena::serialize_value;
 
-    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+    #[cfg(all(target_arch = "wasm32", target_os = "unknown", not(feature = "wasm-bindgen")))]
     pub use stdweb_internal_macros::wasm32_unknown_unknown_js_attr as js_attr;
-    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+    #[cfg(all(target_arch = "wasm32", target_os = "unknown", not(feature = "wasm-bindgen")))]
     pub use stdweb_internal_macros::wasm32_unknown_unknown_js_no_return_attr as js_no_return_attr;
-    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+    #[cfg(all(target_arch = "wasm32", target_os = "unknown", not(feature = "wasm-bindgen")))]
     pub use stdweb_internal_macros::wasm32_unknown_unknown_js_raw_attr as js_raw_attr;
+
+    #[cfg(all(target_arch = "wasm32", target_os = "unknown", feature = "wasm-bindgen"))]
+    pub use stdweb_internal_macros::wasm_bindgen_js_attr as js_attr;
+    #[cfg(all(target_arch = "wasm32", target_os = "unknown", feature = "wasm-bindgen"))]
+    pub use stdweb_internal_macros::wasm_bindgen_js_no_return_attr as js_no_return_attr;
+    #[cfg(all(target_arch = "wasm32", target_os = "unknown", feature = "wasm-bindgen"))]
+    pub use stdweb_internal_macros::wasm_bindgen_js_raw_attr as js_raw_attr;
 
     #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
     pub use stdweb_internal_macros::emscripten_js_attr as js_attr;

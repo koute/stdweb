@@ -4,7 +4,8 @@ use proc_macro2::Span;
 #[derive(Copy, Clone)]
 pub enum Target {
     Emscripten,
-    NativeWebAssembly
+    NativeWebAssembly,
+    WasmBindgen
 }
 
 pub fn dummy_idents( count: usize ) -> impl Iterator< Item = syn::Ident > {

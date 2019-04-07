@@ -22,6 +22,8 @@ futures-channel-preview = { version = "0.3.0-alpha.13", optional = true }
 futures-util-preview = { version = "0.3.0-alpha.13", optional = true }
 futures-executor-preview = { version = "0.3.0-alpha.13", optional = true }
 
+wasm-bindgen = { version = "0.2", optional = true }
+
 stdweb-derive = { version = "= 0.5.1", path = "stdweb-derive" }
 stdweb-internal-macros = { version = "= 0.2.6", path = "stdweb-internal-macros" }
 stdweb-internal-runtime = { version = "0.1", path = "stdweb-internal-runtime" }

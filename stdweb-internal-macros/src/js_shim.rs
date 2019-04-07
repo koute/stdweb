@@ -1,6 +1,7 @@
 use std::env;
 use std::path::PathBuf;
 use std::fs;
+use std::fmt::Write;
 
 use syn;
 use proc_macro2::{TokenStream, Span};
@@ -82,6 +83,34 @@ pub fn js_shim_extern_code( target: Target, code: &str, arg_count: usize ) -> (s
             quote! {
                 extern "C" {
                     pub fn #shim_name( #(#shim_args),* ) -> i32;
+                }
+            }
+        },
+        Target::WasmBindgen => {
+            let mut code_string = String::new();
+            write!( &mut code_string, "export function {}(", &snippet.name ).unwrap();
+            write!( &mut code_string, "Module" ).unwrap();
+            if arg_count != 0 {
+                write!( &mut code_string, ", " ).unwrap();
+            }
+            for nth in 0..arg_count {
+                write!( &mut code_string, "${}", nth ).unwrap();
+                if nth + 1 != arg_count {
+                    write!( &mut code_string, ", " ).unwrap();
+                }
+            }
+            write!( &mut code_string, ") {{ {} }}", code ).unwrap();
+            let shim_name = &shim_name;
+            let shim_args = &shim_args;
+            quote! {
+                use ::stdweb::private::wasm_bindgen::prelude::*;
+                unsafe fn #shim_name( #(#shim_args),* ) -> i32 {
+                    #[wasm_bindgen(inline_js = #code_string)]
+                    extern "C" {
+                        pub fn #shim_name( module: JsValue, #(#shim_args),* ) -> i32;
+                    }
+
+                    #shim_name( ::stdweb::private::get_module(), #(#shim_args_passthrough),* )
                 }
             }
         }
