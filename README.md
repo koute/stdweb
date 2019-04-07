@@ -201,6 +201,9 @@ This crate is currently **not** compatible with `wasm-bindgen`,
 however adding such compatibility *is* planned in the near future.
 
 ## Changelog
+   * `stdweb 0.4.16` (unreleased)
+      * Initial `wasm-bindgen` compatibility; you can now use `stdweb` in projects
+        using `wasm-bindgen`
    * `stdweb 0.4.15`
       * The unstable `futures`-related APIs were updated to work with the latest nightlies
       * New types:
