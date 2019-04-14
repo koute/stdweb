@@ -34,38 +34,30 @@ pub fn initialize() {
         Module.web_malloc = alloc;
         Module.web_free = free;
         Module.web_table = null;
-        function define_heap( target ) {
-            Object.defineProperty( target, "HEAP8", {
-                get: function() { return new Int8Array( memory.buffer ); }
-            });
-            Object.defineProperty( target, "HEAP16", {
-                get: function() { return new Int16Array( memory.buffer ); }
-            });
-            Object.defineProperty( target, "HEAP32", {
-                get: function() { return new Int32Array( memory.buffer ); }
-            });
-            Object.defineProperty( target, "HEAPU8", {
-                get: function() { return new Uint8Array( memory.buffer ); }
-            });
-            Object.defineProperty( target, "HEAPU16", {
-                get: function() { return new Uint16Array( memory.buffer ); }
-            });
-            Object.defineProperty( target, "HEAPU32", {
-                get: function() { return new Uint32Array( memory.buffer ); }
-            });
-            Object.defineProperty( target, "HEAPF32", {
-                get: function() { return new Float32Array( memory.buffer ); }
-            });
-            Object.defineProperty( target, "HEAPF64", {
-                get: function() { return new Float64Array( memory.buffer ); }
-            });
-        }
-        if( typeof global !== "undefined" ) {
-            define_heap( global );
-        }
-        if( typeof window !== "undefined" ) {
-            define_heap( window );
-        }
+        Object.defineProperty( Module, "HEAP8", {
+            get: function() { return new Int8Array( memory.buffer ); }
+        });
+        Object.defineProperty( Module, "HEAP16", {
+            get: function() { return new Int16Array( memory.buffer ); }
+        });
+        Object.defineProperty( Module, "HEAP32", {
+            get: function() { return new Int32Array( memory.buffer ); }
+        });
+        Object.defineProperty( Module, "HEAPU8", {
+            get: function() { return new Uint8Array( memory.buffer ); }
+        });
+        Object.defineProperty( Module, "HEAPU16", {
+            get: function() { return new Uint16Array( memory.buffer ); }
+        });
+        Object.defineProperty( Module, "HEAPU32", {
+            get: function() { return new Uint32Array( memory.buffer ); }
+        });
+        Object.defineProperty( Module, "HEAPF32", {
+            get: function() { return new Float32Array( memory.buffer ); }
+        });
+        Object.defineProperty( Module, "HEAPF64", {
+            get: function() { return new Float64Array( memory.buffer ); }
+        });
         return Module;
     }"#)]
     extern "C" {
