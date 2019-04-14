@@ -29,11 +29,11 @@ unsafe impl Sync for Module {}
 static mut MODULE: Module = Module( None );
 
 pub fn initialize() {
-    #[wasm_bindgen(inline_js = r#"export function wasm_bindgen_initialize( memory, alloc, free ) {
+    #[wasm_bindgen(inline_js = r#"export function wasm_bindgen_initialize( memory, table, alloc, free ) {
         var Module = {};
         Module.web_malloc = alloc;
         Module.web_free = free;
-        Module.web_table = null;
+        Module.web_table = table;
         Object.defineProperty( Module, "HEAP8", {
             get: function() { return new Int8Array( memory.buffer ); }
         });
@@ -63,14 +63,16 @@ pub fn initialize() {
     extern "C" {
         fn wasm_bindgen_initialize(
             memory: JsValue,
+            table: JsValue,
             alloc: &dyn Fn( usize ) -> *mut u8,
             free: &dyn Fn( *mut u8, usize )
         ) -> JsValue;
     }
 
     let memory = wasm_bindgen::memory();
+    let table = wasm_bindgen::function_table();
     unsafe {
-        let module = wasm_bindgen_initialize( memory, &alloc, &free );
+        let module = wasm_bindgen_initialize( memory, table, &alloc, &free );
         MODULE = Module( Some( module ) );
     }
 }
