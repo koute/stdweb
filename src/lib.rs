@@ -133,6 +133,14 @@ extern crate serde_derive;
 #[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web)))]
 extern crate wasm_bindgen;
 
+#[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web), test))]
+#[macro_use]
+extern crate wasm_bindgen_test;
+
+#[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web), test))]
+#[macro_use]
+extern crate stdweb_internal_test_macro;
+
 extern crate stdweb_internal_macros;
 
 #[cfg(all(
