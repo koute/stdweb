@@ -16,7 +16,7 @@ pub fn initialize() {
         INITIALIZED = true;
     }
 
-    #[cfg(feature = "wasm-bindgen")]
+    #[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web)))]
     ffi::initialize();
 
     #[cfg(not(feature = "docs-rs"))]

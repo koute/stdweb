@@ -130,7 +130,7 @@ extern crate serde_json;
 #[macro_use]
 extern crate serde_derive;
 
-#[cfg(feature = "wasm-bindgen")]
+#[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web)))]
 extern crate wasm_bindgen;
 
 extern crate stdweb_internal_macros;
@@ -525,10 +525,10 @@ pub mod traits {
 
 #[doc(hidden)]
 pub mod private {
-    #[cfg(feature = "wasm-bindgen")]
+    #[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web)))]
     pub extern crate wasm_bindgen;
 
-    #[cfg(feature = "wasm-bindgen")]
+    #[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web)))]
     pub use webcore::ffi::get_module;
 
     pub use webcore::ffi::exports::*;
@@ -552,18 +552,18 @@ pub mod private {
     pub use webcore::global_arena::ArenaRestorePoint;
     pub use webcore::global_arena::serialize_value;
 
-    #[cfg(all(target_arch = "wasm32", target_os = "unknown", not(feature = "wasm-bindgen")))]
+    #[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", cargo_web))]
     pub use stdweb_internal_macros::wasm32_unknown_unknown_js_attr as js_attr;
-    #[cfg(all(target_arch = "wasm32", target_os = "unknown", not(feature = "wasm-bindgen")))]
+    #[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", cargo_web))]
     pub use stdweb_internal_macros::wasm32_unknown_unknown_js_no_return_attr as js_no_return_attr;
-    #[cfg(all(target_arch = "wasm32", target_os = "unknown", not(feature = "wasm-bindgen")))]
+    #[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", cargo_web))]
     pub use stdweb_internal_macros::wasm32_unknown_unknown_js_raw_attr as js_raw_attr;
 
-    #[cfg(all(target_arch = "wasm32", target_os = "unknown", feature = "wasm-bindgen"))]
+    #[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web)))]
     pub use stdweb_internal_macros::wasm_bindgen_js_attr as js_attr;
-    #[cfg(all(target_arch = "wasm32", target_os = "unknown", feature = "wasm-bindgen"))]
+    #[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web)))]
     pub use stdweb_internal_macros::wasm_bindgen_js_no_return_attr as js_no_return_attr;
-    #[cfg(all(target_arch = "wasm32", target_os = "unknown", feature = "wasm-bindgen"))]
+    #[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web)))]
     pub use stdweb_internal_macros::wasm_bindgen_js_raw_attr as js_raw_attr;
 
     #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
