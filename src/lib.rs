@@ -170,6 +170,9 @@ extern crate stdweb_internal_runtime;
 
 extern crate discard;
 
+#[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web), test))]
+wasm_bindgen_test_configure!( run_in_browser );
+
 #[macro_use]
 mod webcore;
 mod webapi;
