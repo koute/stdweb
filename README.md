@@ -195,15 +195,12 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
 [asm.js]: https://en.wikipedia.org/wiki/Asm.js
 [WebAssembly]: https://en.wikipedia.org/wiki/WebAssembly
 
-## `wasm-bindgen` compatibility
-
-This crate is currently **not** compatible with `wasm-bindgen`,
-however adding such compatibility *is* planned in the near future.
-
 ## Changelog
-   * `stdweb 0.4.16` (unreleased)
+   * `stdweb 0.4.16`
       * Initial `wasm-bindgen` compatibility; you can now use `stdweb` in projects
         using `wasm-bindgen`
+      * Minimum supported Rust version is now 1.33.0
+      * Minimum required `cargo-web` version is now 0.6.24
    * `stdweb 0.4.15`
       * The unstable `futures`-related APIs were updated to work with the latest nightlies
       * New types:
