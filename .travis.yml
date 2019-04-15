@@ -15,6 +15,8 @@ custom:
     script:
       - nvm install 9
       - ./ci/install_cargo_web.sh
+      - ./ci/install_wasm_bindgen.sh
+      - ./ci/install_wasm_pack.sh
       - ./ci/run_tests.sh
 
 jobs:
