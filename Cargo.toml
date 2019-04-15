@@ -35,7 +35,7 @@ serde_derive = "1"
 
 [target.'cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web)))'.dev-dependencies]
 wasm-bindgen-test = "0.2"
-stdweb-internal-test-macro = { path = "stdweb-internal-test-macro" }
+stdweb-internal-test-macro = { version = "0.1", path = "stdweb-internal-test-macro" }
 
 [build-dependencies]
 rustc_version = "0.2"
