@@ -17,10 +17,10 @@ build = "build.rs"
 discard = "1.0.3"
 serde = { version = "1", optional = true }
 serde_json = { version = "1", optional = true }
-futures-core-preview = { version = "0.3.0-alpha.13", optional = true }
-futures-channel-preview = { version = "0.3.0-alpha.13", optional = true }
-futures-util-preview = { version = "0.3.0-alpha.13", optional = true }
-futures-executor-preview = { version = "0.3.0-alpha.13", optional = true }
+futures-core-preview = { version = "0.3.0-alpha.15", optional = true }
+futures-channel-preview = { version = "0.3.0-alpha.15", optional = true }
+futures-util-preview = { version = "0.3.0-alpha.15", optional = true }
+futures-executor-preview = { version = "0.3.0-alpha.15", optional = true }
 
 stdweb-derive = { version = "= 0.5.1", path = "stdweb-derive" }
 stdweb-internal-macros = { version = "= 0.2.7", path = "stdweb-internal-macros" }

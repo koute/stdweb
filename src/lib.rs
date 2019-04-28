@@ -116,7 +116,6 @@
 )]
 #![cfg_attr(rust_nightly, feature(core_intrinsics))]
 #![cfg_attr(feature = "nightly", feature(never_type))]
-#![cfg_attr(feature = "futures-support", feature(futures_api, pin, arbitrary_self_types))]
 #![recursion_limit="1500"]
 
 #[cfg(feature = "serde")]

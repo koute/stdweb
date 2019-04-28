@@ -1,11 +1,12 @@
 use std;
 use std::pin::Pin;
+use std::future::Future;
+use std::task::{Poll, Context};
 use webcore::value::{Value, ConversionError};
 use webcore::try_from::{TryInto, TryFrom};
 use webcore::executor;
 use webapi::error;
-use futures_core::{Future, TryFuture, Poll};
-use futures_core::task::Waker;
+use futures_core::TryFuture;
 use futures_util::{FutureExt, TryFutureExt};
 use futures_channel::oneshot::Receiver;
 use webcore::discard::DiscardOnDrop;
@@ -189,9 +190,9 @@ impl< A, B > Future for PromiseFuture< A, B > {
     type Output = Result< A, B >;
 
     #[inline]
-    fn poll( mut self: Pin< &mut Self >, waker: &Waker ) -> Poll< Self::Output > {
+    fn poll( mut self: Pin< &mut Self >, cx: &mut Context ) -> Poll< Self::Output > {
         // TODO maybe remove this unwrap ?
-        self.future.poll_unpin( waker ).map( |x| x.unwrap() )
+        self.future.poll_unpin( cx ).map( |x| x.unwrap() )
     }
 }
 

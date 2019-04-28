@@ -5,11 +5,12 @@
 // TODO: verify that this works correctly with pinned futures
 // TODO: use FuturesUnordered (similar to LocalPool)
 
-use futures_core::{Future, Poll};
 use futures_core::future::{FutureObj, LocalFutureObj};
 use futures_executor::enter;
 use futures_core::task::{Spawn, SpawnError};
 use futures_util::task::ArcWake;
+use std::future::Future;
+use std::task::{Poll, Context};
 use std::pin::Pin;
 use std::rc::Rc;
 use std::cell::{Cell, RefCell};
@@ -71,10 +72,11 @@ impl Task {
         let poll = {
             // TODO is there some way of saving these so they don't need to be recreated all the time ?
             let waker = ArcWake::into_waker( arc.clone() );
+            let cx = &mut Context::from_waker( &waker );
 
             // TODO what if poll panics ?
             // TODO is this Pin correct ?
-            Pin::new( &mut lock.future ).poll( &waker )
+            Pin::new( &mut lock.future ).poll( cx )
         };
 
         if let Poll::Pending = poll {
@@ -97,7 +99,7 @@ impl Task {
 
 impl ArcWake for Task {
     #[inline]
-    fn wake( arc_self: &Arc< Self > ) {
+    fn wake_by_ref( arc_self: &Arc< Self > ) {
         Task::push_task( arc_self );
     }
 }
