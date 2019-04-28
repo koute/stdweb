@@ -1,9 +1,9 @@
 use std::sync::{Arc, Mutex};
 use std::pin::Pin;
+use std::future::Future;
+use std::task::{Poll, Waker, Context};
 use webcore::once::Once;
 use webcore::value::Value;
-use futures_core::{Future, Poll};
-use futures_core::task::Waker;
 use futures_core::stream::Stream;
 use futures_util::FutureExt;
 use futures_channel::oneshot;
@@ -65,9 +65,9 @@ impl Future for Wait {
     type Output = ();
 
     #[inline]
-    fn poll( mut self: Pin< &mut Self >, waker: &Waker ) -> Poll< Self::Output > {
+    fn poll( mut self: Pin< &mut Self >, cx: &mut Context ) -> Poll< Self::Output > {
         // TODO is this unwrap correct ?
-        self.receiver.poll_unpin( waker ).map( |x| x.unwrap() )
+        self.receiver.poll_unpin( cx ).map( |x| x.unwrap() )
     }
 }
 
@@ -156,11 +156,11 @@ impl IntervalBuffered {
 impl Stream for IntervalBuffered {
     type Item = ();
 
-    fn poll_next( self: Pin< &mut Self >, waker: &Waker ) -> Poll< Option< Self::Item > > {
+    fn poll_next( self: Pin< &mut Self >, cx: &mut Context ) -> Poll< Option< Self::Item > > {
         let mut lock = self.state.lock().unwrap();
 
         if lock.count == 0 {
-            lock.waker = Some( waker.clone() );
+            lock.waker = Some( cx.waker().clone() );
             Poll::Pending
 
         } else {
