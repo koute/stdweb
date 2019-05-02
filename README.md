@@ -196,6 +196,8 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
 [WebAssembly]: https://en.wikipedia.org/wiki/WebAssembly
 
 ## Changelog
+   * `stdweb 0.4.17`
+      * The unstable `futures`-related APIs were updated to work with the latest nightlies
    * `stdweb 0.4.16`
       * Initial `wasm-bindgen` compatibility; you can now use `stdweb` in projects
         using `wasm-bindgen`
