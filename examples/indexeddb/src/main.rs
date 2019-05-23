@@ -24,23 +24,23 @@ use stdweb::web::html_element::InputElement;
 use stdweb::web::event::IEvent;
 
 use stdweb::web::event::{
-    DbSuccessEvent,
-    DbVersionChangeEvent,
-    DbCompleteEvent,
-    DbErrorEvent,
+    IDBSuccessEvent,
+    IDBVersionChangeEvent,
+    IDBCompleteEvent,
+    IDBErrorEvent,
     SubmitEvent,
     ClickEvent
 };
 
 use stdweb::web::indexeddb::{
-    DbOpenDBRequest,
-    DbDatabase,
-    DbRequest,
-    DbRequestSharedMethods,
-    DbObjectStoreIndexSharedMethods,
-    DbCursorWithValue,
-    DbCursorSharedMethods,
-    DbTransactionMode
+    IDBOpenDBRequest,
+    IDBDatabase,
+    IDBRequest,
+    IDBRequestSharedMethods,
+    IDBObjectStoreIndexSharedMethods,
+    IDBCursorWithValue,
+    IDBCursorSharedMethods,
+    IDBTransactionMode
 };
 
 use stdweb::unstable::TryInto;
@@ -54,9 +54,9 @@ struct Note {
 js_serializable!( Note );
 js_deserializable!( Note );
 
-thread_local!(static DB: RefCell<Option<DbDatabase>> = RefCell::new(None));
+thread_local!(static DB: RefCell<Option<IDBDatabase>> = RefCell::new(None));
 
-fn display_data_inner(db: &DbDatabase) {
+fn display_data_inner(db: &IDBDatabase) {
     let list = document().query_selector("ul").unwrap().unwrap();
     // Here we empty the contents of the list element each time the display is updated
     // If you ddn't do this, you'd get duplicates listed each time a new note is added
@@ -65,12 +65,12 @@ fn display_data_inner(db: &DbDatabase) {
     }
     // Open our object store and then get a cursor - which iterates through all the
     // different data items in the store
-    let object_store = db.transaction(vec!["notes"], DbTransactionMode::ReadOnly).object_store("notes").unwrap();
+    let object_store = db.transaction(vec!["notes"], IDBTransactionMode::ReadOnly).object_store("notes").unwrap();
     object_store.open_cursor(None, None).unwrap()
-        .add_event_listener( move |e: DbSuccessEvent| {
+        .add_event_listener( move |e: IDBSuccessEvent| {
             // Get a reference to the cursor
-            let db_request: DbRequest = e.target().unwrap().try_into().unwrap();
-            let maybe_cursor: Result<DbCursorWithValue, stdweb::private::ConversionError> = db_request.result().unwrap().try_into();
+            let db_request: IDBRequest = e.target().unwrap().try_into().unwrap();
+            let maybe_cursor: Result<IDBCursorWithValue, stdweb::private::ConversionError> = db_request.result().unwrap().try_into();
             
             // If there is still another data item to iterate through, keep running this code
             if let Ok(cursor) = maybe_cursor {
@@ -128,7 +128,7 @@ fn display_data() {
 // Define the deleteItem() function
 fn delete_item( e: ClickEvent ) {
     // retrieve the name of the task we want to delete. We need
-    // to convert it to a number before trying it use it with Db; Db key
+    // to convert it to a number before trying it use it with IDB; IDB key
     // values are type-sensitive.
     let button: Element = e.target().unwrap().try_into().unwrap();
     let note: Element = button.parent_node().unwrap().try_into().unwrap();
@@ -137,12 +137,12 @@ fn delete_item( e: ClickEvent ) {
     // open a database transaction and delete the task, finding it using the id we retrieved above
     DB.with(|db_cell| {
         if let Some(ref db) = *db_cell.borrow_mut()  {
-            let transaction = db.transaction(vec!["notes"], DbTransactionMode::ReadWrite);
+            let transaction = db.transaction(vec!["notes"], IDBTransactionMode::ReadWrite);
             let object_store = transaction.object_store("notes").unwrap();
             object_store.delete(note_id.try_into().unwrap()).unwrap();
             
             // report that the data item has been deleted
-            transaction.add_event_listener( move |_e: DbCompleteEvent| {
+            transaction.add_event_listener( move |_e: IDBCompleteEvent| {
                 // delete the parent of the button
                 // which is the list item, so it is no longer displayed
                 note.parent_node().unwrap().remove_child(&note).unwrap();
@@ -167,32 +167,32 @@ fn main() {
     let request = window().indexed_db().open("notes", 1);
 
     // onerror handler signifies that the database didn't open successfully
-    request.add_event_listener( | _e: DbErrorEvent| {
+    request.add_event_listener( | _e: IDBErrorEvent| {
         js!(
             console.log("Database failed to open");
         );
     });
 
     // onsuccess handler signifies that the database opened successfully
-    request.add_event_listener( move |event: DbSuccessEvent| {
+    request.add_event_listener( move |event: IDBSuccessEvent| {
         js!(
             console.log("Database opened succesfully");
         );
 
-        let db_request: DbOpenDBRequest = event.target().unwrap().try_into().unwrap();
+        let db_request: IDBOpenDBRequest = event.target().unwrap().try_into().unwrap();
         // Store the opened database object in the db variable. This is used a lot below
-        let db : DbDatabase = db_request.database_result().unwrap();
+        let db : IDBDatabase = db_request.database_result().unwrap();
 
         DB.with(|db_cell| {
             db_cell.replace(Some(db));
         });
-        // Run the displayData() function to display the notes already in the Db
+        // Run the displayData() function to display the notes already in the IDB
         display_data();
     });
     
-    request.add_event_listener( |event: DbVersionChangeEvent| {
-    	let db_request: DbOpenDBRequest = event.target().unwrap().try_into().unwrap();
-        let db_: DbDatabase = db_request.result().unwrap().try_into().unwrap();
+    request.add_event_listener( |event: IDBVersionChangeEvent| {
+    	let db_request: IDBOpenDBRequest = event.target().unwrap().try_into().unwrap();
+        let db_: IDBDatabase = db_request.result().unwrap().try_into().unwrap();
 
         // Create an object_store to store our notes in (basically like a single table)
         let object_store = db_.create_object_store("notes", true, "").unwrap();
@@ -225,7 +225,7 @@ fn main() {
         DB.with(|db_cell| {
             if let Some(ref db) = *db_cell.borrow_mut() {
                 // open a read/write db transaction, ready for adding the data
-                let transaction = db.transaction(vec!["notes"], DbTransactionMode::ReadWrite);
+                let transaction = db.transaction(vec!["notes"], IDBTransactionMode::ReadWrite);
         
                 // call an object store that's already been added to the database
                 let object_store = transaction.object_store("notes").unwrap();
@@ -233,21 +233,21 @@ fn main() {
                 // Make a request to add our new_item object to the object store
                 let request = object_store.add(new_item.try_into().unwrap(), None).unwrap();
                 
-                request.add_event_listener( move |_e: DbSuccessEvent| {
+                request.add_event_listener( move |_e: IDBSuccessEvent| {
                     // Clear the form, ready for adding the next entry
                     title_input.set_raw_value("");
                     body_input.set_raw_value("");
                 });
         
                 // Report on the success of the transaction completing, when everything is done
-                transaction.add_event_listener( |_e: DbCompleteEvent| {
+                transaction.add_event_listener( |_e: IDBCompleteEvent| {
                     console!(log, "Transaction completed: database modification finished.");
                     
                     // update the display of data to show the newly added item, by running displayData() again.
                     display_data();
                 });
         
-                transaction.add_event_listener( |_e: DbErrorEvent| {
+                transaction.add_event_listener( |_e: IDBErrorEvent| {
                     console!(log, "Transaction not opened due to error");
                 });
             }});        
