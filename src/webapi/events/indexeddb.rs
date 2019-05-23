@@ -1,8 +1,6 @@
 use webcore::value::Reference;
 use webapi::event::{IEvent, Event, ConcreteEvent};
 use webcore::try_from::TryInto;
-//use webapi::event_target::{IEventTarget, EventTarget};
-//use webapi::node::{INode, Node};
 
 /// The `DbSuccessEvent` handler is fired when a and Indexed DB request succeed.
 ///
