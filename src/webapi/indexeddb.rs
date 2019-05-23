@@ -21,7 +21,6 @@ pub enum DbRequestReadyState {
 #[derive(Debug)]
 pub enum DbRequestSource {
     /// Indicates no source exists, such as when calling `indexedDB.open`
-    None,
     Store(DbObjectStore),
     Index(DbIndex),
     Cursor(DbCursor)
@@ -58,14 +57,13 @@ pub trait DbRequestSharedMethods : IEventTarget {
             } else if (@{self.as_ref()}.source instanceof DbCursor) {
                 return 2;
             } else {
-                return 3;
+                panic!()
             }
         }.try_into().unwrap();
         match t {
             0 => DbRequestSource::Store(js!(return @{self.as_ref()}.source;).try_into().unwrap()),
             1 => DbRequestSource::Index(js!(return @{self.as_ref()}.source;).try_into().unwrap()),
             2 => DbRequestSource::Cursor(js!(return @{self.as_ref()}.source;).try_into().unwrap()),
-            3 => DbRequestSource::None,
             _ => panic!()
         }
     }
