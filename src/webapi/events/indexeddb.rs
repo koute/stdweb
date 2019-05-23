@@ -31,7 +31,6 @@ impl ConcreteEvent for DbVersionChangeEvent {
 }
 
 impl DbVersionChangeEvent  {
-    // readonly attribute unsigned long long oldVersion;
     /// Returns the previous version of the database.
     pub fn old_version( &self ) -> u64 {
         js! (
@@ -39,7 +38,6 @@ impl DbVersionChangeEvent  {
         ).try_into().unwrap()
     }
     
-    // readonly attribute unsigned long long? newVersion;
     /// Returns the new version of the database, or null if the database is being deleted.
     pub fn new_version( &self ) -> Option<u64> {
         js! (
