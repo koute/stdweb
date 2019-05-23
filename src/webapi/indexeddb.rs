@@ -145,6 +145,7 @@ impl IDBOpenDBRequest {
 /// implements the interface is `window.indexedDB`. 
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBFactory)
+// https://w3c.github.io/IndexedDB/#idbfactory
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "IDBFactory")]
 pub struct IDBFactory( Reference );
