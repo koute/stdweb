@@ -140,7 +140,9 @@ impl IDBOpenDBRequest {
     }
 }
 
-/// The `IDBFactory` interface of the IndexedDB API lets applications asynchronously access the indexed databases. The object that implements the interface is `window.indexedDB`. 
+/// The `IDBFactory` interface of the IndexedDB API lets applications
+/// asynchronously access the indexed databases. The object that
+/// implements the interface is `window.indexedDB`. 
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBFactory)
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
