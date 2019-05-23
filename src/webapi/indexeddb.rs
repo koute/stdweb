@@ -49,7 +49,7 @@ pub trait IDBRequestSharedMethods : IEventTarget {
     /// Returns the source of the request.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBRequest/source)
-    fn source( &self ) -> IDBRequestSource {
+    fn source( &self ) -> Option<IDBRequestSource> {
         let t: i32 = js!{
             if (@{self.as_ref()}.source instanceof IDBObjectStore) {
                 return 0;
@@ -62,10 +62,10 @@ pub trait IDBRequestSharedMethods : IEventTarget {
             }
         }.try_into().unwrap();
         match t {
-            0 => IDBRequestSource::Store(js!(return @{self.as_ref()}.source;).try_into().unwrap()),
-            1 => IDBRequestSource::Index(js!(return @{self.as_ref()}.source;).try_into().unwrap()),
-            2 => IDBRequestSource::Cursor(js!(return @{self.as_ref()}.source;).try_into().unwrap()),
-            _ => panic!()
+            0 => Some(IDBRequestSource::Store(js!(return @{self.as_ref()}.source;).try_into().unwrap())),
+            1 => Some(IDBRequestSource::Index(js!(return @{self.as_ref()}.source;).try_into().unwrap())),
+            2 => Some(IDBRequestSource::Cursor(js!(return @{self.as_ref()}.source;).try_into().unwrap())),
+            _ => None
         }
     }
     
