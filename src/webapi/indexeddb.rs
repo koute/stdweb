@@ -154,21 +154,21 @@ impl IDBFactory {
 
     /// Requests opening a connection to a database.
     ///
-    /// version can be None.
-    ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBFactory/open)
-    pub fn open<T: Into<Option<u32>>>( &self, name: &str, version: T) -> IDBOpenDBRequest {
-        match version.into() {
-            None => js! (
-                return @{self.as_ref()}.open(@{name});
-            ).try_into().unwrap(),
-            Some(version) => js! (
-                return @{self.as_ref()}.open(@{name}, @{version});
-            ).try_into().unwrap()
-        }
+    pub fn open( &self, name: &str) -> IDBOpenDBRequest {
+        js! (
+            return @{self.as_ref()}.open(@{name});
+         ).try_into().unwrap()
     }
 
-    
+    /// Requests opening a connection to a database with a schema version.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBFactory/open)
+    pub fn open_with_version( &self, name: &str, version: u32) -> IDBOpenDBRequest {
+        js! (
+            return @{self.as_ref()}.open(@{name}, @{version});
+        ).try_into().unwrap()
+    }
 
     /// Requests the deletion of a database.
     ///

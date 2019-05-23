@@ -164,7 +164,7 @@ fn main() {
     
     // Open our database; it is created if it doesn't already exist
     // (see onupgradeneeded below)
-    let request = window().indexed_db().open("notes", 1);
+    let request = window().indexed_db().open_with_version("notes", 1);
 
     // onerror handler signifies that the database didn't open successfully
     request.add_event_listener( | _e: IDBErrorEvent| {
