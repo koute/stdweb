@@ -8,7 +8,7 @@ use webapi::history::History;
 use webapi::selection::Selection;
 use webcore::once::Once;
 use webcore::value::Value;
-use webapi::indexeddb::IDBFactory;
+use webapi::indexeddb::DbFactory;
 
 
 /// A handle to a pending animation frame request.
@@ -136,7 +136,7 @@ impl Window {
     }
 
     /// This is a method
-    pub fn indexed_db( &self ) -> IDBFactory {
+    pub fn indexed_db( &self ) -> DbFactory {
         js! (
             return window.indexedDB;
         ).try_into().unwrap()

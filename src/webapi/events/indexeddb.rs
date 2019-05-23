@@ -4,17 +4,17 @@ use webcore::try_from::TryInto;
 //use webapi::event_target::{IEventTarget, EventTarget};
 //use webapi::node::{INode, Node};
 
-/// The `IDBSuccessEvent` handler is fired when a and Indexed DB request succeed.
+/// The `DbSuccessEvent` handler is fired when a and Indexed DB request succeed.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/Events/success)
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Event")]
 #[reference(subclass_of(Event))]
-pub struct IDBSuccessEvent( Reference );
+pub struct DbSuccessEvent( Reference );
 
-impl IEvent for IDBSuccessEvent {}
+impl IEvent for DbSuccessEvent {}
 
-impl ConcreteEvent for IDBSuccessEvent {
+impl ConcreteEvent for DbSuccessEvent {
     const EVENT_TYPE: &'static str = "success";
 }
 
@@ -24,15 +24,15 @@ impl ConcreteEvent for IDBSuccessEvent {
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Event")]
 #[reference(subclass_of(Event))]
-pub struct IDBVersionChangeEvent( Reference );
+pub struct DbVersionChangeEvent( Reference );
 
-impl IEvent for IDBVersionChangeEvent {}
+impl IEvent for DbVersionChangeEvent {}
 
-impl ConcreteEvent for IDBVersionChangeEvent {
+impl ConcreteEvent for DbVersionChangeEvent {
     const EVENT_TYPE: &'static str = "upgradeneeded";
 }
 
-impl IDBVersionChangeEvent  {
+impl DbVersionChangeEvent  {
     // readonly attribute unsigned long long oldVersion;
     /// Returns the previous version of the database.
     pub fn old_version( &self ) -> u64 {
@@ -55,11 +55,11 @@ impl IDBVersionChangeEvent  {
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Event")]
 #[reference(subclass_of(Event))]
-pub struct IDBCompleteEvent( Reference );
+pub struct DbCompleteEvent( Reference );
 
-impl IEvent for IDBCompleteEvent {}
+impl IEvent for DbCompleteEvent {}
 
-impl ConcreteEvent for IDBCompleteEvent {
+impl ConcreteEvent for DbCompleteEvent {
     const EVENT_TYPE: &'static str = "complete";
 }
 
@@ -67,10 +67,10 @@ impl ConcreteEvent for IDBCompleteEvent {
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Event")]
 #[reference(subclass_of(Event))]
-pub struct IDBErrorEvent( Reference );
+pub struct DbErrorEvent( Reference );
 
-impl IEvent for IDBErrorEvent {}
+impl IEvent for DbErrorEvent {}
 
-impl ConcreteEvent for IDBErrorEvent {
+impl ConcreteEvent for DbErrorEvent {
     const EVENT_TYPE: &'static str = "error";
 }

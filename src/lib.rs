@@ -226,22 +226,22 @@ pub mod web {
     /// A module containing the IndexedDB API
     pub mod indexeddb {
         pub use webapi::indexeddb::{
-            IDBOpenDBRequest,
-            IDBDatabase,
-            IDBRequestSharedMethods,
-            IDBRequest,
-            IDBIndex,
-            IDBObjectStore,
-            IDBTransaction,
-            IDBTransactionMode,
-            IDBFactory,
-            IDBObjectStoreIndexSharedMethods,
-            IDBCursorDirection,
-            IDBRequestReadyState,
-            IDBCursorSharedMethods,
-            IDBCursor,
-            IDBCursorWithValue,
-            IDBAddError
+            DbOpenDBRequest,
+            DbDatabase,
+            DbRequestSharedMethods,
+            DbRequest,
+            DbIndex,
+            DbObjectStore,
+            DbTransaction,
+            DbTransactionMode,
+            DbFactory,
+            DbObjectStoreIndexSharedMethods,
+            DbCursorDirection,
+            DbRequestReadyState,
+            DbCursorSharedMethods,
+            DbCursor,
+            DbCursorWithValue,
+            DbAddError
         };
     }
 
@@ -444,10 +444,10 @@ pub mod web {
         };
 
         pub use webapi::events::indexeddb:: {
-            IDBSuccessEvent,
-            IDBVersionChangeEvent,
-            IDBCompleteEvent,
-            IDBErrorEvent
+            DbSuccessEvent,
+            DbVersionChangeEvent,
+            DbCompleteEvent,
+            DbErrorEvent
         };
 
         pub use webapi::events::gamepad::{
