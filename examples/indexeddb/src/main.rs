@@ -47,7 +47,6 @@ use stdweb::unstable::TryInto;
 
 #[derive(Serialize, Deserialize)]
 struct Note {
-    //id: u32,
     title: String,
     body: String
 }
@@ -71,7 +70,6 @@ fn display_data_inner(db: &IDBDatabase) {
         .add_event_listener( move |e: IDBSuccessEvent| {
             // Get a reference to the cursor
             let db_request: IDBRequest = e.target().unwrap().try_into().unwrap();
-            //let cursor: IDBCursorWithValue = db_request.result().try_into().unwrap();
             let maybe_cursor: Result<IDBCursorWithValue, stdweb::private::ConversionError> = db_request.result().unwrap().try_into();
             
             // If there is still another data item to iterate through, keep running this code
@@ -147,7 +145,6 @@ fn delete_item( e: ClickEvent ) {
             transaction.add_event_listener( move |_e: IDBCompleteEvent| {
                 // delete the parent of the button
                 // which is the list item, so it is no longer displayed
-                //let node: Node = e.target().unwrap().try_into().unwrap();
                 note.parent_node().unwrap().remove_child(&note).unwrap();
                 console!(log, "Note ", note_id,  "deleted.");
 
