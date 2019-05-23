@@ -47,7 +47,8 @@ impl DbVersionChangeEvent  {
     
 }
 
-///
+/// This event is fired when a transaction completes successfully.
+/// https://www.w3.org/TR/IndexedDB/#transaction
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Event")]
 #[reference(subclass_of(Event))]
@@ -59,7 +60,8 @@ impl ConcreteEvent for DbCompleteEvent {
     const EVENT_TYPE: &'static str = "complete";
 }
 
-///
+/// This event is fired when a transaction errors.
+/// https://www.w3.org/TR/IndexedDB/#transaction
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "Event")]
 #[reference(subclass_of(Event))]
