@@ -112,7 +112,7 @@ pub trait DbRequestSharedMethods : IEventTarget {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DbRequest)
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "DbRequest")]
+#[reference(instance_of = "IDBRequest")]
 #[reference(subclass_of(EventTarget))]
 pub struct DbRequest( Reference );
 
@@ -123,7 +123,7 @@ impl DbRequestSharedMethods for DbRequest {}
 /// Receives `DbBlockedEvent` and `DbVersionChangeEvent` as well as events received by `DbRequest`.
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DbOpenDBRequest)
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "DbOpenDBRequest")]
+#[reference(instance_of = "IDBOpenDBRequest")]
 #[reference(subclass_of(EventTarget))]
 pub struct DbOpenDBRequest( Reference );
 
@@ -145,7 +145,7 @@ impl DbOpenDBRequest {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DbFactory)
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "DbFactory")]
+#[reference(instance_of = "IDBFactory")]
 pub struct DbFactory( Reference );
 
 impl DbFactory {
@@ -421,7 +421,7 @@ pub trait DbCursorSharedMethods: AsRef< Reference >  {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DbCursor)
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "DbCursor")]
+#[reference(instance_of = "IDBCursor")]
 pub struct DbCursor( Reference );
 
 impl DbCursorSharedMethods for DbCursor {}
@@ -432,7 +432,7 @@ impl DbCursorSharedMethods for DbCursor {}
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DbCursorWithValue)
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "DbCursorWithValue")]
+#[reference(instance_of = "IDBCursorWithValue")]
 pub struct DbCursorWithValue( Reference );
 
 impl DbCursorSharedMethods for DbCursorWithValue {}
@@ -457,7 +457,7 @@ impl DbCursorWithValue {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DbKeyRange)
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "DbKeyRange")]
+#[reference(instance_of = "IDBKeyRange")]
 pub struct DbKeyRange( Reference );
 
 impl DbKeyRange {
@@ -749,7 +749,7 @@ pub trait DbObjectStoreIndexSharedMethods: AsRef< Reference > {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DbIndex)
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "DbIndex")]
+#[reference(instance_of = "IDBIndex")]
 pub struct DbIndex( Reference );
 
 impl DbObjectStoreIndexSharedMethods for DbIndex {}
@@ -799,7 +799,7 @@ error_enum_boilerplate! {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DbObjectStore)
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "DbObjectStore")]
+#[reference(instance_of = "IDBObjectStore")]
 pub struct DbObjectStore( Reference );
 
 impl DbObjectStoreIndexSharedMethods for DbObjectStore {}
@@ -968,7 +968,7 @@ error_enum_boilerplate! {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DbTransaction)
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "DbTransaction")]
+#[reference(instance_of = "IDBTransaction")]
 pub struct DbTransaction( Reference );
 
 impl IEventTarget for DbTransaction {}
@@ -1070,7 +1070,7 @@ error_enum_boilerplate! {
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DbDatabase)
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "DbDatabase")]
+#[reference(instance_of = "IDBDatabase")]
 pub struct DbDatabase( Reference );
 
 impl IEventTarget for DbDatabase {}
