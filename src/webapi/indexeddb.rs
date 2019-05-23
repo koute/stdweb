@@ -105,7 +105,7 @@ pub trait IDBRequestSharedMethods : IEventTarget {
     
 }
 
-/// The `IDBReques`t interface of the IndexedDB API provides access to results
+/// The `IDBRequest` interface of the IndexedDB API provides access to results
 /// of asynchronous requests to databases and database objects using event
 /// handlers. Events that are received are IDBSuccessEvent and IDBErrorEvent.
 ///
