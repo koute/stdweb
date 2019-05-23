@@ -28,6 +28,7 @@ pub enum IDBRequestSource {
 
 /// IDBRequestSharedMethode represents the methode that are shared between
 /// IDBOpenDBRequest and IDBRequest.
+// https://w3c.github.io/IndexedDB/#idbrequest
 pub trait IDBRequestSharedMethods : IEventTarget {
 
     /// The result read-only property of the `IDBRequest` interface returns the result of the request,
