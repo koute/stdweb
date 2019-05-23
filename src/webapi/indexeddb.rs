@@ -42,7 +42,7 @@ pub trait IDBRequestSharedMethods : IEventTarget {
     /// Returns the error in the event of an unsuccessful request.
     ///
     /// [(JavaScript docx)](https://developer.mozilla.org/en-US/docs/Web/API/IDBRequest/error)
-    fn error(&self) ->  Option<DomException> {
+    fn error(&self) -> Option<DomException> {
         return js!( @{self.as_ref()}.error;).try_into().unwrap()
     }
     
