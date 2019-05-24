@@ -910,11 +910,6 @@ impl IDBObjectStore {
     }
 }
 
-/* dictionary IDBIndexParameters {
-  boolean unique = false;
-  boolean multiEntry = false;
-};*/
-
 /// An IDBTransactionMode object defining the mode for isolating access to
 /// data in the current object stores.
 ///
