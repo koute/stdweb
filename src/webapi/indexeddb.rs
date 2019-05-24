@@ -646,17 +646,17 @@ pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
     /// object store.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBIndex/getAll)
-    fn get_all<Q: Into<IDBKeyOrKeyRange>, C: Into<Option<u32>>>( &self, query: Q, count: C) -> Result<IDBRequest, IDBQueryError> {
+    fn get_all<Q: Into<IDBKeyOrKeyRange>>( &self, query: Q, count: Option<u32>) -> Result<IDBRequest, IDBQueryError> {
         match query.into() {
             IDBKeyOrKeyRange::None => js_try! ( return @{self.as_ref()}.getAll(); ),
             IDBKeyOrKeyRange::Value(value) => {
-                match count.into() {
+                match count {
                     None => js_try! ( return @{self.as_ref()}.getAll(@{value.as_ref()}); ),
                     Some(count) => js_try! ( return @{self.as_ref()}.getAll(@{value.as_ref()}, @{count}); )
                 }
             },
             IDBKeyOrKeyRange::Range(range) => {
-                match count.into() {
+                match count {
                     None => js_try! ( return @{self.as_ref()}.getAll(@{range.as_ref()}); ),
                     Some(count) => js_try! ( return @{self.as_ref()}.getAll(@{range.as_ref()}, @{count}); )
                 }
