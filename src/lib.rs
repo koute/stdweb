@@ -254,6 +254,7 @@ pub mod web {
             IDBCursorSharedMethods,
             IDBCursor,
             IDBCursorWithValue,
+            IDBIndexParameters,
             IDBAddError
         };
     }

@@ -6,10 +6,7 @@ extern crate serde_derive;
 
 extern crate serde;
 
-use std::collections::HashMap;
 use std::cell::RefCell;
-
-use stdweb::Value;
 
 use stdweb::traits::*;
 use stdweb::web::{
@@ -40,6 +37,7 @@ use stdweb::web::indexeddb::{
     IDBObjectStoreIndexSharedMethods,
     IDBCursorWithValue,
     IDBCursorSharedMethods,
+    IDBIndexParameters,
     IDBTransactionMode
 };
 
@@ -198,13 +196,11 @@ fn main() {
         let object_store = db_.create_object_store("notes", true, "").unwrap();
         
         // Define what data items the object_store will contain
-        let mut title_options = HashMap::new();
-        title_options.insert("unique", false);
-        object_store.create_index("title", "title", Value::from(title_options));
+        let title_options = IDBIndexParameters { unique: false, multi_entry: false };
+        object_store.create_index("title", "title", title_options);
         
-        let mut body_options = HashMap::new();
-        body_options.insert("unique", false);
-        object_store.create_index("body", "body", Value::from(body_options));
+        let body_options = IDBIndexParameters { unique: false, multi_entry: false };
+        object_store.create_index("body", "body", body_options);
 
         js!(
             console.log("Database setup complete");

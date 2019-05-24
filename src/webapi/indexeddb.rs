@@ -803,6 +803,31 @@ pub struct IDBObjectStore( Reference );
 
 impl IDBObjectStoreIndexSharedMethods for IDBObjectStore {}
 
+/// Options for creating an index.
+// https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/createIndex
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct IDBIndexParameters {
+    /// If `true`, the index will not allow duplicate values for a single key.
+    pub unique: bool,
+    /// If `true`, the index will add an entry in the index for each array
+    /// element when the keyPath resolves to an Array. If `false`, it will
+    /// add one single entry containing the Array.
+    pub multi_entry: bool,
+}
+
+impl From<IDBIndexParameters> for Value {
+    fn from(options: IDBIndexParameters) -> Self {
+        let mut h = std::collections::HashMap::new();
+        h.insert("unique", options.unique);
+        h.insert("multiEntry", options.multi_entry);
+        h.try_into().unwrap()
+        /*js! ( return {
+            unique: @{options.unique},
+            multiEntry: @{options.multi_entry}
+        }).try_into().unwrap()*/
+    }
+}
+
 impl IDBObjectStore {
        
     /// The index_names read-only property of the `IDBObjectStore` interface returns a list of the
@@ -894,7 +919,8 @@ impl IDBObjectStore {
     /// transaction mode callback.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/createIndex)
-    pub fn create_index( &self, name: &str, key_path: &str, options: Value) -> IDBIndex { // TODO, how am I doing the optinal options?
+    pub fn create_index( &self, name: &str, key_path: &str, options: IDBIndexParameters) -> IDBIndex {
+        let options: Value = options.into();
         js! (
             return @{self.as_ref()}.createIndex(@{name}, @{key_path}, @{options.as_ref()});
         ).try_into().unwrap()
