@@ -440,9 +440,7 @@ impl IDBCursorWithValue {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursorWithValue/value)
     pub fn value( &self ) -> Value {
-        js! (
-            return @{self}.value
-            ).try_into().unwrap()
+        js!( return @{self}.value; ).try_into().unwrap()
     }
 }
 
