@@ -43,7 +43,7 @@ pub trait IDBRequestSharedMethods : IEventTarget {
     ///
     /// [(JavaScript docx)](https://developer.mozilla.org/en-US/docs/Web/API/IDBRequest/error)
     fn error(&self) -> Option<DomException> {
-        return js!( @{self.as_ref()}.error;).try_into().unwrap()
+        js!( return @{self.as_ref()}.error; ).try_into().unwrap()
     }
     
     /// Returns the source of the request.
