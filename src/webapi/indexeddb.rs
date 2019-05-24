@@ -745,6 +745,7 @@ pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
 /// Provides asynchronous access to an index in a database.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBIndex)
+// https://w3c.github.io/IndexedDB/#idbindex
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "IDBIndex")]
 pub struct IDBIndex( Reference );
@@ -795,6 +796,7 @@ error_enum_boilerplate! {
 /// The `IDBObjectStore` interface of the IndexedDB API represents an object store in a database
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore)
+// https://w3c.github.io/IndexedDB/#idbobjectstore
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "IDBObjectStore")]
 pub struct IDBObjectStore( Reference );
