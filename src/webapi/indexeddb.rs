@@ -810,7 +810,7 @@ impl IDBObjectStore {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/indexNames)
     pub fn index_names( &self ) -> DOMStringList {
-        js! ( return @{self}.indexNames ).try_into().unwrap()
+        js! ( return @{self}.indexNames; ).try_into().unwrap()
     }
     
     /// The `IDBTransaction` object to which this object store belongs.
