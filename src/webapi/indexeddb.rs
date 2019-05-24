@@ -224,7 +224,7 @@ fn string_to_cursor_direction( direction: &str) -> IDBCursorDirection {
     }
 }
 
-/// This enum is used to represent the vlaue of the soure property of
+/// This enum is used to represent the value of the soure property of
 /// a `IDBCursor`.
 #[derive(Debug)]
 pub enum IDBCursorSource {
