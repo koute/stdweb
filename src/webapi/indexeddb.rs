@@ -581,7 +581,7 @@ error_enum_boilerplate! {
          
 }
 
-/// This trait contains mothods that are Identicle in both IDBIndex IDBObjectStore
+/// This trait contains methods that are identical in both IDBIndex and IDBObjectStore
 pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
 
     /// Returns the name of this index or object store.
