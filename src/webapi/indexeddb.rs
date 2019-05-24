@@ -451,6 +451,7 @@ impl IDBCursorWithValue {
 /// values of a key in the value range A–Z.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange)
+// https://w3c.github.io/IndexedDB/#idbkeyrange
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "IDBKeyRange")]
 pub struct IDBKeyRange( Reference );
