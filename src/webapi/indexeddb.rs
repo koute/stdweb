@@ -273,9 +273,7 @@ error_enum_boilerplate! {
     DataCloneError
 }
 
-///
 error_enum_boilerplate! {
-    ///
     IDBAddError,
     /// This IDBCursor's transaction is inactive.
     TransactionInactiveError,
