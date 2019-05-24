@@ -57,7 +57,7 @@ thread_local!(static DB: RefCell<Option<IDBDatabase>> = RefCell::new(None));
 fn display_data_inner(db: &IDBDatabase) {
     let list = document().query_selector("ul").unwrap().unwrap();
     // Here we empty the contents of the list element each time the display is updated
-    // If you ddn't do this, you'd get duplicates listed each time a new note is added
+    // If you didn't do this, you'd get duplicates listed each time a new note is added
     while list.first_child().is_some() {
        list.remove_child(&list.first_child().unwrap()).unwrap();
     }
