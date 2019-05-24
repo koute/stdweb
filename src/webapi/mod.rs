@@ -46,6 +46,7 @@ pub mod selection;
 pub mod midi;
 pub mod slotable;
 pub mod shadow_root;
+pub mod form_data;
 
 #[cfg(feature = "futures-support")]
 pub mod timer_future;

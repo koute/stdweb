@@ -16,6 +16,9 @@ pub fn initialize() {
         INITIALIZED = true;
     }
 
+    #[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web)))]
+    ffi::initialize();
+
     #[cfg(not(feature = "docs-rs"))]
     stdweb_internal_runtime_initialize!( __js_raw_asm );
 

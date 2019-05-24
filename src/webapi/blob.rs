@@ -43,3 +43,15 @@ pub trait IBlob: ReferenceType {
 pub struct Blob( Reference );
 
 impl IBlob for Blob {}
+
+impl Blob {
+    /// Creates a new `Blob`.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Blob/Blob)
+    // https://w3c.github.io/FileAPI/#constructorBlob
+    pub fn new() -> Self {
+        js! (
+            return new Blob();
+        ).try_into().unwrap()
+    }
+}

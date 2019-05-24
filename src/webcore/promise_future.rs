@@ -1,11 +1,12 @@
 use std;
 use std::pin::Pin;
+use std::future::Future;
+use std::task::{Poll, Context};
 use webcore::value::{Value, ConversionError};
 use webcore::try_from::{TryInto, TryFrom};
 use webcore::executor;
 use webapi::error;
-use futures_core::{Future, TryFuture, Poll};
-use futures_core::task::LocalWaker;
+use futures_core::TryFuture;
 use futures_util::{FutureExt, TryFutureExt};
 use futures_channel::oneshot::Receiver;
 use webcore::discard::DiscardOnDrop;
@@ -13,12 +14,12 @@ use webcore::serialization::JsSerialize;
 use super::promise::{Promise, DoneHandle};
 
 
-/// Asynchronously runs the [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html)
+/// Asynchronously runs the [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.13/futures/future/trait.Future.html)
 /// on the current thread and then immediately returns. This does *not* block the current thread.
 ///
 /// This function should normally be called only once in `main`, it is usually not needed to call it multiple times. If you want to run
-/// multiple Futures in parallel you should use [`join`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/macro.join.html)
-/// or [`try_join`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/macro.try_join.html).
+/// multiple Futures in parallel you should use [`join`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.13/futures/macro.join.html)
+/// or [`try_join`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.13/futures/macro.try_join.html).
 ///
 /// ----
 ///
@@ -37,9 +38,9 @@ use super::promise::{Promise, DoneHandle};
 ///    ```
 ///
 ///    If you want to retrieve the return value of the Future, you can use the various asynchronous
-///    [`FutureExt`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.FutureExt.html)
-///    methods, such as [`map`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.FutureExt.html#method.map) or
-///    [`inspect`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.FutureExt.html#method.inspect):
+///    [`FutureExt`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.13/futures/future/trait.FutureExt.html)
+///    methods, such as [`map`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.13/futures/future/trait.FutureExt.html#method.map) or
+///    [`inspect`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.13/futures/future/trait.FutureExt.html#method.inspect):
 ///
 ///    ```rust
 ///    use stdweb::spawn_local;
@@ -60,10 +61,10 @@ use super::promise::{Promise, DoneHandle};
 ///    This is very common, because JavaScript Promises always return `Result` (because they might error).
 ///
 ///    In that case you can use the various asynchronous
-///    [`TryFutureExt`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.TryFutureExt.html)
-///    methods, such as [`map_ok`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.TryFutureExt.html#method.map_ok),
-///    [`map_err`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.TryFutureExt.html#method.map_err), or
-///    [`unwrap_or_else`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.TryFutureExt.html#method.unwrap_or_else):
+///    [`TryFutureExt`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.13/futures/future/trait.TryFutureExt.html)
+///    methods, such as [`map_ok`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.13/futures/future/trait.TryFutureExt.html#method.map_ok),
+///    [`map_err`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.13/futures/future/trait.TryFutureExt.html#method.map_err), or
+///    [`unwrap_or_else`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.13/futures/future/trait.TryFutureExt.html#method.unwrap_or_else):
 ///
 ///    ```rust
 ///    use stdweb::spawn_local;
@@ -97,7 +98,7 @@ use super::promise::{Promise, DoneHandle};
 ///    ```
 ///
 ///    If you don't need the return value from the Future, then it is even easier, since you don't need
-///    [`map_ok`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.TryFutureExt.html#method.map_ok):
+///    [`map_ok`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.13/futures/future/trait.TryFutureExt.html#method.map_ok):
 ///
 ///    ```rust
 ///    use stdweb::{spawn_local, unwrap_future};
@@ -131,15 +132,15 @@ pub fn print_error_panic< A: JsSerialize >( value: A ) -> ! {
 }
 
 /// Takes in an input
-/// [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html)
+/// [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.13/futures/future/trait.Future.html)
 /// (which returns `Result<A, B>`) and returns a new
-/// [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html)
+/// [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.13/futures/future/trait.Future.html)
 /// (which returns `A`).
 ///
 /// If `future` returns `Err(error)`, then it prints `error` to the console and then panics.
 ///
 /// Otherwise if `future` returns `Ok(value)` then the output
-/// [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html)
+/// [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.13/futures/future/trait.Future.html)
 /// returns `value`.
 ///
 /// See the documentation for [`spawn_local`](fn.spawn_local.html) for more details.
@@ -155,14 +156,14 @@ pub fn unwrap_future< F >( future: F ) -> impl Future< Output = F::Ok >
 
 
 /// Converts a JavaScript [`Promise`](struct.Promise.html) into a Rust
-/// [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.Future.html).
+/// [`Future`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.13/futures/future/trait.Future.html).
 ///
 /// The preferred way to create a `PromiseFuture` is to use [`value.try_into()`](unstable/trait.TryInto.html) on a
 /// JavaScript [`Value`](enum.Value.html).
 ///
 /// After creating a `PromiseFuture` you can use all of the
-/// [`FutureExt`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.FutureExt.html)
-/// and [`TryFutureExt`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.5/futures/future/trait.TryFutureExt.html)
+/// [`FutureExt`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.13/futures/future/trait.FutureExt.html)
+/// and [`TryFutureExt`](https://rust-lang-nursery.github.io/futures-api-docs/0.3.0-alpha.13/futures/future/trait.TryFutureExt.html)
 /// methods on it, and you can spawn it by using [`spawn_local`](fn.spawn_local.html).
 ///
 /// # Examples
@@ -189,9 +190,9 @@ impl< A, B > Future for PromiseFuture< A, B > {
     type Output = Result< A, B >;
 
     #[inline]
-    fn poll( mut self: Pin< &mut Self >, waker: &LocalWaker ) -> Poll< Self::Output > {
+    fn poll( mut self: Pin< &mut Self >, cx: &mut Context ) -> Poll< Self::Output > {
         // TODO maybe remove this unwrap ?
-        self.future.poll_unpin( waker ).map( |x| x.unwrap() )
+        self.future.poll_unpin( cx ).map( |x| x.unwrap() )
     }
 }
 

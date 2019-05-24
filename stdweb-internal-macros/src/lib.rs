@@ -85,3 +85,18 @@ pub fn emscripten_js_attr( _: proc_macro::TokenStream, input: proc_macro::TokenS
 pub fn emscripten_js_no_return_attr( _: proc_macro::TokenStream, input: proc_macro::TokenStream ) -> proc_macro::TokenStream {
     emit( macro_js::js_attr( Target::Emscripten, input.into(), true ) )
 }
+
+#[proc_macro_attribute]
+pub fn wasm_bindgen_js_raw_attr( _: proc_macro::TokenStream, input: proc_macro::TokenStream ) -> proc_macro::TokenStream {
+    emit( macro_js_raw::js_raw_attr( Target::WasmBindgen, input.into() ) )
+}
+
+#[proc_macro_attribute]
+pub fn wasm_bindgen_js_attr( _: proc_macro::TokenStream, input: proc_macro::TokenStream ) -> proc_macro::TokenStream {
+    emit( macro_js::js_attr( Target::WasmBindgen, input.into(), false ) )
+}
+
+#[proc_macro_attribute]
+pub fn wasm_bindgen_js_no_return_attr( _: proc_macro::TokenStream, input: proc_macro::TokenStream ) -> proc_macro::TokenStream {
+    emit( macro_js::js_attr( Target::WasmBindgen, input.into(), true ) )
+}

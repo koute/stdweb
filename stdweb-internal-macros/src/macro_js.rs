@@ -9,32 +9,40 @@ use js_stringify::StringifiedCode;
 use utils::{Target, dummy_idents};
 
 // TODO: Delete this once expression procedural macros are stable.
-pub fn js_attr( target: Target, input: TokenStream, no_return: bool ) -> Result< TokenStream > {
+pub fn js_attr( target: Target, input: TokenStream, outer_no_return: bool ) -> Result< TokenStream > {
     let wrapper: AttrHack< StringifiedCode > = syn::parse2( input )?;
     let wrapper_name = wrapper.fn_name;
     let snippet = wrapper.inner;
-    let mut arg_count = snippet.arg_count();
-    if !no_return {
-        arg_count += 1;
-    }
+    let inner_no_return = outer_no_return || snippet.code( 0 ).contains( "return" ) == false;
+    let inner_arg_count = snippet.arg_count() + if inner_no_return { 0 } else { 1 };
+    let outer_arg_count = snippet.arg_count() + if outer_no_return { 0 } else { 1 };
 
-    let initial_arg_index = if no_return { 0 } else { 1 };
+    let initial_arg_index = if inner_no_return { 0 } else { 1 };
     let mut code = snippet.code( initial_arg_index );
-    if !no_return {
+    if !inner_no_return {
         code = format!( "Module.STDWEB_PRIVATE.from_js($0, (function(){{{}}})());", code );
     }
 
     let mut prelude = String::new();
-    for nth in initial_arg_index..arg_count {
+    for nth in initial_arg_index..inner_arg_count {
         write!( prelude, "${} = Module.STDWEB_PRIVATE.to_js(${});", nth, nth ).unwrap();
     }
 
     code = format!( "{}{}", prelude, code );
 
-    let (shim_name, shim) = js_shim_extern_code( target, &code, arg_count );
+    let (shim_name, shim) = js_shim_extern_code( target, &code, inner_arg_count );
 
-    let prototype_args = dummy_idents( arg_count ).map( |name| quote! { #name: *const u8 } );
-    let call_args = dummy_idents( arg_count ).map( |name| quote! { #name } );
+    let arg_names: Vec< _ > = dummy_idents( outer_arg_count ).collect();
+    let prototype_args = arg_names.clone().into_iter().map( |name| quote! { #name: *const u8 } );
+
+    let call_args: Vec< _ >;
+    if inner_no_return && !outer_no_return {
+        call_args = arg_names.into_iter().skip( 1 ).collect();
+    } else {
+        call_args = arg_names.into_iter().collect();
+    }
+
+    let call_args = call_args.into_iter().map( |name| quote! { #name } );
     let output = quote! {
         fn #wrapper_name( #(#prototype_args),* ) -> i32 {
             #shim

@@ -1,6 +1,6 @@
 [package]
 name = "stdweb"
-version = "0.4.13"
+version = "0.4.17"
 authors = ["Jan Bujak <j@exia.io>"]
 repository = "https://github.com/koute/stdweb"
 homepage = "https://github.com/koute/stdweb"
@@ -17,18 +17,25 @@ build = "build.rs"
 discard = "1.0.3"
 serde = { version = "1", optional = true }
 serde_json = { version = "1", optional = true }
-futures-core-preview = { version = "0.3.0-alpha.7", optional = true }
-futures-channel-preview = { version = "0.3.0-alpha.7", optional = true }
-futures-util-preview = { version = "0.3.0-alpha.7", optional = true }
-futures-executor-preview = { version = "0.3.0-alpha.7", optional = true }
+futures-core-preview = { version = "0.3.0-alpha.15", optional = true }
+futures-channel-preview = { version = "0.3.0-alpha.15", optional = true }
+futures-util-preview = { version = "0.3.0-alpha.15", optional = true }
+futures-executor-preview = { version = "0.3.0-alpha.15", optional = true }
 
 stdweb-derive = { version = "= 0.5.1", path = "stdweb-derive" }
-stdweb-internal-macros = { version = "= 0.2.5", path = "stdweb-internal-macros" }
+stdweb-internal-macros = { version = "= 0.2.7", path = "stdweb-internal-macros" }
 stdweb-internal-runtime = { version = "0.1", path = "stdweb-internal-runtime" }
+
+[target.'cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web)))'.dependencies]
+wasm-bindgen = { version = "0.2" }
 
 [dev-dependencies]
 serde_json = "1"
 serde_derive = "1"
+
+[target.'cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web)))'.dev-dependencies]
+wasm-bindgen-test = "0.2"
+stdweb-internal-test-macro = { version = "0.1", path = "stdweb-internal-test-macro" }
 
 [build-dependencies]
 rustc_version = "0.2"

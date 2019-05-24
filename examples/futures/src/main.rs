@@ -1,9 +1,9 @@
-#![feature(async_await, await_macro, futures_api, pin)]
+#![feature(async_await, await_macro)]
 
 #[macro_use]
 extern crate stdweb;
 
-use futures::{join, try_join};
+use futures::future::{join, try_join};
 use stdweb::{PromiseFuture, spawn_local, unwrap_future};
 use stdweb::web::wait;
 use stdweb::web::error::Error;
@@ -35,23 +35,23 @@ async fn future_main() -> Result< (), Error > {
     await!( print( "There" ) );
 
     {
-        let a = print( "Test 1" );
-        let b = print( "Test 2" );
-
         // Runs multiple Futures in parallel
-        let ( a, b ) = join!( a, b );
+        let ( a, b ) = await!( join(
+            print( "Test 1" ),
+            print( "Test 2" ),
+        ) );
 
-        console!( log, "Done", a, b );
+        console!( log, "join", a, b );
     }
 
     {
-        let a = javascript_promise();
-        let b = javascript_promise();
-
         // Runs multiple Futures (which can error) in parallel
-        let ( a, b ) = try_join!( a, b )?;
+        let ( a, b ) = await!( try_join(
+            javascript_promise(),
+            javascript_promise(),
+        ) )?;
 
-        console!( log, a, b );
+        console!( log, "try_join", a, b );
     }
 
     Ok( () )

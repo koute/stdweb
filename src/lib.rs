@@ -116,7 +116,6 @@
 )]
 #![cfg_attr(rust_nightly, feature(core_intrinsics))]
 #![cfg_attr(feature = "nightly", feature(never_type))]
-#![cfg_attr(feature = "futures-support", feature(futures_api, pin, arbitrary_self_types))]
 #![recursion_limit="1500"]
 
 #[cfg(feature = "serde")]
@@ -129,6 +128,17 @@ extern crate serde_json;
 #[cfg(all(test, feature = "serde"))]
 #[macro_use]
 extern crate serde_derive;
+
+#[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web)))]
+extern crate wasm_bindgen;
+
+#[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web), test))]
+#[macro_use]
+extern crate wasm_bindgen_test;
+
+#[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web), test))]
+#[macro_use]
+extern crate stdweb_internal_test_macro;
 
 extern crate stdweb_internal_macros;
 
@@ -158,6 +168,9 @@ extern crate stdweb_derive;
 extern crate stdweb_internal_runtime;
 
 extern crate discard;
+
+#[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web), test))]
+wasm_bindgen_test_configure!( run_in_browser );
 
 #[macro_use]
 mod webcore;
@@ -279,6 +292,7 @@ pub mod web {
     pub use webapi::location::Location;
     pub use webapi::array_buffer::ArrayBuffer;
     pub use webapi::typed_array::TypedArray;
+    pub use webapi::file::File;
     pub use webapi::file_reader::{FileReader, FileReaderResult, FileReaderReadyState};
     pub use webapi::file_list::FileList;
     pub use webapi::history::History;
@@ -294,6 +308,7 @@ pub mod web {
     pub use webapi::selection::Selection;
     pub use webapi::shadow_root::{ShadowRootMode, ShadowRoot};
     pub use webapi::html_elements::SlotContentKind;
+    pub use webapi::form_data::{FormData, FormDataEntry};
 
     /// A module containing error types.
     pub mod error {
@@ -360,7 +375,8 @@ pub mod web {
             MouseLeaveEvent,
             MouseWheelEvent,
             MouseWheelDeltaMode,
-            MouseButton
+            MouseButton,
+            MouseButtonsState
         };
 
         pub use webapi::events::touch::{
@@ -551,6 +567,12 @@ pub mod traits {
 
 #[doc(hidden)]
 pub mod private {
+    #[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web)))]
+    pub extern crate wasm_bindgen;
+
+    #[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web)))]
+    pub use webcore::ffi::get_module;
+
     pub use webcore::ffi::exports::*;
     pub use webcore::serialization::{
         JsSerialize,
@@ -572,12 +594,19 @@ pub mod private {
     pub use webcore::global_arena::ArenaRestorePoint;
     pub use webcore::global_arena::serialize_value;
 
-    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+    #[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", cargo_web))]
     pub use stdweb_internal_macros::wasm32_unknown_unknown_js_attr as js_attr;
-    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+    #[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", cargo_web))]
     pub use stdweb_internal_macros::wasm32_unknown_unknown_js_no_return_attr as js_no_return_attr;
-    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+    #[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", cargo_web))]
     pub use stdweb_internal_macros::wasm32_unknown_unknown_js_raw_attr as js_raw_attr;
+
+    #[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web)))]
+    pub use stdweb_internal_macros::wasm_bindgen_js_attr as js_attr;
+    #[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web)))]
+    pub use stdweb_internal_macros::wasm_bindgen_js_no_return_attr as js_no_return_attr;
+    #[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web)))]
+    pub use stdweb_internal_macros::wasm_bindgen_js_raw_attr as js_raw_attr;
 
     #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
     pub use stdweb_internal_macros::emscripten_js_attr as js_attr;

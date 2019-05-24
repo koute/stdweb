@@ -15,6 +15,8 @@ custom:
     script:
       - nvm install 9
       - ./ci/install_cargo_web.sh
+      - ./ci/install_wasm_bindgen.sh
+      - ./ci/install_wasm_pack.sh
       - ./ci/run_tests.sh
 
 jobs:
@@ -30,5 +32,5 @@ jobs:
       rust: beta
     - <<: *test
       os: linux
-      rust: 1.30.1
+      rust: 1.33.0
       env: SKIP_RUNTIME_COMPATIBILITY_CHECK=1

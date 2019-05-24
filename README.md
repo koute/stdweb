@@ -20,13 +20,12 @@ a high degree of interoperability between Rust and JavaScript.
 
 This software was brought to you thanks to these wonderful people:
   * Embark Studios
+  * Joe Narvaez
   * Eduard Knyshov
   * Anselm Eickhoff
-  * Ferran Pujol Camins
-  * Isaac F Leonard
   * Johan Andersson
-  * Martin Kavík
   * Stephen Sugden
+  * is8ac
 
 Thank you!
 
@@ -160,6 +159,8 @@ Take a look at some of the examples:
   * `examples/hasher-parcel` - shows how to import and call exported Rust functions in a [Parcel] project
   * [`pinky-web`] - an NES emulator; you can play with the [precompiled version here](http://koute.github.io/pinky-web/)
 
+[The API documentation](https://docs.rs/stdweb/*/stdweb/) is also available for you to look at.
+
 [alert]: https://developer.mozilla.org/en-US/docs/Web/API/Window/alert
 [TodoMVC]: http://todomvc.com/
 [`pinky-web`]: https://github.com/koute/pinky/tree/master/pinky-web
@@ -195,6 +196,28 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
 [WebAssembly]: https://en.wikipedia.org/wiki/WebAssembly
 
 ## Changelog
+   * `stdweb 0.4.17`
+      * The unstable `futures`-related APIs were updated to work with the latest nightlies
+   * `stdweb 0.4.16`
+      * Initial `wasm-bindgen` compatibility; you can now use `stdweb` in projects
+        using `wasm-bindgen`
+      * Minimum supported Rust version is now 1.33.0
+      * Minimum required `cargo-web` version is now 0.6.24
+   * `stdweb 0.4.15`
+      * The unstable `futures`-related APIs were updated to work with the latest nightlies
+      * New types:
+         * `FormData`
+         * `FormDataEntry`
+         * `MouseButtonsState`
+      * New methods:
+         * `Blob::new`
+   * `stdweb 0.4.14`
+      * The `js!` macro now generates slightly more efficient code
+        if you're not returning anything from your JS snippet. This makes
+        it unnecessary to add the `@(no_return)` annotation in the vast
+        majority of cases.
+      * New types:
+         * `File`
    * `stdweb 0.4.13`
       * Fixed the procedural `js!` macro's whitespace handling
       * New types:

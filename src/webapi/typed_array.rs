@@ -23,7 +23,7 @@ macro_rules! arraykind {
                 let slice_ptr = (slice.as_ptr() as usize / size_of::<$element_type>()) as i32;
                 let raw = __js_raw_asm!(
                     concat!(
-                        "return Module.STDWEB_PRIVATE.acquire_rust_reference( ",
+                        "return Module.STDWEB_PRIVATE.acquire_rust_reference( Module.",
                         stringify!($heap_type),
                         ".slice( $0, $1 ) );"
                     ),
@@ -61,7 +61,7 @@ macro_rules! arraykind {
                 js!( @(no_return)
                     var array = @{array};
                     var pointer = @{vec_ptr};
-                    $heap_type.set( array, pointer );
+                    Module.$heap_type.set( array, pointer );
                 );
 
                 unsafe {
