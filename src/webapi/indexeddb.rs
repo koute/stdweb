@@ -849,8 +849,8 @@ impl IDBObjectStore {
     /// Returns an `IDBRequest` object, and, in a separate thread, creates a structured clone of the value, and stores the cloned value in the object store. This is for adding new records to an object store.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/add)
-    pub fn add<T: Into<Option<Value>>>( &self, value: Value, key: T) -> Result<IDBRequest, IDBAddError> {
-        match key.into() {
+    pub fn add( &self, value: Value, key: Option<Value>) -> Result<IDBRequest, IDBAddError> {
+        match key {
             None => js_try! (
                 return @{self.as_ref()}.add(@{value.as_ref()});
             ),
