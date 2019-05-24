@@ -10,7 +10,6 @@ use webcore::once::Once;
 use webcore::value::Value;
 use webapi::indexeddb::IDBFactory;
 
-
 /// A handle to a pending animation frame request.
 #[derive(Debug)]
 pub struct RequestAnimationFrameHandle(Value);
