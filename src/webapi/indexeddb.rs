@@ -642,7 +642,7 @@ pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
         }.unwrap()
     }
     
-    /// The get_ll() method retrieves all objects that are inside the index or
+    /// The get_all() method retrieves all objects that are inside the index or
     /// object store.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBIndex/getAll)
