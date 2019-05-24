@@ -94,12 +94,10 @@ pub trait IDBRequestSharedMethods : IEventTarget {
             return @{self.as_ref()}.readyState;
         ).try_into().unwrap();
         
-        if ready_state.eq("pending") {
-            return IDBRequestReadyState::Pending;
-        } else if ready_state.eq("done") {
-            return IDBRequestReadyState::Done;
-        } else {
-            panic!("Got {} as an IDBRequestReadyState.", ready_state);
+        match ready_state.as_ref() {
+            "pending" => IDBRequestReadyState::Pending,
+            "done" => IDBRequestReadyState::Done,
+            _ => panic!("Got {} as an IDBRequestReadyState.", ready_state),
         }        
     }
     
