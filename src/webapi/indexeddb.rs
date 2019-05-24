@@ -317,9 +317,9 @@ pub trait IDBCursorSharedMethods: AsRef< Reference >  {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor/source)
     fn source( &self ) -> IDBCursorSource {
         if js!( return @{self.as_ref()}.source instanceof IDBObjectStore; ).try_into().unwrap() {
-            IDBCursorSource::Store(js!( return @{self.as_ref()}.source ).try_into().unwrap())
+            IDBCursorSource::Store(js!( return @{self.as_ref()}.source; ).try_into().unwrap())
         } else if js!( return @{self.as_ref()}.source instanceof IDBIndex;).try_into().unwrap() {
-            IDBCursorSource::Index(js!( return @{self.as_ref()}.source ).try_into().unwrap())
+            IDBCursorSource::Index(js!( return @{self.as_ref()}.source; ).try_into().unwrap())
         } else {
             panic!()
         }
