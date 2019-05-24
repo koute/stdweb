@@ -835,8 +835,8 @@ impl IDBObjectStore {
     /// The key is only needed if 
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/put)
-    pub fn put<T: Into<Option<Value>>>( &self, value: Value, key: T) -> Result<IDBRequest, IDBUpdateError> {
-        match key.into() {
+    pub fn put( &self, value: Value, key: Option<Value>) -> Result<IDBRequest, IDBUpdateError> {
+        match key {
             None => js_try! (
                 return @{self.as_ref()}.put(@{value.as_ref()});
             ),
