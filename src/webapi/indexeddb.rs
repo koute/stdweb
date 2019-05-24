@@ -416,6 +416,7 @@ pub trait IDBCursorSharedMethods: AsRef< Reference >  {
 /// traversing or iterating over multiple records in a database.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor)
+// https://w3c.github.io/IndexedDB/#idbcursor
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "IDBCursor")]
 pub struct IDBCursor( Reference );
