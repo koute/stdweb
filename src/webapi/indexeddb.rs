@@ -860,7 +860,7 @@ impl IDBObjectStore {
         }.unwrap()
     }
 
-    /// returns an `IDBRequest` object, and, in a separate thread, deletes the specified record or records.
+    /// Returns an `IDBRequest` object, and, in a separate thread, deletes the specified record or records.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/delete)
     pub fn delete( &self, query: Value) -> Result<IDBRequest, IDBObjectStoreDeleteError> {
