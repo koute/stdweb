@@ -430,6 +430,7 @@ impl IDBCursorSharedMethods for IDBCursor {}
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursorWithValue)
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "IDBCursorWithValue")]
+#[reference(subclass_of(IDBCursor))]
 pub struct IDBCursorWithValue( Reference );
 
 impl IDBCursorSharedMethods for IDBCursorWithValue {}
