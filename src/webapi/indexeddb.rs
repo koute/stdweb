@@ -193,7 +193,7 @@ impl IDBFactory {
 /// The IDBCursorDirection enum indicates the direction in which a cursor is traversing the data.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor/direction)
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum IDBCursorDirection {
     /// This direction causes the cursor to be opened at the start of the source.
     Next,
