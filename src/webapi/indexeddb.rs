@@ -805,7 +805,7 @@ impl IDBObjectStoreIndexSharedMethods for IDBObjectStore {}
 
 impl IDBObjectStore {
        
-    /// The index_names read-only property of the `IDBObjectStore` interface returns a list of th
+    /// The index_names read-only property of the `IDBObjectStore` interface returns a list of the
     /// names of indexes on objects in this object store.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/indexNames)
