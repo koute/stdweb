@@ -134,7 +134,7 @@ impl Window {
         RequestAnimationFrameHandle(values)
     }
 
-    /// This is a method
+    /// Returns the the IndexedDB factory.
     pub fn indexed_db( &self ) -> IDBFactory {
         js! (
             return window.indexedDB;
