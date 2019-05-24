@@ -821,10 +821,6 @@ impl From<IDBIndexParameters> for Value {
         h.insert("unique", options.unique);
         h.insert("multiEntry", options.multi_entry);
         h.try_into().unwrap()
-        /*js! ( return {
-            unique: @{options.unique},
-            multiEntry: @{options.multi_entry}
-        }).try_into().unwrap()*/
     }
 }
 
@@ -912,14 +908,24 @@ impl IDBObjectStore {
         ).unwrap()
     }
 
-    // [NewObject] IDBIndex createIndex(DOMString name, (DOMString or sequence<DOMString>) keyPath, optional IDBIndexParameters options);
     /// Creates and returns a new `IDBIndex` object in the connected database.
     ///
     /// Note that this method must be called only from a VersionChange
     /// transaction mode callback.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/createIndex)
-    pub fn create_index( &self, name: &str, key_path: &str, options: IDBIndexParameters) -> IDBIndex {
+    pub fn create_index( &self, name: &str, key_path: &str) -> IDBIndex {
+        let options = IDBIndexParameters { unique: false, multi_entry: false };
+        self.create_index_with_options(name, key_path, options)
+    }
+
+    /// Creates and returns a new `IDBIndex` object in the connected database.
+    ///
+    /// Note that this method must be called only from a VersionChange
+    /// transaction mode callback.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/createIndex)
+    pub fn create_index_with_options( &self, name: &str, key_path: &str, options: IDBIndexParameters) -> IDBIndex {
         let options: Value = options.into();
         js! (
             return @{self.as_ref()}.createIndex(@{name}, @{key_path}, @{options.as_ref()});

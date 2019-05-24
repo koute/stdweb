@@ -196,11 +196,10 @@ fn main() {
         let object_store = db_.create_object_store("notes", true, "").unwrap();
         
         // Define what data items the object_store will contain
-        let title_options = IDBIndexParameters { unique: false, multi_entry: false };
-        object_store.create_index("title", "title", title_options);
+        object_store.create_index("title", "title");
         
         let body_options = IDBIndexParameters { unique: false, multi_entry: false };
-        object_store.create_index("body", "body", body_options);
+        object_store.create_index_with_options("body", "body", body_options);
 
         js!(
             console.log("Database setup complete");
