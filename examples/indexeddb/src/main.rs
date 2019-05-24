@@ -34,7 +34,7 @@ use stdweb::web::indexeddb::{
     IDBDatabase,
     IDBRequest,
     IDBRequestSharedMethods,
-    IDBObjectStoreIndexSharedMethods,
+    DatabaseStorage,
     IDBCursorWithValue,
     IDBCursorSharedMethods,
     IDBIndexParameters,

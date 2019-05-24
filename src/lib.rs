@@ -248,7 +248,7 @@ pub mod web {
             IDBTransaction,
             IDBTransactionMode,
             IDBFactory,
-            IDBObjectStoreIndexSharedMethods,
+            DatabaseStorage,
             IDBCursorDirection,
             IDBRequestReadyState,
             IDBCursorSharedMethods,

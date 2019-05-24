@@ -583,7 +583,7 @@ error_enum_boilerplate! {
 }
 
 /// This trait contains methods that are identical in both IDBIndex and IDBObjectStore
-pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
+pub trait DatabaseStorage: AsRef< Reference > {
 
     /// Returns the name of this index or object store.
     ///
@@ -750,7 +750,7 @@ pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
 #[reference(instance_of = "IDBIndex")]
 pub struct IDBIndex( Reference );
 
-impl IDBObjectStoreIndexSharedMethods for IDBIndex {}
+impl DatabaseStorage for IDBIndex {}
 
 impl IDBIndex {
     
@@ -801,7 +801,7 @@ error_enum_boilerplate! {
 #[reference(instance_of = "IDBObjectStore")]
 pub struct IDBObjectStore( Reference );
 
-impl IDBObjectStoreIndexSharedMethods for IDBObjectStore {}
+impl DatabaseStorage for IDBObjectStore {}
 
 /// Options for creating an index.
 // https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/createIndex
