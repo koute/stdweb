@@ -215,16 +215,12 @@ fn cursor_direction_to_string( direction: IDBCursorDirection) -> String {
 }
 
 fn string_to_cursor_direction( direction: &str) -> IDBCursorDirection {
-    if direction.eq("next") {
-        return IDBCursorDirection::Next;
-    } else if direction.eq("nextunique") {
-        return IDBCursorDirection::NextUnique;
-    } else if direction.eq("prev") {
-        return IDBCursorDirection::Prev;
-    } else if direction.eq("prevunique") {
-        return IDBCursorDirection::PrevUnique;
-    } else {
-        unreachable!("Unknown index direction \"{}\".", direction);
+    match direction {
+        "next" => IDBCursorDirection::Next,
+        "nextunique" => IDBCursorDirection::NextUnique,
+        "prev" => IDBCursorDirection::Prev,
+        "prevunique" => IDBCursorDirection::PrevUnique,
+        _ => unreachable!("Unknown index direction \"{}\".", direction),
     }
 }
 
