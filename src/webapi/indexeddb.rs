@@ -711,11 +711,11 @@ pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
     /// thread, creates a cursor over the specified key range.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBIndex/openCursor)
-    fn open_cursor<Q: Into<Option<IDBKeyRange>>, D: Into<Option<IDBCursorDirection>>>( &self, range: Q, direction: D) -> Result<IDBRequest, IDBQueryError> {
+    fn open_cursor<Q: Into<Option<IDBKeyRange>>>( &self, range: Q, direction: Option<IDBCursorDirection>) -> Result<IDBRequest, IDBQueryError> {
         match range.into() {
             None => js_try! ( return @{self.as_ref()}.openCursor(); ),
             Some(range) => {
-                match direction.into() {
+                match direction {
                     None => js_try! ( return @{self.as_ref()}.openCursor(@{range.as_ref()}); ),
                     Some(direction) => js_try! ( return @{self.as_ref()}.openCursor(@{range.as_ref()}, @{cursor_direction_to_string(direction)}); )
                 }
@@ -728,7 +728,7 @@ pub trait IDBObjectStoreIndexSharedMethods: AsRef< Reference > {
     /// by this index.
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/IDBIndex/openKeyCursor)
-    fn open_key_cursor<Q: Into<Option<IDBKeyRange>>, D: Into<Option<IDBCursorDirection>>>( &self, range: Q, direction: D) -> Result<IDBRequest, IDBQueryError> {
+    fn open_key_cursor<Q: Into<Option<IDBKeyRange>>>(&self, range: Q, direction: Option<IDBCursorDirection>) -> Result<IDBRequest, IDBQueryError> {
         match range.into() {
             None => js_try! ( return @{self.as_ref()}.openKeyCursor(); ),
             Some(range) => {
