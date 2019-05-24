@@ -273,9 +273,8 @@ error_enum_boilerplate! {
     DataCloneError
 }
 
-///
 error_enum_boilerplate! {
-    ///
+    /// Errors thrown when adding to the database.
     IDBAddError,
     /// This IDBCursor's transaction is inactive.
     TransactionInactiveError,
