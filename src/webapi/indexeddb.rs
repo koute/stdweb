@@ -937,14 +937,11 @@ fn transaction_mode_to_string( mode: IDBTransactionMode ) -> String {
 }
 
 fn string_to_transaction_mode( mode: &str ) -> IDBTransactionMode {
-    if mode.eq("readonly") {
-        return IDBTransactionMode::ReadOnly;
-    } else if mode.eq("readwrite") {
-        return IDBTransactionMode::ReadWrite;
-    } else if mode.eq("versionchange") {
-        return IDBTransactionMode::VersionChange;
-    } else {
-        unreachable!("Unknown transaction mode \"{}\".", mode);
+    match mode {
+        "readonly" => IDBTransactionMode::ReadOnly,
+        "readwrite" => IDBTransactionMode::ReadWrite,
+        "versionchange" => IDBTransactionMode::VersionChange,
+        _ => unreachable!("Unknown transaction mode \"{}\".", mode),
     }
 }
 
