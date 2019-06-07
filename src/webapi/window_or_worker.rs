@@ -1,4 +1,6 @@
+use webcore::value::Reference;
 use webcore::reference_type::ReferenceType;
+use webcore::try_from::TryInto;
 
 extern fn funcall_adapter< F: FnOnce() >( callback: *mut F ) {
     let callback = unsafe {
@@ -35,8 +37,8 @@ pub trait IWindowOrWorker: ReferenceType {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout)
     // https://html.spec.whatwg.org/#windoworworkerglobalscope-mixin:dom-settimeout
     fn set_clearable_timeout< F: FnOnce() + 'static >( &self, callback: F, timeout: u32 ) -> TimeoutHandle {
-        let callback = Box::into_raw( Box::new( callback ) );
-        let callback_reference: Reference = js! ( return @{Mut(callback)}; ).try_into().unwrap();
+        //let callback = Box::into_raw( Box::new( callback ) );
+        let callback_reference: Reference = js! ( return @{callback}; ).try_into().unwrap();
         let id = js! {
             setTimeout(@{callback_reference}, @{timeout});
         }.try_into().unwrap();
