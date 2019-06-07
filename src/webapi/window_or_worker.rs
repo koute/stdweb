@@ -36,17 +36,15 @@ pub trait IWindowOrWorker: ReferenceType {
     // https://html.spec.whatwg.org/#windoworworkerglobalscope-mixin:dom-settimeout
     fn set_clearable_timeout< F: FnOnce() + 'static >( &self, callback: F, timeout: u32 ) -> TimeoutHandle {
         let callback = Box::into_raw( Box::new( callback ) );
-        let id = __js_raw_asm!( "\
-            return Module.STDWEB_PRIVATE.acquire_js_reference( $0 ).setTimeout( function() {\
-                Module.STDWEB_PRIVATE.dyncall( 'vi', $1, [$2] );\
-            }, $3 );\
-        ", self.as_ref().as_raw(), funcall_adapter::< F > as extern fn( *mut F ), callback, timeout );
-
-        TimeoutHandle(id)
+        let callback_reference: Reference = js! ( return @{Mut(callback)}; ).try_into().unwrap();
+        let id = js! {
+            setTimeout(@{callback_reference}, @{timeout});
+        }.try_into().unwrap();
+        TimeoutHandle(callback_reference, id)
     }
 }
 
-pub struct TimeoutHandle(i32);
+pub struct TimeoutHandle(Reference, i32);
 
 impl TimeoutHandle {
     /// Clears a timer previously established by set_clearable_timeout
@@ -54,8 +52,9 @@ impl TimeoutHandle {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/clearTimeout)
     // https://html.spec.whatwg.org/#windoworworkerglobalscope-mixin:dom-clear-timeout
      pub fn clear( & self ) {
-        js! {
-            clearTimeout(@{id});
+        js! { @(no_return)
+            clearTimeout(@{self.1});
+            @{&self.0}.drop();
         }
     }
 }
