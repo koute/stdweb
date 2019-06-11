@@ -1,4 +1,5 @@
-use webcore::value::Reference;
+use webcore::object::Object;
+use webcore::once::Once;
 use webcore::reference_type::ReferenceType;
 use webcore::try_from::TryInto;
 
@@ -37,16 +38,18 @@ pub trait IWindowOrWorker: ReferenceType {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout)
     // https://html.spec.whatwg.org/#windoworworkerglobalscope-mixin:dom-settimeout
     fn set_clearable_timeout< F: FnOnce() + 'static >( &self, callback: F, timeout: u32 ) -> TimeoutHandle {
-        //let callback = Box::into_raw( Box::new( callback ) );
-        let callback_reference: Reference = js! ( return @{callback}; ).try_into().unwrap();
-        let id = js! {
-            setTimeout(@{callback_reference}, @{timeout});
-        }.try_into().unwrap();
-        TimeoutHandle(callback_reference, id)
+        TimeoutHandle(js! (
+            const callback = @{Once(callback)};
+            return {
+                id: setTimeout(callback, @{timeout}),
+                callback
+            };
+        ).try_into().unwrap())
     }
 }
 
-pub struct TimeoutHandle(Reference, i32);
+#[derive(Debug)]
+pub struct TimeoutHandle(Object);
 
 impl TimeoutHandle {
     /// Clears a timer previously established by set_clearable_timeout
@@ -55,8 +58,8 @@ impl TimeoutHandle {
     // https://html.spec.whatwg.org/#windoworworkerglobalscope-mixin:dom-clear-timeout
      pub fn clear( & self ) {
         js! { @(no_return)
-            clearTimeout(@{self.1});
-            @{&self.0}.drop();
+            clearTimeout(@{&self.0}.id);
+            @{&self.0}.callback.drop();
         }
     }
 }
