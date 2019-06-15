@@ -49,6 +49,7 @@ pub trait IWindowOrWorker: ReferenceType {
 }
 
 #[derive(Debug)]
+/// A reference to a timeout object created by set_clearable_timeout
 pub struct TimeoutHandle(Object);
 
 impl TimeoutHandle {

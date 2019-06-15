@@ -284,6 +284,7 @@ pub mod web {
     pub use webapi::shadow_root::{ShadowRootMode, ShadowRoot};
     pub use webapi::html_elements::SlotContentKind;
     pub use webapi::form_data::{FormData, FormDataEntry};
+    pub use webapi::window_or_worker::TimeoutHandle;
 
     /// A module containing error types.
     pub mod error {
