@@ -37,7 +37,7 @@ macro_rules! __js_raw_asm {
         snippet( $($token as *const u8),* )
     }};
 
-    ($code:expr) => { __js_raw_asm!( $code, ) };
+    ($code:expr) => { $crate::__js_raw_asm!( $code, ) };
 }
 
 // Abandon all hope, ye who enter here!
@@ -58,7 +58,7 @@ macro_rules! _js_impl {
     };
 
     (@if $condition:tt in [$token:tt $($rest:tt)*] {$($true_case:tt)*} else {$($false_case:tt)*}) => {
-        _js_impl!( @if $condition in [$($rest)*] {$($true_case)*} else {$($false_case)*} );
+        $crate::_js_impl!( @if $condition in [$($rest)*] {$($true_case)*} else {$($false_case)*} );
     };
 
     (@serialize [] [$($names:tt)*]) => {};
@@ -68,7 +68,7 @@ macro_rules! _js_impl {
         let mut $name = Some( $name );
         let $name = $crate::private::JsSerializeOwned::into_js_owned( &mut $name );
         let $name = &$name as *const $crate::private::SerializedValue as *const _;
-        _js_impl!( @serialize [$($rest_args)*] [$($rest_names)*] );
+        $crate::_js_impl!( @serialize [$($rest_args)*] [$($rest_names)*] );
     };
 
     (@call [$($code:tt)*] [$($flags:tt)*] [$($args:tt)*] [$($arg_names:tt)*] [$($unused_arg_names:tt)*] ->) => {
@@ -82,11 +82,11 @@ macro_rules! _js_impl {
             }
 
             let restore_point = $crate::private::ArenaRestorePoint::new();
-            _js_impl!( @serialize [$($args)*] [$($arg_names)*] );
+            $crate::_js_impl!( @serialize [$($args)*] [$($arg_names)*] );
 
             #[allow(unused_unsafe, unused_parens)]
             let result = unsafe {
-                _js_impl!(
+                $crate::_js_impl!(
                     @if no_return in [$($flags)*] {{
                         #[$crate::private::js_no_return_attr]
                         fn snippet() {
@@ -116,23 +116,23 @@ macro_rules! _js_impl {
     };
 
     (@call [$($code:tt)*] [$($flags:tt)*] [$($args:tt)*] [$($arg_names:tt)*] [$($unused_arg_names:tt)*] -> { $($inner:tt)* } $($rest:tt)*) => {
-        _js_impl!( @call [$($code)*] [$($flags)*] [$($args)*] [$($arg_names)*] [$($unused_arg_names)*] -> $($inner)* $($rest)* );
+        $crate::_js_impl!( @call [$($code)*] [$($flags)*] [$($args)*] [$($arg_names)*] [$($unused_arg_names)*] -> $($inner)* $($rest)* );
     };
 
     (@call [$($code:tt)*] [$($flags:tt)*] [$($args:tt)*] [$($arg_names:tt)*] [$($unused_arg_names:tt)*] -> ( $($inner:tt)* ) $($rest:tt)*) => {
-        _js_impl!( @call [$($code)*] [$($flags)*] [$($args)*] [$($arg_names)*] [$($unused_arg_names)*] -> $($inner)* $($rest)* );
+        $crate::_js_impl!( @call [$($code)*] [$($flags)*] [$($args)*] [$($arg_names)*] [$($unused_arg_names)*] -> $($inner)* $($rest)* );
     };
 
     (@call [$($code:tt)*] [$($flags:tt)*] [$($args:tt)*] [$($arg_names:tt)*] [$($unused_arg_names:tt)*] -> [ $($inner:tt)* ] $($rest:tt)*) => {
-        _js_impl!( @call [$($code)*] [$($flags)*] [$($args)*] [$($arg_names)*] [$($unused_arg_names)*] -> $($inner)* $($rest)* );
+        $crate::_js_impl!( @call [$($code)*] [$($flags)*] [$($args)*] [$($arg_names)*] [$($unused_arg_names)*] -> $($inner)* $($rest)* );
     };
 
     (@call [$($code:tt)*] [$($flags:tt)*] [$($args:tt)*] [$($arg_names:tt)*] [$arg_name:tt $($unused_arg_names:tt)*] -> @{$arg:expr} $($rest:tt)*) => {
-        _js_impl!( @call [$($code)*] [$($flags)*] [$($args)* $arg] [$($arg_names)* $arg_name] [$($unused_arg_names)*] -> $($rest)* );
+        $crate::_js_impl!( @call [$($code)*] [$($flags)*] [$($args)* $arg] [$($arg_names)* $arg_name] [$($unused_arg_names)*] -> $($rest)* );
     };
 
     (@call [$($code:tt)*] [$($flags:tt)*] [$($args:tt)*] [$($arg_names:tt)*] [$($unused_arg_names:tt)*] -> $token:tt $($rest:tt)*) => {
-        _js_impl!( @call [$($code)*] [$($flags)*] [$($args)*] [$($arg_names)*] [$($unused_arg_names)*] -> $($rest)* );
+        $crate::_js_impl!( @call [$($code)*] [$($flags)*] [$($args)*] [$($arg_names)*] [$($unused_arg_names)*] -> $($rest)* );
     };
 }
 
@@ -181,7 +181,7 @@ macro_rules! _js_impl {
 #[macro_export]
 macro_rules! js {
     (@($($flags:tt),*) $($token:tt)*) => {
-        _js_impl!( @call [$($token)*] [$($flags)*] [] [] [a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15] -> $($token)* )
+        $crate::_js_impl!( @call [$($token)*] [$($flags)*] [] [] [a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15] -> $($token)* )
     };
 
     ($($token:tt)*) => {
@@ -240,7 +240,7 @@ macro_rules! error_boilerplate {
         impl ::InstanceOf for $type_name {
             #[inline]
             fn instance_of( reference: &Reference ) -> bool {
-                __js_raw_asm!(
+                $crate::__js_raw_asm!(
                     concat!(
                         "var r = Module.STDWEB_PRIVATE.acquire_js_reference( $0 );",
                         "return (r instanceof DOMException) && (r.name === \"", $error_name, "\");"
@@ -259,7 +259,7 @@ macro_rules! instanceof {
         use $crate::unstable::TryInto;
         let reference: Option< &$crate::Reference > = (&$value).try_into().ok();
         reference.map( |reference| {
-            __js_raw_asm!(
+            $crate::__js_raw_asm!(
                 concat!( "return (Module.STDWEB_PRIVATE.acquire_js_reference( $0 ) instanceof ", stringify!( $kind ), ") | 0;" ),
                 reference.as_raw()
             ) == 1
