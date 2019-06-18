@@ -1160,15 +1160,15 @@ macro_rules! __js_deserializable_serde_boilerplate {
 #[macro_export]
 macro_rules! js_serializable {
     ($kind:tt) => {
-        __js_serializable_serde_boilerplate!( () ($kind) () );
+        $crate::__js_serializable_serde_boilerplate!( () ($kind) () );
     };
 
     (impl< $($impl_arg:tt),* > for $kind:ty where $($bounds:tt)*) => {
-        __js_serializable_serde_boilerplate!( ($($impl_arg),*) ($kind) ($($bounds)*) );
+        $crate::__js_serializable_serde_boilerplate!( ($($impl_arg),*) ($kind) ($($bounds)*) );
     };
 
     (impl< $($impl_arg:tt),* > for $kind:ty) => {
-        __js_serializable_serde_boilerplate!( ($($impl_arg),*) ($kind) () );
+        $crate::__js_serializable_serde_boilerplate!( ($($impl_arg),*) ($kind) () );
     };
 }
 
@@ -1206,15 +1206,15 @@ macro_rules! js_serializable {
 #[macro_export]
 macro_rules! js_deserializable {
     ($kind:tt) => {
-        __js_deserializable_serde_boilerplate!( () ($kind) () );
+        $crate::__js_deserializable_serde_boilerplate!( () ($kind) () );
     };
 
     (impl< $($impl_arg:tt),* > for $kind:ty where $($bounds:tt)*) => {
-        __js_deserializable_serde_boilerplate!( ($($impl_arg),*) ($kind) ($($bounds)*) );
+        $crate::__js_deserializable_serde_boilerplate!( ($($impl_arg),*) ($kind) ($($bounds)*) );
     };
 
     (impl< $($impl_arg:tt),* > for $kind:ty) => {
-        __js_deserializable_serde_boilerplate!( ($($impl_arg),*) ($kind) () );
+        $crate::__js_deserializable_serde_boilerplate!( ($($impl_arg),*) ($kind) () );
     };
 }
 

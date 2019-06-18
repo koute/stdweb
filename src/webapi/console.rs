@@ -2,14 +2,14 @@
 #[macro_export]
 macro_rules! __internal_console_unsafe {
     ( $name:ident ) => {{
-        js! { @(no_return)
+        $crate::js! { @(no_return)
             console.$name();
         }
         ()
     }};
 
     ( $name:ident, $( $args:expr ),* ) => {{
-        js! { @(no_return)
+        $crate::js! { @(no_return)
             console.$name( $( @{$args} ),* );
         }
         ()
@@ -70,6 +70,6 @@ macro_rules! __internal_console_unsafe {
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Console/error)
 #[macro_export]
 macro_rules! console {
-    ( log, $( $args:expr ),+ ) => { __internal_console_unsafe!( log, $( $args ),+ ) };
-    ( error, $( $args:expr ),+ ) => { __internal_console_unsafe!( error, $( $args ),+ ) };
+    ( log, $( $args:expr ),+ ) => { $crate::__internal_console_unsafe!( log, $( $args ),+ ) };
+    ( error, $( $args:expr ),+ ) => { $crate::__internal_console_unsafe!( error, $( $args ),+ ) };
 }
