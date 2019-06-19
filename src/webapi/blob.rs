@@ -31,6 +31,22 @@ pub trait IBlob: ReferenceType {
             Some( mime )
         }
     }
+
+    /// Create a new `Blob` object containing the data in the specified range of bytes of the
+    /// source `Blob`.
+    /// 
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Blob/slice)
+    /// https://w3c.github.io/FileAPI/#ref-for-dfn-slice
+    fn slice( &self, start: Option<u64>, end: Option<u64>, content_type: Option<&str> ) -> Blob {
+        let reference = self.as_ref();
+        js! (
+            return @{reference}.slice(
+                @{start.map(|val| val as f64)}, 
+                @{end.map(|val| val as f64)}, 
+                @{content_type}
+            );
+        ).try_into().unwrap()
+    }
 }
 
 /// A reference to a JavaScript object which implements the [IBlob](trait.IBlob.html)
