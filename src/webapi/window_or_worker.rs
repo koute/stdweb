@@ -1,7 +1,6 @@
-use webcore::object::Object;
 use webcore::once::Once;
+use webcore::value::Value;
 use webcore::reference_type::ReferenceType;
-use webcore::try_from::TryInto;
 
 extern fn funcall_adapter< F: FnOnce() >( callback: *mut F ) {
     let callback = unsafe {
@@ -44,23 +43,24 @@ pub trait IWindowOrWorker: ReferenceType {
                 id: setTimeout(callback, @{timeout}),
                 callback
             };
-        ).try_into().unwrap())
+        ))
     }
 }
 
 #[derive(Debug)]
 /// A reference to a timeout object created by set_clearable_timeout
-pub struct TimeoutHandle(Object);
+pub struct TimeoutHandle(Value);
 
 impl TimeoutHandle {
     /// Clears a timer previously established by set_clearable_timeout
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/clearTimeout)
     // https://html.spec.whatwg.org/#windoworworkerglobalscope-mixin:dom-clear-timeout
-     pub fn clear( & self ) {
+     pub fn clear( self ) {
         js! { @(no_return)
-            clearTimeout(@{&self.0}.id);
-            @{&self.0}.callback.drop();
+            var val = @{&self.0};
+            clearTimeout(val.id);
+            val.callback.drop();
         }
     }
 }
