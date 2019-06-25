@@ -210,6 +210,30 @@ pub struct Event( Reference );
 
 impl IEvent for Event {}
 
+/// The `BeforeUnload` event fires when the window is about to be unloaded (to close the page or
+/// follow a link). If the event propagation is cancelled, the browser will present the user with
+/// a confirmation dialog allowing them to stay on the page or continue.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event)
+// https://html.spec.whatwg.org/multipage/indices.html#event-beforeunload
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "BeforeUnloadEvent")]
+pub struct BeforeUnloadEvent( Reference );
+
+impl IEvent for BeforeUnloadEvent {}
+
+
+/// The `Unload` event fires when the window has been unloaded and is no longer visible. This event
+/// can't be cancelled.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Window/unload_event)
+// https://html.spec.whatwg.org/multipage/indices.html#event-unload
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "UnloadEvent")]
+pub struct UnloadEvent( Reference );
+
+impl IEvent for UnloadEvent {}
+
 /// The `IUiEvent` interface represents simple user interface events.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/UIEvent)
