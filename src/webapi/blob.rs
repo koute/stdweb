@@ -1,6 +1,9 @@
+use std::ops::{RangeBounds, Bound};
+
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
 use webcore::reference_type::ReferenceType;
+use webcore::number::Number;
 
 /// A blob object represents a file-like object of immutable, raw data.
 /// Blobs represent data that isn't necessarily in a JavaScript-native format.
@@ -35,16 +38,40 @@ pub trait IBlob: ReferenceType {
     /// Create a new `Blob` object containing the data in the specified range of bytes of the
     /// source `Blob`.
     /// 
+    /// See also [slice_with_content_type](IBlob::slice_with_content_type).
+    /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Blob/slice)
-    /// https://w3c.github.io/FileAPI/#ref-for-dfn-slice
-    fn slice( &self, start: Option<u64>, end: Option<u64>, content_type: Option<&str> ) -> Blob {
+    // https://w3c.github.io/FileAPI/#ref-for-dfn-slice
+    fn slice< T >( &self, range: T ) -> Blob
+        where T: RangeBounds<u64>
+    {
+        self._slice(range, None)
+    }
+
+    /// [slice](IBlob::slice) `Blob` with the provided `content_type`.
+    fn slice_with_content_type< T >( &self, range: T, content_type: &str ) -> Blob
+        where T: RangeBounds<u64>
+    {
+        self._slice(range, Some(content_type))
+    }
+
+    #[doc(hidden)]
+    fn _slice< T >( &self, range: T, content_type: Option<&str> ) -> Blob
+        where T: RangeBounds<u64>
+    {
+        let start: Option<Number> = match range.start_bound() {
+            Bound::Included(&n) => Some(n),
+            Bound::Excluded(&n) => Some(n + 1),
+            _ => None
+        }.try_into().unwrap();
+        let end: Option<Number> = match range.end_bound() {
+            Bound::Included(&n) => Some(n + 1),
+            Bound::Excluded(&n) => Some(n),
+            _ => None
+        }.try_into().unwrap();
         let reference = self.as_ref();
         js! (
-            return @{reference}.slice(
-                @{start.map(|val| val as f64)}, 
-                @{end.map(|val| val as f64)}, 
-                @{content_type}
-            );
+            return @{reference}.slice(@{start}, @{end}, @{content_type});
         ).try_into().unwrap()
     }
 }
