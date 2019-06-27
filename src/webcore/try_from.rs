@@ -27,3 +27,15 @@ impl< T, U > TryInto< U > for T where U: TryFrom< T > {
         U::try_from( self )
     }
 }
+
+impl< T, U > TryFrom< Option<T> > for Option<U>
+    where U: TryFrom < T >
+{
+    type Error = U::Error;
+    fn try_from( value: Option< T > ) -> Result< Option< U >, Self::Error > {
+        match value {
+            Some( value ) => Ok( Some( U::try_from( value )? ) ),
+            None => Ok( None )
+        }
+    }
+}
