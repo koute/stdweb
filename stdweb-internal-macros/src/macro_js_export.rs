@@ -138,7 +138,7 @@ fn process( exports: Vec< Export > ) -> proc_macro2::TokenStream {
                     let __result = ::stdweb::private::JsSerializeOwned::into_js_owned( &mut __result );
                     let __result = &__result as *const _;
                     __js_raw_asm!( "Module.STDWEB_PRIVATE.tmp = Module.STDWEB_PRIVATE.to_js( $0 );", __result );
-                    ::std::mem::drop( __arena_restore_point );
+                    std::mem::drop( __arena_restore_point );
                     let __result = ();
                 };
                 export_result_metadata = Some( TypeMetadata::Custom {
@@ -175,7 +175,7 @@ fn process( exports: Vec< Export > ) -> proc_macro2::TokenStream {
                             let pointer = #export_arg_ident as *mut ::stdweb::private::SerializedValue;
                             unsafe {
                                 let value = (&*pointer).deserialize();
-                                ::stdweb::private::__web_free( pointer as *mut u8, ::std::mem::size_of::< ::stdweb::private::SerializedValue >() );
+                                ::stdweb::private::__web_free( pointer as *mut u8, std::mem::size_of::< ::stdweb::private::SerializedValue >() );
                                 value
                             }
                         };

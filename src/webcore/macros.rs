@@ -95,7 +95,7 @@ macro_rules! _js_impl {
 
                         snippet( $($arg_names),* );
                     }} else {{
-                        let mut result: $crate::private::SerializedValue = ::std::default::Default::default();
+                        let mut result: $crate::private::SerializedValue = std::default::Default::default();
                         let result_ptr = &mut result as *mut $crate::private::SerializedValue as *mut _;
 
                         #[$crate::private::js_attr]
@@ -110,7 +110,7 @@ macro_rules! _js_impl {
                 )
             };
 
-            ::std::mem::drop( restore_point );
+            std::mem::drop( restore_point );
             result
         }
     };
@@ -223,13 +223,13 @@ macro_rules! __js_serializable_boilerplate {
 
 macro_rules! error_boilerplate {
     ($type_name:ident) => {
-        impl ::std::fmt::Display for $type_name {
-            fn fmt(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        impl std::fmt::Display for $type_name {
+            fn fmt(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
                 write!(formatter, "{}: {}", stringify!($type_name), self.message())
             }
         }
 
-        impl ::std::error::Error for $type_name {
+        impl std::error::Error for $type_name {
             fn description(&self) -> &str {
                 stringify!($type_name)
             }
@@ -280,8 +280,8 @@ macro_rules! newtype_enum {
                 pub const $variant: $name = $name($value);
             )*
         }
-        impl ::std::fmt::Debug for $name {
-            fn fmt(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        impl std::fmt::Debug for $name {
+            fn fmt(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
                 match self.0 {
                     $($value => write!(formatter, "{}::{}", stringify!($name), stringify!($variant)),)*
                     other => write!(formatter, "{}({})", stringify!($name), other)
@@ -420,15 +420,15 @@ macro_rules! error_enum_boilerplate {
             }
         }
 
-        impl ::std::fmt::Display for $error_name {
-            fn fmt(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        impl std::fmt::Display for $error_name {
+            fn fmt(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
                 match *self {
                     $($error_name::$variant( ref r ) => r.fmt(formatter),)*
                 }
             }
         }
 
-        impl ::std::error::Error for $error_name {
+        impl std::error::Error for $error_name {
             fn description(&self) -> &str {
                 stringify!($error_name)
             }

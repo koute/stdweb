@@ -122,7 +122,7 @@ pub fn derive_reference_type( input: TokenStream ) -> TokenStream {
                         1 => {},
                         2 => {
                             default_args.push( quote! {
-                                ::std::default::Default::default()
+                                std::default::Default::default()
                             });
                         },
                         _ => invalid_structure()
