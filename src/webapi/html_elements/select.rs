@@ -12,13 +12,13 @@ use webapi::html_elements::OptionElement;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct UnknownValueError(String);
 
-impl ::std::fmt::Display for UnknownValueError {
-    fn fmt(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+impl std::fmt::Display for UnknownValueError {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(formatter, "There is no `<option>` element that has value='{}'", self.0)
     }
 }
 
-impl ::std::error::Error for UnknownValueError {
+impl std::error::Error for UnknownValueError {
     fn description(&self) -> &str {
         "There is no `<option>` element that has the given value"
     }

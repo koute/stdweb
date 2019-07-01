@@ -71,7 +71,7 @@ mod test {
 
     #[test]
     fn test_error() {
-        use ::std::fmt::Write;
+        use std::fmt::Write;
 
         let error: Error = js!(
            return new Error("foo");
@@ -83,7 +83,7 @@ mod test {
         let mut text = String::new();
         write!(&mut text, "{}", error).unwrap();
         assert_eq!(&text, "Error: foo");
-        assert_eq!(::std::error::Error::description(&error), "Error");
+        assert_eq!(std::error::Error::description(&error), "Error");
     }
 
     #[test]

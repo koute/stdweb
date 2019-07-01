@@ -107,8 +107,7 @@
     missing_docs,
     missing_debug_implementations,
     trivial_numeric_casts,
-    unused_import_braces,
-    unused_qualifications
+    unused_import_braces
 )]
 #![cfg_attr(
     all(test, rust_nightly),
@@ -593,13 +592,13 @@ pub mod private {
     #[derive(Debug)]
     pub struct TODO;
 
-    impl ::std::fmt::Display for TODO {
-        fn fmt( &self, _: &mut ::std::fmt::Formatter ) -> Result< (), ::std::fmt::Error > {
+    impl std::fmt::Display for TODO {
+        fn fmt( &self, _: &mut std::fmt::Formatter ) -> Result< (), std::fmt::Error > {
             unreachable!();
         }
     }
 
-    impl ::std::error::Error for TODO {
+    impl std::error::Error for TODO {
         fn description( &self ) -> &str {
             unreachable!();
         }

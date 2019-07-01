@@ -119,11 +119,11 @@ mod tests {
         assert_eq!(event.event_type(), PopStateEvent::EVENT_TYPE);
 
         let state_value: Value = event.state();
-        let state: ::std::collections::BTreeMap<String, Value> = state_value
+        let state: std::collections::BTreeMap<String, Value> = state_value
             .as_object()
             .unwrap()
             .into();
-        let mut expected = ::std::collections::BTreeMap::new();
+        let mut expected = std::collections::BTreeMap::new();
         expected.insert("color".to_string(), "tomato".into());
 
         assert_eq!(state, expected);
