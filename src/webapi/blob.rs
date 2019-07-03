@@ -5,6 +5,26 @@ use webcore::try_from::TryInto;
 use webcore::reference_type::ReferenceType;
 use webcore::number::Number;
 
+// https://w3c.github.io/FileAPI/#ref-for-dfn-slice
+fn slice_blob< T, U >( blob: &T, range: U, content_type: Option< &str > ) -> Blob
+    where T: IBlob, U: RangeBounds< u64 > 
+{
+    let start: Number = match range.start_bound() {
+        Bound::Included(&n) => n,
+        Bound::Excluded(&n) => n + 1,
+        Bound::Unbounded => 0
+    }.try_into().unwrap();
+    let end: Option<Number> = match range.end_bound() {
+        Bound::Included(&n) => Some(n + 1),
+        Bound::Excluded(&n) => Some(n),
+        Bound::Unbounded => None
+    }.map(|value| value.try_into().unwrap());
+    let reference = blob.as_ref();
+    js! (
+        return @{reference}.slice(@{start}, @{end}, @{content_type});
+    ).try_into().unwrap()
+}
+
 /// A blob object represents a file-like object of immutable, raw data.
 /// Blobs represent data that isn't necessarily in a JavaScript-native format.
 ///
@@ -41,38 +61,17 @@ pub trait IBlob: ReferenceType {
     /// See also [slice_with_content_type](IBlob::slice_with_content_type).
     /// 
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Blob/slice)
-    // https://w3c.github.io/FileAPI/#ref-for-dfn-slice
     fn slice< T >( &self, range: T ) -> Blob
         where T: RangeBounds<u64>
     {
-        self._slice(range, None)
+        slice_blob(self, range, None)
     }
 
     /// [slice](IBlob::slice) `Blob` with the provided `content_type`.
     fn slice_with_content_type< T >( &self, range: T, content_type: &str ) -> Blob
         where T: RangeBounds<u64>
     {
-        self._slice(range, Some(content_type))
-    }
-
-    #[doc(hidden)]
-    fn _slice< T >( &self, range: T, content_type: Option<&str> ) -> Blob
-        where T: RangeBounds<u64>
-    {
-        let start: Option<Number> = match range.start_bound() {
-            Bound::Included(&n) => Some(n),
-            Bound::Excluded(&n) => Some(n + 1),
-            _ => None
-        }.try_into().unwrap();
-        let end: Option<Number> = match range.end_bound() {
-            Bound::Included(&n) => Some(n + 1),
-            Bound::Excluded(&n) => Some(n),
-            _ => None
-        }.try_into().unwrap();
-        let reference = self.as_ref();
-        js! (
-            return @{reference}.slice(@{start}, @{end}, @{content_type});
-        ).try_into().unwrap()
+        slice_blob(self, range, Some(content_type))
     }
 }
 
