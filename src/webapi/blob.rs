@@ -7,7 +7,7 @@ use webcore::number::Number;
 
 // https://w3c.github.io/FileAPI/#ref-for-dfn-slice
 fn slice_blob< T, U >( blob: &T, range: U, content_type: Option< &str > ) -> Blob
-    where T: IBlob, U: RangeBounds< u64 > 
+    where T: IBlob, U: RangeBounds< u64 >
 {
     let start: Number = match range.start_bound() {
         Bound::Included(&n) => n,
