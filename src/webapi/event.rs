@@ -218,6 +218,7 @@ impl IEvent for Event {}
 // https://html.spec.whatwg.org/multipage/indices.html#event-beforeunload
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "BeforeUnloadEvent")]
+#[reference(event = "beforeunload")]
 pub struct BeforeUnloadEvent( Reference );
 
 impl IEvent for BeforeUnloadEvent {}
@@ -230,6 +231,7 @@ impl IEvent for BeforeUnloadEvent {}
 // https://html.spec.whatwg.org/multipage/indices.html#event-unload
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "UnloadEvent")]
+#[reference(event = "unload")]
 pub struct UnloadEvent( Reference );
 
 impl IEvent for UnloadEvent {}

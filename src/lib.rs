@@ -332,6 +332,9 @@ pub mod web {
             IUiEvent,
             ConcreteEvent,
 
+            UnloadEvent,
+            BeforeUnloadEvent,
+
             EventPhase
         };
 
