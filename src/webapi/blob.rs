@@ -14,11 +14,13 @@ fn slice_blob< T, U >( blob: &T, range: U, content_type: Option< &str > ) -> Blo
         Bound::Excluded(&n) => n + 1,
         Bound::Unbounded => 0
     }.try_into().unwrap();
-    let end: Option<Number> = match range.end_bound() {
+    let end = match range.end_bound() {
         Bound::Included(&n) => Some(n + 1),
         Bound::Excluded(&n) => Some(n),
         Bound::Unbounded => None
-    }.map(|value| value.try_into().unwrap());
+    }.map( |value|
+        Value::Number( value.try_into().unwrap() )
+    ).unwrap_or( Value::Undefined );
     let reference = blob.as_ref();
     js! (
         return @{reference}.slice(@{start}, @{end}, @{content_type});
