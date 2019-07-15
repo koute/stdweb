@@ -4,6 +4,7 @@ use webcore::value::Reference;
 use webcore::try_from::TryInto;
 use webcore::reference_type::ReferenceType;
 use webcore::number::Number;
+use webcore::optional_arg::OptionalArg;
 
 // https://w3c.github.io/FileAPI/#ref-for-dfn-slice
 fn slice_blob< T, U >( blob: &T, range: U, content_type: Option< &str > ) -> Blob
@@ -14,13 +15,14 @@ fn slice_blob< T, U >( blob: &T, range: U, content_type: Option< &str > ) -> Blo
         Bound::Excluded(&n) => n + 1,
         Bound::Unbounded => 0
     }.try_into().unwrap();
-    let end = match range.end_bound() {
+
+    let end: OptionalArg< Number > = match range.end_bound() {
         Bound::Included(&n) => Some(n + 1),
         Bound::Excluded(&n) => Some(n),
         Bound::Unbounded => None
-    }.map( |value|
-        Value::Number( value.try_into().unwrap() )
-    ).unwrap_or( Value::Undefined );
+    }.try_into().unwrap();
+
+    let content_type: OptionalArg< &str > = content_type.into();
     let reference = blob.as_ref();
     js! (
         return @{reference}.slice(@{start}, @{end}, @{content_type});
