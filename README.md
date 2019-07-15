@@ -196,6 +196,15 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
 [WebAssembly]: https://en.wikipedia.org/wiki/WebAssembly
 
 ## Changelog
+   * `stdweb 0.4.18`
+      * The `js!` macro can now be imported with an `use`
+      * New events:
+         * `BeforeUnloadEvent`
+         * `UnloadEvent`
+      * New methods:
+         * `IBlob::slice`
+         * `IBlob::slice_with_content_type`
+         * `IWindowOrWorker::set_clearable_timeout`
    * `stdweb 0.4.17`
       * The unstable `futures`-related APIs were updated to work with the latest nightlies
    * `stdweb 0.4.16`
