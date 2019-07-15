@@ -16,6 +16,7 @@ use webcore::unsafe_typed_array::UnsafeTypedArray;
 use webcore::mutfn::Mut;
 use webcore::once::Once;
 use webcore::global_arena;
+use webcore::optional_arg::OptionalArg;
 
 use webcore::value::{
     Null,
@@ -641,6 +642,20 @@ impl< T: JsSerialize > JsSerialize for Option< T > {
 }
 
 __js_serializable_boilerplate!( impl< T > for Option< T > where T: JsSerialize );
+
+impl< T: JsSerialize > JsSerialize for OptionalArg< T > {
+    #[doc(hidden)]
+    #[inline]
+    fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
+        if let OptionalArg::Some( value ) = self.as_ref() {
+            value._into_js()
+        } else {
+            SerializedUntaggedUndefined.into()
+        }
+    }
+}
+
+__js_serializable_boilerplate!( impl< T > for OptionalArg< T > where T: JsSerialize );
 
 impl< T: JsSerialize > JsSerialize for [T] {
     #[doc(hidden)]
@@ -1821,6 +1836,17 @@ mod test_reserialization {
     fn option_none() {
         let boolean_none: Option< bool > = None;
         assert_eq!( js! { return @{boolean_none}; }, Value::Null );
+    }
+
+    #[test]
+    fn optional_arg_some() {
+        assert_eq!( js! { return @{OptionalArg::Some( true )}; }, Value::Bool( true ) );
+    }
+
+    #[test]
+    fn optional_arg_none() {
+        let boolean_none: OptionalArg< bool > = OptionalArg::None;
+        assert_eq!( js! { return @{boolean_none}; }, Value::Undefined );
     }
 
     #[test]

@@ -20,6 +20,7 @@ pub mod reference_type;
 pub mod promise;
 pub mod discard;
 pub mod global_arena;
+pub mod optional_arg;
 
 #[cfg(feature = "futures-support")]
 pub mod promise_future;
