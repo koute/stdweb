@@ -57,11 +57,11 @@ impl Window {
         );
     }
 
-    /// The Window.confirm() method displays an confirm dialog
-    /// with the optional specified content and an OK button.
+    /// The Window.confirm() method displays a modal dialog
+    /// with an optional message and two buttons: OK and Cancel.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Window/confirm)
-    // https://html.spec.whatwg.org/#the-window-object:dom-confirm
+    // https://html.spec.whatwg.org/#dom-confirm
     pub fn confirm( &self, message: &str ) -> bool {
         js!(
             return @{self}.confirm( @{message} );
