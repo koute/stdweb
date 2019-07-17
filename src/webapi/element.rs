@@ -1,5 +1,7 @@
 use webcore::value::Reference;
 use webcore::try_from::{TryFrom, TryInto};
+use webcore::promise::{Promise, TypedPromise};
+use webapi::error::TypeError;
 use webapi::dom_exception::{InvalidCharacterError, InvalidPointerId, NoModificationAllowedError, SyntaxError};
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
@@ -265,6 +267,19 @@ pub trait IElement: INode + IParentNode + IChildNode + ISlotable {
                 return @{self.as_ref()}.shadowRoot;
             ).into_reference_unchecked()
         }
+    }
+
+    /// Request this element and its children be made fullscreen
+    ///
+    /// Note: this may only be called during a user interaction.
+    /// Not all elements may be full-screened, see JS docs for details.
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/requestFullscreen)
+    // https://fullscreen.spec.whatwg.org/#dom-element-requestfullscreen
+    fn request_fullscreen( &self ) -> TypedPromise<(), TypeError> {
+        let promise: Promise = js!( return @{self.as_ref()}.requestFullscreen(); )
+            .try_into().unwrap();
+
+        TypedPromise::new( promise )
     }
 }
 
