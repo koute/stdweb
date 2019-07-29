@@ -10,3 +10,8 @@ pub fn set_timeout< F: FnOnce() + 'static >( callback: F, timeout: u32 ) {
 pub fn alert( message: &str ) {
     window().alert( message );
 }
+
+/// An alias for [window.confirm](struct.Window.html#method.confirm).
+pub fn confirm( message: &str ) -> bool {
+    return window().confirm( message );
+}
