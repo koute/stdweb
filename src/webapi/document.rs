@@ -196,7 +196,7 @@ impl Document {
     /// Check if the fullscreen API is enabled
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/fullscreenEnabled)
-    // https://fullscreen.spec.whatwg.org/#dom-document-fullscreenenabled
+    // https://fullscreen.spec.whatwg.org/#ref-for-dom-document-fullscreenenabled
     pub fn fullscreen_enabled( &self ) -> bool {
         match js!( return @{self}.fullscreenEnabled; ) {
             Value::Bool(value) => value,
@@ -207,7 +207,7 @@ impl Document {
     /// Get the current fullscreen element, or None if there is nothing fullscreen
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DocumentOrShadowRoot/fullscreenElement)
-    // https://fullscreen.spec.whatwg.org/#dom-document-fullscreenelement
+    // https://fullscreen.spec.whatwg.org/#ref-for-dom-document-fullscreenelement
     pub fn fullscreen_element( &self ) -> Option<Element> {
         Some(js!( return @{self}.fullscreenElement; )
             .into_reference()?
@@ -217,7 +217,8 @@ impl Document {
     /// Request the page return from fullscreen mode to a normal state
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/exitFullscreen)
-    // https://developer.mozilla.org/en-US/docs/Web/API/Document/exitFullscreen
+    // https://fullscreen.spec.whatwg.org/#dom-document-exitfullscreen
+    #[cfg(feature = "experimental_features_which_may_break_on_minor_version_bumps")]
     pub fn exit_fullscreen(&self) -> TypedPromise<(), TypeError> {
         let promise: Promise = js!( return @{self}.exitFullscreen(); )
             .try_into().unwrap();

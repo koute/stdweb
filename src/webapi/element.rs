@@ -274,7 +274,8 @@ pub trait IElement: INode + IParentNode + IChildNode + ISlotable {
     /// Note: this may only be called during a user interaction.
     /// Not all elements may be full-screened, see JS docs for details.
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/requestFullscreen)
-    // https://fullscreen.spec.whatwg.org/#dom-element-requestfullscreen
+    // https://fullscreen.spec.whatwg.org/#ref-for-dom-element-requestfullscreen
+    #[cfg(feature = "experimental_features_which_may_break_on_minor_version_bumps")]
     fn request_fullscreen( &self ) -> TypedPromise<(), TypeError> {
         let promise: Promise = js!( return @{self.as_ref()}.requestFullscreen(); )
             .try_into().unwrap();
