@@ -1,5 +1,7 @@
 use webcore::value::{Reference, Value};
 use webcore::try_from::{TryInto, TryFrom};
+use webcore::promise::{Promise, TypedPromise};
+use webapi::error::TypeError;
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node, CloneKind};
 use webapi::element::Element;
@@ -189,6 +191,39 @@ impl Document {
         js_try!(
             return @{self}.importNode( @{n.as_ref()}, @{deep} );
         ).unwrap()
+    }
+
+    /// Check if the fullscreen API is enabled
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/fullscreenEnabled)
+    // https://fullscreen.spec.whatwg.org/#ref-for-dom-document-fullscreenenabled
+    pub fn fullscreen_enabled( &self ) -> bool {
+        match js!( return @{self}.fullscreenEnabled; ) {
+            Value::Bool(value) => value,
+            _ => false, // if the variable is not set as a bool, then assume fullscreen is not supported
+        }
+    }
+
+    /// Get the current fullscreen element, or None if there is nothing fullscreen
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/DocumentOrShadowRoot/fullscreenElement)
+    // https://fullscreen.spec.whatwg.org/#ref-for-dom-document-fullscreenelement
+    pub fn fullscreen_element( &self ) -> Option<Element> {
+        Some(js!( return @{self}.fullscreenElement; )
+            .into_reference()?
+            .downcast::<Element>()?)
+    }
+
+    /// Request the page return from fullscreen mode to a normal state
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/exitFullscreen)
+    // https://fullscreen.spec.whatwg.org/#dom-document-exitfullscreen
+    #[cfg(feature = "experimental_features_which_may_break_on_minor_version_bumps")]
+    pub fn exit_fullscreen(&self) -> TypedPromise<(), TypeError> {
+        let promise: Promise = js!( return @{self}.exitFullscreen(); )
+            .try_into().unwrap();
+
+        TypedPromise::new( promise )
     }
 }
 
