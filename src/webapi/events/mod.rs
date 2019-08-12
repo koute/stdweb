@@ -8,5 +8,6 @@ pub mod mouse;
 pub mod pointer;
 pub mod progress;
 pub mod socket;
+pub mod indexeddb;
 pub mod slot;
 pub mod touch;

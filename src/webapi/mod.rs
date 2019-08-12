@@ -25,6 +25,8 @@ pub mod array_buffer;
 pub mod typed_array;
 /// A module containing XMLHttpRequest and its ReadyState
 pub mod xml_http_request;
+pub mod indexeddb;
+pub mod dom_string_list;
 pub mod history;
 pub mod web_socket;
 pub mod rendering_context;

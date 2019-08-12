@@ -143,6 +143,61 @@ impl IDomException for InvalidPointerId {}
 
 error_boilerplate! { InvalidPointerId, dom_exception = "InvalidPointerId" }
 
+/// The cursor is currently being iterated or has iterated past its end.
+// https://heycam.github.io/webidl/#transactioninactiveerror
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(subclass_of(Error, DomException))]
+pub struct TransactionInactiveError( Reference );
+
+impl IError for TransactionInactiveError {}
+impl IDomException for TransactionInactiveError {}
+
+error_boilerplate! { TransactionInactiveError, dom_exception = "TransactionInactiveError" }
+
+/// The key was not valid in the context it was used.
+// https://heycam.github.io/webidl/#dataerror
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(subclass_of(Error, DomException))]
+pub struct DataError( Reference );
+
+impl IError for DataError {}
+impl IDomException for DataError {}
+
+error_boilerplate! { DataError, dom_exception = "DataError" }
+
+/// The transaction mode is read only.
+// https://heycam.github.io/webidl/#readonlyerror
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(subclass_of(Error, DomException))]
+pub struct ReadOnlyError( Reference );
+
+impl IError for ReadOnlyError {}
+impl IDomException for ReadOnlyError {}
+
+error_boilerplate! { ReadOnlyError, dom_exception = "ReadOnlyError" }
+
+/// The data being stored could not be cloned by the internal structured cloning algorithm.
+// https://heycam.github.io/webidl/#datacloneerror
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(subclass_of(Error, DomException))]
+pub struct DataCloneError( Reference );
+
+impl IError for DataCloneError {}
+impl IDomException for DataCloneError {}
+
+error_boilerplate! { DataCloneError, dom_exception = "DataCloneError" }
+
+/// An index or an object store already has this name
+// https://heycam.github.io/webidl/#constrainterror
+#[derive(Clone, Debug, ReferenceType)]
+#[reference(subclass_of(Error, DomException))]
+pub struct ConstraintError( Reference );
+
+impl IError for ConstraintError {}
+impl IDomException for ConstraintError {}
+
+error_boilerplate! { ConstraintError, dom_exception = "ConstraintError" }
+
 /// Used to indicate that the operation was aborted.
 // https://heycam.github.io/webidl/#aborterror
 #[derive(Clone, Debug, ReferenceType)]
