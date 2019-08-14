@@ -81,10 +81,10 @@ impl< 'a, V > From< &'a mut [V] > for Array where V: JsSerialize {
     }
 }
 
-impl< E: Into< ConversionError >, V: TryFrom< Value, Error = E > > TryFrom< Array > for Vec< V > {
+impl< 'a, E: Into< ConversionError >, V: TryFrom< Value, Error = E > > TryFrom< &'a Array > for Vec< V > {
     type Error = ConversionError;
 
-    fn try_from( array: Array ) -> Result< Self, Self::Error > {
+    fn try_from( array: &'a Array ) -> Result< Self, Self::Error > {
         deserialize_array( array.as_ref(), |deserializer| {
             let mut output = Vec::with_capacity( deserializer.len() );
             for value in deserializer {
@@ -100,5 +100,14 @@ impl< E: Into< ConversionError >, V: TryFrom< Value, Error = E > > TryFrom< Arra
             }
             Ok( output )
         })
+    }
+}
+
+impl< E: Into< ConversionError >, V: TryFrom< Value, Error = E > > TryFrom< Array > for Vec< V > {
+    type Error = ConversionError;
+
+    #[inline]
+    fn try_from( array: Array ) -> Result< Self, Self::Error > {
+        Vec::try_from( &array )
     }
 }
