@@ -1,4 +1,5 @@
 use std::collections::{BTreeMap, HashMap};
+use std::iter::FromIterator;
 use std::hash::Hash;
 use webcore::try_from::{TryFrom, TryInto};
 use webcore::value::{Reference, Value, ConversionError};
@@ -15,6 +16,38 @@ impl Object {
         js!(
             return Object.keys( @{self} ).length;
         ).try_into().unwrap()
+    }
+
+    /// Converts this object into a map, parsing the keys from the strings stored in JavaScript.
+    ///
+    /// # Example:
+    ///
+    /// ```
+    /// # use stdweb::{ js, unstable::TryFrom };
+    /// use stdweb::serde::ConversionError;
+    /// use serde::de::Error;
+    ///
+    /// let obj: Object = js! { return { 1: 2 } };
+    ///
+    /// let map: HashMap< i32, i32 > = obj.to_map_parsing_keys( |k| {
+    ///     k.parse().map_err( |e| ConversionError::custom(e).into() )
+    /// } )?;
+    ///
+    /// assert_eq!( map[1], 2 );
+    /// ```
+    pub fn to_map_parsing_keys< O, K, V, F, E >( &self, mut parse_keys: F ) -> Result < O, ConversionError >
+        where O: FromIterator< ( K, V ) >,
+              F: FnMut( String ) -> Result< K, ConversionError >,
+              V: TryFrom< Value, Error = E >,
+              E: Into< ConversionError > {
+        deserialize_object( self.as_ref(), |deserializer| -> Result< O, ConversionError > {
+            deserializer
+                .map( |( key, value )| Ok( (
+                    parse_keys(key)?,
+                    value.try_into().map_err( Into::into )?
+                ) ) )
+                .collect::< Result< O, ConversionError > >()
+        })
     }
 }
 
