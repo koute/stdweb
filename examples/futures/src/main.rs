@@ -1,4 +1,4 @@
-#![feature(async_await, await_macro)]
+#![feature(async_await)]
 
 #[macro_use]
 extern crate stdweb;
@@ -24,32 +24,32 @@ fn javascript_promise() -> PromiseFuture< u32 > {
 
 async fn print( message: &str ) {
     // Waits for 2000 milliseconds
-    await!( wait( 2000 ) );
+    wait( 2000 ).await;
     console!( log, message );
 }
 
 
 async fn future_main() -> Result< (), Error > {
     // Runs Futures synchronously
-    await!( print( "Hello" ) );
-    await!( print( "There" ) );
+    print( "Hello" ).await;
+    print( "There" ).await;
 
     {
         // Runs multiple Futures in parallel
-        let ( a, b ) = await!( join(
+        let ( a, b ) = join(
             print( "Test 1" ),
             print( "Test 2" ),
-        ) );
+        ).await;
 
         console!( log, "join", a, b );
     }
 
     {
         // Runs multiple Futures (which can error) in parallel
-        let ( a, b ) = await!( try_join(
+        let ( a, b ) = try_join(
             javascript_promise(),
             javascript_promise(),
-        ) )?;
+        ).await?;
 
         console!( log, "try_join", a, b );
     }
