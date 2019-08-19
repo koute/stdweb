@@ -1,2 +1,2 @@
 [workspace]
-members = ["canvas", "drag", "echo", "gamepad", "hasher", "minimal", "todomvc", "webgl", "wasm-bindgen-minimal"]
+members = ["canvas", "drag", "echo", "futures", "gamepad", "hasher", "minimal", "todomvc", "webgl", "wasm-bindgen-minimal"]
