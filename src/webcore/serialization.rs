@@ -4,6 +4,7 @@ use std::i32;
 use std::collections::{BTreeMap, HashMap};
 use std::marker::PhantomData;
 use std::hash::Hash;
+use std::ops::Deref;
 
 use webcore::ffi;
 use webcore::callfn::{CallOnce, CallMut};
@@ -214,13 +215,54 @@ impl SerializedUntaggedArray {
     }
 }
 
-pub struct ObjectDeserializer< 'a > {
-    key_slice: &'a [SerializedUntaggedString],
-    value_slice: &'a [SerializedValue< 'a >],
+/// Owns some memory allocated by FFI, and will deallocate it on drop.
+///
+/// `T` must not be zero-sized.
+struct OwnedFfiSlice< T > {
+    ptr: *const T,
+    length: usize,
+}
+
+impl< T > OwnedFfiSlice< T > {
+    unsafe fn new(ptr: *const T, length: usize) -> Self {
+        assert_ne!( mem::size_of::< T >(), 0 );
+        OwnedFfiSlice { ptr, length }
+    }
+}
+
+impl< T > Deref for OwnedFfiSlice< T > {
+    type Target = [ T ];
+
+    fn deref( &self ) -> & [ T ] {
+        assert_ne!( mem::size_of::< T >(), 0 );
+        unsafe { slice::from_raw_parts ( self.ptr, self.length ) }
+    }
+}
+
+impl< T > Drop for OwnedFfiSlice< T >  {
+    fn drop( &mut self ) {
+        assert_ne!( mem::size_of::< T >(), 0 );
+        unsafe {
+            ffi::dealloc( self.ptr as *mut u8, self.length * mem::size_of::< T >() );
+        }
+    }
+}
+
+pub struct ObjectDeserializer {
+    key_slice: OwnedFfiSlice < SerializedUntaggedString >,
+    value_slice: OwnedFfiSlice < SerializedValue< 'static > >,
     index: usize
 }
 
-impl< 'a > Iterator for ObjectDeserializer< 'a > {
+impl Drop for ObjectDeserializer {
+    fn drop( &mut self ) {
+        // ensure that if this is dropped early, all the strings and any
+        // allocated values are deserialized and then dropped.
+        self.for_each( drop );
+    }
+}
+
+impl Iterator for ObjectDeserializer {
     type Item = (String, Value);
     fn next( &mut self ) -> Option< Self::Item > {
         if self.index >= self.key_slice.len() {
@@ -240,7 +282,7 @@ impl< 'a > Iterator for ObjectDeserializer< 'a > {
     }
 }
 
-impl< 'a > ExactSizeIterator for ObjectDeserializer< 'a > {}
+impl ExactSizeIterator for ObjectDeserializer {}
 
 pub fn deserialize_object< R, F: FnOnce( &mut ObjectDeserializer ) -> R >( reference: &Reference, callback: F ) -> R {
     let mut result: SerializedValue = Default::default();
@@ -258,8 +300,12 @@ pub fn deserialize_object< R, F: FnOnce( &mut ObjectDeserializer ) -> R >( refer
     let key_pointer = result.key_pointer as *const SerializedUntaggedString;
     let value_pointer = result.value_pointer as *const SerializedValue;
 
-    let key_slice = unsafe { slice::from_raw_parts( key_pointer, length ) };
-    let value_slice = unsafe { slice::from_raw_parts( value_pointer, length ) };
+    // These structs will drop the FFI allocated slices when they're dropped
+    //
+    // The ObjectDeserializer will also iterate itself to completion on drop, to ensure
+    // the strings and any allocated values are dropped and correctly deallocated.
+    let key_slice = unsafe { OwnedFfiSlice::new( key_pointer, length ) };
+    let value_slice = unsafe { OwnedFfiSlice::new( value_pointer, length ) };
 
     let mut iter = ObjectDeserializer {
         key_slice,
@@ -269,11 +315,7 @@ pub fn deserialize_object< R, F: FnOnce( &mut ObjectDeserializer ) -> R >( refer
 
     let output = callback( &mut iter );
 
-    // TODO: Panic-safety.
-    unsafe {
-        ffi::dealloc( key_pointer as *mut u8, length * mem::size_of::< SerializedUntaggedString >() );
-        ffi::dealloc( value_pointer as *mut u8, length * mem::size_of::< SerializedValue >() );
-    }
+    drop(iter);
 
     output
 }
