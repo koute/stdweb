@@ -284,7 +284,7 @@ impl Iterator for ObjectDeserializer {
 
 impl ExactSizeIterator for ObjectDeserializer {}
 
-pub fn deserialize_object< R, F: FnOnce( &mut ObjectDeserializer ) -> R >( reference: &Reference, callback: F ) -> R {
+pub fn deserialize_object_to_iter( reference: &Reference ) -> ObjectDeserializer {
     let mut result: SerializedValue = Default::default();
     __js_raw_asm!( "\
         var object = Module.STDWEB_PRIVATE.acquire_js_reference( $0 );\
@@ -307,11 +307,15 @@ pub fn deserialize_object< R, F: FnOnce( &mut ObjectDeserializer ) -> R >( refer
     let key_slice = unsafe { OwnedFfiSlice::new( key_pointer, length ) };
     let value_slice = unsafe { OwnedFfiSlice::new( value_pointer, length ) };
 
-    let mut iter = ObjectDeserializer {
+    ObjectDeserializer {
         key_slice,
         value_slice,
         index: 0
-    };
+    }
+}
+
+pub fn deserialize_object< R, F: FnOnce( &mut ObjectDeserializer ) -> R >( reference: &Reference, callback: F ) -> R {
+    let mut iter = deserialize_object_to_iter( reference );
 
     let output = callback( &mut iter );
 
