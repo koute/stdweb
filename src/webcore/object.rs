@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::hash::Hash;
 use webcore::try_from::{TryFrom, TryInto};
 use webcore::value::{Reference, Value, ConversionError};
-use webcore::serialization::{JsSerialize, deserialize_object};
+use webcore::serialization::{JsSerialize, deserialize_object, deserialize_object_to_iter};
 
 /// A type representing a JavaScript object.
 #[derive(Clone, PartialEq, Eq, Debug, ReferenceType)]
@@ -15,6 +15,34 @@ impl Object {
         js!(
             return Object.keys( @{self} ).length;
         ).try_into().unwrap()
+    }
+
+    /// Retrieves an iterator over this object's keys and values.
+    ///
+    /// When called, this method will pull all the objecy's keys and values
+    /// from JavaScript, then return an iterator which accesses them in pairs.
+    ///
+    /// # Example:
+    ///
+    /// ```
+    /// # fn main() -> Result< (), Box< dyn std::error::Error > > {
+    /// # use std::collections::HashMap;
+    /// use stdweb::{ js, unstable::TryInto, Object };
+    ///
+    /// let obj: Object = js!( return { [1]: 2 } ).try_into()?;
+    ///
+    /// let map: HashMap< i32, i32 > = obj
+    ///     .to_iter()
+    ///     .map( |(k, v)| Ok( ( k.parse()?, v.try_into()? ) ) )
+    ///     .collect::< Result< _, Box< dyn std::error::Error > > >()?;
+    ///
+    /// assert_eq!( map[ &1 ], 2 );
+    /// panic!("ahhh");
+    /// # Ok( () )
+    /// # }
+    /// ```
+    pub fn to_iter( &self ) -> impl ExactSizeIterator < Item = ( String, Value ) > {
+        deserialize_object_to_iter( self.as_ref() )
     }
 }
 
@@ -141,5 +169,27 @@ impl< E: Into< ConversionError >, V: TryFrom< Value, Error = E > > TryFrom< Obje
 
             Ok( output )
         }).map_err( |err| err.into() )
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use std::collections::HashMap;
+
+    use stdweb::{ js, unstable::TryInto, Object };
+
+    /// This duplicates and tests the example in `Object::to_iter` documentation.
+    #[test]
+    fn test_object_to_iter() -> Result< (), Box< dyn std::error::Error > > {
+        let obj: Object = js!( return { [1]: 2 } ).try_into()?;
+
+        let map: HashMap< i32, i32 > = obj
+            .to_iter()
+            .map( |(k, v)| Ok( ( k.parse()?, v.try_into()? ) ) )
+            .collect::< Result< _, Box< dyn std::error::Error > > >()?;
+
+        assert_eq!( map[ &1 ], 2 );
+
+        Ok( () )
     }
 }
