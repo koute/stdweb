@@ -38,4 +38,44 @@ impl InputElement {
             @{self}.value = @{value};
         }
     }
+
+    /// The offset to the start of the selection.
+    /// This attribute only applies when the input is a text, search, url, telephone or password.
+    /// https://html.spec.whatwg.org/#textFieldSelection
+    #[inline]
+    pub fn selection_start( &self ) -> Option<u32> {
+        js! (
+            return @{self}.selectionStart
+        ).try_into().ok()
+    }
+
+    /// Sets the offset to the start of the selection.
+    /// This attribute only applies when the input is a text, search, url, telephone or password.or password.
+    /// https://html.spec.whatwg.org/#textFieldSelection
+    #[inline]
+    pub fn set_selection_start( &self, value: u32 ) {
+        js! { @(no_return)
+            @{self}.selectionStart = @{value}
+        }
+    }
+
+    /// The offset to the end of the selection.
+    /// This attribute only applies when the input is a text, search, url, telephone or password.
+    /// https://html.spec.whatwg.org/#textFieldSelection
+    #[inline]
+    pub fn selection_end( &self ) -> Option<u32> {
+        js! (
+            return @{self}.selectionEnd
+        ).try_into().ok()
+    }
+
+    /// Sets the offset to the end of the selection.
+    /// This attribute only applies when the input is a text, search, url, telephone or password.
+    /// https://html.spec.whatwg.org/#textFieldSelection
+    #[inline]
+    pub fn set_selection_end( &self, value: u32 ) {
+        js! { @(no_return)
+            @{self}.selectionEnd = @{value}
+        }
+    }
 }
