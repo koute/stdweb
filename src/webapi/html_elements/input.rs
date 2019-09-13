@@ -1,5 +1,6 @@
 use webcore::value::Reference;
 use webcore::try_from::TryInto;
+use webapi::dom_exception::InvalidStateError;
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node};
 use webapi::element::{IElement, Element};
@@ -22,6 +23,7 @@ impl IHtmlElement for InputElement {}
 
 impl InputElement {
     /// The value of the control. This attribute is optional except when the input is a radio button or a checkbox.
+    /// 
     // https://html.spec.whatwg.org/#the-input-element:dom-input-value
     #[inline]
     pub fn raw_value( &self ) -> String {
@@ -31,6 +33,7 @@ impl InputElement {
     }
 
     /// Sets the value of the control.
+    /// 
     // https://html.spec.whatwg.org/#dom-input-value
     #[inline]
     pub fn set_raw_value( &self, value: &str ) {
@@ -41,41 +44,45 @@ impl InputElement {
 
     /// The offset to the start of the selection.
     /// This attribute only applies when the input is a text, search, url, telephone or password.
-    /// https://html.spec.whatwg.org/#textFieldSelection
+    /// 
+    // https://html.spec.whatwg.org/#the-input-element:dom-textarea/input-selectionstart
     #[inline]
     pub fn selection_start( &self ) -> Option<u32> {
         js! (
-            return @{self}.selectionStart
+            return @{self}.selectionStart;
         ).try_into().ok()
     }
 
     /// Sets the offset to the start of the selection.
-    /// This attribute only applies when the input is a text, search, url, telephone or password.or password.
-    /// https://html.spec.whatwg.org/#textFieldSelection
+    /// This attribute only applies when the input is a text, search, url, telephone or password.
+    /// 
+    // https://html.spec.whatwg.org/#the-input-element:dom-textarea/input-selectionstart
     #[inline]
-    pub fn set_selection_start( &self, value: u32 ) {
-        js! { @(no_return)
-            @{self}.selectionStart = @{value}
-        }
+    pub fn set_selection_start( &self, value: u32 ) -> Result<(), InvalidStateError> {
+        js_try! ( @(no_return)
+            @{self}.selectionStart = @{value};
+        ).unwrap()
     }
 
     /// The offset to the end of the selection.
     /// This attribute only applies when the input is a text, search, url, telephone or password.
-    /// https://html.spec.whatwg.org/#textFieldSelection
+    /// 
+    // https://html.spec.whatwg.org/#the-input-element:dom-textarea/input-selectionstart
     #[inline]
     pub fn selection_end( &self ) -> Option<u32> {
         js! (
-            return @{self}.selectionEnd
+            return @{self}.selectionEnd;
         ).try_into().ok()
     }
 
     /// Sets the offset to the end of the selection.
     /// This attribute only applies when the input is a text, search, url, telephone or password.
-    /// https://html.spec.whatwg.org/#textFieldSelection
+    /// 
+    // https://html.spec.whatwg.org/#the-input-element:dom-textarea/input-selectionstart
     #[inline]
-    pub fn set_selection_end( &self, value: u32 ) {
-        js! { @(no_return)
-            @{self}.selectionEnd = @{value}
-        }
+    pub fn set_selection_end( &self, value: u32 ) -> Result<(), InvalidStateError> {
+        js_try! ( @(no_return)
+            @{self}.selectionEnd = @{value};
+        ).unwrap()
     }
 }
