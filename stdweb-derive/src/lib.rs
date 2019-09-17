@@ -8,11 +8,12 @@ extern crate proc_macro2;
 
 use proc_macro::TokenStream;
 use syn::DeriveInput;
+use quote::ToTokens;
 
 fn get_meta_items( attr: &syn::Attribute ) -> Option< Vec< syn::NestedMeta > > {
     if attr.path.segments.len() == 1 && attr.path.segments[0].ident == "reference" {
-        match attr.interpret_meta() {
-            Some( syn::Meta::List( meta ) ) => Some( meta.nested.into_iter().collect() ),
+        match attr.parse_meta() {
+            Ok( syn::Meta::List( meta ) ) => Some( meta.nested.into_iter().collect() ),
             _ => {
                 panic!( "Unrecognized meta item type!" );
             }
@@ -61,7 +62,7 @@ pub fn derive_reference_type( input: TokenStream ) -> TokenStream {
     for meta_items in input.attrs.iter().filter_map( get_meta_items ) {
         for meta in meta_items {
             match meta {
-                syn::NestedMeta::Meta( syn::Meta::NameValue( ref meta ) ) if meta.ident == "instance_of" => {
+                syn::NestedMeta::Meta( syn::Meta::NameValue( ref meta ) ) if meta.path.to_token_stream().to_string() == "instance_of" => {
                     if instance_of.is_some() {
                         panic!( "Duplicate '#[reference(instance_of)]'!" );
                     }
@@ -72,7 +73,7 @@ pub fn derive_reference_type( input: TokenStream ) -> TokenStream {
                         panic!( "The value of '#[reference(instance_of = ...)]' is not a string!" );
                     }
                 },
-                syn::NestedMeta::Meta( syn::Meta::NameValue( ref meta ) ) if meta.ident == "event" => {
+                syn::NestedMeta::Meta( syn::Meta::NameValue( ref meta ) ) if meta.path.to_token_stream().to_string() == "event" => {
                     if event.is_some() {
                         panic!( "Duplicate '#[reference(event)]'!" );
                     }
@@ -83,13 +84,17 @@ pub fn derive_reference_type( input: TokenStream ) -> TokenStream {
                         panic!( "The value of '#[reference(event = ...)]' is not a string!" );
                     }
                 },
-                syn::NestedMeta::Meta( syn::Meta::List( ref meta ) ) if meta.ident == "subclass_of" => {
+                syn::NestedMeta::Meta( syn::Meta::List( ref meta ) ) if meta.path.to_token_stream().to_string() == "subclass_of" => {
                     for nested in &meta.nested {
                         match *nested {
                             syn::NestedMeta::Meta( ref nested ) => {
                                 match *nested {
-                                    syn::Meta::Word( ref ident ) => {
-                                        subclass_of.push( ident.clone() );
+                                    syn::Meta::Path( ref path ) => {
+                                        if let Some( ident ) = path.get_ident() {
+                                            subclass_of.push( ident.clone() );
+                                        } else {
+                                            panic!( "The value of '#[reference(subclass_of(...))]' is invalid!" )
+                                        }
                                     },
                                     _ => panic!( "The value of '#[reference(subclass_of(...))]' is invalid!" )
                                 }
@@ -99,7 +104,7 @@ pub fn derive_reference_type( input: TokenStream ) -> TokenStream {
                     }
                 },
                 syn::NestedMeta::Meta( ref meta ) => {
-                    panic!( "Unrecognized attribute: '#[reference({})]'", meta.name() );
+                    panic!( "Unrecognized attribute: '#[reference({})]'", meta.path().to_token_stream().to_string() );
                 },
                 _ => panic!( "Unrecognized attribute!" )
             }
