@@ -15,16 +15,16 @@ description = "Internal procedural macros for the `stdweb` crate"
 proc-macro = true
 
 [dependencies]
-quote = "0.6"
+quote = "1"
 base-x = "0.2"
 serde = "1"
 serde_derive = "1"
 serde_json = "1"
-proc-macro2 = "0.4"
+proc-macro2 = "1"
 sha1 = "0.6"
 
 [dependencies.syn]
-version = "0.15"
+version = "1"
 default-features = false
 features = ["full", "parsing", "printing", "clone-impls"]
 

@@ -29,7 +29,7 @@ enum TestKind {
 }
 
 // TODO: There must be a cleaner way to do this.
-fn check_decl( decl: &syn::FnDecl ) -> TestKind {
+fn check_decl( decl: &syn::Signature ) -> TestKind {
     assert!( decl.generics.lifetimes().next().is_none(), "Lifetimes are yet not supported" );
     assert!( decl.generics.where_clause.is_none(), "`where` clauses are not supported" );
     assert!( decl.variadic.is_none(), "Variadic functions are not supported" );
@@ -137,19 +137,17 @@ fn check_decl( decl: &syn::FnDecl ) -> TestKind {
         panic!( "Expected a function with a single argument!" );
     }
 
-    let arg = decl.inputs.last().unwrap().into_value();
-    match arg {
-        syn::FnArg::SelfRef( .. ) => panic!( "`&self` is not supported" ),
-        syn::FnArg::SelfValue( .. ) => panic!( "`self` is not supported" ),
-        syn::FnArg::Ignored( .. ) =>  panic!( "ignored args are not supported" ),
-        syn::FnArg::Captured( cap ) => {
-            match cap.pat {
+    let arg = decl.inputs.last().unwrap();
+    match *arg {
+        syn::FnArg::Receiver( .. ) => panic!( "`self` is not supported" ),
+        syn::FnArg::Typed( syn::PatType { ref pat, ref ty, .. } ) => {
+            match **pat {
                 syn::Pat::Ident( ref pat ) => {
                     assert!( pat.by_ref.is_none(), "`ref` bindings are not supported" );
                     assert!( pat.mutability.is_none(), "`mut` bindings are not supported" );
                     assert!( pat.subpat.is_none(), "Subpatterns are not supported" );
 
-                    match cap.ty {
+                    match **ty {
                         syn::Type::Path(
                             syn::TypePath {
                                 qself: None,
@@ -177,16 +175,15 @@ fn check_decl( decl: &syn::FnDecl ) -> TestKind {
                 },
                 _ => panic!( "Argument patterns are not supported" )
             }
-        },
-        syn::FnArg::Inferred( _ ) => panic!( "inferred argument types are not supported" )
+        }
     }
 }
 
 fn async_test_impl( item: syn::Item ) -> proc_macro2::TokenStream {
     let (ident, block, test_kind) = match item {
         syn::Item::Fn( function ) => {
-            let test_kind = check_decl( &function.decl );
-            (function.ident, function.block, test_kind)
+            let test_kind = check_decl( &function.sig );
+            (function.sig.ident.clone(), function.block, test_kind)
         },
         _ => panic!( "`#[async_test]` attached to an unsupported element!" )
     };

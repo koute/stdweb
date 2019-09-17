@@ -262,7 +262,8 @@ fn process( exports: Vec< Export > ) -> proc_macro2::TokenStream {
     quote! { #(#output)* }
 }
 
-fn into_export( ident: syn::Ident, decl: &syn::FnDecl ) -> Export {
+fn into_export( decl: &syn::Signature ) -> Export {
+    let ident = decl.ident.clone();
     assert!( decl.generics.lifetimes().next().is_none(), "Lifetimes are not yet not supported" );
     assert!( decl.generics.type_params().next().is_none(), "Generics are not supported" );
     assert!( decl.generics.where_clause.is_none(), "`where` clauses are not supported" );
@@ -276,22 +277,14 @@ fn into_export( ident: syn::Ident, decl: &syn::FnDecl ) -> Export {
     let mut args = Vec::new();
     for (index, arg) in decl.inputs.iter().cloned().enumerate() {
         match arg {
-            syn::FnArg::SelfRef( .. ) => panic!( "`&self` is not supported" ),
-            syn::FnArg::SelfValue( .. ) => panic!( "`self` is not supported" ),
-            syn::FnArg::Ignored( ty ) => {
-                let ident = syn::Ident::new( &format!( "__arg_{}", index ), Span::call_site() );
-                args.push( ExportArg {
-                    ident,
-                    ty: match_type( &ty )
-                });
-            },
-            syn::FnArg::Captured( cap ) => {
-                match cap.pat {
+            syn::FnArg::Receiver( .. ) => panic!( "`self` is not supported" ),
+            syn::FnArg::Typed( syn::PatType { pat, ty, .. } ) => {
+                match *pat {
                     syn::Pat::Wild( _ ) => {
                         let ident = syn::Ident::new( &format!( "__arg_{}", index ), Span::call_site() );
                         args.push( ExportArg {
                             ident,
-                            ty: match_type( &cap.ty )
+                            ty: match_type( &ty )
                         });
                     },
                     syn::Pat::Ident( pat ) => {
@@ -301,13 +294,12 @@ fn into_export( ident: syn::Ident, decl: &syn::FnDecl ) -> Export {
 
                         args.push( ExportArg {
                             ident: pat.ident,
-                            ty: match_type( &cap.ty )
+                            ty: match_type( &ty )
                         });
                     },
                     _ => panic!( "Argument patterns are not supported" )
                 }
-            },
-            syn::FnArg::Inferred( _ ) => panic!( "inferred argument types are not supported" )
+            }
         }
     }
 
@@ -329,7 +321,7 @@ pub fn js_export( attrs: TokenStream, input: TokenStream ) -> TokenStream {
 
     match item {
         syn::Item::Fn( ref function ) => {
-            exports.push( into_export( function.ident.clone(), &function.decl ) );
+            exports.push( into_export( &function.sig ) );
         },
         _ => panic!( "`#[js_export]` attached to an unsupported element!" )
     }
