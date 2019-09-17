@@ -12,5 +12,5 @@ description = "Internal crate of the `stdweb` crate"
 proc-macro = true
 
 [dependencies]
-quote = "0.6"
-proc-macro2 = "0.4"
+quote = "1"
+proc-macro2 = "1"
