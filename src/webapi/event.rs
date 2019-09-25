@@ -241,7 +241,7 @@ impl IEvent for UnloadEvent {}
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/fullscreenchange_event)
 // https://fullscreen.spec.whatwg.org/#handler-document-onfullscreenchange
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
-#[reference(instance_of = "FullscreenChangeEvent")]
+#[reference(instance_of = "Event")]
 #[reference(event = "fullscreenchange")]
 pub struct FullscreenChangeEvent( Reference );
 
