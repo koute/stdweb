@@ -196,6 +196,20 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
 [WebAssembly]: https://en.wikipedia.org/wiki/WebAssembly
 
 ## Changelog
+   * `stdweb 0.4.19`
+      * New methods:
+         * `Document::fullscreen_enabled`
+         * `Document::fullscreen_element`
+         * `InputElement::selection_start`
+         * `InputElement::selection_end`
+         * `InputElement::set_selection_start`
+         * `InputElement::set_selection_end`
+         * `Object::to_iter`
+         * `Window::confirm`
+      * `&Array`s can now be converted to `Vec`s through `TryFrom`
+      * The runtime should now be compatible with newer versions of Emscripten
+      * The unstable `futures`-related APIs were updated to work with the latest nightlies
+      * The `syn` dependency was updated to version 1
    * `stdweb 0.4.18`
       * The `js!` macro can now be imported with an `use`
       * New events:
