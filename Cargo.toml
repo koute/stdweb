@@ -23,7 +23,7 @@ futures-util-preview = { version = "0.3.0-alpha.15", optional = true }
 futures-executor-preview = { version = "0.3.0-alpha.15", optional = true }
 
 stdweb-derive = { version = "= 0.5.1", path = "stdweb-derive" }
-stdweb-internal-macros = { version = "= 0.2.7", path = "stdweb-internal-macros" }
+stdweb-internal-macros = { version = "= 0.2.8", path = "stdweb-internal-macros" }
 stdweb-internal-runtime = { version = "0.1", path = "stdweb-internal-runtime" }
 
 [target.'cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web)))'.dependencies]
