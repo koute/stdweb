@@ -1,7 +1,7 @@
 use webapi::window::window;
 use webapi::window_or_worker::IWindowOrWorker;
 
-/// An alias for [window.set_timeout](struct.Window.html#method.set_timeout).
+/// An alias for [window.set_timeout](trait.IWindowOrWorker.html#method.set_timeout).
 pub fn set_timeout< F: FnOnce() + 'static >( callback: F, timeout: u32 ) {
     window().set_timeout( callback, timeout );
 }
