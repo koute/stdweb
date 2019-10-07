@@ -336,6 +336,8 @@ pub mod web {
             UnloadEvent,
             BeforeUnloadEvent,
 
+            FullscreenChangeEvent,
+
             EventPhase
         };
 

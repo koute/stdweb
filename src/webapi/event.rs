@@ -236,6 +236,17 @@ pub struct UnloadEvent( Reference );
 
 impl IEvent for UnloadEvent {}
 
+/// The 'FullscreenChange' event fires when an element enters or exits fullscreen
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Document/fullscreenchange_event)
+// https://fullscreen.spec.whatwg.org/#handler-document-onfullscreenchange
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "Event")]
+#[reference(event = "fullscreenchange")]
+pub struct FullscreenChangeEvent( Reference );
+
+impl IEvent for FullscreenChangeEvent {}
+
 /// The `IUiEvent` interface represents simple user interface events.
 ///
 /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/UIEvent)
