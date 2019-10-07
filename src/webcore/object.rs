@@ -180,16 +180,14 @@ mod test {
 
     /// This duplicates and tests the example in `Object::to_iter` documentation.
     #[test]
-    fn test_object_to_iter() -> Result< (), Box< dyn std::error::Error > > {
-        let obj: Object = js!( return { [1]: 2 } ).try_into()?;
+    fn test_object_to_iter() {
+        let obj: Object = js!( return { [1]: 2 } ).try_into().unwrap();
 
         let map: HashMap< i32, i32 > = obj
             .to_iter()
             .map( |(k, v)| Ok( ( k.parse()?, v.try_into()? ) ) )
-            .collect::< Result< _, Box< dyn std::error::Error > > >()?;
+            .collect::< Result< _, Box< dyn std::error::Error > > >().unwrap();
 
         assert_eq!( map[ &1 ], 2 );
-
-        Ok( () )
     }
 }
