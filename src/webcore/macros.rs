@@ -40,6 +40,54 @@ macro_rules! __js_raw_asm {
     ($code:expr) => { $crate::__js_raw_asm!( $code, ) };
 }
 
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __js_raw_asm_int {
+    ($code:expr, $($token:expr),*) => {{
+        #[$crate::private::js_raw_attr]
+        fn snippet() -> i32 {
+            call!( $code, $($token),* );
+        }
+
+        snippet( $($token as *const u8),* )
+    }};
+
+    ($code:expr) => { $crate::__js_raw_asm_int!( $code, ) };
+}
+
+// TODO: This should be handled inside of the procedural macro.
+#[cfg(not(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web))))]
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __js_raw_asm_bool {
+    ($code:expr, $($token:expr),*) => {{
+        #[$crate::private::js_raw_attr]
+        fn snippet() -> i32 {
+            call!( $code, $($token),* );
+        }
+
+        snippet( $($token as *const u8),* )
+    } == 1};
+
+    ($code:expr) => { $crate::__js_raw_asm_bool!( $code, ) };
+}
+
+#[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web)))]
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __js_raw_asm_bool {
+    ($code:expr, $($token:expr),*) => {{
+        #[$crate::private::js_raw_attr]
+        fn snippet() -> bool {
+            call!( $code, $($token),* );
+        }
+
+        snippet( $($token as *const u8),* )
+    }};
+
+    ($code:expr) => { $crate::__js_raw_asm_bool!( $code, ) };
+}
+
 // Abandon all hope, ye who enter here!
 //
 // If there was a contest for the ugliest and most hacky macro ever written,
@@ -240,13 +288,13 @@ macro_rules! error_boilerplate {
         impl ::InstanceOf for $type_name {
             #[inline]
             fn instance_of( reference: &Reference ) -> bool {
-                $crate::__js_raw_asm!(
+                $crate::__js_raw_asm_bool!(
                     concat!(
                         "var r = Module.STDWEB_PRIVATE.acquire_js_reference( $0 );",
                         "return (r instanceof DOMException) && (r.name === \"", $error_name, "\");"
                     ),
                     reference.as_raw()
-                ) == 1
+                )
             }
         }
 
@@ -259,7 +307,7 @@ macro_rules! instanceof {
         use $crate::unstable::TryInto;
         let reference: Option< &$crate::Reference > = (&$value).try_into().ok();
         reference.map( |reference| {
-            $crate::__js_raw_asm!(
+            $crate::__js_raw_asm_int!(
                 concat!( "return (Module.STDWEB_PRIVATE.acquire_js_reference( $0 ) instanceof ", stringify!( $kind ), ") | 0;" ),
                 reference.as_raw()
             ) == 1

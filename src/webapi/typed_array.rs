@@ -21,7 +21,7 @@ macro_rules! arraykind {
 
             fn into_typed_array( slice: &[Self] ) -> TypedArray< Self > {
                 let slice_ptr = (slice.as_ptr() as usize / size_of::<$element_type>()) as i32;
-                let raw = __js_raw_asm!(
+                let raw = __js_raw_asm_int!(
                     concat!(
                         "return Module.STDWEB_PRIVATE.acquire_rust_reference( Module.",
                         stringify!($heap_type),
@@ -39,7 +39,7 @@ macro_rules! arraykind {
             }
 
             fn into_typed_array_from_array_buffer( buffer: &ArrayBuffer ) -> TypedArray< Self > {
-                let raw = __js_raw_asm!(
+                let raw = __js_raw_asm_int!(
                     concat!(
                         "return Module.STDWEB_PRIVATE.acquire_rust_reference( new ",
                         stringify!( $js_array_type ),

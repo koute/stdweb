@@ -7,7 +7,7 @@ pub struct Symbol( pub(crate) i32 );
 
 impl Clone for Symbol {
     fn clone( &self ) -> Self {
-        let id = __js_raw_asm!( concat!(
+        let id = __js_raw_asm_int!( concat!(
             "var value = Module.STDWEB_PRIVATE.get_raw_value( $0 );",
             "return Module.STDWEB_PRIVATE.register_raw_value( value );"
         ), self.0 );

@@ -69,7 +69,7 @@ impl Parse for JsRawInvocation {
 }
 
 fn js_raw_code( target: Target, js_raw: JsRawInvocation ) -> TokenStream {
-    let (shim_name, shim) = js_shim_extern_code( target, &js_raw.code, js_raw.args.len() );
+    let (shim_name, shim) = js_shim_extern_code( target, &js_raw.code, js_raw.args.len(), None );
     let args = js_raw.args;
 
     quote! {{
@@ -90,13 +90,19 @@ pub fn js_raw_attr( target: Target, input: TokenStream ) -> Result< TokenStream 
     let wrapper: AttrHack< JsRawInvocation > = syn::parse2( input )?;
     let wrapper_name = wrapper.fn_name;
     let js_raw = wrapper.inner;
+    let return_ty = wrapper.return_ty;
 
-    let (shim_name, shim) = js_shim_extern_code( target, &js_raw.code, js_raw.args.len() );
+    let (shim_name, shim) = js_shim_extern_code( target, &js_raw.code, js_raw.args.len(), return_ty.clone() );
+    let return_signature = if let Some( ty ) = return_ty {
+        quote! { -> #ty }
+    } else {
+        quote! {}
+    };
 
     let prototype_args = dummy_idents( js_raw.args.len() ).map( |name| quote! { #name: *const u8 } );
     let call_args = dummy_idents( js_raw.args.len() ).map( |name| quote! { #name } );
     let output = quote! {
-        fn #wrapper_name( #(#prototype_args),* ) -> i32 {
+        fn #wrapper_name( #(#prototype_args),* ) #return_signature {
             #shim
             unsafe {
                 #shim_name( #(#call_args),* )

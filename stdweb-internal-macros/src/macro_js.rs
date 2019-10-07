@@ -30,7 +30,7 @@ pub fn js_attr( target: Target, input: TokenStream, outer_no_return: bool ) -> R
 
     code = format!( "{}{}", prelude, code );
 
-    let (shim_name, shim) = js_shim_extern_code( target, &code, inner_arg_count );
+    let (shim_name, shim) = js_shim_extern_code( target, &code, inner_arg_count, wrapper.return_ty );
 
     let arg_names: Vec< _ > = dummy_idents( outer_arg_count ).collect();
     let prototype_args = arg_names.clone().into_iter().map( |name| quote! { #name: *const u8 } );
@@ -44,7 +44,7 @@ pub fn js_attr( target: Target, input: TokenStream, outer_no_return: bool ) -> R
 
     let call_args = call_args.into_iter().map( |name| quote! { #name } );
     let output = quote! {
-        fn #wrapper_name( #(#prototype_args),* ) -> i32 {
+        fn #wrapper_name( #(#prototype_args),* ) {
             #shim
             unsafe {
                 #shim_name( #(#call_args),* )

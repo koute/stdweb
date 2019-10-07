@@ -5,6 +5,7 @@ use syn::parse::{ParseStream, Parse, Result};
 // this problem.
 pub struct AttrHack< T: Parse > {
     pub fn_name: syn::Ident,
+    pub return_ty: Option< syn::Type >,
     pub inner: T
 }
 
@@ -16,6 +17,14 @@ impl< T > Parse for AttrHack< T > where T: Parse {
         #[allow(unused_variables)]
         let fn_args_input;
         parenthesized!( fn_args_input in input );
+
+        let return_ty =
+            if input.peek( Token![->] ) {
+                let _: Token![->] = input.parse()?;
+                Some( input.parse()? )
+            } else {
+                None
+            };
 
         let fn_body_input;
         braced!( fn_body_input in input );
@@ -31,6 +40,7 @@ impl< T > Parse for AttrHack< T > where T: Parse {
 
             Ok( AttrHack {
                 fn_name,
+                return_ty,
                 inner
             })
         } else {

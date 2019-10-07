@@ -197,16 +197,16 @@ pub fn derive_reference_type( input: TokenStream ) -> TokenStream {
         code.push_str( "var o = Module.STDWEB_PRIVATE.acquire_js_reference( $0 );" );
         code.push_str( "return (" );
         code.push_str( &instance_of_code.join( " && " ) );
-        code.push_str( ") | 0;" );
+        code.push_str( ");" );
 
         quote! {
             impl #impl_generics ::stdweb::InstanceOf for #name #ty_generics #where_clause {
                 #[inline]
                 fn instance_of( reference: &::stdweb::Reference ) -> bool {
-                    __js_raw_asm!(
+                    __js_raw_asm_bool!(
                         #code,
                         reference.as_raw()
-                    ) == 1
+                    )
                 }
             }
         }

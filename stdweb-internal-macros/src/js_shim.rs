@@ -50,11 +50,18 @@ fn output_snippet( snippet: &Snippet ) {
     fs::write( path, blob ).expect( "failed to write a JS snippet" );
 }
 
-pub fn js_shim_extern_code( target: Target, code: &str, arg_count: usize ) -> (syn::Ident, TokenStream) {
+pub fn js_shim_extern_code( target: Target, code: &str, arg_count: usize, return_ty: Option< syn::Type > ) -> (syn::Ident, TokenStream) {
     let snippet = Snippet {
         name: format!( "__cargo_web_snippet_{}", hash( code ) ),
         code: code.to_owned(),
         arg_count
+    };
+
+    let has_return_value = return_ty.is_some();
+    let return_signature = if let Some( ty ) = return_ty {
+        quote! { -> #ty }
+    } else {
+        quote! {}
     };
 
     let shim_name = syn::Ident::new( &snippet.name, Span::call_site() );
@@ -63,17 +70,22 @@ pub fn js_shim_extern_code( target: Target, code: &str, arg_count: usize ) -> (s
     let output = match target {
         Target::Emscripten => {
             let code_bytes = syn::LitByteStr::new( format!( "{}\0", code ).as_str().as_bytes(), Span::call_site() );
+            let return_semicolon = if has_return_value {
+                quote! {}
+            } else {
+                quote! { ; }
+            };
 
             quote! {
                 const SNIPPET: &'static [u8] = #code_bytes;
 
-                fn #shim_name( #(#shim_args),* ) -> i32 {
+                fn #shim_name( #(#shim_args),* ) #return_signature {
                     extern "C" {
                         pub fn emscripten_asm_const_int( code: *const u8, ... ) -> i32;
                     }
 
                     unsafe {
-                        emscripten_asm_const_int( SNIPPET as *const _ as *const u8, #(#shim_args_passthrough),* )
+                        emscripten_asm_const_int( SNIPPET as *const _ as *const u8, #(#shim_args_passthrough),* ) #return_semicolon
                     }
                 }
             }
@@ -82,7 +94,7 @@ pub fn js_shim_extern_code( target: Target, code: &str, arg_count: usize ) -> (s
             output_snippet( &snippet );
             quote! {
                 extern "C" {
-                    pub fn #shim_name( #(#shim_args),* ) -> i32;
+                    pub fn #shim_name( #(#shim_args),* ) #return_signature;
                 }
             }
         },
@@ -104,10 +116,10 @@ pub fn js_shim_extern_code( target: Target, code: &str, arg_count: usize ) -> (s
             let shim_args = &shim_args;
             quote! {
                 use ::stdweb::private::wasm_bindgen::prelude::*;
-                unsafe fn #shim_name( #(#shim_args),* ) -> i32 {
+                unsafe fn #shim_name( #(#shim_args),* ) #return_signature {
                     #[wasm_bindgen(inline_js = #code_string)]
                     extern "C" {
-                        pub fn #shim_name( module: JsValue, #(#shim_args),* ) -> i32;
+                        pub fn #shim_name( module: JsValue, #(#shim_args),* ) #return_signature;
                     }
 
                     #shim_name( ::stdweb::private::get_module(), #(#shim_args_passthrough),* )
