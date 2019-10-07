@@ -196,6 +196,8 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
 [WebAssembly]: https://en.wikipedia.org/wiki/WebAssembly
 
 ## Changelog
+   * `stdweb 0.4.20`
+      * Compatibility with the newest `wasm-bindgen`
    * `stdweb 0.4.19`
       * New methods:
          * `Document::fullscreen_enabled`
