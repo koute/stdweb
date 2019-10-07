@@ -1,0 +1,10 @@
+[package]
+name = "wasm-bindgen-test-tests"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+stdweb = { path = ".." }
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.1"
