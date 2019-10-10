@@ -198,6 +198,8 @@ the native `wasm32-unknown-unknown` which doesn't need Emscripten
 ## Changelog
    * `stdweb 0.4.20`
       * Compatibility with the newest `wasm-bindgen`
+      * New events:
+         * `FullscreenChangeEvent`
    * `stdweb 0.4.19`
       * New methods:
          * `Document::fullscreen_enabled`
