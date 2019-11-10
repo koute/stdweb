@@ -4,6 +4,7 @@ use webcore::value::{Undefined, Value};
 use webapi::html_elements::{CanvasElement, ImageElement};
 use webapi::html_element::IHtmlElement;
 use webapi::dom_exception::{SyntaxError, IndexSizeError, InvalidStateError, SecurityError, NotSupportedError};
+use webapi::typed_array::TypedArray;
 use webapi::error::TypeError;
 
 /// Trait implemented by rendering contexts which can be obtained from a canvas.
@@ -309,19 +310,16 @@ impl CanvasGradient {
 
 impl ImageData {
 
-    /*
     /// Returns a Uint8ClampedArray representing a one-dimensional array containing the data in the RGBA order,
     /// with integer values between 0 and 255 (included).
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/ImageData/data)
     // https://html.spec.whatwg.org/#2dcontext:dom-imagedata-data
-    // TODO: Return Uint8ClampedArray reference PR 96: https://github.com/koute/stdweb/pull/96
-
-    pub fn get_data(&self) -> TypedArray<u8> {
+    pub fn data(&self) -> TypedArray<u8> {
         js! (
             return @{&self.0}.data;
         ).try_into().unwrap()
-    }*/
+    }
 
     /// Returns the number of rows in the image data object.
     ///
