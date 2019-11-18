@@ -68,6 +68,17 @@ impl Window {
         ).try_into().unwrap()
     }
 
+    /// The Window.prompt() displays a dialog with an
+    /// optional message prompting the user to input some text.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Window/prompt)
+    // https://html.spec.whatwg.org/#the-window-object:dom-prompt
+    pub fn prompt( &self, message: &str ) -> Option<String> {
+        js!(
+            return @{self}.prompt( @{message} );
+        ).try_into().unwrap()
+    }
+
     /// The `local_storage` property allows you to access a local [Storage](struct.Storage.html)
     /// object.
     ///

@@ -245,7 +245,8 @@ pub mod web {
     pub use webapi::global::{
         set_timeout,
         alert,
-        confirm
+        confirm,
+        prompt
     };
     pub use webapi::cross_origin_setting::CrossOriginSetting;
     pub use webapi::date::Date;

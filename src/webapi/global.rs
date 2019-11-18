@@ -15,3 +15,8 @@ pub fn alert( message: &str ) {
 pub fn confirm( message: &str ) -> bool {
     return window().confirm( message );
 }
+
+/// An alias for [window.prompt](struct.Window.html#method.prompt).
+pub fn prompt( message: &str ) -> Option<String> {
+    return window().prompt( message );
+}
