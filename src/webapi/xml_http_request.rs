@@ -185,6 +185,20 @@ impl XmlHttpRequest {
         }
     }
 
+    /// Returns the string containing the text of all the request headers.
+    /// The headers are separated separated by CRLF.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/getAllResponseHeaders)
+    // https://xhr.spec.whatwg.org/#ref-for-dom-xmlhttprequest-getallresponseheaders
+    pub fn get_all_response_headers(&self) -> Option<String> {
+        let headers = js!( return @{self}.getAllResponseHeaders(); );
+        match headers {
+            Value::Null => None,
+            Value::String(text) => Some(text),
+            _ => unreachable!(),
+        }
+    }
+
     /// Sets the value of an HTTP request header. Must be called after `open()`,
     /// but before `send()`. If this method is called several times with the same
     /// header, the values are merged into one single request header.
