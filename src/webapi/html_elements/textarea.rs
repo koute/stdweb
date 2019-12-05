@@ -37,4 +37,40 @@ impl TextAreaElement {
             @{self}.value = @{value};
         }
     }
+    
+    /// The offset to the start of the selection.
+    // https://html.spec.whatwg.org/#dom-textarea/input-selectionstart
+    #[inline]
+    pub fn selection_start( &self ) -> u32 {
+        js! (
+            return @{self}.selectionStart;
+        ).try_into().ok()
+    }
+
+    /// Sets the offset to the start of the selection.
+    // https://html.spec.whatwg.org/#dom-textarea/input-selectionstart
+    #[inline]
+    pub fn set_selection_start( &self, value: u32 ) -> Result<(), InvalidStateError> {
+        js_try! ( @(no_return)
+            @{self}.selectionStart = @{value};
+        ).unwrap()
+    }
+
+    /// The offset to the end of the selection.
+    // https://html.spec.whatwg.org/#dom-textarea/input-selectionend
+    #[inline]
+    pub fn selection_end( &self ) -> u32 {
+        js! (
+            return @{self}.selectionEnd;
+        ).try_into().ok()
+    }
+
+    /// Sets the offset to the end of the selection.
+    // https://html.spec.whatwg.org/#dom-textarea/input-selectionend
+    #[inline]
+    pub fn set_selection_end( &self, value: u32 ) -> Result<(), InvalidStateError> {
+        js_try! ( @(no_return)
+            @{self}.selectionEnd = @{value};
+        ).unwrap()
+    }
 }
