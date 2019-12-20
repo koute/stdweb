@@ -36,11 +36,8 @@ impl Wait {
         let ( sender, receiver ) = oneshot::channel();
 
         let callback = move || {
-            // TODO is this correct ?
-            match sender.send( () ) {
-                Ok( _ ) => {},
-                Err( _ ) => {},
-            };
+            // We unwrap here because an Error value indicates a significant bug in this code.
+            sender.send(()).unwrap();
         };
 
         let timer = js!(
@@ -66,7 +63,7 @@ impl Future for Wait {
 
     #[inline]
     fn poll( mut self: Pin< &mut Self >, cx: &mut Context ) -> Poll< Self::Output > {
-        // TODO is this unwrap correct ?
+        // We unwrap here because an Error value indicates a significant bug in this code.
         self.receiver.poll_unpin( cx ).map( |x| x.unwrap() )
     }
 }

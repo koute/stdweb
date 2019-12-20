@@ -1059,6 +1059,7 @@ impl CanvasRenderingContext2d {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage)
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-drawimage
+    #[allow(clippy::too_many_arguments)] // I would agree it's too many, but we're trying to match the standard.
     pub fn draw_image_s(&self, image: ImageElement,
                         sx: f64, sy: f64, s_width: f64, s_height: f64,
                         dx: f64, dy: f64, d_width: f64, d_height: f64
@@ -1210,6 +1211,7 @@ impl CanvasRenderingContext2d {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/putImageData)
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-putimagedata
+    #[allow(clippy::too_many_arguments)] // I would agree it's too many, but we're trying to match the standard.
     pub fn put_image_data_dirty(&self,
                             image_data: ImageData,
                             dx: f32, dy: f32,
@@ -1306,6 +1308,7 @@ impl CanvasRenderingContext2d {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/setTransform)
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-settransform
+    #[allow(clippy::many_single_char_names)]
     pub fn set_transform(&self, a: f64, b: f64, c: f64, d: f64, e: f64, f: f64) {
         js! { @(no_return)
             @{&self.0}.setTransform(@{a}, @{b}, @{c}, @{d}, @{e}, @{f});
@@ -1359,6 +1362,7 @@ impl CanvasRenderingContext2d {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/transform)
     // https://html.spec.whatwg.org/#2dcontext:dom-context-2d-transform
+    #[allow(clippy::many_single_char_names)]
     pub fn transform(&self, a: f64, b: f64, c: f64, d: f64, e: f64, f: f64) {
         js! { @(no_return)
             @{&self.0}.transform(@{a}, @{b}, @{c}, @{d}, @{e}, @{f});

@@ -58,7 +58,7 @@ impl Default for Tag {
 
 #[doc(hidden)]
 pub trait JsSerializeOwned: Sized {
-    fn into_js_owned< 'a >( value: &'a mut Option< Self > ) -> SerializedValue< 'a >;
+    fn into_js_owned( value: &mut Option< Self > ) -> SerializedValue;
 }
 
 /// A trait for types which can be serialized through the `js!` macro.
@@ -67,7 +67,7 @@ pub trait JsSerializeOwned: Sized {
 /// to be used inside generic code for specifying trait bounds.
 pub trait JsSerialize {
     #[doc(hidden)]
-    fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a >;
+    fn _into_js( & self ) -> SerializedValue;
 }
 
 // This is a generic structure for serializing every JavaScript value.
@@ -411,12 +411,16 @@ macro_rules! untagged_boilerplate {
         impl< 'a > From< $untagged_type > for SerializedValue< 'a > {
             #[inline]
             fn from( untagged: $untagged_type ) -> Self {
+                let mut value = SerializedValue {
+                    data_1: 0,
+                    data_2: 0,
+                    tag: $tag,
+                    phantom: PhantomData,
+                };
                 unsafe {
-                    let mut value: SerializedValue = mem::uninitialized();
-                    *(&mut value as *mut SerializedValue as *mut $untagged_type) = untagged;
-                    value.tag = $tag;
-                    value
+                    *(&mut value as *mut _ as *mut $untagged_type) = untagged;
                 }
+                return value;
             }
         }
 
@@ -477,7 +481,7 @@ impl< 'a > SerializedValue< 'a > {
 impl JsSerialize for () {
     #[doc(hidden)]
     #[inline]
-    fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
+    fn _into_js( & self ) -> SerializedValue {
         SerializedUntaggedUndefined.into()
     }
 }
@@ -487,7 +491,7 @@ __js_serializable_boilerplate!( () );
 impl JsSerialize for Undefined {
     #[doc(hidden)]
     #[inline]
-    fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
+    fn _into_js( & self ) -> SerializedValue {
         SerializedUntaggedUndefined.into()
     }
 }
@@ -497,7 +501,7 @@ __js_serializable_boilerplate!( Undefined );
 impl JsSerialize for Null {
     #[doc(hidden)]
     #[inline]
-    fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
+    fn _into_js( & self ) -> SerializedValue {
         SerializedUntaggedNull.into()
     }
 }
@@ -507,7 +511,7 @@ __js_serializable_boilerplate!( Null );
 impl JsSerialize for Symbol {
     #[doc(hidden)]
     #[inline]
-    fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
+    fn _into_js( & self ) -> SerializedValue {
         SerializedUntaggedSymbol {
             id: self.0
         }.into()
@@ -519,7 +523,7 @@ __js_serializable_boilerplate!( Symbol );
 impl JsSerialize for Reference {
     #[doc(hidden)]
     #[inline]
-    fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
+    fn _into_js( & self ) -> SerializedValue {
         SerializedUntaggedReference {
             refid: self.as_raw()
         }.into()
@@ -531,7 +535,7 @@ __js_serializable_boilerplate!( Reference );
 impl JsSerialize for bool {
     #[doc(hidden)]
     #[inline]
-    fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
+    fn _into_js( & self ) -> SerializedValue {
         if *self {
             SerializedUntaggedTrue {}.into()
         } else {
@@ -545,7 +549,7 @@ __js_serializable_boilerplate!( bool );
 impl JsSerialize for str {
     #[doc(hidden)]
     #[inline]
-    fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
+    fn _into_js( & self ) -> SerializedValue {
         SerializedUntaggedString {
             pointer: self.as_ptr() as u32,
             length: self.len() as u32
@@ -558,7 +562,7 @@ __js_serializable_boilerplate!( impl< 'a > for &'a str );
 impl JsSerialize for String {
     #[doc(hidden)]
     #[inline]
-    fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
+    fn _into_js( & self ) -> SerializedValue {
         self.as_str()._into_js()
     }
 }
@@ -568,7 +572,7 @@ __js_serializable_boilerplate!( String );
 impl JsSerialize for i8 {
     #[doc(hidden)]
     #[inline]
-    fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
+    fn _into_js( & self ) -> SerializedValue {
         SerializedUntaggedI32 {
             value: *self as i32
         }.into()
@@ -580,7 +584,7 @@ __js_serializable_boilerplate!( i8 );
 impl JsSerialize for i16 {
     #[doc(hidden)]
     #[inline]
-    fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
+    fn _into_js( & self ) -> SerializedValue {
         SerializedUntaggedI32 {
             value: *self as i32
         }.into()
@@ -592,7 +596,7 @@ __js_serializable_boilerplate!( i16 );
 impl JsSerialize for i32 {
     #[doc(hidden)]
     #[inline]
-    fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
+    fn _into_js( & self ) -> SerializedValue {
         SerializedUntaggedI32 {
             value: *self
         }.into()
@@ -604,7 +608,7 @@ __js_serializable_boilerplate!( i32 );
 impl JsSerialize for u8 {
     #[doc(hidden)]
     #[inline]
-    fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
+    fn _into_js( & self ) -> SerializedValue {
         SerializedUntaggedI32 {
             value: *self as i32
         }.into()
@@ -616,7 +620,7 @@ __js_serializable_boilerplate!( u8 );
 impl JsSerialize for u16 {
     #[doc(hidden)]
     #[inline]
-    fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
+    fn _into_js( & self ) -> SerializedValue {
         SerializedUntaggedI32 {
             value: *self as i32
         }.into()
@@ -628,7 +632,7 @@ __js_serializable_boilerplate!( u16 );
 impl JsSerialize for u32 {
     #[doc(hidden)]
     #[inline]
-    fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
+    fn _into_js( & self ) -> SerializedValue {
         SerializedUntaggedF64 {
             value: *self as f64
         }.into()
@@ -640,7 +644,7 @@ __js_serializable_boilerplate!( u32 );
 impl JsSerialize for f32 {
     #[doc(hidden)]
     #[inline]
-    fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
+    fn _into_js( & self ) -> SerializedValue {
         SerializedUntaggedF64 {
             value: *self as f64
         }.into()
@@ -652,7 +656,7 @@ __js_serializable_boilerplate!( f32 );
 impl JsSerialize for f64 {
     #[doc(hidden)]
     #[inline]
-    fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
+    fn _into_js( & self ) -> SerializedValue {
         SerializedUntaggedF64 {
             value: *self
         }.into()
@@ -664,7 +668,7 @@ __js_serializable_boilerplate!( f64 );
 impl JsSerialize for Number {
     #[doc(hidden)]
     #[inline]
-    fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
+    fn _into_js( & self ) -> SerializedValue {
         use webcore::number::{Storage, get_storage};
         match *get_storage( self ) {
             Storage::I32( ref value ) => value._into_js(),
@@ -678,7 +682,7 @@ __js_serializable_boilerplate!( Number );
 impl< T: JsSerialize > JsSerialize for Option< T > {
     #[doc(hidden)]
     #[inline]
-    fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
+    fn _into_js( & self ) -> SerializedValue {
         if let Some( value ) = self.as_ref() {
             value._into_js()
         } else {
@@ -692,7 +696,7 @@ __js_serializable_boilerplate!( impl< T > for Option< T > where T: JsSerialize )
 impl< T: JsSerialize > JsSerialize for OptionalArg< T > {
     #[doc(hidden)]
     #[inline]
-    fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
+    fn _into_js( & self ) -> SerializedValue {
         if let OptionalArg::Some( value ) = self.as_ref() {
             value._into_js()
         } else {
@@ -706,7 +710,7 @@ __js_serializable_boilerplate!( impl< T > for OptionalArg< T > where T: JsSerial
 impl< T: JsSerialize > JsSerialize for [T] {
     #[doc(hidden)]
     #[inline]
-    fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
+    fn _into_js( & self ) -> SerializedValue {
         let mut output = global_arena::reserve( self.len() );
         for value in self {
             unsafe {
@@ -726,7 +730,7 @@ __js_serializable_boilerplate!( impl< 'a, T > for &'a [T] where T: JsSerialize )
 impl< T: JsSerialize > JsSerialize for Vec< T > {
     #[doc(hidden)]
     #[inline]
-    fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
+    fn _into_js( & self ) -> SerializedValue {
         self.as_slice()._into_js()
     }
 }
@@ -753,26 +757,26 @@ fn object_into_js< 'a, K: AsRef< str >, V: 'a + JsSerialize, I: Iterator< Item =
 impl< K: AsRef< str >, V: JsSerialize > JsSerialize for BTreeMap< K, V > {
     #[doc(hidden)]
     #[inline]
-    fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
+    fn _into_js( & self ) -> SerializedValue {
         object_into_js( self.iter() )
     }
 }
 
 __js_serializable_boilerplate!( impl< K, V > for BTreeMap< K, V > where K: AsRef< str >, V: JsSerialize );
 
-impl< K: AsRef< str > + Eq + Hash, V: JsSerialize > JsSerialize for HashMap< K, V > {
+impl< K: AsRef< str > + Eq + Hash, V: JsSerialize, S: std::hash::BuildHasher > JsSerialize for HashMap< K, V, S > {
     #[doc(hidden)]
     #[inline]
-    fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
+    fn _into_js( &self ) -> SerializedValue {
         object_into_js( self.iter() )
     }
 }
 
-__js_serializable_boilerplate!( impl< K, V > for HashMap< K, V > where K: AsRef< str > + Eq + Hash, V: JsSerialize );
+__js_serializable_boilerplate!( impl< K, V, S > for HashMap< K, V, S > where K: AsRef< str > + Eq + Hash, V: JsSerialize, S: std::hash::BuildHasher );
 
 impl JsSerialize for Value {
     #[doc(hidden)]
-    fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
+    fn _into_js( &self ) -> SerializedValue {
         match *self {
             Value::Undefined => SerializedUntaggedUndefined.into(),
             Value::Null => SerializedUntaggedNull.into(),
@@ -792,7 +796,7 @@ macro_rules! impl_for_unsafe_typed_array {
         impl< 'r > JsSerialize for UnsafeTypedArray< 'r, $ty > {
             #[doc(hidden)]
             #[inline]
-            fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
+            fn _into_js( &self ) -> SerializedValue {
                 SerializedUntaggedUnsafeTypedArray {
                     pointer: self.0.as_ptr() as u32 / mem::size_of::< $ty >() as u32,
                     length: self.0.len() as u32,
@@ -822,7 +826,7 @@ pub struct NonFunctionTag;
 
 impl< T: JsSerialize > JsSerializeOwned for Newtype< (NonFunctionTag, ()), T > {
     #[inline]
-    fn into_js_owned< 'x >( value: &'x mut Option< Self > ) -> SerializedValue< 'x > {
+    fn into_js_owned( value: &mut Option< Self > ) -> SerializedValue {
         JsSerialize::_into_js( value.as_ref().unwrap().as_ref() )
     }
 }
@@ -864,6 +868,7 @@ macro_rules! impl_for_fn_and_modifier {
                 let mut arguments = arguments.drain( .. );
                 let mut nth_argument = 0;
                 $(
+                    #[allow(clippy::match_wild_err_arm)]
                     let $kind = match arguments.next().unwrap().try_into() {
                         Ok( value ) => value,
                         Err( _ ) => {
@@ -903,7 +908,7 @@ macro_rules! impl_for_fn_and_modifier {
             where F: $trait< ($($kind,)*) > + 'static, F::Output: JsSerializeOwned
         {
             #[inline]
-            fn into_js_owned< 'a >( value: &'a mut Option< Self > ) -> SerializedValue< 'a > {
+            fn into_js_owned( value: &mut Option< Self > ) -> SerializedValue {
                 let $wrapped = value.take().unwrap().unwrap_newtype();
                 let callback: *mut F = Box::into_raw( Box::new( $unwrap ) );
                 let adapter_pointer = <Self as FuncallAdapter< F > >::funcall_adapter;
@@ -920,7 +925,7 @@ macro_rules! impl_for_fn_and_modifier {
             where F: $trait< ($($kind,)*) > + 'static, F::Output: JsSerializeOwned
         {
             #[inline]
-            fn into_js_owned< 'a >( value: &'a mut Option< Self > ) -> SerializedValue< 'a > {
+            fn into_js_owned( value: &mut Option< Self > ) -> SerializedValue {
                 if let Some( $wrapped ) = value.take().unwrap().unwrap_newtype() {
                     let callback: *mut F = Box::into_raw( Box::new( $unwrap ) );
                     let adapter_pointer = <Newtype< (FunctionTag, ($($kind,)*)), $wrappedtype > as FuncallAdapter< F > >::funcall_adapter;
@@ -976,14 +981,14 @@ loop_through_identifiers!( impl_for_fn );
 impl< 'a, T: ?Sized + JsSerialize > JsSerialize for &'a T {
     #[doc(hidden)]
     #[inline]
-    fn _into_js< 'x >( &'x self ) -> SerializedValue< 'x > {
+    fn _into_js( &self ) -> SerializedValue {
         T::_into_js( *self )
     }
 }
 
 impl JsSerialize for ConversionError {
     #[doc(hidden)]
-    fn _into_js< 'x >( &'x self ) -> SerializedValue< 'x > {
+    fn _into_js( &self ) -> SerializedValue {
         let type_error: TypeError = self.into();
         let reference: Reference = type_error.into();
         let value: Value = reference.into();

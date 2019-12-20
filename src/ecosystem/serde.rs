@@ -168,15 +168,15 @@ impl Serialize for Value {
                 } else if Object::instance_of( reference ) {
                     let object: Object = reference.try_into().unwrap();
                     let value: BTreeMap< String, Value > = object.into();
-                    let mut map = try!( serializer.serialize_map( Some( value.len() ) ) );
+                    let mut map = serializer.serialize_map( Some( value.len() ) )?;
                     for (key, value) in value {
-                        try!( map.serialize_key( &key ) );
-                        try!( map.serialize_value( &value ) );
+                        map.serialize_key( &key )?;
+                        map.serialize_value( &value )?;
                     }
 
                     map.end()
                 } else {
-                    let map = try!( serializer.serialize_map( None ) );
+                    let map = serializer.serialize_map( None )?;
                     map.end()
                 }
             }
@@ -377,7 +377,7 @@ impl From< ConversionError > for value::ConversionError {
     }
 }
 
-#[derive(Debug)]
+#[derive(Default, Debug)]
 pub struct Serializer {
 }
 
@@ -526,7 +526,7 @@ impl< 'a > ser::Serializer for &'a mut Serializer {
 }
 
 #[doc(hidden)]
-#[cfg_attr(feature = "cargo-clippy", allow(needless_pass_by_value))]
+#[allow(clippy::needless_pass_by_value)]
 #[inline]
 pub fn to_value< T: Serialize >( value: T ) -> Result< Value, ConversionError > {
     let mut serializer = Serializer {};
@@ -869,8 +869,8 @@ impl< 'de > de::Deserializer< 'de > for Value {
         };
 
         visitor.visit_enum( EnumDeserializer {
-            variant: variant,
-            value: value,
+            variant,
+            value,
         })
     }
 
@@ -1254,7 +1254,7 @@ impl< T: fmt::Debug > fmt::Debug for Serde< T > {
 
 impl< T: Serialize > JsSerialize for Serde< T > {
     #[inline]
-    fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
+    fn _into_js( &self ) -> SerializedValue {
         let value = to_value( &self.0 ).unwrap();
         global_arena::serialize_value( value )
     }

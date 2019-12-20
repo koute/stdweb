@@ -77,6 +77,11 @@ pub trait IBlob: ReferenceType {
     {
         slice_blob(self, range, Some(content_type))
     }
+
+    /// Returns `true` if the `Blob` contains no bytes.
+    fn is_empty( &self ) -> bool {
+        self.len() == 0
+    }
 }
 
 /// A reference to a JavaScript object which implements the [IBlob](trait.IBlob.html)
@@ -89,6 +94,12 @@ pub trait IBlob: ReferenceType {
 pub struct Blob( Reference );
 
 impl IBlob for Blob {}
+
+impl Default for Blob {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl Blob {
     /// Creates a new `Blob`.

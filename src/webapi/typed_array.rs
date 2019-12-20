@@ -130,6 +130,11 @@ impl< T: ArrayKind > TypedArray< T > {
     pub fn to_vec( &self ) -> Vec< T > {
         T::from_typed_array( self )
     }
+
+    /// Returns `true` if the buffer contains no elements.
+    pub fn is_empty( &self ) -> bool {
+        self.len() == 0
+    }
 }
 
 impl< 'a, T: ArrayKind > From< &'a [T] > for TypedArray< T > {

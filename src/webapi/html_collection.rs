@@ -41,6 +41,11 @@ impl HtmlCollection {
             index: 0
         }
     }
+
+    /// Returns true if the collection contains no elements
+    pub fn is_empty( &self ) -> bool {
+        self.len() == 0
+    }
 }
 
 

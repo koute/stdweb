@@ -132,7 +132,7 @@ macro_rules! _js_impl {
             let restore_point = $crate::private::ArenaRestorePoint::new();
             $crate::_js_impl!( @serialize [$($args)*] [$($arg_names)*] );
 
-            #[allow(unused_unsafe, unused_parens)]
+            #[allow(unused_unsafe, unused_parens, clippy::too_many_arguments)]
             let result = unsafe {
                 $crate::_js_impl!(
                     @if no_return in [$($flags)*] {{
@@ -255,14 +255,14 @@ macro_rules! __js_serializable_boilerplate {
     (($($impl_arg:tt)*) ($($kind_arg:tt)*) ($($bounds:tt)*)) => {
         impl< $($impl_arg)* > $crate::private::JsSerializeOwned for $($kind_arg)* where $($bounds)* {
             #[inline]
-            fn into_js_owned< '_a >( value: &'_a mut Option< Self > ) -> $crate::private::SerializedValue< '_a > {
+            fn into_js_owned( value: &mut Option< Self > ) -> $crate::private::SerializedValue {
                 $crate::private::JsSerialize::_into_js( value.as_ref().unwrap() )
             }
         }
 
         impl< '_r, $($impl_arg)* > $crate::private::JsSerializeOwned for &'_r $($kind_arg)* where $($bounds)* {
             #[inline]
-            fn into_js_owned< '_a >( value: &'_a mut Option< Self > ) -> $crate::private::SerializedValue< '_a > {
+            fn into_js_owned( value: &mut Option< Self > ) -> $crate::private::SerializedValue {
                 $crate::private::JsSerialize::_into_js( value.unwrap() )
             }
         }
@@ -485,10 +485,10 @@ macro_rules! error_enum_boilerplate {
         impl ::webcore::serialization::JsSerialize for $error_name {
             #[doc(hidden)]
             #[inline]
-            fn _into_js< 'a >( &'a self ) -> ::webcore::serialization::SerializedValue< 'a > {
+            fn _into_js( &self ) -> ::webcore::serialization::SerializedValue {
                 let reference: &::webcore::value::Reference = match self {
                     $(
-                        &$error_name::$variant( ref variant ) => variant.as_ref(),
+                        $error_name::$variant( ref variant ) => variant.as_ref(),
                     )+
                 };
 

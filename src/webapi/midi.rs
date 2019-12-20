@@ -86,7 +86,7 @@ impl MidiAccess {
     /// The MIDI input ports available to the system.
     // https://webaudio.github.io/web-midi-api/#dom-midiaccess-inputs
     pub fn inputs( &self ) -> MidiInputMap {
-        return js!(
+        js!(
             return @{self}.inputs;
         ).try_into().unwrap()
     }
@@ -94,7 +94,7 @@ impl MidiAccess {
     /// The MIDI output ports available to the system.
     // https://webaudio.github.io/web-midi-api/#dom-midiaccess-outputs
     pub fn outputs( &self ) -> MidiOutputMap {
-        return js!(
+        js!(
             return @{self}.outputs;
         ).try_into().unwrap()
     }
@@ -102,7 +102,7 @@ impl MidiAccess {
     /// This attribute informs the user whether system exclusive support is enabled.
     // https://webaudio.github.io/web-midi-api/#dom-midiaccess-sysexenabled
     pub fn sysex_enabled( &self ) -> bool {
-        return js!(
+        js!(
             return @{self}.sysexEnabled;
         ).try_into().unwrap()
     }
@@ -189,13 +189,13 @@ pub trait IMidiPort: IEventTarget {
     /// has chosen for their application.
     // https://webaudio.github.io/web-midi-api/#dom-midiport-id
     fn id( &self ) -> String {
-        return js!( return @{self.as_ref()}.id; ).try_into().unwrap();
+        js!( return @{self.as_ref()}.id; ).try_into().unwrap()
     }
 
     /// The system name of the port.
     // https://webaudio.github.io/web-midi-api/#dom-midiport-name
     fn name( &self ) -> Option< String > {
-        return js!( return @{self.as_ref()}.name; ).try_into().unwrap();
+        js!( return @{self.as_ref()}.name; ).try_into().unwrap()
     }
 }
 

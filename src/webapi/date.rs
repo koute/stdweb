@@ -13,6 +13,7 @@ impl Date {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date)
     // https://www.ecma-international.org/ecma-262/6.0/#sec-date-constructor-date
+    #[allow(clippy::new_without_default)] // Because this generates a different value every time, Default is not appropriate.
     pub fn new() -> Self {
         js!(
             return new Date();
@@ -485,6 +486,7 @@ impl Date {
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toString)
     // https://www.ecma-international.org/ecma-262/6.0/#sec-date.prototype.tostring
     #[inline]
+    #[allow(clippy::inherent_to_string)] // We're matching the JS api here.
     pub fn to_string(&self) -> String {
         js!(
             return @{self}.toString();

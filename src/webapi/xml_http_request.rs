@@ -68,6 +68,12 @@ error_enum_boilerplate! {
     InvalidAccessError
 }
 
+impl Default for XmlHttpRequest {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl XmlHttpRequest {
     /// Creates new `XmlHttpRequest`.
     // https://xhr.spec.whatwg.org/#ref-for-dom-xmlhttprequest

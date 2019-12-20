@@ -293,11 +293,7 @@ impl Promise {
         PromiseFuture {
             future: receiver,
             _done_handle: self.done( |value| {
-                // TODO is this correct ?
-                match sender.send( value ) {
-                    Ok( _ ) => {},
-                    Err( _ ) => {},
-                };
+                let _ = sender.send( value );
             } ),
         }
     }
@@ -311,6 +307,7 @@ impl< T, E > TypedPromise< T, E >
     where T: TryFrom< Value >,
           E: TryFrom< Value >
 {
+    #[allow(dead_code)]
     #[inline]
     pub(crate) fn new( promise: Promise ) -> Self {
         TypedPromise( promise, PhantomData )

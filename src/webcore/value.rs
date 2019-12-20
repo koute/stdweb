@@ -2,7 +2,6 @@ use std::collections::{BTreeMap, HashMap};
 use std::hash::Hash;
 use std::fmt;
 use std::error;
-use std::mem;
 use std::borrow::Cow;
 use webcore::void::Void;
 use webcore::try_from::{TryFrom, TryInto};
@@ -66,10 +65,13 @@ impl PartialEq for Reference {
     fn eq( &self, other: &Reference ) -> bool {
         let result = self.0 == other.0;
 
-        debug_assert_eq!( {
-            let real_result: bool = js!( return @{self} === @{other}; ).try_into().unwrap();
-            real_result
-        }, result );
+        if cfg!(debug_assertions)
+        {
+            assert_eq!( {
+                let real_result: bool = js!( return @{self} === @{other}; ).try_into().unwrap();
+                real_result
+            }, result );
+        }
 
         result
     }
@@ -234,7 +236,7 @@ impl Value {
         match *self {
             Value::Reference( ref reference ) if Object::instance_of( reference ) => {
                 unsafe {
-                    Some( mem::transmute( reference ) )
+                    Some( &*(reference as *const Reference as *const Object) )
                 }
             },
             _ => None
@@ -247,7 +249,7 @@ impl Value {
         match *self {
             Value::Reference( ref reference ) if Array::instance_of( reference ) => {
                 unsafe {
-                    Some( mem::transmute( reference ) )
+                    Some( &*(reference as *const Reference as *const Array) )
                 }
             },
             _ => None
@@ -285,6 +287,10 @@ impl Value {
     /// the given type `T`; doesn't check whenever the reference is really of type `T`.
     ///
     /// In cases where the value is not a `Reference` a `None` is returned.
+    /// 
+    /// # Safety
+    /// 
+    /// If the reference is not really of type `T`, behavior is undefined.
     #[inline]
     pub unsafe fn into_reference_unchecked< T: ReferenceType >( self ) -> Option< T > {
         let reference: Option< Reference > = self.try_into().ok();
@@ -1008,7 +1014,7 @@ impl< E: Into< ConversionError >, V: TryFrom< Value, Error = E > > TryFrom< Valu
     }
 }
 
-impl< E: Into< ConversionError >, V: TryFrom< Value, Error = E > > TryFrom< Value > for HashMap< String, V > {
+impl< E: Into< ConversionError >, V: TryFrom< Value, Error = E >, S: ::std::hash::BuildHasher + Default > TryFrom< Value > for HashMap< String, V, S > {
     type Error = ConversionError;
 
     #[inline]

@@ -539,6 +539,17 @@ pub mod traits {
     pub use super::web::midi::IMidiPort;
 }
 
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn bla() {
+        // use webcore::try_from::TryInto;
+        // let res:bool = js!{ false }.try_into().unwrap();
+        // assert!(res);
+        println!("hi");
+    }
+}
+
 #[doc(hidden)]
 pub mod private {
     #[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", not(cargo_web)))]
@@ -551,7 +562,7 @@ pub mod private {
     pub use webcore::serialization::{
         JsSerialize,
         JsSerializeOwned,
-        SerializedValue
+        SerializedValue,
     };
 
     pub use webcore::newtype::{

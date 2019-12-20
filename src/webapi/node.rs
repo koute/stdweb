@@ -1,5 +1,3 @@
-use std::mem;
-
 use webcore::value::Reference;
 use webcore::try_from::{TryFrom, TryInto};
 use webapi::document::Document;
@@ -30,7 +28,8 @@ pub trait INode: IEventTarget {
     fn as_node( &self ) -> &Node {
         let reference: &Reference = self.as_ref();
         unsafe {
-            mem::transmute( reference )
+            //TODO: Is this really always safe? Can't downstream implementors implement INode?
+            &*(reference as *const Reference as *const Node)
         }
     }
 
@@ -344,8 +343,9 @@ pub trait INode: IEventTarget {
     }
 }
 
-/// Errors thrown by `Node` insertion methods.
+
 error_enum_boilerplate! {
+    /// Errors thrown by `Node` insertion methods.
     InsertNodeError,
     NotFoundError, HierarchyRequestError
 }

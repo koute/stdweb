@@ -64,15 +64,15 @@ pub fn initialize() {
         fn wasm_bindgen_initialize(
             memory: JsValue,
             table: JsValue,
-            alloc: &Closure< Fn( usize ) -> *mut u8 >,
-            free: &Closure< Fn( *mut u8, usize ) >
+            alloc: &Closure< dyn Fn( usize ) -> *mut u8 >,
+            free: &Closure< dyn Fn( *mut u8, usize ) >
         ) -> JsValue;
     }
 
     let memory = wasm_bindgen::memory();
     let table = wasm_bindgen::function_table();
-    let alloc = Closure::wrap( Box::new( alloc ) as Box< Fn( usize ) -> *mut u8 > );
-    let free = Closure::wrap( Box::new( free ) as Box< Fn( *mut u8, usize ) > );
+    let alloc = Closure::wrap( Box::new( alloc ) as Box< dyn Fn( usize ) -> *mut u8 > );
+    let free = Closure::wrap( Box::new( free ) as Box< dyn Fn( *mut u8, usize ) > );
     unsafe {
         let module = wasm_bindgen_initialize( memory, table, &alloc, &free );
         MODULE = Module( Some( module ) );

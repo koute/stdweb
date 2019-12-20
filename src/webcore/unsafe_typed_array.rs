@@ -5,6 +5,8 @@ use std::fmt;
 ///
 /// The only thing you can do with this is to pass it to the `js!` macro.
 ///
+/// # Safety
+/// 
 /// Using this is **highly unsafe**! After you pass it to the `js!` macro
 /// you **must** use it **before** triggering any Rust code whatsoever,
 /// either directly or indirectly. Breaking this rule will result
@@ -37,6 +39,10 @@ impl< 'a, T > UnsafeTypedArray< 'a, T > {
     /// Even though this function is marked as `unsafe`
     /// the unsafely only comes into play after you
     /// pass it to the `js!` macro.
+    /// 
+    /// # Safety
+    /// 
+    /// See safety section of type documentation
     #[inline]
     pub unsafe fn new( slice: &'a [T] ) -> Self {
         UnsafeTypedArray( slice )

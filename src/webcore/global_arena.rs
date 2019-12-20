@@ -4,19 +4,19 @@ use std::marker::PhantomData;
 use webcore::value::Value;
 use webcore::serialization::{JsSerialize, SerializedValue};
 
-struct GlobalArena {
-    memory: *mut u8,
+struct GlobalArena<T> {
+    memory: *mut T,
     capacity: usize,
     length: usize
 }
 
-static mut VALUE_ARENA: GlobalArena = GlobalArena {
-    memory: 0 as *mut u8,
+static mut VALUE_ARENA: GlobalArena<Value> = GlobalArena {
+    memory: 0 as *mut Value,
     capacity: 0,
     length: 0
 };
 
-static mut ARENA: GlobalArena = GlobalArena {
+static mut ARENA: GlobalArena<u8> = GlobalArena {
     memory: 0 as *mut u8,
     capacity: 0,
     length: 0
@@ -44,7 +44,7 @@ impl< 'a, T: 'a > RelativeSlice< 'a, T > {
     pub unsafe fn append( &mut self, value: T ) {
         debug_assert!( self.tail + mem::size_of::< T >() <= self.offset + self.length * mem::size_of::< T >() );
 
-        let pointer = ARENA.memory.offset( self.tail as isize ) as *mut T;
+        let pointer = ARENA.memory.add( self.tail ) as *mut T;
         mem::forget( mem::replace( &mut *pointer, value ) );
         self.tail += mem::size_of::< T >();
     }
@@ -53,10 +53,11 @@ impl< 'a, T: 'a > RelativeSlice< 'a, T > {
 #[doc(hidden)]
 pub fn serialize_value< 'a >( value: Value ) -> SerializedValue< 'a > {
     unsafe {
+        // If I understand this correctly, because Vec is doing all the allocating when the type parameter is `Value`, it will always allocate correctly `Value`-aligned pointers, even though we're casting back and forth.
         let mut vec = Vec::from_raw_parts( VALUE_ARENA.memory as *mut Value, VALUE_ARENA.length, VALUE_ARENA.capacity );
         vec.push( value );
         let pointer = vec.last().unwrap() as *const Value;
-        VALUE_ARENA.memory = vec.as_mut_ptr() as *mut u8;
+        VALUE_ARENA.memory = vec.as_mut_ptr();
         VALUE_ARENA.length = vec.len();
         VALUE_ARENA.capacity = vec.capacity();
         mem::forget( vec );
@@ -69,7 +70,7 @@ pub fn serialize_value< 'a >( value: Value ) -> SerializedValue< 'a > {
 pub fn reserve< 'a, T >( length: usize ) -> RelativeSlice< 'a, T > {
     unsafe {
         let offset = reserve_impl( length * mem::size_of::< T >(), mem::align_of::< T >() );
-        debug_assert_eq!( ARENA.memory.offset( offset as isize ) as usize % mem::align_of::< T >(), 0 );
+        debug_assert_eq!( ARENA.memory.add( offset ) as usize % mem::align_of::< T >(), 0 );
 
         RelativeSlice { offset, length, tail: offset, phantom: PhantomData }
     }
@@ -108,6 +109,7 @@ pub struct ArenaRestorePoint {
 
 impl ArenaRestorePoint {
     #[doc(hidden)]
+    #[allow(clippy::new_without_default)]
     #[inline]
     pub fn new() -> Self {
         unsafe {
@@ -128,9 +130,9 @@ impl Drop for ArenaRestorePoint {
             debug_assert!( VALUE_ARENA.length >= self.value_arena_length );
             let count = VALUE_ARENA.length - self.value_arena_length;
             if count > 0 {
-                let mut vec = Vec::from_raw_parts( VALUE_ARENA.memory as *mut Value, VALUE_ARENA.length, VALUE_ARENA.capacity );
+                let mut vec = Vec::from_raw_parts( VALUE_ARENA.memory, VALUE_ARENA.length, VALUE_ARENA.capacity );
                 vec.truncate( self.value_arena_length );
-                VALUE_ARENA.memory = vec.as_mut_ptr() as *mut u8;
+                VALUE_ARENA.memory = vec.as_mut_ptr();
                 VALUE_ARENA.length = vec.len();
                 VALUE_ARENA.capacity = vec.capacity();
                 mem::forget( vec );
@@ -141,7 +143,7 @@ impl Drop for ArenaRestorePoint {
 
 #[cfg(test)]
 mod tests {
-    use super::{ARENA, VALUE_ARENA, GlobalArena};
+    use super::{ARENA, VALUE_ARENA, GlobalArena, Value};
 
     unsafe fn clear() {
         // This will leak, but in tests we don't care.
@@ -152,7 +154,7 @@ mod tests {
         };
 
         VALUE_ARENA = GlobalArena {
-            memory: 0 as *mut u8,
+            memory: 0 as *mut Value,
             capacity: 0,
             length: 0
         };
@@ -197,4 +199,22 @@ mod tests {
             assert_eq!( ARENA.capacity, capacity );
         }
     }
+
+    // #[test]
+    // fn tests_are_working() {
+    //     unsafe {
+    //         clear();
+    //         use webcore::try_from::TryInto;
+    //         let message = "Hello, 世界!";
+    //         println!("{}", message);
+    //         let result = js! {
+    //             return 2 + 2 * 2;
+    //         };
+
+    //         println!( "2 + 2 * 2 = {:?}", result );
+    //         let j = js!{return false;};
+    //         dbg!(j);
+    //         assert!(false);
+    //     }
+    // }
 }

@@ -41,6 +41,12 @@ pub enum FileReaderReadyState {
     Done
 }
 
+impl Default for FileReader {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl FileReader {
     /// Returns a newly constructed `FileReader`.
     ///

@@ -96,4 +96,9 @@ impl History {
             return @{self}.length;
         ).try_into().unwrap()
     }
+
+    /// Returns `true` if there are no history entries.
+    pub fn is_empty( &self ) -> bool {
+        self.len() == 0
+    }
 }

@@ -13,5 +13,5 @@ pub fn alert( message: &str ) {
 
 /// An alias for [window.confirm](struct.Window.html#method.confirm).
 pub fn confirm( message: &str ) -> bool {
-    return window().confirm( message );
+    window().confirm( message )
 }

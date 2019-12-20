@@ -44,6 +44,11 @@ impl Object {
     pub fn to_iter( &self ) -> impl ExactSizeIterator < Item = ( String, Value ) > {
         deserialize_object_to_iter( self.as_ref() )
     }
+
+    /// Returns `true` if object has no elements.
+    pub fn is_empty( &self ) -> bool {
+        self.len() == 0
+    }
 }
 
 impl From< Object > for BTreeMap< String, Value > {
@@ -64,19 +69,19 @@ impl< 'a > From< &'a mut Object > for BTreeMap< String, Value > {
     }
 }
 
-impl From< Object > for HashMap< String, Value > {
+impl< S: std::hash::BuildHasher + Default > From< Object > for HashMap< String, Value, S > {
     fn from( object: Object ) -> Self {
         deserialize_object( &object.0, |iter| iter.collect() )
     }
 }
 
-impl< 'a > From< &'a Object > for HashMap< String, Value > {
+impl< 'a, S: std::hash::BuildHasher + Default > From< &'a Object > for HashMap< String, Value, S > {
     fn from( object: &'a Object ) -> Self {
         deserialize_object( &object.0, |iter| iter.collect() )
     }
 }
 
-impl< 'a > From< &'a mut Object > for HashMap< String, Value > {
+impl< 'a, S: std::hash::BuildHasher + Default > From< &'a mut Object > for HashMap< String, Value, S > {
     fn from( object: &'a mut Object ) -> Self {
         deserialize_object( &object.0, |iter| iter.collect() )
     }
@@ -112,16 +117,16 @@ impl< 'a, K, V > From< &'a mut BTreeMap< K, V > > for Object where K: AsRef< str
     }
 }
 
-impl< K, V > From< HashMap< K, V > > for Object where K: AsRef< str > + Hash + Eq, V: JsSerialize {
+impl< K, V, S: std::hash::BuildHasher > From< HashMap< K, V, S > > for Object where K: AsRef< str > + Hash + Eq, V: JsSerialize {
     #[inline]
-    fn from( value: HashMap< K, V > ) -> Self {
+    fn from( value: HashMap< K, V, S > ) -> Self {
         (&value).into()
     }
 }
 
-impl< 'a, K, V > From< &'a HashMap< K, V > > for Object where K: AsRef< str > + Hash + Eq, V: JsSerialize {
+impl< 'a, K, V, S: std::hash::BuildHasher > From< &'a HashMap< K, V, S > > for Object where K: AsRef< str > + Hash + Eq, V: JsSerialize {
     #[inline]
-    fn from( value: &'a HashMap< K, V > ) -> Self {
+    fn from( value: &'a HashMap< K, V, S > ) -> Self {
         // TODO: Do something more efficient here?
         let value = js! {
             return @{value};
@@ -134,10 +139,10 @@ impl< 'a, K, V > From< &'a HashMap< K, V > > for Object where K: AsRef< str > + 
     }
 }
 
-impl< 'a, K: Hash + Eq, V > From< &'a mut HashMap< K, V > > for Object where K: AsRef< str >, V: JsSerialize {
+impl< 'a, K: Hash + Eq, V, S: std::hash::BuildHasher > From< &'a mut HashMap< K, V, S > > for Object where K: AsRef< str >, V: JsSerialize {
     #[inline]
-    fn from( value: &'a mut HashMap< K, V > ) -> Self {
-        let value: &HashMap< K, V > = value;
+    fn from( value: &'a mut HashMap< K, V, S > ) -> Self {
+        let value: &HashMap< K, V, S > = value;
         value.into()
     }
 }
@@ -157,12 +162,12 @@ impl< E: Into< ConversionError >, V: TryFrom< Value, Error = E > > TryFrom< Obje
     }
 }
 
-impl< E: Into< ConversionError >, V: TryFrom< Value, Error = E > > TryFrom< Object > for HashMap< String, V > {
+impl< E: Into< ConversionError >, V: TryFrom< Value, Error = E >, S: std::hash::BuildHasher + Default > TryFrom< Object > for HashMap< String, V, S > {
     type Error = ConversionError;
 
     fn try_from( object: Object ) -> Result< Self, Self::Error > {
-        deserialize_object( object.as_ref(), |deserializer| -> Result< HashMap< String, V >, E > {
-            let mut output = HashMap::with_capacity( deserializer.len() );
+        deserialize_object( object.as_ref(), |deserializer| -> Result< HashMap< String, V, S >, E > {
+            let mut output = HashMap::with_capacity_and_hasher( deserializer.len(), Default::default() );
             for (key, value) in deserializer {
                 output.insert( key, value.try_into()? );
             }
