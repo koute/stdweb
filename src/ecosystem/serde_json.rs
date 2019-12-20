@@ -35,7 +35,7 @@ impl TryFrom< JsonValue > for Value {
             JsonValue::Object( value ) => {
                 let mut map: BTreeMap< String, Value > = BTreeMap::new();
                 for (key, value) in value.into_iter() {
-                    map.insert( key.into(), value.try_into()? );
+                    map.insert( key, value.try_into()? );
                 }
 
                 map.into()

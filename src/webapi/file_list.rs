@@ -29,6 +29,11 @@ impl FileList {
             index: 0
         }
     }
+
+    /// Returns `true` if the list contains no Files
+    pub fn is_empty( &self ) -> bool {
+        self.len() == 0
+    }
 }
 
 impl IntoIterator for FileList {

@@ -277,14 +277,14 @@ impl WebSocket {
     }
 }
 
-/// Errors thrown by `WebSocket::new`.
 error_enum_boilerplate! {
+    /// Errors thrown by `WebSocket::new`.
     CreationError,
     SecurityError, SyntaxError
 }
 
-/// Errors thrown by `WebSocket::close_with_status`.
 error_enum_boilerplate! {
+    /// Errors thrown by `WebSocket::close_with_status`.
     CloseError,
     InvalidAccessError, SyntaxError
 }

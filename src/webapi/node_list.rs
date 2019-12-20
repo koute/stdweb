@@ -47,6 +47,11 @@ impl NodeList {
             index: 0
         }
     }
+
+    /// Returns `true` if the list contains no Nodes.
+    pub fn is_empty( &self ) -> bool {
+        self.len() == 0
+    }
 }
 
 impl IntoIterator for NodeList {

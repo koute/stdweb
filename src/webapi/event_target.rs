@@ -60,7 +60,7 @@ pub trait IEventTarget: ReferenceType {
         EventListenerHandle {
             event_type: T::EVENT_TYPE,
             reference: reference.clone(),
-            listener_reference: listener_reference
+            listener_reference
         }
     }
 

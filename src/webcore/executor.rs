@@ -254,7 +254,7 @@ impl EventLoopExecutor {
 
         let queue = Rc::new( EventLoopQueue {
             inner: RefCell::new( EventLoopInner {
-                queue: queue,
+                queue,
                 past_sum: 0,
                 past_length: 0,
                 shrink_counter: 0,

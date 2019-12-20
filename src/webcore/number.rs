@@ -5,9 +5,10 @@ use std::error;
 use std::fmt;
 use webcore::try_from::TryFrom;
 
-// 2^53 - 1
-const MAX_SAFE_INTEGER_F64: i64 = 9007199254740991;
-const MIN_SAFE_INTEGER_F64: i64 = -9007199254740991;
+#[allow(clippy::unreadable_literal)]
+const MAX_SAFE_INTEGER_F64: i64 = 9007199254740991;//(2_i64.pow(53)) - 1;
+#[allow(clippy::unreadable_literal)]
+const MIN_SAFE_INTEGER_F64: i64 = -9007199254740991;//-((2_i64.pow(53)) - 1);
 
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum Storage {
@@ -242,7 +243,9 @@ macro_rules! i32_to_big_unsigned_integer {
 
 macro_rules! f64_to_integer {
     ($value:expr, $kind:tt) => {{
-        if $value.floor() != $value {
+        #[allow(clippy::float_cmp)] // I find integer checking to be a perfectly reasonable reason to compare floats
+        let comparison = $value.floor() != $value;
+        if comparison {
             return Err( ConversionError::NotAnInteger );
         }
 

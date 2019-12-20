@@ -1,6 +1,8 @@
 use webcore::value::{Reference, Value};
 use webcore::try_from::{TryInto, TryFrom};
+#[cfg(feature = "experimental_features_which_may_break_on_minor_version_bumps")]
 use webcore::promise::{Promise, TypedPromise};
+#[cfg(feature = "experimental_features_which_may_break_on_minor_version_bumps")]
 use webapi::error::TypeError;
 use webapi::event_target::{IEventTarget, EventTarget};
 use webapi::node::{INode, Node, CloneKind};

@@ -21,6 +21,12 @@ impl INode for ImageElement {}
 impl IElement for ImageElement {}
 impl IHtmlElement for ImageElement {}
 
+impl Default for ImageElement {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ImageElement {
     /// Constructs a new ImageElement.
     ///

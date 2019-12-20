@@ -18,8 +18,8 @@ pub enum SlotContentKind {
 }
 
 impl SlotContentKind {
-    fn to_bool(&self) -> bool {
-        match *self {
+    fn to_bool(self) -> bool {
+        match self {
             SlotContentKind::AssignedOnly => false,
             SlotContentKind::WithFallback => true,
         }

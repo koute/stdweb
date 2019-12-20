@@ -14,6 +14,11 @@ impl Array {
             return @{self}.length;
         ).try_into().unwrap()
     }
+
+    /// Returns `true` if the array has no elements.
+    pub fn is_empty( &self ) -> bool {
+        self.len() == 0
+    }
 }
 
 impl From< Array > for Vec< Value > {

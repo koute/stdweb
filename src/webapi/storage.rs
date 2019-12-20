@@ -68,8 +68,13 @@ impl Storage {
         js!( return @{self}.key( @{nth} ); ).try_into().ok()
     }
 
-    /// Returns true if the storage contains a value for the specified key.
+    /// Returns `true` if the storage contains a value for the specified key.
     pub fn contains_key( &self, key: &str ) -> bool {
         js!( return !!@{self}.getItem( @{key} ); ).try_into().unwrap()
+    }
+
+    /// Returns `true` if the storage contains no data items.
+    pub fn is_empty( &self ) -> bool {
+        self.len() == 0
     }
 }

@@ -63,6 +63,7 @@ impl MutationObserver {
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#Constructor)
     // https://dom.spec.whatwg.org/#ref-for-dom-mutationobserver-mutationobserver
+    #[allow(clippy::new_ret_no_self)]
     pub fn new< F >( callback: F ) -> MutationObserverHandle
         where F: FnMut( Vec< MutationRecord >, Self ) + 'static {
         let callback_reference: Reference = js! ( return @{Mut(callback)}; ).try_into().unwrap();
@@ -252,19 +253,19 @@ impl TryFrom< Value > for MutationRecord {
 
                 match kind.as_str() {
                     "attributes" => Ok( MutationRecord::Attribute {
-                        target: target,
+                        target,
                         name: js!( return @{r}.attributeName; ).try_into()?,
                         namespace: js!( return @{r}.attributeNamespace; ).try_into()?,
                         old_value: js!( return @{r}.oldValue; ).try_into()?,
                     } ),
 
                     "characterData" => Ok( MutationRecord::CharacterData {
-                        target: target,
+                        target,
                         old_data: js!( return @{r}.oldValue; ).try_into()?,
                     } ),
 
                     "childList" => Ok( MutationRecord::ChildList {
-                        target: target,
+                        target,
                         inserted_nodes: js!( return @{r}.addedNodes; ).try_into()?,
                         removed_nodes: js!( return @{r}.removedNodes; ).try_into()?,
                         previous_sibling: js!( return @{r}.previousSibling; ).try_into()?,

@@ -30,11 +30,9 @@ use super::promise::{Promise, DoneHandle};
 ///    ```rust
 ///    use stdweb::spawn_local;
 ///
-///    fn main() {
-///        spawn_local(
-///            create_some_future()
-///        );
-///    }
+///    spawn_local(
+///        create_some_future()
+///    );
 ///    ```
 ///
 ///    If you want to retrieve the return value of the Future, you can use the various asynchronous
@@ -46,14 +44,12 @@ use super::promise::{Promise, DoneHandle};
 ///    use stdweb::spawn_local;
 ///    use futures::future::FutureExt;
 ///
-///    fn main() {
-///        spawn_local(
-///            create_some_future()
-///                .map(|x| {
-///                    println!("Future finished with value: {:#?}", x);
-///                })
-///        );
-///    }
+///    spawn_local(
+///        create_some_future()
+///            .map(|x| {
+///                println!("Future finished with value: {:#?}", x);
+///            })
+///    );
 ///    ```
 ///
 /// 2. However, some Futures return `Result`, and in that case you will need to deal with the `Result` somehow.
@@ -70,15 +66,13 @@ use super::promise::{Promise, DoneHandle};
 ///    use stdweb::spawn_local;
 ///    use futures::future::TryFutureExt;
 ///
-///    fn main() {
-///        spawn_local(
-///            create_some_future()
-///                .map_ok(|x| {
-///                    println!("Future finished with value: {:#?}", x);
-///                })
-///                .unwrap_or_else(|e| handle_error_somehow(e))
-///        );
-///    }
+///    spawn_local(
+///        create_some_future()
+///            .map_ok(|x| {
+///                println!("Future finished with value: {:#?}", x);
+///            })
+///            .unwrap_or_else(|e| handle_error_somehow(e))
+///    );
 ///    ```
 ///
 ///    It is very common to want to print the errors to the console, and so as a convenience you can use the [`unwrap_future`](fn.unwrap_future.html) function:
@@ -87,14 +81,12 @@ use super::promise::{Promise, DoneHandle};
 ///    use stdweb::{spawn_local, unwrap_future};
 ///    use futures::future::TryFutureExt;
 ///
-///    fn main() {
-///        spawn_local(
-///            unwrap_future(create_some_future()
-///                .map_ok(|x| {
-///                    println!("Future finished with value: {:#?}", x);
-///                }))
-///        );
-///    }
+///    spawn_local(
+///        unwrap_future(create_some_future()
+///            .map_ok(|x| {
+///                println!("Future finished with value: {:#?}", x);
+///            }))
+///    );
 ///    ```
 ///
 ///    If you don't need the return value from the Future, then it is even easier, since you don't need
@@ -103,11 +95,9 @@ use super::promise::{Promise, DoneHandle};
 ///    ```rust
 ///    use stdweb::{spawn_local, unwrap_future};
 ///
-///    fn main() {
-///        spawn_local(
-///            unwrap_future(create_some_future())
-///        );
-///    }
+///    spawn_local(
+///        unwrap_future(create_some_future())
+///    );
 ///    ```
 #[inline]
 pub fn spawn_local< F >( future: F ) where F: Future< Output = () > + 'static {

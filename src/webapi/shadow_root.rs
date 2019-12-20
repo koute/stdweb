@@ -19,8 +19,8 @@ pub enum ShadowRootMode {
 }
 
 impl ShadowRootMode {
-    pub(crate) fn as_str(&self) -> &'static str {
-        match *self {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
             ShadowRootMode::Open => "open",
             ShadowRootMode::Closed => "closed",
         }

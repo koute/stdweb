@@ -1,9 +1,7 @@
 #[cfg(rust_nightly)]
 pub fn type_name_opt< T >() -> Option< &'static str > {
     use std::intrinsics;
-    let name = unsafe {
-        intrinsics::type_name::< T >()
-    };
+    let name = intrinsics::type_name::< T >();
 
     Some( name )
 }

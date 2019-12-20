@@ -486,6 +486,11 @@ impl DataTransferItemList {
             index: 0,
         }
     }
+
+    /// Returns `true` if there are no drag items in the list.
+    pub fn is_empty( &self ) -> bool {
+        self.len() == 0
+    }
 }
 
 impl IntoIterator for DataTransferItemList {
@@ -598,10 +603,8 @@ impl DataTransferItem {
     pub fn get_as_string_future( &self ) -> oneshot::Receiver<String> {
         let (sender, receiver) = oneshot::channel();
         let callback = |s: String| {
-            match sender.send(s) {
-                Ok(_) => {},
-                Err(_) => {},
-            };
+            // Ignore the Result, Ok gives () and Err only happens if the receiver is dropped before this is called, which is fine.
+            let _ = sender.send(s);
         };
 
         js!(@(no_return)

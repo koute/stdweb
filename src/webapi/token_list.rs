@@ -50,4 +50,9 @@ impl TokenList {
     pub fn contains( &self, token: &str ) -> bool {
         js!( return @{self}.contains( @{token} ); ).try_into().unwrap()
     }
+
+    /// Returns `true` if the list contains no tokens.
+    pub fn is_empty( &self ) -> bool {
+        self.len() == 0
+    }
 }

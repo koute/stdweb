@@ -63,6 +63,12 @@ impl TryFrom< Value > for Option< FormDataEntry > {
     }
 }
 
+impl Default for FormData {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl FormData {
     /// Creates a new `FormData`.
     ///

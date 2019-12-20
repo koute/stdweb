@@ -26,8 +26,12 @@ impl ArrayBuffer {
     // https://www.ecma-international.org/ecma-262/6.0/#sec-get-arraybuffer.prototype.bytelength
     pub fn len( &self ) -> u64 {
         let reference = self.as_ref();
-        let length = js!( return @{reference}.byteLength; ).try_into().unwrap();
-        length
+        js!( return @{reference}.byteLength; ).try_into().unwrap()
+    }
+
+    /// Returns `true` if the buffer contains no bytes.
+    pub fn is_empty( &self ) -> bool {
+        self.len() == 0
     }
 }
 
