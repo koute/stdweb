@@ -18,11 +18,7 @@ impl std::fmt::Display for UnknownValueError {
     }
 }
 
-impl std::error::Error for UnknownValueError {
-    fn description(&self) -> &str {
-        "There is no `<option>` element that has the given value"
-    }
-}
+impl std::error::Error for UnknownValueError {}
 
 /// The HTML `<select>` element represents a control that provides a menu of options.
 ///

@@ -862,16 +862,7 @@ impl fmt::Display for ConversionError {
     }
 }
 
-impl error::Error for ConversionError {
-    fn description( &self ) -> &str {
-        match *self {
-            ConversionError::TypeMismatch { .. } => "type mismatch",
-            ConversionError::NumericConversionError( ref inner ) => inner.description(),
-            ConversionError::ValueConversionError( _ ) => "value conversion error",
-            ConversionError::Custom( ref message ) => message
-        }
-    }
-}
+impl error::Error for ConversionError {}
 
 impl From< number::ConversionError > for ConversionError {
     fn from( inner: number::ConversionError ) -> Self {

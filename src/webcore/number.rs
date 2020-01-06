@@ -33,19 +33,14 @@ pub enum ConversionError {
 
 impl fmt::Display for ConversionError {
     fn fmt( &self, formatter: &mut fmt::Formatter ) -> Result< (), fmt::Error > {
-        let message = error::Error::description( self );
-        write!( formatter, "{}", message )
-    }
-}
-
-impl error::Error for ConversionError {
-    fn description( &self ) -> &str {
         match *self {
-            ConversionError::OutOfRange => "number out of range",
-            ConversionError::NotAnInteger => "number not an integer"
+            ConversionError::OutOfRange => write!( formatter, "number out of range" ),
+            ConversionError::NotAnInteger => write!( formatter, "number not an integer" ),
         }
     }
 }
+
+impl error::Error for ConversionError {}
 
 // We don't want to make the inner value public, hence this accessor.
 #[inline]

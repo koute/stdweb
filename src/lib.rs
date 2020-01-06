@@ -604,11 +604,7 @@ pub mod private {
         }
     }
 
-    impl std::error::Error for TODO {
-        fn description( &self ) -> &str {
-            unreachable!();
-        }
-    }
+    impl std::error::Error for TODO {}
 
     pub use webcore::value::ConversionError;
 }
