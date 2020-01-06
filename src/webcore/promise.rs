@@ -1,5 +1,7 @@
 use std;
+#[cfg(feature = "experimental_features_which_may_break_on_minor_version_bumps")]
 use std::fmt;
+#[cfg(feature = "experimental_features_which_may_break_on_minor_version_bumps")]
 use std::marker::PhantomData;
 
 use discard::Discard;
@@ -304,9 +306,11 @@ impl Promise {
 }
 
 /// A statically typed `Promise`.
+#[cfg(feature = "experimental_features_which_may_break_on_minor_version_bumps")]
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TypedPromise< T, E >( Promise, PhantomData< (T, E) > );
 
+#[cfg(feature = "experimental_features_which_may_break_on_minor_version_bumps")]
 impl< T, E > TypedPromise< T, E >
     where T: TryFrom< Value >,
           E: TryFrom< Value >
@@ -327,6 +331,7 @@ impl< T, E > TypedPromise< T, E >
     }
 }
 
+#[cfg(feature = "experimental_features_which_may_break_on_minor_version_bumps")]
 impl< T, E > From< TypedPromise< T, E > > for Promise {
     #[inline]
     fn from( promise: TypedPromise< T, E > ) -> Promise {
