@@ -5,7 +5,7 @@ use std::fmt::Write;
 
 use syn;
 use proc_macro2::{TokenStream, Span};
-use sha1::Sha1;
+use sha1::{Digest, Sha1};
 
 use utils::{Target, dummy_idents};
 
@@ -17,9 +17,8 @@ struct Snippet {
 }
 
 fn hash( string: &str ) -> String {
-    let mut hasher = Sha1::new();
-    hasher.update( string.as_bytes() );
-    format!( "{}", hasher.digest() )
+    let hash = Sha1::digest( string.as_bytes() );
+    format!( "{:x}", hash )
 }
 
 fn database_path() -> PathBuf {
