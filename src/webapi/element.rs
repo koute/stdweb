@@ -1,6 +1,8 @@
 use webcore::value::Reference;
 use webcore::try_from::{TryFrom, TryInto};
+#[cfg(feature = "experimental_features_which_may_break_on_minor_version_bumps")]
 use webcore::promise::{Promise, TypedPromise};
+#[cfg(feature = "experimental_features_which_may_break_on_minor_version_bumps")]
 use webapi::error::TypeError;
 use webapi::dom_exception::{InvalidCharacterError, InvalidPointerId, NoModificationAllowedError, SyntaxError};
 use webapi::event_target::{IEventTarget, EventTarget};
@@ -315,8 +317,8 @@ pub enum InsertPosition {
     AfterEnd,
 }
 
-/// Errors thrown by `Element::insert_adjacent_html`.
 error_enum_boilerplate! {
+    /// Errors thrown by `Element::insert_adjacent_html`.
     InsertAdjacentError,
     NoModificationAllowedError, SyntaxError
 }

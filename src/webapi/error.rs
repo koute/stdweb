@@ -83,7 +83,7 @@ mod test {
         let mut text = String::new();
         write!(&mut text, "{}", error).unwrap();
         assert_eq!(&text, "Error: foo");
-        assert_eq!(std::error::Error::description(&error), "Error");
+        assert_eq!(format!("{}", error), "Error");
     }
 
     #[test]

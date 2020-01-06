@@ -168,15 +168,15 @@ impl Serialize for Value {
                 } else if Object::instance_of( reference ) {
                     let object: Object = reference.try_into().unwrap();
                     let value: BTreeMap< String, Value > = object.into();
-                    let mut map = try!( serializer.serialize_map( Some( value.len() ) ) );
+                    let mut map = serializer.serialize_map( Some( value.len() ) )?;
                     for (key, value) in value {
-                        try!( map.serialize_key( &key ) );
-                        try!( map.serialize_value( &value ) );
+                        map.serialize_key( &key )?;
+                        map.serialize_value( &value )?;
                     }
 
                     map.end()
                 } else {
-                    let map = try!( serializer.serialize_map( None ) );
+                    let map = serializer.serialize_map( None )?;
                     map.end()
                 }
             }
@@ -328,20 +328,15 @@ impl ConversionError {
 
 impl fmt::Display for ConversionError {
     fn fmt( &self, formatter: &mut fmt::Formatter ) -> Result< (), fmt::Error > {
-        let message = error::Error::description( self );
-        write!( formatter, "{}", message )
-    }
-}
-
-impl error::Error for ConversionError {
-    fn description( &self ) -> &str {
         match self.kind {
-            ConversionErrorKind::InvalidKey => "key must be either a string or an integer",
-            ConversionErrorKind::NumberConversionError( ref error ) => error.description(),
-            ConversionErrorKind::Custom( ref message ) => message.as_str()
+            ConversionErrorKind::InvalidKey => write!( formatter, "key must be either a string or an integer" ),
+            ConversionErrorKind::NumberConversionError( ref error ) => write!( formatter, "{}", error ),
+            ConversionErrorKind::Custom( ref message ) => write!( formatter, "{}", message ),
         }
     }
 }
+
+impl error::Error for ConversionError {}
 
 impl ser::Error for ConversionError {
     fn custom< T: fmt::Display >( message: T ) -> Self {

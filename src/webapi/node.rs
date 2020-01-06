@@ -344,8 +344,8 @@ pub trait INode: IEventTarget {
     }
 }
 
-/// Errors thrown by `Node` insertion methods.
 error_enum_boilerplate! {
+    /// Errors thrown by `Node` insertion methods.
     InsertNodeError,
     NotFoundError, HierarchyRequestError
 }
