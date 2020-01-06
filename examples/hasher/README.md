@@ -32,13 +32,12 @@ extern crate stdweb;
 extern crate sha1;
 
 use stdweb::js_export;
-use sha1::Sha1;
+use sha1::{Digest, Sha1};
 
 #[js_export]
 fn sha1( string: String ) -> String {
-    let mut hasher = Sha1::new();
-    hasher.update( string.as_bytes() );
-    hasher.digest().to_string()
+    let hash = Sha1::digest( string.as_bytes() );
+    format!( "{:x}", hash )
 }
 ```
 

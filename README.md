@@ -92,9 +92,8 @@ Exposing Rust functions to JavaScript is supported too:
 ```rust
 #[js_export]
 fn hash( string: String ) -> String {
-    let mut hasher = Sha1::new();
-    hasher.update( string.as_bytes() );
-    hasher.digest().to_string()
+    let hash = Sha1::digest( string.as_bytes() );
+    format!( "{:x}", hash )
 }
 ```
 
