@@ -168,15 +168,15 @@ impl Serialize for Value {
                 } else if Object::instance_of( reference ) {
                     let object: Object = reference.try_into().unwrap();
                     let value: BTreeMap< String, Value > = object.into();
-                    let mut map = try!( serializer.serialize_map( Some( value.len() ) ) );
+                    let mut map = serializer.serialize_map( Some( value.len() ) )?;
                     for (key, value) in value {
-                        try!( map.serialize_key( &key ) );
-                        try!( map.serialize_value( &value ) );
+                        map.serialize_key( &key )?;
+                        map.serialize_value( &value )?;
                     }
 
                     map.end()
                 } else {
-                    let map = try!( serializer.serialize_map( None ) );
+                    let map = serializer.serialize_map( None )?;
                     map.end()
                 }
             }
