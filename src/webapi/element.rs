@@ -315,8 +315,8 @@ pub enum InsertPosition {
     AfterEnd,
 }
 
-/// Errors thrown by `Element::insert_adjacent_html`.
 error_enum_boilerplate! {
+    /// Errors thrown by `Element::insert_adjacent_html`.
     InsertAdjacentError,
     NoModificationAllowedError, SyntaxError
 }
