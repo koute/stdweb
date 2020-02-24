@@ -115,6 +115,7 @@ pub fn js_shim_extern_code( target: Target, code: &str, arg_count: usize, return
             let shim_name = &shim_name;
             let shim_args = &shim_args;
             quote! {
+                use ::stdweb::private::wasm_bindgen;
                 use ::stdweb::private::wasm_bindgen::prelude::*;
                 unsafe fn #shim_name( #(#shim_args),* ) #return_signature {
                     #[wasm_bindgen(inline_js = #code_string)]
