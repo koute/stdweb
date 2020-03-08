@@ -48,6 +48,20 @@ pub struct FocusEvent( Reference );
 impl IEvent for FocusEvent {}
 impl IFocusEvent for FocusEvent {}
 
+/// The `FocusOutEvent` is fired when an element has been out of focus. The main
+/// difference between this event and focusin is that only the latter bubbles.
+///
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/focusout_event)
+// https://w3c.github.io/uievents/#focusout
+#[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
+#[reference(instance_of = "FocusEvent")]
+#[reference(event = "focusout")]
+#[reference(subclass_of(Event, FocusRelatedEvent))]
+pub struct FocusOutEvent( Reference );
+
+impl IEvent for FocusOutEvent {}
+impl IFocusEvent for FocusOutEvent {}
+
 /// The `BlurEvent` is fired when an element has lost focus. The main difference
 /// between this event and focusout is that only the latter bubbles.
 ///

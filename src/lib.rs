@@ -437,6 +437,7 @@ pub mod web {
         pub use webapi::events::focus::{
             IFocusEvent,
             FocusEvent,
+            FocusOutEvent,
             BlurEvent
         };
 
