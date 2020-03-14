@@ -5,10 +5,10 @@ use webapi::node::{INode, Node};
 use webcore::try_from::TryInto;
 use webcore::value::Reference;
 
-/// The HTML `<textarea>` element represents a multi-line plain-text editing control.
+/// The HTML `<button>` element represents a clickable button
 ///
-/// [(JavaScript docs)](https://developer.mozilla.org/en/docs/Web/HTML/Element/textarea)
-// https://html.spec.whatwg.org/#htmlButtonElement
+/// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/button)
+// https://html.spec.whatwg.org/#the-button-element
 #[derive(Clone, Debug, PartialEq, Eq, ReferenceType)]
 #[reference(instance_of = "HTMLButtonElement")]
 #[reference(subclass_of(EventTarget, Node, Element, HtmlElement))]
@@ -53,7 +53,7 @@ impl ButtonElement {
             @{self}.name = @{name};
         }
     }
-    
+
     /// Defines the value associated with the button’s name when it’s submitted with the form data. 
     /// This value is passed to the server in params when the form is submitted.
     ///
