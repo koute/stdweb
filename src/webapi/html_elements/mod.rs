@@ -6,8 +6,10 @@ mod select;
 mod option;
 mod template;
 mod slot;
+mod button;
 
 pub use self::canvas::CanvasElement;
+pub use self::button::ButtonElement;
 pub use self::image::ImageElement;
 pub use self::input::InputElement;
 pub use self::textarea::TextAreaElement;

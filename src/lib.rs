@@ -316,6 +316,7 @@ pub mod web {
 
     /// A module containing HTML DOM elements.
     pub mod html_element {
+        pub use webapi::html_elements::ButtonElement;
         pub use webapi::html_elements::ImageElement;
         pub use webapi::html_elements::InputElement;
         pub use webapi::html_elements::TextAreaElement;
@@ -324,6 +325,7 @@ pub mod web {
         pub use webapi::html_elements::OptionElement;
         pub use webapi::html_elements::TemplateElement;
         pub use webapi::html_elements::SlotElement;
+
     }
 
     /// A module containing JavaScript DOM events.
