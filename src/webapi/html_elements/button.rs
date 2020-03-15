@@ -43,6 +43,17 @@ impl ButtonElement {
         }
     }
 
+    /// This Boolean attribute prevents the user from interacting with the button: it cannot be pressed or focused.
+    ///
+    /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/button#attr-disabled)
+    /// https://html.spec.whatwg.org/#attr-fe-disabled
+    #[inline]
+    pub fn is_disabled(&self) -> bool {
+        js!(
+            return @{self}.disabled;
+        ).try_into().unwrap()
+    }
+
     /// The name of the button, submitted as a pair with the button’s value as part of the form data.
     ///
     /// [(JavaScript docs)](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/button#attr-name)
@@ -64,5 +75,21 @@ impl ButtonElement {
         js! { @(no_return)
             @{self}.value = @{value};
         }
+    }
+}
+
+#[cfg(all(test, feature = "web_test"))]
+mod tests {
+    use super::ButtonElement;
+    use webapi::node::Node;
+    use webcore::try_from::TryInto;
+
+    #[test]
+    fn test_select_one() {
+        let html = r#"<button>Click me</button>"#;
+        let button: ButtonElement = Node::from_html(html).unwrap().try_into().unwrap();
+        let is_disabled = button.is_disabled();
+
+        assert_eq!(is_disabled, false);
     }
 }
