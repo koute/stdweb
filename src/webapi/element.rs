@@ -269,6 +269,28 @@ pub trait IElement: INode + IParentNode + IChildNode + ISlotable {
         }
     }
 
+    /// The Element.clientWidth property is zero for inline elements and elements with no CSS;
+    /// otherwise, it's the inner width of an element in pixels. It includes padding but excludes
+    /// borders, margins, and vertical scrollbars (if present).
+    /// 
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/clientWidth)
+    fn client_width( &self ) -> i32 {
+        js!(
+            return @{self.as_ref()}.clientWidth;
+        ).try_into().unwrap()
+    }
+
+    /// The Element.clientHeight read-only property is zero for elements with no CSS or inline
+    /// layout boxes; otherwise, it's the inner height of an element in pixels. It includes padding
+    /// but excludes borders, margins, and horizontal scrollbars (if present).
+    ///
+    /// [(Javascript docs)](https://developer.mozilla.org/en-US/docs/Web/API/Element/clientHeight)
+    fn client_height( &self ) -> i32 {
+        js!(
+            return @{self.as_ref()}.clientHeight;
+        ).try_into().unwrap()
+    }
+
     /// Request this element and its children be made fullscreen
     ///
     /// Note: this may only be called during a user interaction.
