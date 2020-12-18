@@ -412,8 +412,9 @@ macro_rules! untagged_boilerplate {
             #[inline]
             fn from( untagged: $untagged_type ) -> Self {
                 unsafe {
-                    let mut value: SerializedValue = mem::uninitialized();
-                    *(&mut value as *mut SerializedValue as *mut $untagged_type) = untagged;
+                    let mut value = mem::MaybeUninit::<SerializedValue>::uninit();
+                    *(value.as_mut_ptr() as *mut $untagged_type) = untagged;
+                    let mut value = value.assume_init();
                     value.tag = $tag;
                     value
                 }

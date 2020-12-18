@@ -5,10 +5,9 @@
 // TODO: verify that this works correctly with pinned futures
 // TODO: use FuturesUnordered (similar to LocalPool)
 
-use futures_core::future::{FutureObj, LocalFutureObj};
 use futures_executor::enter;
-use futures_core::task::{Spawn, SpawnError};
-use futures_util::task::{self, ArcWake};
+use futures_util::future::LocalFutureObj;
+use futures_util::task::{self, ArcWake, LocalSpawn, SpawnError};
 use std::future::Future;
 use std::task::{Poll, Context};
 use std::pin::Pin;
@@ -28,12 +27,9 @@ const INITIAL_QUEUE_CAPACITY: usize = 10;
 // Iterations to wait before allowing the queue to shrink
 const QUEUE_SHRINK_DELAY: usize = 10;
 
-
-pub(crate) type BoxedFuture = LocalFutureObj< 'static, () >;
-
 #[derive(Debug)]
 struct TaskInner {
-    future: BoxedFuture,
+    future: LocalFutureObj<'static, ()>,
     executor: EventLoopExecutor,
 }
 
@@ -50,7 +46,7 @@ unsafe impl Send for Task {}
 unsafe impl Sync for Task {}
 
 impl Task {
-    fn new( executor: EventLoopExecutor, future: BoxedFuture ) -> Arc< Self > {
+    fn new( executor: EventLoopExecutor, future: LocalFutureObj<'static, ()> ) -> Arc< Self > {
         Arc::new( Self {
             is_queued: Cell::new( true ),
             inner: RefCell::new( TaskInner {
@@ -315,21 +311,21 @@ impl EventLoopExecutor {
     }
 
     #[inline]
-    fn spawn_local( &self, future: BoxedFuture ) {
+    fn spawn_local( &self, future: LocalFutureObj<'static, ()> ) {
         self.0.push_task( Task::new( self.clone(), future ) );
     }
 }
 
-impl Spawn for EventLoopExecutor {
+impl LocalSpawn for EventLoopExecutor {
     #[inline]
-    fn spawn_obj( &mut self,  future: FutureObj< 'static, () > ) -> Result< (), SpawnError > {
-        self.spawn_local( future.into() );
+    fn spawn_local_obj( &self,  future: LocalFutureObj< 'static, () > ) -> Result< (), SpawnError > {
+        self.spawn_local( future );
         Ok( () )
     }
 }
 
 
-pub(crate) fn spawn_local( future: BoxedFuture ) {
+pub(crate) fn spawn_local( future: LocalFutureObj<'static, ()> ) {
     thread_local! {
         static EVENT_LOOP: EventLoopExecutor = EventLoopExecutor::new();
     }
