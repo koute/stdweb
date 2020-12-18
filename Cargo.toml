@@ -17,10 +17,10 @@ build = "build.rs"
 discard = "1.0.3"
 serde = { version = "1", optional = true }
 serde_json = { version = "1", optional = true }
-futures-core-preview = { version = "0.3.0-alpha.15", optional = true }
-futures-channel-preview = { version = "0.3.0-alpha.15", optional = true }
-futures-util-preview = { version = "0.3.0-alpha.15", optional = true }
-futures-executor-preview = { version = "0.3.0-alpha.15", optional = true }
+futures-core = { version = "0.3.8", optional = true }
+futures-channel = { version = "0.3.8", optional = true }
+futures-util = { version = "0.3.8", optional = true }
+futures-executor = { version = "0.3.8", optional = true }
 
 stdweb-derive = { version = "= 0.5.3", path = "stdweb-derive" }
 stdweb-internal-macros = { version = "= 0.2.9", path = "stdweb-internal-macros" }
@@ -44,7 +44,7 @@ rustc_version = "0.2"
 default = ["serde", "serde_json"]
 nightly = []
 web_test = []
-futures-support = ["futures-core-preview", "futures-channel-preview", "futures-util-preview", "futures-executor-preview"]
+futures-support = ["futures-core", "futures-channel", "futures-util", "futures-executor"]
 experimental_features_which_may_break_on_minor_version_bumps = ["futures-support"]
 "docs-rs" = []
 

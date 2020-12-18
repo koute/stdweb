@@ -110,9 +110,9 @@ use super::promise::{Promise, DoneHandle};
 ///    }
 ///    ```
 #[inline]
-pub fn spawn_local< F >( future: F ) where F: Future< Output = () > + 'static {
+pub fn spawn_local< F >( future: F ) where F: Future< Output = () > + 'static{
     // TODO does this need to use PinBox instead ?
-    let future: executor::BoxedFuture = Box::new( future ).into();
+    let future = Box::new( future ).into();
     executor::spawn_local( future );
 }
 
