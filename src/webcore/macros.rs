@@ -164,23 +164,23 @@ macro_rules! _js_impl {
     };
 
     (@call [$($code:tt)*] [$($flags:tt)*] [$($args:tt)*] [$($arg_names:tt)*] [$($unused_arg_names:tt)*] -> { $($inner:tt)* } $($rest:tt)*) => {
-        $crate::_js_impl!( @call [$($code)*] [$($flags)*] [$($args)*] [$($arg_names)*] [$($unused_arg_names)*] -> $($inner)* $($rest)* );
+        $crate::_js_impl!( @call [$($code)*] [$($flags)*] [$($args)*] [$($arg_names)*] [$($unused_arg_names)*] -> $($inner)* $($rest)* )
     };
 
     (@call [$($code:tt)*] [$($flags:tt)*] [$($args:tt)*] [$($arg_names:tt)*] [$($unused_arg_names:tt)*] -> ( $($inner:tt)* ) $($rest:tt)*) => {
-        $crate::_js_impl!( @call [$($code)*] [$($flags)*] [$($args)*] [$($arg_names)*] [$($unused_arg_names)*] -> $($inner)* $($rest)* );
+        $crate::_js_impl!( @call [$($code)*] [$($flags)*] [$($args)*] [$($arg_names)*] [$($unused_arg_names)*] -> $($inner)* $($rest)* )
     };
 
     (@call [$($code:tt)*] [$($flags:tt)*] [$($args:tt)*] [$($arg_names:tt)*] [$($unused_arg_names:tt)*] -> [ $($inner:tt)* ] $($rest:tt)*) => {
-        $crate::_js_impl!( @call [$($code)*] [$($flags)*] [$($args)*] [$($arg_names)*] [$($unused_arg_names)*] -> $($inner)* $($rest)* );
+        $crate::_js_impl!( @call [$($code)*] [$($flags)*] [$($args)*] [$($arg_names)*] [$($unused_arg_names)*] -> $($inner)* $($rest)* )
     };
 
     (@call [$($code:tt)*] [$($flags:tt)*] [$($args:tt)*] [$($arg_names:tt)*] [$arg_name:tt $($unused_arg_names:tt)*] -> @{$arg:expr} $($rest:tt)*) => {
-        $crate::_js_impl!( @call [$($code)*] [$($flags)*] [$($args)* $arg] [$($arg_names)* $arg_name] [$($unused_arg_names)*] -> $($rest)* );
+        $crate::_js_impl!( @call [$($code)*] [$($flags)*] [$($args)* $arg] [$($arg_names)* $arg_name] [$($unused_arg_names)*] -> $($rest)* )
     };
 
     (@call [$($code:tt)*] [$($flags:tt)*] [$($args:tt)*] [$($arg_names:tt)*] [$($unused_arg_names:tt)*] -> $token:tt $($rest:tt)*) => {
-        $crate::_js_impl!( @call [$($code)*] [$($flags)*] [$($args)*] [$($arg_names)*] [$($unused_arg_names)*] -> $($rest)* );
+        $crate::_js_impl!( @call [$($code)*] [$($flags)*] [$($args)*] [$($arg_names)*] [$($unused_arg_names)*] -> $($rest)* )
     };
 }
 
