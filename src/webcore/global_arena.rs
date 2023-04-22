@@ -66,7 +66,7 @@ pub fn serialize_value< 'a >( value: Value ) -> SerializedValue< 'a > {
 }
 
 #[inline]
-pub fn reserve< 'a, T >( length: usize ) -> RelativeSlice< 'a, T > {
+pub unsafe fn reserve< 'a, T >( length: usize ) -> RelativeSlice< 'a, T > {
     unsafe {
         let offset = reserve_impl( length * mem::size_of::< T >(), mem::align_of::< T >() );
         debug_assert_eq!( ARENA.memory.offset( offset as isize ) as usize % mem::align_of::< T >(), 0 );
