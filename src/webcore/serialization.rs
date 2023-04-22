@@ -707,7 +707,7 @@ impl< T: JsSerialize > JsSerialize for [T] {
     #[doc(hidden)]
     #[inline]
     fn _into_js< 'a >( &'a self ) -> SerializedValue< 'a > {
-        let mut output = global_arena::reserve( self.len() );
+        let mut output = unsafe { global_arena::reserve( self.len() ) };
         for value in self {
             unsafe {
                 output.append( value._into_js() );
@@ -734,8 +734,8 @@ impl< T: JsSerialize > JsSerialize for Vec< T > {
 __js_serializable_boilerplate!( impl< T > for Vec< T > where T: JsSerialize );
 
 fn object_into_js< 'a, K: AsRef< str >, V: 'a + JsSerialize, I: Iterator< Item = (K, &'a V) > + ExactSizeIterator >( iter: I ) -> SerializedValue< 'a > {
-    let mut keys = global_arena::reserve( iter.len() );
-    let mut values = global_arena::reserve( iter.len() );
+    let mut keys = unsafe { global_arena::reserve( iter.len() ) };
+    let mut values = unsafe { global_arena::reserve( iter.len() ) };
     for (key, value) in iter {
         unsafe {
             keys.append( key.as_ref()._into_js().as_string().clone() );
